@@ -8,7 +8,12 @@ plugins {
 android {
     namespace = "com.example.flutter_workshops_5sae1_2627"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+
+    packaging {
+        // Keep native debug symbols so debug builds do not require llvm-strip.
+        jniLibs.keepDebugSymbols += "**/*.so"
+    }
+    // Aucun plugin natif pour cette première version autonome.
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

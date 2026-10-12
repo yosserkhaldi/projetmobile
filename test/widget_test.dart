@@ -1,30 +1,35 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:flutter_workshops_5sae1_2627/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('connexion conducteur et accès aux cinq modules', (tester) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MonConstatApp());
+    expect(find.text('Mon Constat Digital'), findsOneWidget);
+    await tester.tap(find.text('Se connecter'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Bonjour'), findsOneWidget);
+    expect(find.text('Véhicules'), findsOneWidget);
+    expect(find.text('Dossiers'), findsOneWidget);
+    expect(find.text('Messages'), findsOneWidget);
+    expect(find.text('Profil'), findsOneWidget);
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('démarre le parcours de déclaration', (tester) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MonConstatApp());
+    await tester.tap(find.text('Se connecter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Commencer une déclaration'));
+    await tester.pumpAndSettle();
+    expect(find.text('Contexte'), findsOneWidget);
+    expect(find.text('Continuer'), findsOneWidget);
   });
 }
