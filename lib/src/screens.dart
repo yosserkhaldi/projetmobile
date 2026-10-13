@@ -819,80 +819,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final s = StoreScope.of(context);
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(18),
-        children: [
-          const PageHead(
-            'Mon profil',
-            subtitle: 'Identité, permis et préférences',
-          ),
-          const CircleAvatar(radius: 44, child: Icon(Icons.person, size: 45)),
-          const SizedBox(height: 18),
-          TextField(
-            controller: name,
-            decoration: const InputDecoration(labelText: 'Nom et prénom'),
-          ),
-          const SizedBox(height: 12),
-          const TextField(
-            decoration: InputDecoration(
-              labelText: 'Téléphone',
-              prefixIcon: Icon(Icons.phone),
+    return Scaffold(
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(18),
+          children: [
+            const PageHead(
+              'Mon profil',
+              subtitle: 'Identité, permis et préférences',
             ),
-          ),
-          const SizedBox(height: 12),
-          const TextField(
-            decoration: InputDecoration(
-              labelText: 'N° de permis',
-              prefixIcon: Icon(Icons.badge),
+            const CircleAvatar(radius: 44, child: Icon(Icons.person, size: 45)),
+            const SizedBox(height: 18),
+            TextField(
+              controller: name,
+              decoration: const InputDecoration(labelText: 'Nom et prénom'),
             ),
-          ),
-          const SizedBox(height: 12),
-          const TextField(
-            decoration: InputDecoration(
-              labelText: 'Catégorie et date de délivrance',
+            const SizedBox(height: 12),
+            const TextField(
+              decoration: InputDecoration(
+                labelText: 'Téléphone',
+                prefixIcon: Icon(Icons.phone),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: s.language,
-            decoration: const InputDecoration(labelText: 'Langue'),
-            items: [
-              'Français',
-              'العربية',
-              'English',
-            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-            onChanged: (v) {
-              if (v != null) s.language = v;
-            },
-          ),
-          SwitchListTile(
-            value: s.biometric,
-            onChanged: (v) => setState(() => s.biometric = v),
-            title: const Text('Connexion biométrique'),
-            subtitle: const Text(
-              'Empreinte digitale ou reconnaissance faciale',
+            const SizedBox(height: 12),
+            const TextField(
+              decoration: InputDecoration(
+                labelText: 'N° de permis',
+                prefixIcon: Icon(Icons.badge),
+              ),
             ),
-          ),
-          FilledButton(
-            onPressed: () {
-              s.updateProfile(name.text, s.language, s.biometric);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profil enregistré')),
-              );
-            },
-            child: const Text('Enregistrer'),
-          ),
-          TextButton.icon(
-            onPressed: () => Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const AuthScreen()),
-              (_) => false,
+            const SizedBox(height: 12),
+            const TextField(
+              decoration: InputDecoration(
+                labelText: 'Catégorie et date de délivrance',
+              ),
             ),
-            icon: const Icon(Icons.logout),
-            label: const Text('Se déconnecter'),
-          ),
-        ],
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: s.language,
+              decoration: const InputDecoration(labelText: 'Langue'),
+              items: [
+                'Français',
+                'العربية',
+                'English',
+              ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              onChanged: (v) {
+                if (v != null) s.language = v;
+              },
+            ),
+            SwitchListTile(
+              value: s.biometric,
+              onChanged: (v) => setState(() => s.biometric = v),
+              title: const Text('Connexion biométrique'),
+              subtitle: const Text(
+                'Empreinte digitale ou reconnaissance faciale',
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                s.updateProfile(name.text, s.language, s.biometric);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Profil enregistré')),
+                );
+              },
+              child: const Text('Enregistrer'),
+            ),
+            TextButton.icon(
+              onPressed: () => Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const AuthScreen()),
+                (_) => false,
+              ),
+              icon: const Icon(Icons.logout),
+              label: const Text('Se déconnecter'),
+            ),
+          ],
+        ),
       ),
     );
   }

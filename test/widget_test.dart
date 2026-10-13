@@ -32,4 +32,19 @@ void main() {
     expect(find.text('Contexte'), findsOneWidget);
     expect(find.text('Continuer'), findsOneWidget);
   });
+
+  testWidgets('ouvre le profil depuis le raccourci Mon permis', (tester) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MonConstatApp());
+    await tester.tap(find.text('Se connecter'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Mon permis'));
+    await tester.tap(find.text('Mon permis'));
+    await tester.pumpAndSettle();
+    expect(find.text('Mon profil'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
