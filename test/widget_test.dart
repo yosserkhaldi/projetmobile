@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_workshops_5sae1_2627/main.dart';
+import 'package:mon_constat_digital/main.dart';
 
 void main() {
   testWidgets('connexion conducteur et accès aux cinq modules', (tester) async {
