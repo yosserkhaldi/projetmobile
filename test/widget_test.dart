@@ -47,4 +47,38 @@ void main() {
     expect(find.text('Mon profil'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('exige deux preuves avant le constat', (tester) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MonConstatApp());
+    await tester.tap(find.text('Se connecter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Commencer une déclaration'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Que s’est-il passé ?'), findsOneWidget);
+
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Photos guidées'), findsOneWidget);
+
+    await tester.tap(find.text('Continuer vers le constat'));
+    await tester.pump();
+    expect(
+      find.text('Ajoutez au moins 2 photos avant de continuer.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Vue d’ensemble'));
+    await tester.tap(find.text('Dégâts véhicule A'));
+    await tester.pump();
+    await tester.tap(find.text('Continuer vers le constat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Mode invité isolé'), findsOneWidget);
+  });
 }
