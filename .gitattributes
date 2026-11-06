@@ -1,0 +1,4 @@
+# Flutter regenerates these with LF on every platform.
+**/flutter/generated_plugin_registrant.* text eol=lf
+**/flutter/generated_plugins.cmake text eol=lf
+**/Flutter/GeneratedPluginRegistrant.swift text eol=lf
