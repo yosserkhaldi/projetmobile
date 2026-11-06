@@ -14,7 +14,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Bonjour'), findsOneWidget);
     expect(find.text('Véhicules'), findsOneWidget);
-    expect(find.text('Dossiers'), findsOneWidget);
+    expect(find.text('Déclarations'), findsOneWidget);
     expect(find.text('Messages'), findsOneWidget);
     expect(find.text('Profil'), findsOneWidget);
   });
@@ -80,5 +80,45 @@ void main() {
     await tester.tap(find.text('Continuer vers le constat'));
     await tester.pumpAndSettle();
     expect(find.text('Mode invité isolé'), findsOneWidget);
+  });
+
+  testWidgets('le raccourci Constat ouvre les déclarations', (tester) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MonConstatApp());
+    await tester.tap(find.text('Se connecter'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Constat'));
+    await tester.tap(find.text('Constat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Mes déclarations'), findsOneWidget);
+    expect(find.text('DÉCLARATIONS TRANSMISES'), findsOneWidget);
+    expect(find.text('Conducteur B'), findsNothing);
+  });
+
+  testWidgets('reprend un brouillon à la dernière étape', (tester) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MonConstatApp());
+    await tester.tap(find.text('Se connecter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Commencer une déclaration'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Que s’est-il passé ?'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Constat'));
+    await tester.tap(find.text('Constat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Étape 2 sur 7'), findsOneWidget);
+    await tester.tap(find.text('Reprendre'));
+    await tester.pumpAndSettle();
+    expect(find.text('Que s’est-il passé ?'), findsOneWidget);
   });
 }

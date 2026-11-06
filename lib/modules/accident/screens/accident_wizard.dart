@@ -10,15 +10,16 @@ import 'package:mon_constat_digital/modules/constat/widgets/constat_steps.dart';
 /// Parcours en 7 étapes : les 3 premières relèvent du module 3 (déclaration),
 /// les 4 suivantes du module 4 (constat).
 class AccidentWizard extends StatefulWidget {
-  const AccidentWizard({this.startAtConstat = false, super.key});
-  final bool startAtConstat;
+  const AccidentWizard({this.initialDraft, this.initialStep = 0, super.key});
+  final AccidentDraft? initialDraft;
+  final int initialStep;
   @override
   State<AccidentWizard> createState() => _AccidentWizardState();
 }
 
 class _AccidentWizardState extends State<AccidentWizard> {
   final _contextForm = GlobalKey<FormState>();
-  final draft = AccidentDraft();
+  late final AccidentDraft draft;
   late final TextEditingController place;
   final witnessName = TextEditingController();
   final witnessPhone = TextEditingController();
@@ -39,8 +40,15 @@ class _AccidentWizardState extends State<AccidentWizard> {
   @override
   void initState() {
     super.initState();
+    draft = widget.initialDraft ?? AccidentDraft();
+    step = widget.initialStep.clamp(0, steps.length - 1);
     place = TextEditingController(text: draft.place);
-    if (widget.startAtConstat) step = 3;
+    witnessName.text = draft.witnessName;
+    witnessPhone.text = draft.witnessPhone;
+    observations.text = draft.observations;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _persistDraft();
+    });
   }
 
   @override
@@ -87,7 +95,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
                 : step == steps.length - 1
                 ? 'Signer et transmettre'
                 : 'Continuer',
-            onBack: () => setState(() => step--),
+            onBack: _goBack,
             onContinue: _next,
           ),
         ],
@@ -105,18 +113,24 @@ class _AccidentWizardState extends State<AccidentWizard> {
     ),
     2 => EvidenceStep(draft: draft, onChanged: _touch),
     3 => GuestDriverStep(guest: guest),
-    4 => CircumstancesStep(observations: observations),
-    5 => const SketchStep(),
-    _ => const SignatureStep(),
+    4 => CircumstancesStep(
+      draft: draft,
+      observations: observations,
+      onChanged: _touch,
+    ),
+    5 => SketchStep(draft: draft, onChanged: _touch),
+    _ => SignatureStep(draft: draft, onChanged: _touch),
   };
 
   void _touch() {
     draft.touch();
+    _persistDraft();
     setState(() {});
   }
 
   void _saveDraft() {
     draft.touch();
+    _persistDraft();
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Brouillon enregistré sur cet appareil')),
@@ -129,6 +143,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
     draft.touch();
     if (step < steps.length - 1) {
       setState(() => step++);
+      _persistDraft();
       return;
     }
     final claims = AppScope.of(context).claims;
@@ -148,7 +163,17 @@ class _AccidentWizardState extends State<AccidentWizard> {
       'Transmis aux assureurs',
     ]);
     claims.addClaim(claim);
+    AppScope.of(context).accidents.clearDraft();
     Navigator.pop(context);
+  }
+
+  void _goBack() {
+    setState(() => step--);
+    _persistDraft();
+  }
+
+  void _persistDraft() {
+    AppScope.of(context).accidents.saveDraft(draft, step);
   }
 
   bool _isCurrentStepValid() {
@@ -164,6 +189,18 @@ class _AccidentWizardState extends State<AccidentWizard> {
     }
     if (step == 2 && draft.evidenceCount < 2) {
       _showError('Ajoutez au moins 2 photos avant de continuer.');
+      return false;
+    }
+    if (step == 4 && draft.circumstances.isEmpty) {
+      _showError('Sélectionnez au moins une circonstance.');
+      return false;
+    }
+    if (step == 5 && (!draft.sketchConfirmed || draft.impactZones.isEmpty)) {
+      _showError('Confirmez le croquis et une zone de choc.');
+      return false;
+    }
+    if (step == 6 && (!draft.driverASigned || !draft.driverBSigned)) {
+      _showError('Les deux conducteurs doivent signer le constat.');
       return false;
     }
     return true;

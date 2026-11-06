@@ -18,6 +18,12 @@ class AccidentDraft {
   };
   bool videoAdded = false;
   bool voiceNoteAdded = false;
+  final Set<String> circumstances = <String>{};
+  String observations = '';
+  final Set<String> impactZones = <String>{};
+  bool sketchConfirmed = false;
+  bool driverASigned = false;
+  bool driverBSigned = false;
   DateTime lastSavedAt = DateTime.now();
 
   bool get hasInjured => injuredCount > 0;

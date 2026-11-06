@@ -4,6 +4,7 @@ import 'package:mon_constat_digital/app/help_screen.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/screens/accident_wizard.dart';
+import 'package:mon_constat_digital/modules/accident/screens/declarations_screen.dart';
 import 'package:mon_constat_digital/modules/accident/screens/emergency_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/notifications_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
@@ -65,7 +66,10 @@ class DriverHome extends StatelessWidget {
                         backgroundColor: AppColors.accent,
                         foregroundColor: Colors.black,
                       ),
-                      onPressed: () => open(context, const AccidentWizard()),
+                      onPressed: () {
+                        final draft = s.accidents.startNew();
+                        open(context, AccidentWizard(initialDraft: draft));
+                      },
                       icon: const Icon(Icons.arrow_forward),
                       label: const Text('Commencer une déclaration'),
                     ),
@@ -105,7 +109,7 @@ class DriverHome extends StatelessWidget {
                   context,
                   Icons.description,
                   'Constat',
-                  const AccidentWizard(startAtConstat: true),
+                  const DeclarationsScreen(),
                 ),
                 _quick(
                   context,

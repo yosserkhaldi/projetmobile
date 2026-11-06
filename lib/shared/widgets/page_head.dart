@@ -26,7 +26,17 @@ class PageHead extends StatelessWidget {
                 ),
               ),
               if (subtitle != null)
-                Text(subtitle!, style: TextStyle(color: Colors.grey.shade600)),
+                Text(
+                  subtitle!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 14,
+                    height: 1.35,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
             ],
           ),
         ),
