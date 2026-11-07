@@ -3,6 +3,8 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/core/theme/app_theme.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
@@ -17,6 +19,8 @@ import 'package:mon_constat_digital/modules/claims/screens/notifications_screen.
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/document_picker.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+
+import 'support/fake_backend.dart';
 
 Claim claimWith(String status, {String id = 'SIN-3'}) => Claim(
   id: id,
@@ -170,11 +174,17 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      stores = AppStores();
+      stores = AppStores(storage: MemoryStorage(), biometric: FakeBiometric());
       await tester.pumpWidget(
         AppScope(
           stores: stores,
-          child: MaterialApp(home: Scaffold(body: home)),
+          child: MaterialApp(
+            theme: AppTheme.light,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('fr'),
+            home: Scaffold(body: home),
+          ),
         ),
       );
       await tester.pump();

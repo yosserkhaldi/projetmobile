@@ -6,6 +6,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_api.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
@@ -13,7 +14,10 @@ import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
 import 'package:mon_constat_digital/modules/claims/state/claims_sync.dart';
 import 'package:mon_constat_digital/modules/claims/state/message_store.dart';
+import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
+
+import 'support/fake_backend.dart';
 
 /// Serveur simulé : on choisit sa réponse et on garde les requêtes reçues.
 class FakeServer {
@@ -57,12 +61,20 @@ class Device {
   Device(this.db, this.server)
     : claims = ClaimStore(dao: db.claimsDao),
       messages = MessageStore(dao: db.claimsDao) {
+    final storage = MemoryStorage();
+    final client = ApiClient(
+      storage: storage,
+      httpClient: server.client,
+      baseUrl: 'http://api.test/api',
+    );
+    users = UserStore(client, storage, FakeBiometric())
+      ..currentUser = AppUser.fromJson(userJson());
     sync = ClaimsSync(
-      api: ClaimsApi('http://api.test', client: server.client),
+      api: ClaimsApi(client),
       dao: db.claimsDao,
       claims: claims,
       messages: messages,
-      users: UserStore(),
+      users: users,
     );
   }
 
@@ -70,6 +82,7 @@ class Device {
   final FakeServer server;
   final ClaimStore claims;
   final MessageStore messages;
+  late final UserStore users;
   late final ClaimsSync sync;
 
   Future<void> settle() async {
@@ -231,5 +244,27 @@ void main() {
     store.addClaim(newClaim());
     await store.saved;
     expect(await db.claimsDao.pendingRequests(), isEmpty);
+  });
+
+  test('un compte n’envoie pas les changements d’un autre', () async {
+    final phone = await device();
+    await phone.db.claimsDao.enqueue(
+      const ApiRequest(
+        id: 'autre',
+        method: 'POST',
+        path: '/SIN-9/take-charge',
+        identity: (id: 'quelqu-un-d-autre', role: 'agent', name: 'Autre'),
+      ),
+    );
+    await phone.settle();
+    expect(server.paths, isEmpty);
+    expect(await phone.pending(), 1);
+  });
+
+  test('sans utilisateur connecté, rien ne part', () async {
+    final phone = await device();
+    phone.users.currentUser = null;
+    await phone.sync.synchronize();
+    expect(server.requests, isEmpty);
   });
 }

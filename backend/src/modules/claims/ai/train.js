@@ -68,8 +68,7 @@ export function syntheticCases(count, seed = 2026) {
 // Dossiers terminés de la base, au même format que les cas synthétiques.
 async function realCases() {
   if (!process.env.DATABASE_URL) return [];
-  const { PrismaClient } = await import('@prisma/client');
-  const prisma = new PrismaClient();
+  const { prisma } = await import('../../../lib/prisma.js');
   try {
     const claims = await prisma.claim.findMany({
       where: { status: { in: ['Clôturé', 'Rejeté'] } },

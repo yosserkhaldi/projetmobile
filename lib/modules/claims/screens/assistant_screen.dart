@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
@@ -62,11 +64,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
       if (ask != null) {
         answer = await ask(history);
       } else if (sync != null) {
-        answer = await sync.api.askAssistant(
-          widget.claim.id,
-          history,
-          sync.identity,
-        );
+        answer = await sync.api.askAssistant(widget.claim.id, history);
       } else {
         throw StateError('Application locale');
       }
@@ -101,10 +99,10 @@ class _AssistantScreenState extends State<AssistantScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (turns.isEmpty) ...[
-                    const Text(
+                    Text(
                       'Posez une question sur ce dossier. L’assistant informe, '
                       'il ne prend aucune décision.',
-                      style: TextStyle(color: AppColors.textMuted),
+                      style: TextStyle(color: context.palette.textMuted),
                     ),
                     const SizedBox(height: 12),
                     Wrap(
@@ -121,11 +119,11 @@ class _AssistantScreenState extends State<AssistantScreen> {
                   ],
                   for (final turn in turns) _Turn(turn),
                   if (waiting)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.all(8),
                       child: Text(
                         'L’assistant lit le dossier…',
-                        style: TextStyle(color: AppColors.textMuted),
+                        style: TextStyle(color: context.palette.textMuted),
                       ),
                     ),
                 ],
@@ -149,7 +147,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
                     tooltip: 'Envoyer',
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.accent,
-                      foregroundColor: AppColors.ink,
+                      foregroundColor: context.palette.text,
                     ),
                     onPressed: () => _send(input.text),
                     icon: const Icon(Icons.send),
@@ -178,8 +176,8 @@ class _Turn extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         constraints: const BoxConstraints(maxWidth: 340),
         decoration: BoxDecoration(
-          color: mine ? AppColors.primary : AppColors.surface,
-          border: mine ? null : Border.all(color: AppColors.border),
+          color: mine ? AppColors.primary : context.palette.surface,
+          border: mine ? null : Border.all(color: context.palette.border),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -187,15 +185,17 @@ class _Turn extends StatelessWidget {
           children: [
             Text(
               turn.content,
-              style: TextStyle(color: mine ? Colors.white : AppColors.ink),
+              style: TextStyle(
+                color: mine ? Colors.white : context.palette.text,
+              ),
             ),
             if (!mine) ...[
               const SizedBox(height: 4),
               Text(
                 turn.fromClaude ? 'Claude' : 'Réponse automatique',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.textMuted,
+                  color: context.palette.textMuted,
                 ),
               ),
             ],

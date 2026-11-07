@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: monconstat
       POSTGRES_DB: monconstat
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -21,14 +21,17 @@ services:
     env_file:
       - path: ./backend/.env
         required: false
+    # Comptes de démonstration : voir backend/prisma/seed.js.
+    command: sh -c "npx prisma migrate deploy && node prisma/seed.js && npm start"
     environment:
       PORT: 3000
       DATABASE_URL: postgresql://monconstat:monconstat@db:5432/monconstat
       JWT_SECRET: secret-de-developpement
-    ports:
-      - "3000:3000"
+      UPLOAD_DIR: /app/uploads
     volumes:
       - uploads:/app/uploads
+    ports:
+      - "3000:3000"
     depends_on:
       db:
         condition: service_healthy

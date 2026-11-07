@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_api.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_dao.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/data/ids.dart';
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
 import 'package:mon_constat_digital/modules/claims/state/message_store.dart';
-import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 
 /// Envoie la file d'attente à l'API, puis recharge l'état du serveur.
@@ -26,20 +26,18 @@ class ClaimsSync extends ChangeNotifier {
   }) : _dao = dao {
     claims.sync = this;
     messages.sync = this;
-    _role = users.role;
     users.addListener(_onUserChanged);
   }
 
-  /// Sans `--dart-define=API_URL=...`, l'application reste locale.
-  static ClaimsSync? start({
+  /// Démarre avec l'application, et attend la connexion de l'utilisateur.
+  static ClaimsSync start({
+    required ApiClient client,
     required ClaimStore claims,
     required MessageStore messages,
     required UserStore users,
   }) {
-    const url = String.fromEnvironment('API_URL');
-    if (url.isEmpty) return null;
     final sync = ClaimsSync(
-      api: ClaimsApi(url),
+      api: ClaimsApi(client),
       dao: ClaimsDatabase.shared.claimsDao,
       claims: claims,
       messages: messages,
@@ -59,43 +57,50 @@ class ClaimsSync extends ChangeNotifier {
   bool _again = false;
   bool _disposed = false;
   Future<void>? _running;
-  late UserRole _role;
+  String? _userId;
   Timer? _timer;
   io.Socket? _socket;
 
   ApiIdentity get identity => (
-    id: users.role == UserRole.driver
-        ? 'demo-driver'
-        : 'demo-${users.role.name}',
+    id: users.currentUser?.id ?? '',
     role: users.role.name,
     name: users.userName,
   );
 
   Future<void> _run() async {
     await Future.wait([claims.saved, messages.saved]);
-    connect();
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) => synchronize());
-    await synchronize();
+    // Le jeton vit 15 minutes : le canal se rouvre avec le jeton renouvelé.
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (_userId != null && _socket?.connected != true) connect();
+      synchronize();
+    });
+    _onUserChanged();
   }
 
   /// Ouvre le canal temps réel : le serveur prévient à chaque changement.
   void connect() {
     _socket?.dispose();
-    final user = identity;
     _socket = io.io(
-      api.baseUrl,
+      api.socketUrl,
       io.OptionBuilder()
           .setPath('/api/claims/socket')
           .setTransports(['websocket'])
-          .setAuth({'userId': user.id, 'role': user.role, 'name': user.name})
+          .setAuth({'token': api.accessToken})
           .build(),
     )..on('claims:changed', (_) => synchronize());
   }
 
   void _onUserChanged() {
-    if (users.role == _role) return;
-    _role = users.role;
-    if (_socket != null) connect();
+    final id = users.currentUser?.id;
+    if (id == _userId) return;
+    _userId = id;
+    _socket?.dispose();
+    _socket = null;
+    if (id == null) {
+      claims.clearInsights();
+      return;
+    }
+    connect();
     unawaited(synchronize());
   }
 
@@ -136,6 +141,7 @@ class ClaimsSync extends ChangeNotifier {
   }
 
   Future<void> _pass() async {
+    if (_disposed || users.currentUser == null) return;
     try {
       do {
         _again = false;
@@ -153,7 +159,8 @@ class ClaimsSync extends ChangeNotifier {
 
   /// Renvoie vrai quand la file est vide.
   Future<bool> _flush() async {
-    for (final request in await _dao.pendingRequests()) {
+    final mine = await _dao.pendingRequests(actorId: identity.id);
+    for (final request in mine) {
       final status = await api.send(request);
       if (status >= 500 || status == 401 || status == 408 || status == 429) {
         return false;
@@ -168,8 +175,8 @@ class ClaimsSync extends ChangeNotifier {
   }
 
   Future<void> _pull() async {
-    final snapshot = await api.fetchSnapshot(identity);
-    if (await _dao.replaceFromServer(snapshot)) {
+    final snapshot = await api.fetchSnapshot();
+    if (await _dao.replaceFromServer(snapshot, actorId: identity.id)) {
       await claims.reload();
       await messages.reload();
     } else {

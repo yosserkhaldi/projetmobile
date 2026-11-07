@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 
 /// Rappelle que les changements partiront au retour du réseau.
 class OfflineBanner extends StatelessWidget {
@@ -19,7 +20,7 @@ class OfflineBanner extends StatelessWidget {
               width: double.infinity,
               height: 34,
               alignment: Alignment.center,
-              color: AppColors.ink,
+              color: context.palette.text,
               child: const Text(
                 'Hors ligne : vos changements partiront au retour du réseau',
                 style: TextStyle(

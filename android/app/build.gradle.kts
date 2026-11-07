@@ -47,3 +47,8 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Thème AppCompat exigé par local_auth (connexion biométrique) sur Android 8.
+    implementation("androidx.appcompat:appcompat:1.7.1")
+}

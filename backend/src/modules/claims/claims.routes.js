@@ -18,7 +18,8 @@ import { claudeEnabled, claudeModel } from './ai/claude.js';
 import { driverView, model } from './ai/insights.js';
 import { requireRole, requireUser } from './claims.auth.js';
 import { db } from './claims.db.js';
-import { badRequest, HttpError } from './claims.errors.js';
+import { HttpError } from '../../lib/errors.js';
+import { badRequest } from './claims.errors.js';
 import * as claims from './claims.service.js';
 import { announceChange } from './claims.socket.js';
 
@@ -58,8 +59,7 @@ function aiLimit(req, res, next) {
   const now = Date.now();
   const recent = (aiCalls.get(req.user.id) ?? []).filter((t) => now - t < 60_000);
   if (recent.length >= 30) {
-    res.status(429).json({ error: 'Trop de demandes, réessayez dans une minute.' });
-    return;
+    throw new HttpError(429, 'TOO_MANY_REQUESTS', 'Réessayez dans une minute.');
   }
   aiCalls.set(req.user.id, [...recent, now]);
   next();
@@ -116,21 +116,6 @@ const thenRead = (req, res, next) => {
   });
   next();
 };
-
-// L'application web de développement appelle l'API depuis un autre port.
-router.use((req, res, next) => {
-  res.set({
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers':
-      'authorization, content-type, idempotency-key, x-user-id, x-user-name, x-user-role',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  });
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(204);
-    return;
-  }
-  next();
-});
 
 router.get('/openapi.json', (_req, res) => res.json(openapi));
 router.use('/docs', swaggerUi.serve, swaggerUi.setup(openapi));
@@ -273,17 +258,13 @@ router.post('/:id/ai/replies', agent, aiLimit, async (req, res) => {
   res.json(await suggestReplies(claim, req.user));
 });
 
-router.use((error, _req, res, _next) => {
-  if (error instanceof HttpError) {
-    res.status(error.status).json({ error: error.message });
+// Le gestionnaire commun parle d'images de 5 Mo : ici la limite est autre.
+router.use((error, _req, _res, next) => {
+  if (error?.code === 'LIMIT_FILE_SIZE') {
+    next(new HttpError(413, 'FILE_TOO_LARGE', 'Fichier trop lourd : 20 Mo maximum.'));
     return;
   }
-  if (error instanceof multer.MulterError) {
-    res.status(400).json({ error: error.message });
-    return;
-  }
-  console.error(error);
-  res.status(500).json({ error: 'Erreur interne.' });
+  next(error);
 });
 
 export default router;

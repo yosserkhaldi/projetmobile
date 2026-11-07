@@ -280,11 +280,12 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
     ),
   );
 
-  /// File d'envoi, dans l'ordre des changements.
-  Future<List<ApiRequest>> pendingRequests() async {
-    final rows = await (select(
-      syncOutbox,
-    )..orderBy([(t) => OrderingTerm.asc(t.seq)])).get();
+  /// File d'envoi, dans l'ordre des changements. Avec [actorId], seulement
+  /// les siens : un compte n'envoie jamais les changements d'un autre.
+  Future<List<ApiRequest>> pendingRequests({String? actorId}) async {
+    final query = select(syncOutbox)..orderBy([(t) => OrderingTerm.asc(t.seq)]);
+    if (actorId != null) query.where((t) => t.actorId.equals(actorId));
+    final rows = await query.get();
     return rows
         .map(
           (row) => ApiRequest(
@@ -319,11 +320,14 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
     };
   }
 
+  /// À la déconnexion : l'analyse d'un agent ne reste pas sur l'appareil.
+  Future<void> clearInsights() => delete(claimInsights).go();
+
   /// Remplace le local par l'état du serveur. Ne fait rien, et renvoie faux,
   /// si un changement attend encore d'être envoyé.
-  Future<bool> replaceFromServer(ServerSnapshot snapshot) =>
+  Future<bool> replaceFromServer(ServerSnapshot snapshot, {String? actorId}) =>
       transaction(() async {
-        final pending = await select(syncOutbox).get();
+        final pending = await pendingRequests(actorId: actorId);
         if (pending.isNotEmpty) return false;
 
         await delete(claims).go();

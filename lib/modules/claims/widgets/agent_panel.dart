@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
@@ -73,7 +75,9 @@ class AgentPanel extends StatelessWidget {
         ],
         if (next.contains(ClaimStatus.rejected))
           TextButton.icon(
-            style: TextButton.styleFrom(foregroundColor: AppColors.errorText),
+            style: TextButton.styleFrom(
+              foregroundColor: context.palette.errorText,
+            ),
             onPressed: () => _reject(context),
             icon: const Icon(Icons.block),
             label: const Text('Rejeter le dossier'),
@@ -254,7 +258,7 @@ class _DecisionCardState extends State<_DecisionCard> {
           Text(
             'Proposition : A ${proposal.driverA} %, B ${proposal.driverB} %. '
             '${proposal.reason}',
-            style: const TextStyle(color: AppColors.textMuted),
+            style: TextStyle(color: context.palette.textMuted),
           ),
           const SizedBox(height: 12),
           SegmentedButton<int>(

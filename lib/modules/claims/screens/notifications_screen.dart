@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
@@ -27,10 +28,10 @@ class NotificationsScreen extends StatelessWidget {
         ],
       ),
       body: items.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'Aucune notification.',
-                style: TextStyle(color: AppColors.textMuted),
+                style: TextStyle(color: context.palette.textMuted),
               ),
             )
           : ListView.builder(
@@ -57,10 +58,10 @@ class NotificationsScreen extends StatelessWidget {
                   subtitle: Text(formatDateTime(item.createdAt)),
                   trailing: item.read
                       ? null
-                      : const Icon(
+                      : Icon(
                           Icons.circle,
                           size: 10,
-                          color: AppColors.primary,
+                          color: context.palette.primaryText,
                         ),
                 );
               },

@@ -1,24 +1,41 @@
 import assert from 'node:assert/strict';
 import { after, before, beforeEach, describe, test } from 'node:test';
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import jwt from 'jsonwebtoken';
 import { io } from 'socket.io-client';
 
-// Base dédiée : TEST_DATABASE_URL=... npx prisma migrate deploy, puis npm test.
-const url = process.env.TEST_DATABASE_URL;
+import { migrate, prisma } from './helpers.js';
 
-describe('API sinistres', { skip: !url }, () => {
+const { createApp } = await import('../src/app.js');
+const { signAccessToken } = await import('../src/lib/tokens.js');
+const { attachClaimsSocket } = await import(
+  '../src/modules/claims/claims.socket.js'
+);
+
+describe('API sinistres', () => {
   let server;
   let base;
-  let prisma;
   let seq = 0;
+  let driver;
+  let other;
+  let agent;
 
-  const driver = { 'x-user-id': 'd1', 'x-user-role': 'driver', 'x-user-name': 'Sami' };
-  const other = { 'x-user-id': 'd2', 'x-user-role': 'driver' };
-  const agent = { 'x-user-id': 'a1', 'x-user-role': 'agent', 'x-user-name': 'Leïla' };
+  // Vrais comptes et vrais jetons : le module 1 relit l'utilisateur en base.
+  async function account(id, role, firstName) {
+    const user = await prisma.user.upsert({
+      where: { email: `${id}@test.tn` },
+      update: {},
+      create: {
+        firstName,
+        lastName: 'Test',
+        email: `${id}@test.tn`,
+        phone: `+216${id}`,
+        passwordHash: 'x',
+        role,
+      },
+    });
+    return { user, authorization: `Bearer ${signAccessToken(user)}` };
+  }
 
   async function call(headers, method, route, body) {
     const form = body instanceof FormData;
@@ -62,15 +79,16 @@ describe('API sinistres', { skip: !url }, () => {
   }
 
   before(async () => {
-    process.env.DATABASE_URL = url;
-    process.env.JWT_SECRET = 'secret-test';
-    process.env.UPLOAD_DIR = mkdtempSync(path.join(tmpdir(), 'claims-'));
-    const { createApp } = await import('../src/app.js');
-    const { attachClaimsSocket } = await import(
-      '../src/modules/claims/claims.socket.js'
-    );
-    const { db } = await import('../src/modules/claims/claims.db.js');
-    prisma = db();
+    migrate();
+    const accounts = await Promise.all([
+      account('50000001', 'DRIVER', 'Sami'),
+      account('50000002', 'DRIVER', 'Hedi'),
+      account('50000003', 'AGENT', 'Leïla'),
+    ]);
+    [driver, other, agent] = accounts.map(({ authorization, user }) => ({
+      authorization,
+      id: user.id,
+    }));
     server = createApp().listen(0);
     await new Promise((resolve) => server.once('listening', resolve));
     attachClaimsSocket(server);
@@ -84,7 +102,8 @@ describe('API sinistres', { skip: !url }, () => {
   });
 
   after(async () => {
-    await prisma.$disconnect();
+    await prisma.claim.deleteMany();
+    await prisma.user.deleteMany({ where: { email: { endsWith: '@test.tn' } } });
     await new Promise((resolve) => server.close(resolve));
   });
 
@@ -92,19 +111,22 @@ describe('API sinistres', { skip: !url }, () => {
     assert.equal((await call({}, 'GET', '/')).status, 401);
   });
 
-  test('accepte un JWT signé', async () => {
-    const token = jwt.sign({ sub: 'd1', role: 'driver', name: 'Sami' }, 'secret-test');
-    const response = await call({ authorization: `Bearer ${token}` }, 'GET', '/');
-    assert.equal(response.status, 200);
+  test('accepte un jeton du module 1 et refuse un faux', async () => {
+    assert.equal((await call(driver, 'GET', '/')).status, 200);
     const bad = await call({ authorization: 'Bearer faux' }, 'GET', '/');
     assert.equal(bad.status, 401);
+  });
+
+  test('un en-tête d’identité seul ne donne aucun accès', async () => {
+    const forged = { 'x-user-id': driver.id, 'x-user-role': 'agent' };
+    assert.equal((await call(forged, 'GET', '/')).status, 401);
   });
 
   test('un dossier suit tout le parcours jusqu’à la clôture', async () => {
     const id = await createClaim();
     let claim = (await call(agent, 'POST', `/${id}/take-charge`)).body;
     assert.equal(claim.status, 'En instruction');
-    assert.equal(claim.agentName, 'Leïla');
+    assert.equal(claim.agentName, 'Leïla Test');
 
     claim = (
       await call(agent, 'POST', `/${id}/document-requests`, {
@@ -289,8 +311,9 @@ describe('API sinistres', { skip: !url }, () => {
         socket.once('connect', () => resolve(socket));
         socket.once('connect_error', reject);
       });
-    const mine = await connect({ userId: 'd1', role: 'driver' });
-    const theirs = await connect({ userId: 'd2', role: 'driver' });
+    const token = ({ authorization }) => authorization.slice('Bearer '.length);
+    const mine = await connect({ token: token(driver) });
+    const theirs = await connect({ token: token(other) });
     let leaked = false;
     theirs.on('claims:changed', () => {
       leaked = true;

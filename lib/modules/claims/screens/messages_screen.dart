@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/screens/chat_screen.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
@@ -23,10 +24,10 @@ class MessagesScreen extends StatelessWidget {
           ),
           Expanded(
             child: claims.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'Aucun dossier.',
-                      style: TextStyle(color: AppColors.textMuted),
+                      style: TextStyle(color: context.palette.textMuted),
                     ),
                   )
                 : ListView.builder(

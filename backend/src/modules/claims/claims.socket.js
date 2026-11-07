@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 
-import { identify } from './claims.auth.js';
+import { identifySocket } from './claims.auth.js';
 
 let io;
 
@@ -12,7 +12,7 @@ export function attachClaimsSocket(httpServer) {
   });
   io.use((socket, next) => {
     try {
-      socket.user = identify(socket.handshake.auth ?? {});
+      socket.user = identifySocket(socket.handshake.auth ?? {});
       next();
     } catch (error) {
       next(error);

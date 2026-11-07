@@ -29,6 +29,12 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
 
   ClaimInsight? insightFor(String claimId) => insights[claimId];
 
+  void clearInsights() {
+    insights.clear();
+    notifyListeners();
+    persist(_dao.clearInsights);
+  }
+
   /// Dossiers les plus urgents d'abord. Sans analyse, l'ordre ne change pas.
   List<Claim> byPriority(Iterable<Claim> list) {
     int score(Claim claim) => insightFor(claim.id)?.priority ?? 0;

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_filter.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
@@ -100,10 +101,10 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
           const SizedBox(height: 4),
           Expanded(
             child: claims.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'Aucun dossier ne correspond.',
-                      style: TextStyle(color: AppColors.textMuted),
+                      style: TextStyle(color: context.palette.textMuted),
                     ),
                   )
                 : ListView.separated(

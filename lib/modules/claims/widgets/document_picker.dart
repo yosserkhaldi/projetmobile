@@ -30,7 +30,7 @@ Future<void> saveFromServer(
   if (sync == null) return;
   final messenger = ScaffoldMessenger.of(context);
   try {
-    final bytes = await sync.api.download(kind, id, sync.identity);
+    final bytes = await sync.api.download(kind, id);
     await FilePicker.saveFile(fileName: name, bytes: bytes);
   } catch (_) {
     messenger.showSnackBar(

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 
 typedef LoadAnalytics = Future<Map<String, dynamic>> Function();
@@ -26,7 +27,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final sync = AppScope.of(context).claimsSync;
     data ??=
         widget.load?.call() ??
-        sync?.api.analytics(sync.identity) ??
+        sync?.api.analytics() ??
         Future.error(StateError('Application locale'));
   }
 
@@ -37,10 +38,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       future: data,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Center(
+          return Center(
             child: Text(
               'Statistiques disponibles avec le serveur.',
-              style: TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: context.palette.textMuted),
             ),
           );
         }
@@ -113,10 +114,10 @@ class _Report extends StatelessWidget {
           'AUC rejet ${metrics['rejectionAuc']}.',
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Ces mesures portent sur des données simulées : elles ne disent '
           'pas encore si le modèle est juste sur de vrais sinistres.',
-          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+          style: TextStyle(color: context.palette.textMuted, fontSize: 13),
         ),
       ],
     );
@@ -184,8 +185,8 @@ class _Bar extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Container(
             height: 10,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
+            decoration: BoxDecoration(
+              color: context.palette.primary,
               borderRadius: BorderRadius.horizontal(right: Radius.circular(4)),
             ),
           ),

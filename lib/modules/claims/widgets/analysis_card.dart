@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 
 const _heading = TextStyle(fontWeight: FontWeight.w800);
-const _muted = TextStyle(color: AppColors.textMuted, fontSize: 13);
+TextStyle _muted(BuildContext context) =>
+    TextStyle(color: context.palette.textMuted, fontSize: 13);
 
 /// Aide à la décision de l'agent : rien ne s'applique sans son action.
 class AnalysisCard extends StatefulWidget {
@@ -29,7 +31,7 @@ class _AnalysisCardState extends State<AnalysisCard> {
     final messenger = ScaffoldMessenger.of(context);
     setState(() => loading = true);
     try {
-      final answer = await sync.api.summarize(widget.claim.id, sync.identity);
+      final answer = await sync.api.summarize(widget.claim.id);
       if (mounted) setState(() => summary = answer);
     } catch (_) {
       messenger.showSnackBar(
@@ -63,8 +65,8 @@ class _AnalysisCardState extends State<AnalysisCard> {
                 if (insight.overdueDays > 0)
                   _Tag(
                     'Retard ${insight.overdueDays} j',
-                    AppColors.errorBg,
-                    AppColors.errorText,
+                    context.palette.errorBg,
+                    context.palette.errorText,
                   ),
               ],
             ),
@@ -72,7 +74,7 @@ class _AnalysisCardState extends State<AnalysisCard> {
             if (insight.nextAction != null)
               Text(insight.nextAction!, style: _heading),
             if (insight.reasons.isNotEmpty)
-              Text(insight.reasons.join(' • '), style: _muted),
+              Text(insight.reasons.join(' • '), style: _muted(context)),
             const Divider(height: 24),
             if (insight.estimateLow != null)
               _Fact(
@@ -102,10 +104,10 @@ class _AnalysisCardState extends State<AnalysisCard> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.flag_outlined,
                         size: 18,
-                        color: AppColors.warningText,
+                        color: context.palette.warningText,
                       ),
                       const SizedBox(width: 6),
                       Expanded(child: Text(signal)),
@@ -140,7 +142,7 @@ class _AnalysisCardState extends State<AnalysisCard> {
                   padding: const EdgeInsets.only(bottom: 2),
                   child: Text(
                     '${past.id} (${past.similarity} %) : ${_outcome(past)}',
-                    style: _muted,
+                    style: _muted(context),
                   ),
                 ),
             ],
@@ -152,7 +154,7 @@ class _AnalysisCardState extends State<AnalysisCard> {
                 summary!.fromClaude
                     ? 'Synthèse rédigée par Claude'
                     : 'Synthèse automatique, sans IA générative',
-                style: _muted,
+                style: _muted(context),
               ),
             ] else
               OutlinedButton.icon(
@@ -163,10 +165,10 @@ class _AnalysisCardState extends State<AnalysisCard> {
                 ),
               ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Estimations issues d’un modèle entraîné sur des données '
               'simulées. La décision appartient à l’agent.',
-              style: _muted,
+              style: _muted(context),
             ),
           ],
         ),
@@ -194,7 +196,7 @@ class _Fact extends StatelessWidget {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(width: 120, child: Text(label, style: _muted)),
+        SizedBox(width: 120, child: Text(label, style: _muted(context))),
         Expanded(child: Text(value)),
       ],
     ),
@@ -231,7 +233,7 @@ class GuidanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    color: AppColors.primaryTint,
+    color: context.palette.primaryTint,
     child: Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -254,7 +256,7 @@ class GuidanceCard extends StatelessWidget {
             Text(
               'Délai restant estimé : environ ${insight.remainingDays} jours. '
               'Ce n’est pas un engagement.',
-              style: _muted,
+              style: _muted(context),
             ),
           ],
         ],

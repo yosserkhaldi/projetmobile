@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/screens/analytics_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
@@ -48,16 +49,20 @@ class AgentDashboard extends StatelessWidget {
           ),
           Row(
             children: [
-              _metric('À traiter', '${pending.length}', AppColors.warningText),
+              _metric(
+                'À traiter',
+                '${pending.length}',
+                context.palette.warningText,
+              ),
               _metric(
                 'Expertises',
                 '${s.countByStatus((e) => e == ClaimStatus.expertise)}',
-                AppColors.primary,
+                context.palette.primaryText,
               ),
               _metric(
                 'Clôturés',
                 '${s.countByStatus((e) => e == ClaimStatus.closed)}',
-                AppColors.successText,
+                context.palette.successText,
               ),
             ],
           ),
@@ -68,9 +73,9 @@ class AgentDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           if (pending.isEmpty)
-            const Text(
+            Text(
               'Aucun dossier à traiter.',
-              style: TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: context.palette.textMuted),
             ),
           ...pending.map(
             (c) => Padding(

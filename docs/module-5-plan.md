@@ -9,24 +9,20 @@ Phases 1 to 4 are done. Phase 4 was tested with a simulated Claude API: it has n
 ## Run the demo
 
 ```bash
-docker compose up --build                      # API on port 3000
-docker compose exec api node prisma/seed.js    # demo case SIN-2026-0418
-flutter run --dart-define=API_URL=http://10.0.2.2:3000   # Android emulator
-flutter run -d chrome --dart-define=API_URL=http://localhost:3000
+docker compose up --build        # API on port 3000, migrations and demo accounts included
+flutter run -d chrome --web-port=5001                                   # default API: localhost:3000/api
+flutter run --dart-define=API_URL=http://10.0.2.2:3000/api              # Android emulator
 ```
 
-Log in as a driver in one app and as an agent in another: changes appear live. Swagger: `http://localhost:3000/api/claims/docs`.
+Real login from module 1, password `Password123!`: `sami@example.com` (driver), `leila@assurance.tn` (agent). Changes appear live between two windows. Swagger for this module: `http://localhost:3000/api/claims/docs`.
 
 ## Test
 
 ```bash
 flutter test
-docker compose exec db psql -U monconstat -c 'CREATE DATABASE monconstat_test'
-cd backend
-DATABASE_URL=postgresql://monconstat:monconstat@localhost:5432/monconstat_test npx prisma migrate deploy
-TEST_DATABASE_URL=postgresql://monconstat:monconstat@localhost:5432/monconstat_test npm test
-cd ..
-LIVE_API_URL=http://localhost:3000 flutter test test/claims_live_test.dart   # two phones, real API
+docker compose exec db psql -U monconstat -c 'CREATE DATABASE monconstat_test'   # once
+cd backend && npm test                                                           # uses port 5434
+cd .. && LIVE_API_URL=http://localhost:3000 flutter test test/claims_live_test.dart   # two phones, real API
 ```
 
 ## Scope (from v3)
@@ -73,17 +69,17 @@ cd backend && npm run ml:train    # adds real closed cases when DATABASE_URL is 
 
 ## Phase 2: backend
 
-1. Prisma, with a multi-file schema so each module owns its own file: `backend/prisma/schema/claims.prisma`.
+1. Prisma. Since module 1 merged, all models live in the shared `backend/prisma/schema.prisma`.
 2. Express routes under `/api/claims`, workflow validated on the server as well.
 3. File upload with multer. Socket.IO for chat and live status.
-4. Temporary identity middleware: accepts a JWT signed with `JWT_SECRET`, and dev headers outside production, until module 1 delivers login.
+4. Identity comes from module 1 (`requireAuth`, JWT). The temporary dev headers are gone.
 5. Swagger for the module's endpoints, and tests with `node --test`.
 
 ## Phase 3: connect the app
 
 1. Outbox table in SQLite: every change is saved locally first, then sent. A client-generated id makes retries safe (0 loss, 0 duplicate).
 2. Pull server changes, live updates through Socket.IO.
-3. The app only talks to the API when built with `--dart-define=API_URL=...`. Without it, it stays local, so teammates need no backend to run the app.
+3. Sync starts with the app and waits for login. It goes through the shared `ApiClient`, so tokens renew by themselves. A queued change is only sent by the account that made it.
 
 ## Phase 4: intelligence
 
@@ -112,8 +108,7 @@ To enable Claude: put `ANTHROPIC_API_KEY=...` in `backend/.env`, then `docker co
 
 | Needed | From | Until then |
 |---|---|---|
-| Real login and user ids | Module 1 | Dev identity headers |
-| Insurance company of each driver | Modules 1, 2 | Company left empty, all agents see all cases |
+| Insurance company of each driver | Module 2 | Company left empty, all agents see all cases |
 | Real photos, video | Module 3 | Evidence count from the timeline |
 | Boxes per driver, PDF, SHA-256 | Module 4 | One set of boxes, as the wizard has today |
 
@@ -123,7 +118,7 @@ Payments (cahier), Firebase push (teacher rule; notifications are in-app and liv
 
 ## Shared files
 
-Listed here so the team can be warned: `pubspec.yaml`, `backend/package.json`, `backend/Dockerfile`, `backend/src/server.js`, `docker-compose.yml`, `lib/core/state/app_scope.dart`, the notification badge in `lib/app/driver_home.dart`, the claim creation lines in `accident_wizard.dart`, and the debug `AndroidManifest.xml` (allows http to the local API). `backend/prisma/schema/base.prisma` is new and shared by all modules. Phase 4 adds: the Messages badge in `lib/app/main_shell.dart`, `env_file` in `docker-compose.yml`, and `@anthropic-ai/sdk` plus `ml:train` in `backend/package.json`.
+Listed here so the team can be warned: `pubspec.yaml`, `backend/package.json`, `backend/Dockerfile`, `backend/src/server.js`, `docker-compose.yml`, `lib/core/state/app_scope.dart`, the notification badge in `lib/app/driver_home.dart`, the claim creation lines in `accident_wizard.dart`, and the debug `AndroidManifest.xml` (allows http to the local API). Phase 4 adds: the Messages badge in `lib/app/main_shell.dart`, `startClaimsSync` in `lib/app/app.dart`, `send`, `timeout`, `baseUrl` and `accessToken` in `lib/core/network/api_client.dart`, `env_file` in `docker-compose.yml`, the module 5 models in `backend/prisma/schema.prisma`, the demo cases in `backend/prisma/seed.js`, and `@anthropic-ai/sdk`, `socket.io` and `ml:train` in `backend/package.json`.
 
 ## Definition of done
 

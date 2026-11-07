@@ -3,13 +3,14 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/claims/models/chat_message.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_notification.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 
-/// Identité envoyée à l'API, à remplacer par le jeton JWT du module 1.
+/// Auteur d'un changement en attente. L'API s'appuie sur le jeton du module 1.
 typedef ApiIdentity = ({String id, String role, String name});
 
 class ServerSnapshot {
@@ -48,92 +49,76 @@ class ApiRequest {
 }
 
 class ClaimsApi {
-  ClaimsApi(this.baseUrl, {http.Client? client})
-    : _client = client ?? http.Client();
+  ClaimsApi(this._client);
 
-  final String baseUrl;
-  final http.Client _client;
+  final ApiClient _client;
 
-  static const _root = '/api/claims';
+  static const _root = '/claims';
+  static const _fileTimeout = Duration(seconds: 60);
 
-  Map<String, String> _headers(ApiIdentity identity) => {
-    'x-user-id': identity.id,
-    'x-user-role': identity.role,
-    'x-user-name': Uri.encodeComponent(identity.name),
-  };
+  /// Un assistant peut lire plusieurs fois le dossier avant de répondre.
+  static const _aiTimeout = Duration(seconds: 120);
+
+  /// Adresse du serveur, sans le préfixe `/api` des routes.
+  String get socketUrl => _client.baseUrl.replaceFirst(RegExp(r'/api/?$'), '');
+
+  String? get accessToken => _client.accessToken;
 
   /// Renvoie le code HTTP. Une erreur réseau remonte en exception.
   Future<int> send(ApiRequest request) async {
-    final uri = Uri.parse('$baseUrl$_root${request.path}');
-    final headers = {
-      ..._headers(request.identity),
-      'Idempotency-Key': request.id,
-    };
+    final headers = {'Idempotency-Key': request.id};
+    final path = '$_root${request.path}';
     if (!request.multipart) {
-      final response = await _client.post(
-        uri,
-        headers: {...headers, 'content-type': 'application/json'},
-        body: jsonEncode(request.body),
+      final response = await _client.send(
+        path,
+        (uri) => http.Request(request.method, uri)
+          ..headers.addAll(headers)
+          ..headers['content-type'] = 'application/json'
+          ..body = jsonEncode(request.body),
       );
       return response.statusCode;
     }
-    final multipart = http.MultipartRequest(request.method, uri)
-      ..headers.addAll(headers);
-    request.body.forEach((key, value) {
-      if (value != null) multipart.fields[key] = '$value';
+    final bytes = await _fileBytes(request);
+    final response = await _client.send(path, timeout: _fileTimeout, (uri) {
+      final multipart = http.MultipartRequest(request.method, uri)
+        ..headers.addAll(headers);
+      request.body.forEach((key, value) {
+        if (value != null) multipart.fields[key] = '$value';
+      });
+      if (bytes != null) {
+        multipart.files.add(
+          http.MultipartFile.fromBytes(
+            'file',
+            bytes,
+            filename: request.fileName,
+          ),
+        );
+      }
+      return multipart;
     });
-    final file = await _file(request);
-    if (file != null) multipart.files.add(file);
-    final response = await _client.send(multipart);
-    await response.stream.drain<void>();
     return response.statusCode;
   }
 
   /// Un fichier disparu de l'appareil ne doit pas bloquer la file.
-  Future<http.MultipartFile?> _file(ApiRequest request) async {
+  Future<List<int>?> _fileBytes(ApiRequest request) async {
     final bytes = request.fileBytes;
-    if (bytes != null) {
-      return http.MultipartFile.fromBytes(
-        'file',
-        bytes,
-        filename: request.fileName,
-      );
-    }
+    if (bytes != null) return bytes;
     final path = request.filePath;
     if (path == null) return null;
     try {
-      return await http.MultipartFile.fromPath('file', path);
+      final file = await http.MultipartFile.fromPath('file', path);
+      return await file.finalize().toBytes();
     } catch (_) {
       return null;
     }
   }
 
   /// [kind] vaut `document` ou `message`.
-  Future<Uint8List> download(
-    String kind,
-    String id,
-    ApiIdentity identity,
-  ) async {
-    final response = await _client.get(
-      Uri.parse('$baseUrl$_root/files/$kind/$id'),
-      headers: _headers(identity),
-    );
-    if (response.statusCode != 200) {
-      throw http.ClientException('Téléchargement : ${response.statusCode}');
-    }
-    return response.bodyBytes;
-  }
+  Future<Uint8List> download(String kind, String id) =>
+      _client.getBytes('$_root/files/$kind/$id');
 
-  Future<ServerSnapshot> fetchSnapshot(ApiIdentity identity) async {
-    final response = await _client.get(
-      Uri.parse('$baseUrl$_root/sync'),
-      headers: _headers(identity),
-    );
-    if (response.statusCode != 200) {
-      throw http.ClientException('Synchronisation : ${response.statusCode}');
-    }
-    final json =
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+  Future<ServerSnapshot> fetchSnapshot() async {
+    final json = await _client.get('$_root/sync') as Map<String, dynamic>;
     List<Map<String, dynamic>> rows(String key) =>
         (json[key] as List<dynamic>).cast<Map<String, dynamic>>();
     return ServerSnapshot(
@@ -148,34 +133,16 @@ class ClaimsApi {
     );
   }
 
-  Future<Map<String, dynamic>> _ask(
-    String method,
-    String path,
-    ApiIdentity identity, [
-    Map<String, dynamic> body = const {},
-  ]) async {
-    final uri = Uri.parse('$baseUrl$_root$path');
-    final headers = _headers(identity);
-    final response = method == 'GET'
-        ? await _client.get(uri, headers: headers)
-        : await _client.post(
-            uri,
-            headers: {...headers, 'content-type': 'application/json'},
-            body: jsonEncode(body),
-          );
-    if (response.statusCode != 200) {
-      throw http.ClientException('Réponse ${response.statusCode}');
-    }
-    return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-  }
+  Future<Map<String, dynamic>> _ai(String path, [Object? body]) async =>
+      await _client.post('$_root$path', body: body ?? {}, timeout: _aiTimeout)
+          as Map<String, dynamic>;
 
   /// [messages] : échanges précédents, le dernier étant la question.
   Future<AiAnswer> askAssistant(
     String claimId,
     List<({String role, String content})> messages,
-    ApiIdentity identity,
   ) async {
-    final json = await _ask('POST', '/$claimId/ai/assistant', identity, {
+    final json = await _ai('/$claimId/ai/assistant', {
       'messages': [
         for (final m in messages) {'role': m.role, 'content': m.content},
       ],
@@ -186,24 +153,19 @@ class ClaimsApi {
     );
   }
 
-  Future<AiAnswer> summarize(String claimId, ApiIdentity identity) async {
-    final json = await _ask('POST', '/$claimId/ai/summary', identity);
+  Future<AiAnswer> summarize(String claimId) async {
+    final json = await _ai('/$claimId/ai/summary');
     return (
       text: json['summary'] as String,
       fromClaude: json['source'] == 'claude',
     );
   }
 
-  Future<List<String>> suggestReplies(
-    String claimId,
-    ApiIdentity identity,
-  ) async {
-    final json = await _ask('POST', '/$claimId/ai/replies', identity);
-    return _strings(json['replies']);
-  }
+  Future<List<String>> suggestReplies(String claimId) async =>
+      _strings((await _ai('/$claimId/ai/replies'))['replies']);
 
-  Future<Map<String, dynamic>> analytics(ApiIdentity identity) =>
-      _ask('GET', '/analytics', identity);
+  Future<Map<String, dynamic>> analytics() async =>
+      await _client.get('$_root/analytics') as Map<String, dynamic>;
 
   DateTime _date(Object? value) => DateTime.parse(value! as String).toLocal();
 

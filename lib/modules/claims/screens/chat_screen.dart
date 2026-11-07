@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/chat_message.dart';
@@ -41,7 +43,7 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final replies =
           await widget.suggest?.call() ??
-          await sync!.api.suggestReplies(widget.claim.id, sync.identity);
+          await sync!.api.suggestReplies(widget.claim.id);
       if (mounted) setState(() => suggestions = replies);
     } catch (_) {
       messenger.showSnackBar(
@@ -100,10 +102,10 @@ class _ChatScreenState extends State<ChatScreen> {
             const OfflineBanner(),
             Expanded(
               child: messages.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         'Aucun message sur ce dossier.',
-                        style: TextStyle(color: AppColors.textMuted),
+                        style: TextStyle(color: context.palette.textMuted),
                       ),
                     )
                   : ListView.builder(
@@ -166,7 +168,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     tooltip: 'Envoyer',
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.accent,
-                      foregroundColor: AppColors.ink,
+                      foregroundColor: context.palette.text,
                     ),
                     onPressed: _send,
                     icon: const Icon(Icons.send),
@@ -188,8 +190,8 @@ class _Bubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = mine ? Colors.white : AppColors.ink;
-    final muted = mine ? AppColors.onPrimaryMuted : AppColors.textMuted;
+    final foreground = mine ? Colors.white : context.palette.text;
+    final muted = mine ? AppColors.onPrimaryMuted : context.palette.textMuted;
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: FractionallySizedBox(
@@ -199,8 +201,8 @@ class _Bubble extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: mine ? AppColors.primary : AppColors.surface,
-            border: mine ? null : Border.all(color: AppColors.border),
+            color: mine ? AppColors.primary : context.palette.surface,
+            border: mine ? null : Border.all(color: context.palette.border),
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(18),
               topRight: const Radius.circular(18),

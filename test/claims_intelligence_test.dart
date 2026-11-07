@@ -9,7 +9,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mon_constat_digital/app/main_shell.dart';
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/core/theme/app_theme.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_api.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
@@ -24,7 +27,17 @@ import 'package:mon_constat_digital/modules/claims/screens/messages_screen.dart'
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 
+import 'support/fake_backend.dart';
+
 const identity = (id: 'a', role: 'agent', name: 'Leïla');
+
+ClaimsApi apiWith(http.Client client) => ClaimsApi(
+  ApiClient(
+    storage: MemoryStorage(),
+    httpClient: client,
+    baseUrl: 'http://api/api',
+  ),
+);
 
 Map<String, dynamic> agentJson({int priority = 50}) => {
   'estimate': {'low': 400, 'mid': 600, 'high': 900},
@@ -93,9 +106,8 @@ void main() {
   group('API', () {
     test('envoie les octets d’un fichier et son nom', () async {
       late http.Request received;
-      final api = ClaimsApi(
-        'http://api',
-        client: MockClient((request) async {
+      final api = apiWith(
+        MockClient((request) async {
           received = request;
           return http.Response('{}', 201);
         }),
@@ -117,10 +129,25 @@ void main() {
       expect(received.body, contains('contenu'));
     });
 
+    test('l’assistant a le temps de répondre', () async {
+      final api = apiWith(
+        MockClient((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 1));
+          return http.Response(
+            jsonEncode({'answer': 'ok', 'source': 'claude'}),
+            200,
+          );
+        }),
+      );
+      final answer = await api.askAssistant('SIN-1', [
+        (role: 'user', content: 'x'),
+      ]);
+      expect(answer.fromClaude, isTrue);
+    });
+
     test('dit si la réponse vient de Claude', () async {
-      final api = ClaimsApi(
-        'http://api',
-        client: MockClient(
+      final api = apiWith(
+        MockClient(
           (_) async => http.Response(
             jsonEncode({'answer': 'Bonjour', 'source': 'rules'}),
             200,
@@ -130,20 +157,14 @@ void main() {
       );
       final answer = await api.askAssistant('SIN-1', [
         (role: 'user', content: 'Statut ?'),
-      ], identity);
+      ]);
       expect(answer.text, 'Bonjour');
       expect(answer.fromClaude, isFalse);
     });
 
     test('une erreur du serveur remonte', () async {
-      final api = ClaimsApi(
-        'http://api',
-        client: MockClient((_) async => http.Response('{}', 429)),
-      );
-      expect(
-        api.summarize('SIN-1', identity),
-        throwsA(isA<http.ClientException>()),
-      );
+      final api = apiWith(MockClient((_) async => http.Response('{}', 429)));
+      expect(api.summarize('SIN-1'), throwsA(isA<ApiException>()));
     });
   });
 
@@ -284,13 +305,21 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      stores = AppStores();
-      stores.users.role = role;
+      stores = AppStores(storage: MemoryStorage(), biometric: FakeBiometric());
+      stores.users.currentUser = AppUser.fromJson(
+        userJson(role: role.apiValue),
+      );
       prepare?.call(stores);
       await tester.pumpWidget(
         AppScope(
           stores: stores,
-          child: MaterialApp(home: Scaffold(body: home)),
+          child: MaterialApp(
+            theme: AppTheme.light,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('fr'),
+            home: Scaffold(body: home),
+          ),
         ),
       );
       await tester.pump();
@@ -337,6 +366,19 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+
+    testWidgets('le compteur reste en arabe', (tester) async {
+      await pump(tester, const MainShell());
+      stores.users.language = AppLanguage.ar;
+      stores.messages.sendMessage(
+        'SIN-2026-0418',
+        'Leïla',
+        UserRole.agent,
+        'Bonjour',
+      );
+      await tester.pump();
+      expect(find.widgetWithText(Badge, '1'), findsOneWidget);
     });
 
     testWidgets('chaque conversation affiche ses non lus', (tester) async {

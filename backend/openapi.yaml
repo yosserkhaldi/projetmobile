@@ -1,0 +1,683 @@
+openapi: 3.1.0
+info:
+  title: Mon Constat Digital API
+  version: 0.2.0
+  description: |
+    Contrat d'API partagé par les 5 modules. Chaque module documente ici ses endpoints.
+
+    **Authentification.** Les routes marquées d'un cadenas attendent
+    `Authorization: Bearer <accessToken>`. Le jeton d'accès vaut 15 minutes ;
+    `POST /auth/refresh` en donne un nouveau. La session expire après 30 minutes
+    sans rafraîchissement.
+
+    **Erreurs.** Toutes les erreurs ont la forme `{ "error": { "code", "message" } }`.
+    Le message est en français et peut être affiché tel quel.
+servers:
+  - url: http://localhost:3000/api
+tags:
+  - name: Authentification
+    description: Module 1 — inscription, connexion, OTP, mot de passe, biométrie
+  - name: Profil
+    description: Module 1 — profil, permis, photos
+  - name: Administration
+    description: Module 1 — comptes et rôles (administrateur)
+  - name: Compagnies
+    description: Module 1 — compagnies d'assurance et agences
+
+paths:
+  /health:
+    get:
+      summary: État de l'API
+      security: []
+      responses:
+        '200':
+          description: API disponible
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, const: ok }
+
+  /auth/register:
+    post:
+      tags: [Authentification]
+      summary: Créer un compte conducteur
+      description: Le rôle est toujours DRIVER. Un code OTP part par SMS.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterInput' }
+      responses:
+        '201': { $ref: '#/components/responses/Session' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /auth/login:
+    post:
+      tags: [Authentification]
+      summary: Se connecter par e-mail ou téléphone
+      description: Compte bloqué 15 minutes après 5 échecs consécutifs (423).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier:
+                  type: string
+                  description: E-mail, ou téléphone (8 chiffres = numéro tunisien)
+                  examples: [sami@example.com, '20123456']
+                password: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/Session' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403':
+          description: Compte suspendu (ACCOUNT_SUSPENDED)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '423':
+          description: Compte bloqué (ACCOUNT_LOCKED)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/refresh:
+    post:
+      tags: [Authentification]
+      summary: Renouveler la session
+      description: |
+        Le jeton de rafraîchissement est remplacé à chaque appel. Un ancien jeton
+        présenté une seconde fois ferme toutes les sessions du compte.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Session' }
+        '401': { $ref: '#/components/responses/Error' }
+
+  /auth/logout:
+    post:
+      tags: [Authentification]
+      summary: Se déconnecter
+      description: Révoque le jeton de rafraîchissement. La connexion biométrique reste active.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshInput' }
+      responses:
+        '204': { description: Déconnecté }
+
+  /auth/phone/send:
+    post:
+      tags: [Authentification]
+      summary: Renvoyer le code OTP par SMS
+      responses:
+        '204': { description: Code envoyé }
+        '409': { $ref: '#/components/responses/Error' }
+        '429':
+          description: Un code a été envoyé il y a moins d'une minute
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/phone/verify:
+    post:
+      tags: [Authentification]
+      summary: Vérifier le téléphone
+      description: Code valable 10 minutes, 5 essais au plus.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CodeInput' }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '400': { $ref: '#/components/responses/Error' }
+
+  /auth/password/forgot:
+    post:
+      tags: [Authentification]
+      summary: Recevoir un code de réinitialisation par e-mail
+      description: Répond 204 que l'e-mail existe ou non.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '204': { description: Demande prise en compte }
+
+  /auth/password/reset:
+    post:
+      tags: [Authentification]
+      summary: Choisir un nouveau mot de passe
+      description: Ferme toutes les sessions et désactive la connexion biométrique.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code, password]
+              properties:
+                email: { type: string, format: email }
+                code: { type: string, pattern: '^\d{6}$' }
+                password: { type: string, minLength: 8 }
+      responses:
+        '204': { description: Mot de passe modifié }
+        '400': { $ref: '#/components/responses/Error' }
+
+  /auth/biometric:
+    post:
+      tags: [Authentification]
+      summary: Activer la connexion biométrique sur cet appareil
+      description: |
+        Renvoie une clé valable 30 jours, à garder dans le stockage sécurisé du
+        téléphone et à n'utiliser qu'après une empreinte ou une reconnaissance faciale.
+      responses:
+        '201':
+          description: Clé de l'appareil
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeviceKey' }
+    delete:
+      tags: [Authentification]
+      summary: Désactiver la connexion biométrique
+      description: Avec `deviceToken`, sur cet appareil seulement ; sans, sur tous les appareils.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceToken: { type: string }
+      responses:
+        '204': { description: Désactivée }
+
+  /auth/biometric/login:
+    post:
+      tags: [Authentification]
+      summary: Se connecter avec la clé biométrique
+      description: Ouvre une session et remplace la clé de l'appareil.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceToken]
+              properties:
+                deviceToken: { type: string }
+      responses:
+        '200':
+          description: Session et nouvelle clé
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Session'
+                  - $ref: '#/components/schemas/DeviceKey'
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /users/me:
+    get:
+      tags: [Profil]
+      summary: Mon profil
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '401': { $ref: '#/components/responses/Error' }
+    patch:
+      tags: [Profil]
+      summary: Modifier mon profil et mon permis
+      description: |
+        L'e-mail et le rôle ne sont pas modifiables ici. Un nouveau téléphone doit
+        être revérifié. Une chaîne vide efface un champ du permis.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileInput' }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /users/me/photo:
+    put:
+      tags: [Profil]
+      summary: Envoyer ma photo de profil
+      requestBody: { $ref: '#/components/requestBodies/Image' }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '400': { $ref: '#/components/responses/Error' }
+        '413': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [Profil]
+      summary: Supprimer ma photo de profil
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+
+  /users/me/license-photo:
+    put:
+      tags: [Profil]
+      summary: Envoyer la photo de mon permis
+      requestBody: { $ref: '#/components/requestBodies/Image' }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '400': { $ref: '#/components/responses/Error' }
+        '413': { $ref: '#/components/responses/Error' }
+        '415': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [Profil]
+      summary: Supprimer la photo de mon permis
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+
+  /users/{id}/photo:
+    get:
+      tags: [Profil]
+      summary: Photo de profil d'un utilisateur
+      description: Le titulaire et les administrateurs seulement.
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { $ref: '#/components/responses/Image' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/license-photo:
+    get:
+      tags: [Profil]
+      summary: Photo du permis d'un utilisateur
+      description: Le titulaire et les administrateurs seulement.
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { $ref: '#/components/responses/Image' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /users:
+    get:
+      tags: [Administration]
+      summary: Lister les comptes
+      parameters:
+        - { name: q, in: query, schema: { type: string }, description: Nom, e-mail ou téléphone }
+        - { name: role, in: query, schema: { $ref: '#/components/schemas/Role' } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses:
+        '200':
+          description: Page de comptes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/User' }
+                  total: { type: integer }
+                  page: { type: integer }
+                  pageSize: { type: integer }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /users/agents:
+    post:
+      tags: [Administration]
+      summary: Créer un compte agent rattaché à une compagnie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/RegisterInput'
+                - type: object
+                  required: [companyId]
+                  properties:
+                    companyId: { type: string, format: uuid }
+      responses:
+        '201': { $ref: '#/components/responses/UserResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/role:
+    patch:
+      tags: [Administration]
+      summary: Attribuer un rôle
+      description: Un agent doit avoir une compagnie. Impossible sur son propre compte (409).
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role: { $ref: '#/components/schemas/Role' }
+                companyId: { type: string, format: uuid }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/status:
+    patch:
+      tags: [Administration]
+      summary: Suspendre ou réactiver un compte
+      description: La suspension ferme aussitôt les sessions et la connexion biométrique.
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [active]
+              properties:
+                active: { type: boolean }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /companies:
+    get:
+      tags: [Compagnies]
+      summary: Lister les compagnies et leurs agences
+      description: Ouvert à tout compte connecté (utile au module 2 pour les contrats).
+      responses:
+        '200':
+          description: Compagnies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Company' }
+    post:
+      tags: [Compagnies]
+      summary: Créer une compagnie
+      requestBody: { $ref: '#/components/requestBodies/CompanyInput' }
+      responses:
+        '201': { $ref: '#/components/responses/CompanyResponse' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /companies/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    patch:
+      tags: [Compagnies]
+      summary: Renommer une compagnie
+      requestBody: { $ref: '#/components/requestBodies/CompanyInput' }
+      responses:
+        '200': { $ref: '#/components/responses/CompanyResponse' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [Compagnies]
+      summary: Supprimer une compagnie et ses agences
+      description: Refusé (409 COMPANY_IN_USE) tant que des agents y sont rattachés.
+      responses:
+        '204': { description: Supprimée }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /companies/{id}/agencies:
+    post:
+      tags: [Compagnies]
+      summary: Ajouter une agence
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody: { $ref: '#/components/requestBodies/AgencyInput' }
+      responses:
+        '201':
+          description: Agence créée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agency: { $ref: '#/components/schemas/Agency' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /companies/{id}/agencies/{agencyId}:
+    parameters:
+      - { $ref: '#/components/parameters/Id' }
+      - { name: agencyId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      tags: [Compagnies]
+      summary: Modifier une agence
+      requestBody: { $ref: '#/components/requestBodies/AgencyInput' }
+      responses:
+        '200':
+          description: Agence modifiée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agency: { $ref: '#/components/schemas/Agency' }
+        '404': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [Compagnies]
+      summary: Supprimer une agence
+      responses:
+        '204': { description: Supprimée }
+        '404': { $ref: '#/components/responses/Error' }
+
+security:
+  - bearer: []
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  requestBodies:
+    Image:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [photo]
+            properties:
+              photo:
+                type: string
+                format: binary
+                description: JPEG, PNG ou WebP, 5 Mo maximum
+    CompanyInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string }
+    AgencyInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, city]
+            properties:
+              name: { type: string }
+              city: { type: string }
+
+  responses:
+    Session:
+      description: Session ouverte
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Session' }
+    UserResponse:
+      description: Utilisateur
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              user: { $ref: '#/components/schemas/User' }
+    CompanyResponse:
+      description: Compagnie
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              company: { $ref: '#/components/schemas/Company' }
+    Image:
+      description: Image
+      content:
+        image/*:
+          schema: { type: string, format: binary }
+    Error:
+      description: Erreur
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ValidationError:
+      description: Données invalides (VALIDATION_ERROR), avec le détail par champ
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Role:
+      type: string
+      enum: [DRIVER, AGENT, ADMIN]
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string, examples: ['+21620123456'] }
+        phoneVerified: { type: boolean }
+        role: { $ref: '#/components/schemas/Role' }
+        active: { type: boolean }
+        language: { type: string, enum: [FR, AR, EN] }
+        licenseNumber: { type: [string, 'null'] }
+        licenseCategory: { type: [string, 'null'] }
+        licenseIssuedAt: { type: [string, 'null'], format: date }
+        company:
+          oneOf:
+            - type: 'null'
+            - type: object
+              properties:
+                id: { type: string, format: uuid }
+                name: { type: string }
+        photoId:
+          type: [string, 'null']
+          description: Change à chaque nouvelle photo. Image servie par GET /users/{id}/photo.
+        licensePhotoId:
+          type: [string, 'null']
+          description: Image servie par GET /users/{id}/license-photo.
+    Session:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        accessToken: { type: string, description: JWT valable 15 minutes }
+        refreshToken: { type: string, description: Remplacé à chaque rafraîchissement }
+    DeviceKey:
+      type: object
+      properties:
+        deviceToken: { type: string }
+        expiresAt: { type: string, format: date-time }
+    RegisterInput:
+      type: object
+      required: [firstName, lastName, email, phone, password]
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string, description: 8 chiffres pour un numéro tunisien }
+        password: { type: string, minLength: 8 }
+        language: { type: string, enum: [FR, AR, EN], description: Facultatif, FR par défaut }
+    ProfileInput:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        phone: { type: string }
+        language: { type: string, enum: [FR, AR, EN] }
+        licenseNumber: { type: [string, 'null'] }
+        licenseCategory: { type: [string, 'null'] }
+        licenseIssuedAt: { type: [string, 'null'], format: date }
+    RefreshInput:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+    CodeInput:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string, pattern: '^\d{6}$' }
+    Company:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        createdAt: { type: string, format: date-time }
+        agencies:
+          type: array
+          items: { $ref: '#/components/schemas/Agency' }
+    Agency:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        city: { type: string }
+        companyId: { type: string, format: uuid }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, examples: [VALIDATION_ERROR] }
+            message: { type: string }
+            fields:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  message: { type: string }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/screens/assistant_screen.dart';
@@ -76,11 +77,11 @@ class ClaimDetail extends StatelessWidget {
             const _Title('Pièces demandées'),
             ...requests.map(
               (request) => Card(
-                color: AppColors.warningBg,
+                color: context.palette.warningBg,
                 child: ListTile(
-                  leading: const Icon(
+                  leading: Icon(
                     Icons.priority_high,
-                    color: AppColors.warningText,
+                    color: context.palette.warningText,
                   ),
                   title: Text(request.label),
                   subtitle: request.note.isEmpty ? null : Text(request.note),
@@ -133,9 +134,9 @@ class ClaimDetail extends StatelessWidget {
             ),
           ),
           if (claim.documents.isEmpty && agentMode)
-            const Text(
+            Text(
               'Aucune pièce déposée.',
-              style: TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: context.palette.textMuted),
             ),
           if (!ClaimStatus.isFinal(claim.status) && !agentMode)
             OutlinedButton.icon(
@@ -186,7 +187,7 @@ class _DecisionSummary extends StatelessWidget {
     final rejected = claim.status == ClaimStatus.rejected;
     final share = claim.responsibility;
     return Card(
-      color: rejected ? AppColors.errorBg : AppColors.successBg,
+      color: rejected ? context.palette.errorBg : context.palette.successBg,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -225,9 +226,9 @@ class _ConstatSummary extends StatelessWidget {
       if (claim.observations.isNotEmpty) ('Observations', claim.observations),
     ];
     if (rows.isEmpty) {
-      return const Text(
+      return Text(
         'Aucune information de constat.',
-        style: TextStyle(color: AppColors.textMuted),
+        style: TextStyle(color: context.palette.textMuted),
       );
     }
     return Column(

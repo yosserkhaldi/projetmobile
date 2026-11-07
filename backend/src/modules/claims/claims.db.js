@@ -1,9 +1,3 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../lib/prisma.js';
 
-let client;
-
-// Créé au premier usage : /api/health répond sans base de données.
-export function db() {
-  client ??= new PrismaClient();
-  return client;
-}
+export const db = () => prisma;

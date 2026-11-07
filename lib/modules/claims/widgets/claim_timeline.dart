@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
@@ -80,8 +82,8 @@ class _Step extends StatelessWidget {
                 if (date != null)
                   Text(
                     formatDateTime(date!),
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
+                    style: TextStyle(
+                      color: context.palette.textMuted,
                       fontFamily: 'JetBrainsMono',
                       fontSize: 12,
                     ),

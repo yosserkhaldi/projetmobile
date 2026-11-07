@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { createServer } from 'node:http';
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
 
+import { migrate, prisma } from './helpers.js';
 import { analytics } from '../src/modules/claims/ai/analytics.js';
 import {
   analyze,
@@ -256,21 +254,35 @@ describe('statistiques', () => {
 });
 
 // Le serveur d'API de Claude est simulé : aucun appel réel, aucun coût.
-const url = process.env.TEST_DATABASE_URL;
-
-describe('API intelligence', { skip: !url }, () => {
+describe('API intelligence', () => {
   let server;
   let base;
-  let prisma;
   let fake;
   let fakeUrl;
   let requests;
   let script;
   let seq = 0;
-  const uploads = mkdtempSync(path.join(tmpdir(), 'claims-ai-'));
+  let driver;
+  let other;
+  let busy;
+  let agent;
 
-  const driver = { 'x-user-id': 'ai-d1', 'x-user-role': 'driver', 'x-user-name': 'Sami' };
-  const agent = { 'x-user-id': 'ai-a1', 'x-user-role': 'agent', 'x-user-name': 'Leïla' };
+  async function account(number, role, firstName) {
+    const { signAccessToken } = await import('../src/lib/tokens.js');
+    const user = await prisma.user.upsert({
+      where: { email: `ai${number}@test.tn` },
+      update: {},
+      create: {
+        firstName,
+        lastName: 'Secret',
+        email: `ai${number}@test.tn`,
+        phone: `+21651${number}`,
+        passwordHash: 'x',
+        role,
+      },
+    });
+    return { authorization: `Bearer ${signAccessToken(user)}`, id: user.id };
+  }
 
   async function call(headers, method, route, body) {
     const form = body instanceof FormData;
@@ -333,13 +345,15 @@ describe('API intelligence', { skip: !url }, () => {
     await new Promise((done) => fake.listen(0, done));
     fakeUrl = `http://localhost:${fake.address().port}`;
 
-    process.env.DATABASE_URL = url;
-    process.env.JWT_SECRET = 'test';
-    process.env.UPLOAD_DIR = uploads;
+    migrate();
     process.env.ANTHROPIC_BASE_URL = fakeUrl;
+    [driver, other, agent, busy] = await Promise.all([
+      account('000001', 'DRIVER', 'Sami'),
+      account('000002', 'DRIVER', 'Hedi'),
+      account('000003', 'AGENT', 'Leïla'),
+      account('000004', 'AGENT', 'Nour'),
+    ]);
     const { createApp } = await import('../src/app.js');
-    const { db } = await import('../src/modules/claims/claims.db.js');
-    prisma = db();
     server = createApp().listen(0);
     await new Promise((done) => server.once('listening', done));
     base = `http://127.0.0.1:${server.address().port}`;
@@ -351,7 +365,7 @@ describe('API intelligence', { skip: !url }, () => {
     process.env.ANTHROPIC_API_KEY = 'fake-key';
     const { resetClaude } = await import('../src/modules/claims/ai/claude.js');
     resetClaude();
-    await prisma.claim.deleteMany({ where: { driverId: 'ai-d1' } });
+    await prisma.claim.deleteMany({ where: { driverId: driver.id } });
     await prisma.aiCall.deleteMany();
     await prisma.claimAiNote.deleteMany();
   });
@@ -359,8 +373,8 @@ describe('API intelligence', { skip: !url }, () => {
   after(async () => {
     delete process.env.ANTHROPIC_API_KEY;
     delete process.env.ANTHROPIC_BASE_URL;
-    await prisma?.claim.deleteMany({ where: { driverId: 'ai-d1' } });
-    await prisma?.$disconnect();
+    await prisma.claim.deleteMany({ where: { driverId: driver.id } });
+    await prisma.user.deleteMany({ where: { email: { endsWith: '@test.tn' } } });
     server?.close();
     fake?.close();
   });
@@ -392,7 +406,6 @@ describe('API intelligence', { skip: !url }, () => {
 
   test('un conducteur n’interroge pas le dossier d’un autre', async () => {
     const id = await newClaim();
-    const other = { 'x-user-id': 'ai-d2', 'x-user-role': 'driver' };
     assert.equal((await ask(other, id, 'Statut ?')).status, 404);
     assert.equal((await call(other, 'GET', `/${id}/insights`)).status, 404);
     assert.equal(requests.length, 0);
@@ -455,8 +468,8 @@ describe('API intelligence', { skip: !url }, () => {
     script = [message([toolUse('dossier')], 'tool_use'), message([text('ok')])];
     await ask(agent, id, 'Résume');
     const sent = JSON.stringify(requests.map((r) => r.body));
-    assert.ok(!sent.includes('ai-d1'));
-    assert.ok(!sent.includes('Sami'));
+    assert.ok(!sent.includes(driver.id));
+    assert.ok(!sent.includes('Secret'));
   });
 
   test('un refus, une panne ou l’absence de clé retombent sur les règles', async () => {
@@ -574,7 +587,6 @@ describe('API intelligence', { skip: !url }, () => {
       messages: [{ role: 'system', content: 'x' }],
     });
     assert.equal(bad.status, 400);
-    const busy = { 'x-user-id': 'ai-busy', 'x-user-role': 'agent' };
     let last;
     for (let i = 0; i < 31; i++) last = await ask(busy, id, 'Statut ?');
     assert.equal(last.status, 429);

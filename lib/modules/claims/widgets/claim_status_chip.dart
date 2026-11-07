@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 
 /// Pastille de statut. Couleurs : DESIGN.md, section 7.
@@ -11,16 +12,27 @@ class ClaimStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (background, text) = switch (status) {
-      ClaimStatus.draft => (AppColors.surfaceAlt, AppColors.textMuted),
-      ClaimStatus.signed ||
-      ClaimStatus.closed => (AppColors.successBg, AppColors.successText),
-      ClaimStatus.documentRequested => (
-        AppColors.warningBg,
-        AppColors.warningText,
+      ClaimStatus.draft => (
+        context.palette.surfaceAlt,
+        context.palette.textMuted,
       ),
-      ClaimStatus.expertise => (AppColors.primaryTint, AppColors.primaryDark),
-      ClaimStatus.rejected => (AppColors.errorBg, AppColors.errorText),
-      _ => (AppColors.primaryTint, AppColors.primary),
+      ClaimStatus.signed || ClaimStatus.closed => (
+        context.palette.successBg,
+        context.palette.successText,
+      ),
+      ClaimStatus.documentRequested => (
+        context.palette.warningBg,
+        context.palette.warningText,
+      ),
+      ClaimStatus.expertise => (
+        context.palette.primaryTint,
+        context.palette.primaryText,
+      ),
+      ClaimStatus.rejected => (
+        context.palette.errorBg,
+        context.palette.errorText,
+      ),
+      _ => (context.palette.primaryTint, context.palette.primaryText),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

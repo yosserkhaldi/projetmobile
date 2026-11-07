@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_api.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
@@ -12,6 +13,8 @@ import 'package:mon_constat_digital/modules/claims/state/claims_sync.dart';
 import 'package:mon_constat_digital/modules/claims/state/message_store.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
+
+import 'support/fake_backend.dart';
 
 /// Deux téléphones contre la vraie API :
 /// `LIVE_API_URL=http://localhost:3000 flutter test test/claims_live_test.dart`
@@ -27,15 +30,15 @@ void main() {
     final messages = MessageStore(dao: db.claimsDao);
     await claims.saved;
     await messages.saved;
-    final users = UserStore()
-      ..setRole(role)
-      ..updateProfile(
-        role == UserRole.agent ? 'Leïla Mansour' : 'Sami Ben Ali',
-        'Français',
-        false,
-      );
+    final storage = MemoryStorage();
+    final client = ApiClient(storage: storage, baseUrl: '$url/api');
+    final users = UserStore(client, storage, FakeBiometric());
+    await users.login(
+      role == UserRole.agent ? 'leila@assurance.tn' : 'sami@example.com',
+      'Password123!',
+    );
     final sync = ClaimsSync(
-      api: ClaimsApi(url!),
+      api: ClaimsApi(client),
       dao: db.claimsDao,
       claims: claims,
       messages: messages,
@@ -112,7 +115,6 @@ void main() {
       final bytes = await agentSync.api.download(
         'document',
         seen.documents.single.id,
-        agentSync.identity,
       );
       expect(String.fromCharCodes(bytes), 'devis');
 
