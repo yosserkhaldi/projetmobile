@@ -142,3 +142,25 @@ export const biometricLoginSchema = z.object({
 export const disableBiometricSchema = z.object({
   deviceToken: z.string().min(1).optional(),
 });
+
+export const sessionParams = z.object({ sessionId: id });
+
+export const identitySideParams = z.object({
+  side: z.enum(['front', 'back'], { error: 'Face de la CIN invalide.' }),
+});
+
+// Carte d'identité nationale tunisienne : 8 chiffres.
+export const cinSchema = z.object({
+  cinNumber: z
+    .string({ error: 'Numéro de CIN obligatoire.' })
+    .trim()
+    .regex(/^\d{8}$/, 'Le numéro de CIN contient 8 chiffres.'),
+});
+
+export const rejectIdentitySchema = z.object({
+  reason: z
+    .string({ error: 'Motif obligatoire.' })
+    .trim()
+    .min(3, 'Indiquez un motif.')
+    .max(300),
+});

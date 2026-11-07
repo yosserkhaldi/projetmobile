@@ -16,8 +16,8 @@ export function assertAuthConfig() {
   jwtSecret();
 }
 
-export const signAccessToken = (user) =>
-  jwt.sign({ sub: user.id, role: user.role }, jwtSecret(), {
+export const signAccessToken = (user, sessionId) =>
+  jwt.sign({ sub: user.id, sid: sessionId, role: user.role }, jwtSecret(), {
     algorithm: ALGORITHM,
     expiresIn: ACCESS_TOKEN_TTL,
   });

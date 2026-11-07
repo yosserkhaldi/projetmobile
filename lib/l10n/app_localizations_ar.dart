@@ -516,4 +516,195 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get navDeclarations => 'التصريحات';
+
+  @override
+  String get securityDevicesTitle => 'الأجهزة المتصلة';
+
+  @override
+  String get securityDevicesSubtitle => 'الأماكن التي فُتح فيها حسابك';
+
+  @override
+  String get thisDevice => 'هذا الجهاز';
+
+  @override
+  String lastActive(String when) {
+    return 'نشط في $when';
+  }
+
+  @override
+  String get signOutDevice => 'إخراج';
+
+  @override
+  String signOutDeviceConfirm(String name) {
+    return 'إخراج $name؟';
+  }
+
+  @override
+  String get signOutDeviceBody =>
+      'سيحتاج هذا الجهاز إلى كلمة المرور للدخول مجددًا.';
+
+  @override
+  String get signOutOthers => 'إخراج كل الأجهزة الأخرى';
+
+  @override
+  String signedOutOthers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'تم إخراج $count جهاز',
+      few: 'تم إخراج $count أجهزة',
+      two: 'تم إخراج جهازين',
+      one: 'تم إخراج جهاز واحد',
+      zero: 'لا يوجد جهاز آخر متصل',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get unknownDevice => 'جهاز غير معروف';
+
+  @override
+  String get securityAlertNote =>
+      'يصلك إشعار عبر واتساب والبريد الإلكتروني عند الدخول من جهاز جديد.';
+
+  @override
+  String get loginHistoryTitle => 'سجل تسجيل الدخول';
+
+  @override
+  String get noHistory => 'لا توجد عمليات دخول مسجّلة.';
+
+  @override
+  String get loginSuccess => 'دخول ناجح';
+
+  @override
+  String get loginMethodPassword => 'كلمة المرور';
+
+  @override
+  String get loginMethodBiometric => 'البصمة';
+
+  @override
+  String get loginMethodRegister => 'إنشاء الحساب';
+
+  @override
+  String get loginFailedWrongPassword => 'كلمة مرور خاطئة';
+
+  @override
+  String get loginFailedLocked => 'محاولة على حساب مقفل';
+
+  @override
+  String get loginFailedSuspended => 'محاولة على حساب موقوف';
+
+  @override
+  String get identityTitle => 'التحقق من الهوية';
+
+  @override
+  String get identityStatusUnverified => 'الهوية غير مُتحقَّق منها';
+
+  @override
+  String get identityStatusPending => 'قيد المراجعة';
+
+  @override
+  String get identityStatusVerified => 'تم التحقق من الهوية';
+
+  @override
+  String get identityStatusRejected => 'تم رفض التحقق';
+
+  @override
+  String get identityIntro =>
+      'يتحقق مسؤول من بطاقة تعريفك. وهي ضرورية لتوقيع المعاينة.';
+
+  @override
+  String get identityPendingNote =>
+      'يراجع مسؤول وثائقك. سيصلك إشعار عبر واتساب والبريد الإلكتروني.';
+
+  @override
+  String get identityVerifiedNote => 'يمكنك توقيع معايناتك.';
+
+  @override
+  String identityRejectedReason(String reason) {
+    return 'السبب: $reason';
+  }
+
+  @override
+  String get cinNumberLabel => 'رقم بطاقة التعريف';
+
+  @override
+  String get cinInvalid => 'يتكوّن رقم بطاقة التعريف من 8 أرقام.';
+
+  @override
+  String get cinFront => 'وجه بطاقة التعريف';
+
+  @override
+  String get cinBack => 'ظهر بطاقة التعريف';
+
+  @override
+  String get addPhoto => 'إضافة صورة';
+
+  @override
+  String get identityPhotosRequired => 'أضف وجه وظهر بطاقة التعريف.';
+
+  @override
+  String get submitIdentity => 'إرسال للمراجعة';
+
+  @override
+  String get identitySent => 'تم إرسال الطلب. سيصلك إشعار عبر واتساب.';
+
+  @override
+  String get navIdentities => 'الهويات';
+
+  @override
+  String get reviewTitle => 'التحقق من الهويات';
+
+  @override
+  String get reviewSubtitle => 'الطلبات المعلّقة، الأقدم أولًا';
+
+  @override
+  String get noPendingReviews => 'لا توجد طلبات معلّقة.';
+
+  @override
+  String submittedOn(String date) {
+    return 'أُرسلت في $date';
+  }
+
+  @override
+  String get approve => 'قبول';
+
+  @override
+  String get reject => 'رفض';
+
+  @override
+  String get rejectTitle => 'سبب الرفض';
+
+  @override
+  String get rejectReasonBlurry => 'صورة غير واضحة';
+
+  @override
+  String get rejectReasonUnreadable => 'وثيقة غير مقروءة';
+
+  @override
+  String get rejectReasonNameMismatch => 'الاسم لا يطابق الحساب';
+
+  @override
+  String get rejectReasonNotCin => 'ليست بطاقة تعريف';
+
+  @override
+  String get otherReason => 'سبب آخر';
+
+  @override
+  String get identityApproved => 'تم قبول الهوية وإشعار صاحبها';
+
+  @override
+  String get identityRejected => 'تم رفض الطلب وإشعار صاحبه';
+
+  @override
+  String get errorIdentityLocked => 'هويتك قيد المراجعة أو تم التحقق منها.';
+
+  @override
+  String get errorCinInUse => 'رقم بطاقة التعريف هذا مستعمل.';
+
+  @override
+  String get errorIdentityNotVerified => 'يجب التحقق من هويتك أولًا.';
+
+  @override
+  String get errorIdentityNotPending => 'هذا الطلب لم يعد معلّقًا.';
 }

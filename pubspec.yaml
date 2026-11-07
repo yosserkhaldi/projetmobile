@@ -53,6 +53,7 @@ dependencies:
   printing: ^5.15.1
   local_auth: ^3.0.2
   intl: any
+  device_info_plus: ^13.3.0
 
 dev_dependencies:
   flutter_test:

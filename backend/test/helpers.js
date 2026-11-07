@@ -29,7 +29,7 @@ export function migrate() {
 
 export const resetDatabase = () =>
   prisma.$executeRawUnsafe(
-    'TRUNCATE "User", "Company", "Agency", "RefreshToken", "VerificationCode", "DeviceKey" CASCADE',
+    'TRUNCATE "User", "Company", "Agency", "RefreshToken", "VerificationCode", "DeviceKey", "Session", "LoginEvent" CASCADE',
   );
 
 /** Démarre l'API sur un port libre et capture les SMS et e-mails envoyés. */

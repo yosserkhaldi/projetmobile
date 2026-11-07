@@ -84,3 +84,70 @@ export function passwordResetEmail({ firstName, language, code }) {
 
   return { subject: t.subject, text, html };
 }
+
+const LOGIN_TEXTS = {
+  FR: {
+    subject: 'Nouvelle connexion à votre compte',
+    body: (device, when) =>
+      `Nouvelle connexion à votre compte Mon Constat depuis ${device}, le ${when}.`,
+    notYou:
+      "Ce n'était pas vous ? Changez votre mot de passe, puis déconnectez cet appareil dans Profil > Sécurité > Appareils connectés.",
+    unknownDevice: 'un nouvel appareil',
+    locale: 'fr-TN',
+  },
+  EN: {
+    subject: 'New sign-in to your account',
+    body: (device, when) =>
+      `New sign-in to your Mon Constat account from ${device}, on ${when}.`,
+    notYou:
+      'Not you? Change your password, then sign this device out in Profile > Security > Connected devices.',
+    unknownDevice: 'a new device',
+    locale: 'en-GB',
+  },
+  AR: {
+    subject: 'تسجيل دخول جديد إلى حسابك',
+    body: (device, when) =>
+      `تسجيل دخول جديد إلى حسابك في Mon Constat من ${device}، بتاريخ ${when}.`,
+    notYou:
+      'لست أنت؟ غيّر كلمة المرور، ثم أخرج هذا الجهاز من الملف > الأمان > الأجهزة المتصلة.',
+    unknownDevice: 'جهاز جديد',
+    locale: 'ar-TN',
+  },
+};
+
+/** Alerte de connexion depuis un appareil inconnu : `{ subject, text, html }`. */
+export function newLoginEmail({ firstName, language, deviceName, when }) {
+  const t = LOGIN_TEXTS[language] ?? LOGIN_TEXTS.FR;
+  const hello = (TEXTS[language] ?? TEXTS.FR).hello;
+  const dir = language === 'AR' ? 'rtl' : 'ltr';
+  const date = when.toLocaleString(t.locale, {
+    dateStyle: 'long',
+    timeStyle: 'short',
+    timeZone: 'Africa/Tunis',
+  });
+  const device = deviceName || t.unknownDevice;
+  const text = [hello(firstName), '', t.body(device, date), '', t.notYou].join(
+    '\n',
+  );
+  const html = `<!doctype html>
+<html lang="${language.toLowerCase()}" dir="${dir}">
+<body style="margin:0;padding:0;background:#F2F4F7;font-family:Arial,Helvetica,sans-serif;color:#0B1626">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F2F4F7;padding:24px 12px">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#FFFFFF;border:1px solid #E4E8EE;border-radius:20px;overflow:hidden">
+        <tr><td style="background:#0B1626;padding:22px 24px">
+          <span style="display:inline-block;background:#F5A524;color:#0B1626;font-weight:800;border-radius:10px;padding:6px 10px;font-size:14px">MC</span>
+          <span style="color:#FFFFFF;font-weight:800;font-size:18px;padding:0 10px">Mon Constat</span>
+        </td></tr>
+        <tr><td dir="${dir}" style="padding:26px 24px;font-size:15px;line-height:1.5">
+          <p style="margin:0 0 12px">${hello(escape(firstName))}</p>
+          <p style="margin:0 0 16px">${t.body(`<b>${escape(device)}</b>`, escape(date))}</p>
+          <p style="margin:0;padding:12px 14px;background:#FFF1D6;color:#7A4300;border-radius:12px;font-size:13px">${t.notYou}</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+  return { subject: t.subject, text, html };
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
+import 'package:mon_constat_digital/core/network/device_identity.dart';
 import 'package:mon_constat_digital/core/network/token_storage.dart';
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
 import 'package:mon_constat_digital/modules/accident/state/accident_store.dart';
@@ -12,13 +13,18 @@ import 'package:mon_constat_digital/modules/vehicles/state/vehicle_store.dart';
 
 /// Regroupe l'état de chaque module. Chaque module garde son propre store.
 class AppStores {
-  AppStores({SessionStorage? storage, ApiClient? api, BiometricAuth? biometric})
-    : storage = storage ?? const SecureSessionStorage() {
+  AppStores({
+    SessionStorage? storage,
+    ApiClient? api,
+    BiometricAuth? biometric,
+    DeviceHeadersLoader? deviceHeaders,
+  }) : storage = storage ?? const SecureSessionStorage() {
     this.api = api ?? ApiClient(storage: this.storage);
     users = UserStore(
       this.api,
       this.storage,
       biometric ?? DeviceBiometricAuth(),
+      deviceHeaders: deviceHeaders ?? loadDeviceHeaders,
     );
     admin = AdminStore(this.api);
     listenable = Listenable.merge([

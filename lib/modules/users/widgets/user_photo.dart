@@ -86,7 +86,7 @@ class _UserPhotoViewState extends State<UserPhotoView> {
 Future<void> changePhoto(BuildContext context, UserPhoto photo) async {
   final users = AppScope.of(context).users;
   final messenger = ScaffoldMessenger.of(context);
-  final hasPhoto = photo.idOf(users.currentUser!) != null;
+  final hasPhoto = photo.deletable && photo.idOf(users.currentUser!) != null;
   final saved = context.t.photoSaved;
   String describe(Object error) => errorMessage(context, error);
 

@@ -26,6 +26,61 @@ enum AppLanguage {
   String get code => apiValue.toLowerCase();
 }
 
+enum IdentityStatus {
+  unverified('UNVERIFIED'),
+  pending('PENDING'),
+  verified('VERIFIED'),
+  rejected('REJECTED');
+
+  const IdentityStatus(this.apiValue);
+  final String apiValue;
+
+  static IdentityStatus fromApi(String value) =>
+      values.firstWhere((status) => status.apiValue == value);
+}
+
+/// Vérification de la CIN par un administrateur.
+class Identity {
+  const Identity({
+    this.status = IdentityStatus.unverified,
+    this.cinNumber,
+    this.frontId,
+    this.backId,
+    this.rejectionReason,
+    this.submittedAt,
+  });
+
+  factory Identity.fromJson(Map<String, dynamic>? json) => json == null
+      ? const Identity()
+      : Identity(
+          status: IdentityStatus.fromApi(json['status'] as String),
+          cinNumber: json['cinNumber'] as String?,
+          frontId: json['frontId'] as String?,
+          backId: json['backId'] as String?,
+          rejectionReason: json['rejectionReason'] as String?,
+          submittedAt: DateTime.tryParse(
+            json['submittedAt'] as String? ?? '',
+          )?.toLocal(),
+        );
+
+  final IdentityStatus status;
+  final String? cinNumber, frontId, backId, rejectionReason;
+  final DateTime? submittedAt;
+
+  /// Photos modifiables : ni en attente, ni déjà vérifiée.
+  bool get editable =>
+      status == IdentityStatus.unverified || status == IdentityStatus.rejected;
+
+  Map<String, dynamic> toJson() => {
+    'status': status.apiValue,
+    'cinNumber': cinNumber,
+    'frontId': frontId,
+    'backId': backId,
+    'rejectionReason': rejectionReason,
+    'submittedAt': submittedAt?.toUtc().toIso8601String(),
+  };
+}
+
 class AppUser {
   const AppUser({
     required this.id,
@@ -44,6 +99,7 @@ class AppUser {
     this.companyName,
     this.photoId,
     this.licensePhotoId,
+    this.identity = const Identity(),
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -65,6 +121,7 @@ class AppUser {
       companyName: company?['name'] as String?,
       photoId: json['photoId'] as String?,
       licensePhotoId: json['licensePhotoId'] as String?,
+      identity: Identity.fromJson(json['identity'] as Map<String, dynamic>?),
     );
   }
 
@@ -80,6 +137,7 @@ class AppUser {
 
   /// Changent à chaque nouvelle photo. `null` : pas de photo.
   final String? photoId, licensePhotoId;
+  final Identity identity;
 
   String get name => '$firstName $lastName';
 
@@ -101,5 +159,6 @@ class AppUser {
         : {'id': companyId, 'name': companyName},
     'photoId': photoId,
     'licensePhotoId': licensePhotoId,
+    'identity': identity.toJson(),
   };
 }

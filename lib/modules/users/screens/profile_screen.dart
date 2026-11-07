@@ -6,7 +6,9 @@ import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/screens/identity_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/otp_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/security_screen.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
@@ -108,11 +110,38 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
+            if (user.role == UserRole.driver)
+              _Section(
+                title: t.identityTitle,
+                children: [
+                  InkWell(
+                    key: const Key('open-identity'),
+                    onTap: () => open(context, const IdentityScreen()),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: IdentityStatusBanner(identity: user.identity),
+                    ),
+                  ),
+                ],
+              ),
             _Section(
               title: t.sectionSecurity,
               children: [
                 _PhoneVerification(verified: user.phoneVerified),
                 if (users.biometricAvailable) const _BiometricSwitch(),
+                ListTile(
+                  leading: Icon(
+                    Icons.devices_outlined,
+                    color: context.palette.primaryText,
+                  ),
+                  title: Text(
+                    t.securityDevicesTitle,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: Text(t.loginHistoryTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => open(context, const SecurityScreen()),
+                ),
               ],
             ),
             _Section(
@@ -201,6 +230,9 @@ double profileCompletion(AppUser user) {
     user.licenseCategory != null,
     user.licenseIssuedAt != null,
     user.licensePhotoId != null,
+    // Exigée pour signer un constat (seuls les conducteurs la font vérifier).
+    if (user.role == UserRole.driver)
+      user.identity.status == IdentityStatus.verified,
   ];
   return items.where((done) => done).length / items.length;
 }

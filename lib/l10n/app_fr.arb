@@ -214,5 +214,96 @@
   "themeSystem": "Comme le téléphone",
   "themeLight": "Clair",
   "themeDark": "Sombre",
-  "navDeclarations": "Déclarations"
+  "navDeclarations": "Déclarations",
+  "securityDevicesTitle": "Appareils connectés",
+  "securityDevicesSubtitle": "Où votre compte est ouvert",
+  "thisDevice": "Cet appareil",
+  "lastActive": "Actif le {when}",
+  "@lastActive": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "signOutDevice": "Déconnecter",
+  "signOutDeviceConfirm": "Déconnecter {name} ?",
+  "@signOutDeviceConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "signOutDeviceBody": "Cet appareil devra se reconnecter avec le mot de passe.",
+  "signOutOthers": "Déconnecter les autres appareils",
+  "signedOutOthers": "{count, plural, =0{Aucun autre appareil connecté} =1{1 appareil déconnecté} other{{count} appareils déconnectés}}",
+  "@signedOutOthers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unknownDevice": "Appareil inconnu",
+  "securityAlertNote": "Une connexion depuis un nouvel appareil vous est signalée sur WhatsApp et par e-mail.",
+  "loginHistoryTitle": "Historique des connexions",
+  "noHistory": "Aucune connexion enregistrée.",
+  "loginSuccess": "Connexion réussie",
+  "loginMethodPassword": "mot de passe",
+  "loginMethodBiometric": "empreinte",
+  "loginMethodRegister": "création du compte",
+  "loginFailedWrongPassword": "Mot de passe incorrect",
+  "loginFailedLocked": "Tentative sur compte bloqué",
+  "loginFailedSuspended": "Tentative sur compte suspendu",
+  "identityTitle": "Vérification d'identité",
+  "identityStatusUnverified": "Identité non vérifiée",
+  "identityStatusPending": "Vérification en cours",
+  "identityStatusVerified": "Identité vérifiée",
+  "identityStatusRejected": "Vérification refusée",
+  "identityIntro": "Un administrateur vérifie votre CIN. Elle est exigée pour signer un constat.",
+  "identityPendingNote": "Un administrateur vérifie vos documents. Vous serez prévenu sur WhatsApp et par e-mail.",
+  "identityVerifiedNote": "Vous pouvez signer vos constats.",
+  "identityRejectedReason": "Motif : {reason}",
+  "@identityRejectedReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "cinNumberLabel": "N° de CIN",
+  "cinInvalid": "Le numéro de CIN contient 8 chiffres.",
+  "cinFront": "Recto de la CIN",
+  "cinBack": "Verso de la CIN",
+  "addPhoto": "Ajouter la photo",
+  "identityPhotosRequired": "Ajoutez le recto et le verso de votre CIN.",
+  "submitIdentity": "Envoyer pour vérification",
+  "identitySent": "Demande envoyée. Vous serez prévenu sur WhatsApp.",
+  "navIdentities": "Identités",
+  "reviewTitle": "Vérifications d'identité",
+  "reviewSubtitle": "Demandes en attente, les plus anciennes en premier",
+  "noPendingReviews": "Aucune demande en attente.",
+  "submittedOn": "Envoyée le {date}",
+  "@submittedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "approve": "Valider",
+  "reject": "Refuser",
+  "rejectTitle": "Motif du refus",
+  "rejectReasonBlurry": "Photo floue",
+  "rejectReasonUnreadable": "Document illisible",
+  "rejectReasonNameMismatch": "Nom différent du compte",
+  "rejectReasonNotCin": "Ce n'est pas une CIN",
+  "otherReason": "Autre motif",
+  "identityApproved": "Identité validée, le titulaire est prévenu",
+  "identityRejected": "Demande refusée, le titulaire est prévenu",
+  "errorIdentityLocked": "Votre identité est en cours de vérification ou déjà vérifiée.",
+  "errorCinInUse": "Ce numéro de CIN est déjà utilisé.",
+  "errorIdentityNotVerified": "Votre identité doit être vérifiée avant cette action.",
+  "errorIdentityNotPending": "Cette demande n'est plus en attente."
 }

@@ -524,4 +524,198 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get navDeclarations => 'Déclarations';
+
+  @override
+  String get securityDevicesTitle => 'Appareils connectés';
+
+  @override
+  String get securityDevicesSubtitle => 'Où votre compte est ouvert';
+
+  @override
+  String get thisDevice => 'Cet appareil';
+
+  @override
+  String lastActive(String when) {
+    return 'Actif le $when';
+  }
+
+  @override
+  String get signOutDevice => 'Déconnecter';
+
+  @override
+  String signOutDeviceConfirm(String name) {
+    return 'Déconnecter $name ?';
+  }
+
+  @override
+  String get signOutDeviceBody =>
+      'Cet appareil devra se reconnecter avec le mot de passe.';
+
+  @override
+  String get signOutOthers => 'Déconnecter les autres appareils';
+
+  @override
+  String signedOutOthers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count appareils déconnectés',
+      one: '1 appareil déconnecté',
+      zero: 'Aucun autre appareil connecté',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get unknownDevice => 'Appareil inconnu';
+
+  @override
+  String get securityAlertNote =>
+      'Une connexion depuis un nouvel appareil vous est signalée sur WhatsApp et par e-mail.';
+
+  @override
+  String get loginHistoryTitle => 'Historique des connexions';
+
+  @override
+  String get noHistory => 'Aucune connexion enregistrée.';
+
+  @override
+  String get loginSuccess => 'Connexion réussie';
+
+  @override
+  String get loginMethodPassword => 'mot de passe';
+
+  @override
+  String get loginMethodBiometric => 'empreinte';
+
+  @override
+  String get loginMethodRegister => 'création du compte';
+
+  @override
+  String get loginFailedWrongPassword => 'Mot de passe incorrect';
+
+  @override
+  String get loginFailedLocked => 'Tentative sur compte bloqué';
+
+  @override
+  String get loginFailedSuspended => 'Tentative sur compte suspendu';
+
+  @override
+  String get identityTitle => 'Vérification d\'identité';
+
+  @override
+  String get identityStatusUnverified => 'Identité non vérifiée';
+
+  @override
+  String get identityStatusPending => 'Vérification en cours';
+
+  @override
+  String get identityStatusVerified => 'Identité vérifiée';
+
+  @override
+  String get identityStatusRejected => 'Vérification refusée';
+
+  @override
+  String get identityIntro =>
+      'Un administrateur vérifie votre CIN. Elle est exigée pour signer un constat.';
+
+  @override
+  String get identityPendingNote =>
+      'Un administrateur vérifie vos documents. Vous serez prévenu sur WhatsApp et par e-mail.';
+
+  @override
+  String get identityVerifiedNote => 'Vous pouvez signer vos constats.';
+
+  @override
+  String identityRejectedReason(String reason) {
+    return 'Motif : $reason';
+  }
+
+  @override
+  String get cinNumberLabel => 'N° de CIN';
+
+  @override
+  String get cinInvalid => 'Le numéro de CIN contient 8 chiffres.';
+
+  @override
+  String get cinFront => 'Recto de la CIN';
+
+  @override
+  String get cinBack => 'Verso de la CIN';
+
+  @override
+  String get addPhoto => 'Ajouter la photo';
+
+  @override
+  String get identityPhotosRequired =>
+      'Ajoutez le recto et le verso de votre CIN.';
+
+  @override
+  String get submitIdentity => 'Envoyer pour vérification';
+
+  @override
+  String get identitySent =>
+      'Demande envoyée. Vous serez prévenu sur WhatsApp.';
+
+  @override
+  String get navIdentities => 'Identités';
+
+  @override
+  String get reviewTitle => 'Vérifications d\'identité';
+
+  @override
+  String get reviewSubtitle =>
+      'Demandes en attente, les plus anciennes en premier';
+
+  @override
+  String get noPendingReviews => 'Aucune demande en attente.';
+
+  @override
+  String submittedOn(String date) {
+    return 'Envoyée le $date';
+  }
+
+  @override
+  String get approve => 'Valider';
+
+  @override
+  String get reject => 'Refuser';
+
+  @override
+  String get rejectTitle => 'Motif du refus';
+
+  @override
+  String get rejectReasonBlurry => 'Photo floue';
+
+  @override
+  String get rejectReasonUnreadable => 'Document illisible';
+
+  @override
+  String get rejectReasonNameMismatch => 'Nom différent du compte';
+
+  @override
+  String get rejectReasonNotCin => 'Ce n\'est pas une CIN';
+
+  @override
+  String get otherReason => 'Autre motif';
+
+  @override
+  String get identityApproved => 'Identité validée, le titulaire est prévenu';
+
+  @override
+  String get identityRejected => 'Demande refusée, le titulaire est prévenu';
+
+  @override
+  String get errorIdentityLocked =>
+      'Votre identité est en cours de vérification ou déjà vérifiée.';
+
+  @override
+  String get errorCinInUse => 'Ce numéro de CIN est déjà utilisé.';
+
+  @override
+  String get errorIdentityNotVerified =>
+      'Votre identité doit être vérifiée avant cette action.';
+
+  @override
+  String get errorIdentityNotPending => 'Cette demande n\'est plus en attente.';
 }
