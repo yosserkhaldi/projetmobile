@@ -20,7 +20,8 @@ class MonConstatApp extends StatefulWidget {
   State<MonConstatApp> createState() => _MonConstatAppState();
 }
 
-class _MonConstatAppState extends State<MonConstatApp> {
+class _MonConstatAppState extends State<MonConstatApp>
+    with WidgetsBindingObserver {
   late final AppStores stores = widget.stores ?? AppStores();
   final _navigator = GlobalKey<NavigatorState>();
   late AuthStatus _lastStatus = stores.users.status;
@@ -28,6 +29,7 @@ class _MonConstatAppState extends State<MonConstatApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     stores.users.addListener(_onUsersChanged);
     stores.users.restore();
     unawaited(stores.accidents.initialize());
@@ -35,9 +37,19 @@ class _MonConstatAppState extends State<MonConstatApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     stores.users.removeListener(_onUsersChanged);
     stores.accidents.dispose();
     super.dispose();
+  }
+
+  /// Retour dans l'application : une empreinte a pu être ajoutée ou retirée
+  /// dans les réglages du téléphone entre-temps.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      stores.users.refreshBiometricAvailability();
+    }
   }
 
   /// À la déconnexion, ferme les écrans ouverts au-dessus de l'accueil.

@@ -595,6 +595,27 @@ void main() {
       expect(find.text('Empreinte ou Face ID'), findsOneWidget);
     });
 
+    testWidgets(
+      'empreinte ajoutée dans les réglages : option visible au retour',
+      (tester) async {
+        final backend = FakeBackend()..biometric.available = false;
+        await pumpApp(tester, backend);
+        await signIn(tester);
+        await tester.tap(find.text('Profil'));
+        await tester.pumpAndSettle();
+        expect(find.text('Connexion par empreinte'), findsNothing);
+
+        backend.biometric.available = true;
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pumpAndSettle();
+        await scrollProfileTo(tester, find.text('Connexion par empreinte'));
+        expect(find.text('Connexion par empreinte'), findsOneWidget);
+      },
+    );
+
     testWidgets('sans capteur : pas d option dans le profil', (tester) async {
       final backend = FakeBackend()..biometric.available = false;
       await pumpApp(tester, backend);

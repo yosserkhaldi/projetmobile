@@ -183,6 +183,16 @@ class UserStore extends ChangeNotifier {
     _setUser(await _api.patch('/users/me', body: changes));
   }
 
+  /// Revérifie le capteur, par exemple après un passage dans les réglages.
+  Future<void> refreshBiometricAvailability() async {
+    final available = await _biometric.isAvailable();
+    final enabled = available && await _storage.read(_deviceKey) != null;
+    if (available == biometricAvailable && enabled == biometricEnabled) return;
+    biometricAvailable = available;
+    biometricEnabled = enabled;
+    notifyListeners();
+  }
+
   /// Active la connexion biométrique après une empreinte réussie.
   /// Renvoie `false` si l'utilisateur annule.
   Future<bool> enableBiometric(String reason) async {
