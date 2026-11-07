@@ -718,4 +718,94 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errorIdentityNotPending => 'Cette demande n\'est plus en attente.';
+
+  @override
+  String get consentLabel =>
+      'J\'accepte que mes données soient traitées pour la gestion de mes constats, conformément à la loi n° 2004-63.';
+
+  @override
+  String get consentRequired =>
+      'Votre accord est nécessaire pour créer un compte.';
+
+  @override
+  String get sectionPrivacy => 'Données personnelles';
+
+  @override
+  String get exportData => 'Télécharger mes données';
+
+  @override
+  String get exportDataSubtitle =>
+      'PDF de tout ce que Mon Constat garde sur vous';
+
+  @override
+  String get deleteAccount => 'Supprimer mon compte';
+
+  @override
+  String get deleteAccountSubtitle =>
+      'Définitif. Vos constats restent, sans votre nom.';
+
+  @override
+  String get deleteAccountTitle => 'Supprimer votre compte ?';
+
+  @override
+  String get deleteAccountBody =>
+      'Votre nom, vos coordonnées, votre permis, votre CIN et vos photos seront effacés. Les accidents et sinistres déjà déclarés restent, anonymes, comme l\'exige l\'assurance. Cette action est définitive.';
+
+  @override
+  String get deleteAccountConfirm => 'Supprimer définitivement';
+
+  @override
+  String get accountDeleted => 'Votre compte a été supprimé.';
+
+  @override
+  String get errorAdminCannotDelete =>
+      'Un administrateur ne peut pas supprimer son compte ici.';
+
+  @override
+  String get dashUsers => 'Utilisateurs';
+
+  @override
+  String dashActive(int count) {
+    return '$count actifs';
+  }
+
+  @override
+  String get dashPendingIds => 'À vérifier';
+
+  @override
+  String dashVerifiedIds(int count) {
+    return '$count identités vérifiées';
+  }
+
+  @override
+  String get dashPhones => 'Téléphones vérifiés';
+
+  @override
+  String get dashSignIns => 'Connexions 7 j';
+
+  @override
+  String dashFailed(int count) {
+    return '$count échecs';
+  }
+
+  @override
+  String get dashSignupsTitle => 'Inscriptions, 30 derniers jours';
+
+  @override
+  String get dashRolesTitle => 'Comptes par rôle';
+
+  @override
+  String get dashIdentityTitle => 'Vérification d\'identité des conducteurs';
+
+  @override
+  String dashNetwork(int companies, int agencies) {
+    return '$companies compagnies · $agencies agences';
+  }
+
+  @override
+  String get dashAccidentsTitle => 'Accidents et sinistres';
+
+  @override
+  String get dashAccidentsPending =>
+      'Indicateurs, répartition et carte des zones à risque : disponibles dès que les modules 3 et 5 envoient leurs données au serveur.';
 }

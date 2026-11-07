@@ -250,6 +250,43 @@ class FakeBackend {
       users[index] = {...users[index], ...bodies[route]!};
       return _json(200, {'user': users[index]});
     }
+    if (route == 'GET /users/stats') {
+      return _json(200, {
+        'users': {
+          'total': 12,
+          'active': 11,
+          'suspended': 1,
+          'phoneVerified': 9,
+          'byRole': {'DRIVER': 9, 'AGENT': 2, 'ADMIN': 1},
+        },
+        'identity': {
+          'UNVERIFIED': 4,
+          'PENDING': 2,
+          'VERIFIED': 3,
+          'REJECTED': 0,
+        },
+        'signIns7Days': {'success': 25, 'failed': 3},
+        'companies': 3,
+        'agencies': 5,
+        'signups': [
+          for (var i = 0; i < 30; i += 1)
+            {
+              'date': '2026-10-${(i % 28 + 1).toString().padLeft(2, '0')}',
+              'count': i % 3,
+            },
+        ],
+      });
+    }
+    if (route == 'GET /users/me/export') {
+      return _json(200, {
+        'exportedAt': '2026-11-08T10:00:00.000Z',
+        'legalBasis': 'Loi organique n° 2004-63',
+        'account': user,
+        'devices': sessions,
+        'signIns': loginEvents,
+      });
+    }
+    if (route == 'DELETE /users/me') return http.Response('', 204);
     if (route == 'GET /users/me/sessions') {
       return _json(200, {'items': sessions});
     }

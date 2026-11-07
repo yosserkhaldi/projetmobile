@@ -709,4 +709,94 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorIdentityNotPending => 'This request is no longer pending.';
+
+  @override
+  String get consentLabel =>
+      'I agree that my data is processed to manage my accident reports, under Tunisian law no. 2004-63.';
+
+  @override
+  String get consentRequired =>
+      'Your consent is required to create an account.';
+
+  @override
+  String get sectionPrivacy => 'Personal data';
+
+  @override
+  String get exportData => 'Download my data';
+
+  @override
+  String get exportDataSubtitle =>
+      'A PDF of everything Mon Constat keeps about you';
+
+  @override
+  String get deleteAccount => 'Delete my account';
+
+  @override
+  String get deleteAccountSubtitle =>
+      'Permanent. Your reports stay, without your name.';
+
+  @override
+  String get deleteAccountTitle => 'Delete your account?';
+
+  @override
+  String get deleteAccountBody =>
+      'Your name, contact details, licence, ID card and photos will be erased. Accidents and claims already filed stay, anonymised, as insurance requires. This cannot be undone.';
+
+  @override
+  String get deleteAccountConfirm => 'Delete permanently';
+
+  @override
+  String get accountDeleted => 'Your account has been deleted.';
+
+  @override
+  String get errorAdminCannotDelete =>
+      'An administrator cannot delete their account here.';
+
+  @override
+  String get dashUsers => 'Users';
+
+  @override
+  String dashActive(int count) {
+    return '$count active';
+  }
+
+  @override
+  String get dashPendingIds => 'To review';
+
+  @override
+  String dashVerifiedIds(int count) {
+    return '$count verified';
+  }
+
+  @override
+  String get dashPhones => 'Phones verified';
+
+  @override
+  String get dashSignIns => 'Sign-ins 7 days';
+
+  @override
+  String dashFailed(int count) {
+    return '$count failed';
+  }
+
+  @override
+  String get dashSignupsTitle => 'Sign-ups, last 30 days';
+
+  @override
+  String get dashRolesTitle => 'Accounts by role';
+
+  @override
+  String get dashIdentityTitle => 'Driver identity checks';
+
+  @override
+  String dashNetwork(int companies, int agencies) {
+    return '$companies companies · $agencies branches';
+  }
+
+  @override
+  String get dashAccidentsTitle => 'Accidents and claims';
+
+  @override
+  String get dashAccidentsPending =>
+      'Indicators, breakdowns and the hotspot map: available as soon as modules 3 and 5 send their data to the server.';
 }

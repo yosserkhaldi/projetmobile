@@ -707,4 +707,90 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get errorIdentityNotPending => 'هذا الطلب لم يعد معلّقًا.';
+
+  @override
+  String get consentLabel =>
+      'أوافق على معالجة بياناتي لإدارة معايناتي، وفقًا للقانون عدد 63 لسنة 2004.';
+
+  @override
+  String get consentRequired => 'موافقتك ضرورية لإنشاء حساب.';
+
+  @override
+  String get sectionPrivacy => 'البيانات الشخصية';
+
+  @override
+  String get exportData => 'تنزيل بياناتي';
+
+  @override
+  String get exportDataSubtitle => 'ملف PDF بكل ما يحتفظ به Mon Constat عنك';
+
+  @override
+  String get deleteAccount => 'حذف حسابي';
+
+  @override
+  String get deleteAccountSubtitle => 'نهائي. تبقى معايناتك دون اسمك.';
+
+  @override
+  String get deleteAccountTitle => 'حذف حسابك؟';
+
+  @override
+  String get deleteAccountBody =>
+      'سيتم محو اسمك وبياناتك ورخصتك وبطاقة تعريفك وصورك. تبقى الحوادث والملفات المصرّح بها دون اسم كما يقتضي التأمين. لا يمكن التراجع عن ذلك.';
+
+  @override
+  String get deleteAccountConfirm => 'حذف نهائي';
+
+  @override
+  String get accountDeleted => 'تم حذف حسابك.';
+
+  @override
+  String get errorAdminCannotDelete => 'لا يمكن للمسؤول حذف حسابه من هنا.';
+
+  @override
+  String get dashUsers => 'المستخدمون';
+
+  @override
+  String dashActive(int count) {
+    return '$count نشط';
+  }
+
+  @override
+  String get dashPendingIds => 'للمراجعة';
+
+  @override
+  String dashVerifiedIds(int count) {
+    return '$count هوية مُتحقَّق منها';
+  }
+
+  @override
+  String get dashPhones => 'الهواتف المؤكدة';
+
+  @override
+  String get dashSignIns => 'الدخول 7 أيام';
+
+  @override
+  String dashFailed(int count) {
+    return '$count فشل';
+  }
+
+  @override
+  String get dashSignupsTitle => 'التسجيلات، آخر 30 يومًا';
+
+  @override
+  String get dashRolesTitle => 'الحسابات حسب الدور';
+
+  @override
+  String get dashIdentityTitle => 'التحقق من هوية السائقين';
+
+  @override
+  String dashNetwork(int companies, int agencies) {
+    return '$companies شركات · $agencies وكالات';
+  }
+
+  @override
+  String get dashAccidentsTitle => 'الحوادث والملفات';
+
+  @override
+  String get dashAccidentsPending =>
+      'المؤشرات والتوزيع وخريطة المناطق الخطرة: متاحة حين ترسل الوحدتان 3 و5 بياناتهما إلى الخادم.';
 }

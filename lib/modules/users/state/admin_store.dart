@@ -15,6 +15,14 @@ class AdminStore extends ChangeNotifier {
   int usersTotal = 0;
   List<Company> companies = const [];
 
+  /// Statistiques des comptes pour le tableau de bord.
+  Map<String, dynamic>? stats;
+
+  Future<void> loadStats() async {
+    stats = await _api.get('/users/stats') as Map<String, dynamic>;
+    notifyListeners();
+  }
+
   /// Identités en attente de vérification, les plus anciennes d'abord.
   List<AppUser> pendingIdentities = const [];
 

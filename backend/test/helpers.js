@@ -77,6 +77,7 @@ export const driver = (overrides = {}) => ({
   email: 'sami@example.com',
   phone: '20 123 456',
   password: 'Password123!',
+  consent: true,
   ...overrides,
 });
 

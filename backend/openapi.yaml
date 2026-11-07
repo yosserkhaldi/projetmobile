@@ -31,6 +31,8 @@ tags:
     description: Module 1 — appareils connectés et historique des connexions
   - name: Identité
     description: Module 1 — vérification de la CIN par un administrateur
+  - name: Données personnelles
+    description: Module 1 — loi n° 2004-63 (export, suppression du compte)
 
 paths:
   /health:
@@ -269,6 +271,26 @@ paths:
         '200': { $ref: '#/components/responses/UserResponse' }
         '400': { $ref: '#/components/responses/ValidationError' }
         '409': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [Données personnelles]
+      summary: Supprimer mon compte
+      description: |
+        Le compte est anonymisé (nom, e-mail, téléphone, permis, CIN, photos effacés)
+        pour que les accidents et sinistres des autres modules restent cohérents.
+        Refusé pour un administrateur.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password: { type: string }
+      responses:
+        '204': { description: Compte supprimé }
+        '401': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
 
   /users/me/photo:
     put:
@@ -323,6 +345,33 @@ paths:
         '200': { $ref: '#/components/responses/Image' }
         '403': { $ref: '#/components/responses/Error' }
         '404': { $ref: '#/components/responses/Error' }
+
+  /users/me/export:
+    get:
+      tags: [Données personnelles]
+      summary: Télécharger mes données (JSON)
+      description: Profil, consentement, appareils et connexions. Aucun secret (mot de passe, jetons).
+      responses:
+        '200':
+          description: Export complet
+          content:
+            application/json:
+              schema: { type: object }
+
+  /users/stats:
+    get:
+      tags: [Administration]
+      summary: Statistiques des comptes
+      description: Comptes par rôle, identités par état, connexions sur 7 jours, inscriptions par jour.
+      parameters:
+        - { name: days, in: query, schema: { type: integer, minimum: 7, maximum: 90, default: 30 } }
+      responses:
+        '200':
+          description: Statistiques
+          content:
+            application/json:
+              schema: { type: object }
+        '403': { $ref: '#/components/responses/Error' }
 
   /users/me/sessions:
     get:
@@ -812,7 +861,7 @@ components:
         expiresAt: { type: string, format: date-time }
     RegisterInput:
       type: object
-      required: [firstName, lastName, email, phone, password]
+      required: [firstName, lastName, email, phone, password, consent]
       properties:
         firstName: { type: string }
         lastName: { type: string }
@@ -820,6 +869,10 @@ components:
         phone: { type: string, description: 8 chiffres pour un numéro tunisien }
         password: { type: string, minLength: 8 }
         language: { type: string, enum: [FR, AR, EN], description: Facultatif, FR par défaut }
+        consent:
+          type: boolean
+          const: true
+          description: Consentement au traitement des données (loi n° 2004-63), obligatoire
     ProfileInput:
       type: object
       properties:

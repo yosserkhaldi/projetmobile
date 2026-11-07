@@ -45,6 +45,10 @@ export const registerSchema = z.object({
   password,
   // Langue choisie sur l'écran de connexion, avant l'inscription.
   language: language.optional(),
+  // Loi n° 2004-63 : consentement explicite au traitement des données.
+  consent: z.literal(true, {
+    error: 'Vous devez accepter le traitement de vos données pour créer un compte.',
+  }),
 });
 
 // La connexion accepte l'e-mail ou le téléphone, comme sur la maquette.
@@ -124,7 +128,10 @@ export const updateStatusSchema = z.object({
   active: z.boolean({ error: 'Statut invalide.' }),
 });
 
-export const createAgentSchema = registerSchema.extend({ companyId: id });
+// Le compte agent est créé par un administrateur : pas de case à cocher.
+export const createAgentSchema = registerSchema
+  .omit({ consent: true })
+  .extend({ companyId: id });
 
 export const agencyParams = z.object({ id, agencyId: id });
 
@@ -163,4 +170,14 @@ export const rejectIdentitySchema = z.object({
     .trim()
     .min(3, 'Indiquez un motif.')
     .max(300),
+});
+
+export const deleteAccountSchema = z.object({
+  password: z
+    .string({ error: 'Mot de passe obligatoire.' })
+    .min(1, 'Mot de passe obligatoire.'),
+});
+
+export const statsQuery = z.object({
+  days: z.coerce.number().int().min(7).max(90).default(30),
 });

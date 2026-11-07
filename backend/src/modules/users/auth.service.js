@@ -262,11 +262,18 @@ async function sendPhoneCode(user) {
   return true;
 }
 
-export async function register({ password, ...data }, device = {}) {
+export async function register(
+  { password, consent: _, ...data },
+  device = {},
+) {
   let user;
   try {
     user = await prisma.user.create({
-      data: { ...data, passwordHash: await hashPassword(password) },
+      data: {
+        ...data,
+        passwordHash: await hashPassword(password),
+        consentAt: new Date(),
+      },
       include: withCompany,
     });
   } catch (err) {

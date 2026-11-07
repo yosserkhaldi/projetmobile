@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:printing/printing.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
@@ -9,6 +10,7 @@ import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/identity_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/otp_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/security_screen.dart';
+import 'package:mon_constat_digital/modules/users/services/data_export_pdf.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
@@ -189,6 +191,30 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   onTap: () => _showSheet(context, const _ThemeSheet()),
                 ),
+              ],
+            ),
+            _Section(
+              title: t.sectionPrivacy,
+              children: [
+                const _ExportDataTile(),
+                if (user.role != UserRole.admin)
+                  ListTile(
+                    key: const Key('delete-account'),
+                    leading: Icon(
+                      Icons.delete_forever_outlined,
+                      color: context.palette.errorText,
+                    ),
+                    title: Text(
+                      t.deleteAccount,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: context.palette.errorText,
+                      ),
+                    ),
+                    subtitle: Text(t.deleteAccountSubtitle),
+                    onTap: () =>
+                        _showSheet(context, const _DeleteAccountSheet()),
+                  ),
               ],
             ),
             const SizedBox(height: 4),
@@ -1178,6 +1204,128 @@ class _ThemeSheet extends StatelessWidget {
               },
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _ExportDataTile extends StatefulWidget {
+  const _ExportDataTile();
+
+  @override
+  State<_ExportDataTile> createState() => _ExportDataTileState();
+}
+
+class _ExportDataTileState extends State<_ExportDataTile> {
+  bool _busy = false;
+
+  Future<void> _export() async {
+    final users = AppScope.of(context).users;
+    final messenger = ScaffoldMessenger.of(context);
+    String describe(Object error) => errorMessage(context, error);
+    setState(() => _busy = true);
+    try {
+      final pdf = await buildDataExportPdf(await users.exportData());
+      // Feuille de partage du téléphone : enregistrer, envoyer par e-mail…
+      await Printing.sharePdf(
+        bytes: pdf,
+        filename: 'mes-donnees-mon-constat.pdf',
+      );
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(describe(e))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    key: const Key('export-data'),
+    leading: Icon(Icons.download_outlined, color: context.palette.primaryText),
+    title: Text(
+      context.t.exportData,
+      style: const TextStyle(fontWeight: FontWeight.w700),
+    ),
+    subtitle: Text(context.t.exportDataSubtitle),
+    trailing: _busy
+        ? const SizedBox.square(
+            dimension: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : const Icon(Icons.chevron_right),
+    onTap: _busy ? null : _export,
+  );
+}
+
+class _DeleteAccountSheet extends StatefulWidget {
+  const _DeleteAccountSheet();
+
+  @override
+  State<_DeleteAccountSheet> createState() => _DeleteAccountSheetState();
+}
+
+class _DeleteAccountSheetState extends State<_DeleteAccountSheet>
+    with FormActions {
+  final _password = TextEditingController();
+
+  @override
+  void dispose() {
+    _password.dispose();
+    super.dispose();
+  }
+
+  void _delete() {
+    final users = AppScope.of(context).users;
+    final messenger = ScaffoldMessenger.of(context);
+    final done = context.t.accountDeleted;
+    submit(() async {
+      // La déconnexion ferme déjà tous les écrans, cette feuille comprise.
+      await users.deleteAccount(_password.text);
+      messenger.showSnackBar(SnackBar(content: Text(done)));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final p = context.palette;
+    return _SheetFrame(
+      title: t.deleteAccountTitle,
+      child: Form(
+        key: formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: p.errorBg,
+                borderRadius: BorderRadius.circular(AppRadius.input),
+              ),
+              child: Text(
+                t.deleteAccountBody,
+                style: TextStyle(color: p.errorText, height: 1.45),
+              ),
+            ),
+            const SizedBox(height: 14),
+            if (error != null) ...[
+              ErrorBanner(error!),
+              const SizedBox(height: 14),
+            ],
+            PasswordField(
+              label: t.passwordLabel,
+              controller: _password,
+              validator: validators.required,
+            ),
+            const SizedBox(height: 20),
+            FilledButton(
+              key: const Key('confirm-delete'),
+              onPressed: busy ? null : _delete,
+              style: FilledButton.styleFrom(backgroundColor: p.errorText),
+              child: Text(t.deleteAccountConfirm),
+            ),
+          ],
+        ),
       ),
     );
   }

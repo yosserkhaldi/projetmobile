@@ -1389,6 +1389,156 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Cette demande n\'est plus en attente.'**
   String get errorIdentityNotPending;
+
+  /// No description provided for @consentLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte que mes données soient traitées pour la gestion de mes constats, conformément à la loi n° 2004-63.'**
+  String get consentLabel;
+
+  /// No description provided for @consentRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre accord est nécessaire pour créer un compte.'**
+  String get consentRequired;
+
+  /// No description provided for @sectionPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Données personnelles'**
+  String get sectionPrivacy;
+
+  /// No description provided for @exportData.
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger mes données'**
+  String get exportData;
+
+  /// No description provided for @exportDataSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'PDF de tout ce que Mon Constat garde sur vous'**
+  String get exportDataSubtitle;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer mon compte'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Définitif. Vos constats restent, sans votre nom.'**
+  String get deleteAccountSubtitle;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer votre compte ?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre nom, vos coordonnées, votre permis, votre CIN et vos photos seront effacés. Les accidents et sinistres déjà déclarés restent, anonymes, comme l\'exige l\'assurance. Cette action est définitive.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer définitivement'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre compte a été supprimé.'**
+  String get accountDeleted;
+
+  /// No description provided for @errorAdminCannotDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un administrateur ne peut pas supprimer son compte ici.'**
+  String get errorAdminCannotDelete;
+
+  /// No description provided for @dashUsers.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utilisateurs'**
+  String get dashUsers;
+
+  /// No description provided for @dashActive.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} actifs'**
+  String dashActive(int count);
+
+  /// No description provided for @dashPendingIds.
+  ///
+  /// In fr, this message translates to:
+  /// **'À vérifier'**
+  String get dashPendingIds;
+
+  /// No description provided for @dashVerifiedIds.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} identités vérifiées'**
+  String dashVerifiedIds(int count);
+
+  /// No description provided for @dashPhones.
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléphones vérifiés'**
+  String get dashPhones;
+
+  /// No description provided for @dashSignIns.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexions 7 j'**
+  String get dashSignIns;
+
+  /// No description provided for @dashFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} échecs'**
+  String dashFailed(int count);
+
+  /// No description provided for @dashSignupsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Inscriptions, 30 derniers jours'**
+  String get dashSignupsTitle;
+
+  /// No description provided for @dashRolesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Comptes par rôle'**
+  String get dashRolesTitle;
+
+  /// No description provided for @dashIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification d\'identité des conducteurs'**
+  String get dashIdentityTitle;
+
+  /// No description provided for @dashNetwork.
+  ///
+  /// In fr, this message translates to:
+  /// **'{companies} compagnies · {agencies} agences'**
+  String dashNetwork(int companies, int agencies);
+
+  /// No description provided for @dashAccidentsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accidents et sinistres'**
+  String get dashAccidentsTitle;
+
+  /// No description provided for @dashAccidentsPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indicateurs, répartition et carte des zones à risque : disponibles dès que les modules 3 et 5 envoient leurs données au serveur.'**
+  String get dashAccidentsPending;
 }
 
 class _AppLocalizationsDelegate

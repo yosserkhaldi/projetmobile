@@ -305,5 +305,61 @@
   "errorIdentityLocked": "Votre identité est en cours de vérification ou déjà vérifiée.",
   "errorCinInUse": "Ce numéro de CIN est déjà utilisé.",
   "errorIdentityNotVerified": "Votre identité doit être vérifiée avant cette action.",
-  "errorIdentityNotPending": "Cette demande n'est plus en attente."
+  "errorIdentityNotPending": "Cette demande n'est plus en attente.",
+  "consentLabel": "J'accepte que mes données soient traitées pour la gestion de mes constats, conformément à la loi n° 2004-63.",
+  "consentRequired": "Votre accord est nécessaire pour créer un compte.",
+  "sectionPrivacy": "Données personnelles",
+  "exportData": "Télécharger mes données",
+  "exportDataSubtitle": "PDF de tout ce que Mon Constat garde sur vous",
+  "deleteAccount": "Supprimer mon compte",
+  "deleteAccountSubtitle": "Définitif. Vos constats restent, sans votre nom.",
+  "deleteAccountTitle": "Supprimer votre compte ?",
+  "deleteAccountBody": "Votre nom, vos coordonnées, votre permis, votre CIN et vos photos seront effacés. Les accidents et sinistres déjà déclarés restent, anonymes, comme l'exige l'assurance. Cette action est définitive.",
+  "deleteAccountConfirm": "Supprimer définitivement",
+  "accountDeleted": "Votre compte a été supprimé.",
+  "errorAdminCannotDelete": "Un administrateur ne peut pas supprimer son compte ici.",
+  "dashUsers": "Utilisateurs",
+  "dashActive": "{count} actifs",
+  "@dashActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashPendingIds": "À vérifier",
+  "dashVerifiedIds": "{count} identités vérifiées",
+  "@dashVerifiedIds": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashPhones": "Téléphones vérifiés",
+  "dashSignIns": "Connexions 7 j",
+  "dashFailed": "{count} échecs",
+  "@dashFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashSignupsTitle": "Inscriptions, 30 derniers jours",
+  "dashRolesTitle": "Comptes par rôle",
+  "dashIdentityTitle": "Vérification d'identité des conducteurs",
+  "dashNetwork": "{companies} compagnies · {agencies} agences",
+  "@dashNetwork": {
+    "placeholders": {
+      "companies": {
+        "type": "int"
+      },
+      "agencies": {
+        "type": "int"
+      }
+    }
+  },
+  "dashAccidentsTitle": "Accidents et sinistres",
+  "dashAccidentsPending": "Indicateurs, répartition et carte des zones à risque : disponibles dès que les modules 3 et 5 envoient leurs données au serveur."
 }

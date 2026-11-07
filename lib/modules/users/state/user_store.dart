@@ -156,6 +156,8 @@ class UserStore extends ChangeNotifier {
         'phone': phone,
         'password': password,
         'language': language.apiValue,
+        // Case cochée à l'inscription (loi n° 2004-63).
+        'consent': true,
       },
     );
     await _startSession(session as Map<String, dynamic>);
@@ -344,6 +346,21 @@ class UserStore extends ChangeNotifier {
       for (final item in body['items'] as List)
         LoginEvent.fromJson(item as Map<String, dynamic>),
     ];
+  }
+
+  // --- Données personnelles (loi n° 2004-63) ---------------------------------
+
+  /// Tout ce que l'API garde sur le compte.
+  Future<Map<String, dynamic>> exportData() async =>
+      await _api.get('/users/me/export') as Map<String, dynamic>;
+
+  /// Supprime (anonymise) le compte, puis déconnecte ce téléphone.
+  Future<void> deleteAccount(String password) async {
+    await _api.delete('/users/me', body: {'password': password});
+    await _storage.delete(_deviceKey);
+    biometricEnabled = false;
+    await _api.closeSession();
+    _signOutLocally();
   }
 
   // --- Vérification d'identité ----------------------------------------------

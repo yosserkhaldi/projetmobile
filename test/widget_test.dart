@@ -199,11 +199,18 @@ void main() {
         find.text('Les mots de passe ne correspondent pas.'),
         findsOneWidget,
       );
+      // Sans la case cochée, pas de compte (loi n° 2004-63).
+      expect(
+        find.text('Votre accord est nécessaire pour créer un compte.'),
+        findsOneWidget,
+      );
 
       await tester.enterText(
         field('Confirmer le mot de passe'),
         'Password123!',
       );
+      await tester.ensureVisible(find.byKey(const Key('consent')));
+      await tester.tap(find.byKey(const Key('consent')));
       await tester.ensureVisible(find.text('Créer mon compte'));
       await tester.tap(find.text('Créer mon compte'));
       await tester.pump();
@@ -219,6 +226,7 @@ void main() {
       expect(backend.bodies['POST /auth/phone/verify'], {'code': '123456'});
       expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
       expect(backend.stores.users.currentUser!.phoneVerified, isTrue);
+      expect(backend.bodies['POST /auth/register']!['consent'], isTrue);
     });
 
     testWidgets('e-mail déjà utilisé : erreur affichée', (tester) async {
@@ -240,6 +248,8 @@ void main() {
         field('Confirmer le mot de passe'),
         'Password123!',
       );
+      await tester.ensureVisible(find.byKey(const Key('consent')));
+      await tester.tap(find.byKey(const Key('consent')));
       await tester.ensureVisible(find.text('Créer mon compte'));
       await tester.tap(find.text('Créer mon compte'));
       await tester.pumpAndSettle();
@@ -664,6 +674,66 @@ void main() {
         'reason': 'Photo floue',
       });
     });
+  });
+
+  group('données personnelles', () {
+    testWidgets('suppression du compte : mot de passe, puis déconnexion', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      await scrollProfileTo(tester, find.byKey(const Key('delete-account')));
+      await tester.tap(find.byKey(const Key('delete-account')));
+      await tester.pumpAndSettle();
+      expect(find.text('Supprimer votre compte ?'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('confirm-delete')));
+      await tester.pumpAndSettle();
+      expect(backend.requests, isNot(contains('DELETE /users/me')));
+
+      await tester.enterText(field('Mot de passe'), 'Password123!');
+      await tester.tap(find.byKey(const Key('confirm-delete')));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['DELETE /users/me'], {'password': 'Password123!'});
+      expect(find.text('Connexion'), findsOneWidget);
+      expect(find.text('Votre compte a été supprimé.'), findsOneWidget);
+    });
+
+    testWidgets("export : récupère les données de l'API", (tester) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      final data = await backend.stores.users.exportData();
+      expect(data['account']['email'], 'sami@example.com');
+    });
+
+    testWidgets('administrateur : pas de suppression depuis le profil', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: userJson(role: 'ADMIN'));
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      await scrollProfileTo(tester, find.byKey(const Key('export-data')));
+      expect(find.byKey(const Key('delete-account')), findsNothing);
+    });
+  });
+
+  testWidgets('tableau de bord : chiffres réels des comptes', (tester) async {
+    final backend = FakeBackend(user: userJson(role: 'ADMIN'));
+    await pumpApp(tester, backend);
+    await signIn(tester);
+    expect(find.text('Utilisateurs'), findsOneWidget);
+    expect(find.text('12'), findsOneWidget);
+    expect(find.text('3 identités vérifiées'), findsOneWidget);
+    expect(find.text('75 %'), findsOneWidget);
+    // Plus de chiffres fictifs d'accidents.
+    expect(find.text('248'), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 
   group('administration', () {
