@@ -43,7 +43,7 @@ class _AuthScreenState extends State<AuthScreen> with FormActions {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.ink,
+    backgroundColor: context.palette.hero,
     body: SafeArea(
       bottom: false,
       child: CustomScrollView(
@@ -52,9 +52,11 @@ class _AuthScreenState extends State<AuthScreen> with FormActions {
           SliverFillRemaining(
             hasScrollBody: false,
             child: Container(
-              decoration: const BoxDecoration(
-                color: AppColors.canvas,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+              decoration: BoxDecoration(
+                color: context.palette.canvas,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
+                ),
               ),
               padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
               child: Center(
@@ -117,19 +119,19 @@ class _AuthScreenState extends State<AuthScreen> with FormActions {
           const SizedBox(height: 14),
           Row(
             children: [
-              const Expanded(child: Divider(color: AppColors.border)),
+              Expanded(child: Divider(color: context.palette.border)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
                   t.or,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
+                  style: TextStyle(
+                    color: context.palette.textMuted,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              const Expanded(child: Divider(color: AppColors.border)),
+              Expanded(child: Divider(color: context.palette.border)),
             ],
           ),
           const SizedBox(height: 14),
@@ -146,8 +148,8 @@ class _AuthScreenState extends State<AuthScreen> with FormActions {
           children: [
             Text(
               t.noAccount,
-              style: const TextStyle(
-                color: AppColors.textMuted,
+              style: TextStyle(
+                color: context.palette.textMuted,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -258,7 +260,7 @@ class _LanguageToggle extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: AppColors.navy800,
+          color: context.palette.heroRing,
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: Row(

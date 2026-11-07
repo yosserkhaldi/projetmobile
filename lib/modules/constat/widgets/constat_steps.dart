@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/signature_box.dart';
 
 class GuestDriverStep extends StatelessWidget {
@@ -67,8 +67,8 @@ class SketchStep extends StatelessWidget {
       Container(
         height: 220,
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: AppColors.primary),
+          color: context.palette.surface,
+          border: Border.all(color: context.palette.primaryText),
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Center(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/widgets/stat.dart';
@@ -19,13 +18,13 @@ class AdminDashboard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppColors.warningBg,
+            color: context.palette.warningBg,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           child: Text(
             context.t.demoData,
             style: TextStyle(
-              color: AppColors.warningText,
+              color: context.palette.warningText,
               fontWeight: FontWeight.w700,
               fontSize: 12,
             ),
@@ -53,9 +52,9 @@ class AdminDashboard extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.map, size: 60, color: AppColors.primary),
+                  Icon(Icons.map, size: 60, color: context.palette.primaryText),
                   Text(context.t.heatmapTitle),
-                  Text('Tunis • Ariana • Ben Arous'),
+                  const Text('Tunis • Ariana • Ben Arous'),
                 ],
               ),
             ),
@@ -65,7 +64,7 @@ class AdminDashboard extends StatelessWidget {
         Card(
           child: ListTile(
             title: Text(context.t.severityTitle),
-            subtitle: LinearProgressIndicator(value: .68),
+            subtitle: const LinearProgressIndicator(value: .68),
             trailing: Text(context.t.severityMaterial(68)),
           ),
         ),

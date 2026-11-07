@@ -75,10 +75,10 @@ class ProfileScreen extends StatelessWidget {
                   value: ltr(user.email),
                   trailing: Tooltip(
                     message: t.emailNotEditable,
-                    child: const Icon(
+                    child: Icon(
                       Icons.lock_outline,
                       size: 18,
-                      color: AppColors.textMuted,
+                      color: context.palette.textMuted,
                     ),
                   ),
                 ),
@@ -119,9 +119,9 @@ class ProfileScreen extends StatelessWidget {
               title: t.sectionPreferences,
               children: [
                 ListTile(
-                  leading: const Icon(
+                  leading: Icon(
                     Icons.translate,
-                    color: AppColors.primary,
+                    color: context.palette.primaryText,
                   ),
                   title: Text(
                     t.languageLabel,
@@ -132,12 +132,33 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       Text(
                         users.language.label,
-                        style: const TextStyle(color: AppColors.textMuted),
+                        style: TextStyle(color: context.palette.textMuted),
                       ),
                       const Icon(Icons.chevron_right),
                     ],
                   ),
                   onTap: () => _showSheet(context, const _LanguageSheet()),
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.contrast,
+                    color: context.palette.primaryText,
+                  ),
+                  title: Text(
+                    t.appearanceLabel,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _themeLabel(t, users.themeMode),
+                        style: TextStyle(color: context.palette.textMuted),
+                      ),
+                      const Icon(Icons.chevron_right),
+                    ],
+                  ),
+                  onTap: () => _showSheet(context, const _ThemeSheet()),
                 ),
               ],
             ),
@@ -145,7 +166,7 @@ class ProfileScreen extends StatelessWidget {
             TextButton.icon(
               onPressed: users.logout,
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.errorText,
+                foregroundColor: context.palette.errorText,
                 minimumSize: const Size.fromHeight(52),
               ),
               icon: const Icon(Icons.logout),
@@ -167,7 +188,7 @@ Future<void> _showSheet(BuildContext context, Widget sheet) =>
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      backgroundColor: AppColors.canvas,
+      backgroundColor: context.palette.canvas,
       builder: (_) => sheet,
     );
 
@@ -209,7 +230,7 @@ class _ProfileHeader extends StatelessWidget {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: AppColors.ink,
+        color: context.palette.hero,
         borderRadius: BorderRadius.circular(AppRadius.hero),
       ),
       child: Stack(
@@ -223,7 +244,7 @@ class _ProfileHeader extends StatelessWidget {
               height: 190,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.navy800, width: 28),
+                border: Border.all(color: context.palette.heroRing, width: 28),
               ),
             ),
           ),
@@ -292,7 +313,7 @@ class _ProfileHeader extends StatelessWidget {
                     value: completion,
                     minHeight: 6,
                     color: AppColors.accent,
-                    backgroundColor: AppColors.navy700,
+                    backgroundColor: context.palette.heroTrack,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -332,7 +353,7 @@ class _Avatar extends StatelessWidget {
             child: Container(
               width: 68,
               height: 68,
-              color: AppColors.navy700,
+              color: context.palette.heroTrack,
               child: UserPhotoView(
                 user: user,
                 photo: UserPhoto.profile,
@@ -358,7 +379,7 @@ class _Avatar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.accent,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.ink, width: 2),
+                border: Border.all(color: context.palette.hero, width: 2),
               ),
               child: const Icon(
                 Icons.photo_camera,
@@ -383,7 +404,7 @@ class _Pill extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(
-      color: AppColors.navy800,
+      color: context.palette.heroRing,
       borderRadius: BorderRadius.circular(AppRadius.pill),
     ),
     child: Row(
@@ -433,11 +454,11 @@ class _Section extends StatelessWidget {
               Expanded(
                 child: Text(
                   title.toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.6,
-                    color: AppColors.textMuted,
+                    color: context.palette.textMuted,
                   ),
                 ),
               ),
@@ -461,7 +482,7 @@ class _Section extends StatelessWidget {
             children: [
               for (var i = 0; i < children.length; i += 1) ...[
                 if (i > 0)
-                  const Divider(height: 1, color: AppColors.surfaceAlt),
+                  Divider(height: 1, color: context.palette.surfaceAlt),
                 children[i],
               ],
             ],
@@ -488,13 +509,13 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListTile(
-    leading: Icon(icon, color: AppColors.primary),
+    leading: Icon(icon, color: context.palette.primaryText),
     title: Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
-        color: AppColors.textMuted,
+        color: context.palette.textMuted,
       ),
     ),
     subtitle: Text(
@@ -502,7 +523,7 @@ class _InfoRow extends StatelessWidget {
       style: TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w700,
-        color: AppColors.ink,
+        color: context.palette.text,
         fontFamily: mono ? AppFonts.mono : null,
       ),
     ),
@@ -525,7 +546,7 @@ class _LicenseCard extends StatelessWidget {
         children: [
           Text(
             t.licenseEmpty,
-            style: const TextStyle(color: AppColors.textMuted, height: 1.4),
+            style: TextStyle(color: context.palette.textMuted, height: 1.4),
           ),
           const SizedBox(height: 10),
           OutlinedButton.icon(
@@ -544,7 +565,7 @@ class _LicenseCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: context.palette.licenseCard,
         borderRadius: BorderRadius.circular(AppRadius.card),
       ),
       child: Column(
@@ -590,7 +611,7 @@ class _LicenseCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryRaised,
+                    color: context.palette.licenseChip,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: Text(
@@ -638,9 +659,11 @@ class _LicensePhoto extends StatelessWidget {
         height: hasPhoto ? 170 : 52,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: hasPhoto ? AppColors.surface : AppColors.primaryTint,
+          color: hasPhoto
+              ? context.palette.surface
+              : context.palette.primaryTint,
           borderRadius: BorderRadius.circular(AppRadius.input),
-          border: Border.all(color: AppColors.primary, width: 1.5),
+          border: Border.all(color: context.palette.primaryText, width: 1.5),
         ),
         child: hasPhoto
             ? Stack(
@@ -678,17 +701,17 @@ class _LicensePhoto extends StatelessWidget {
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.document_scanner_outlined,
-                    color: AppColors.primary,
+                    color: context.palette.primaryText,
                   ),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
                       t.licensePhotoAdd,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.primary,
+                      style: TextStyle(
+                        color: context.palette.primaryText,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -710,7 +733,9 @@ class _PhoneVerification extends StatelessWidget {
     return ListTile(
       leading: Icon(
         verified ? Icons.verified_user_outlined : Icons.sms_outlined,
-        color: verified ? AppColors.successText : AppColors.warningText,
+        color: verified
+            ? context.palette.successText
+            : context.palette.warningText,
       ),
       title: Text(
         verified ? t.phoneVerified : t.phoneNotVerified,
@@ -760,7 +785,7 @@ class _BiometricSwitchState extends State<_BiometricSwitch> {
 
   @override
   Widget build(BuildContext context) => SwitchListTile(
-    secondary: const Icon(Icons.fingerprint, color: AppColors.primary),
+    secondary: Icon(Icons.fingerprint, color: context.palette.primaryText),
     value: AppScope.of(context).users.biometricEnabled,
     onChanged: _busy ? null : _toggle,
     title: Text(
@@ -879,7 +904,7 @@ class _IdentitySheetState extends State<_IdentitySheet> with FormActions {
             const SizedBox(height: 6),
             Text(
               t.phoneChangeNotice,
-              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 12, color: context.palette.textMuted),
             ),
             const SizedBox(height: 20),
             BusyButton(label: t.save, busy: busy, onPressed: _save),
@@ -972,10 +997,10 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
             const SizedBox(height: 14),
             Text(
               t.licenseCategoryLabel,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textMuted,
+                color: context.palette.textMuted,
               ),
             ),
             const SizedBox(height: 8),
@@ -988,12 +1013,12 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
                     label: Text(category),
                     selected: _categories.contains(category),
                     showCheckmark: false,
-                    selectedColor: AppColors.ink,
+                    selectedColor: context.palette.text,
                     labelStyle: TextStyle(
                       fontWeight: FontWeight.w800,
                       color: _categories.contains(category)
                           ? Colors.white
-                          : AppColors.ink,
+                          : context.palette.text,
                     ),
                     onSelected: (on) => setState(
                       () => on
@@ -1006,10 +1031,10 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
             const SizedBox(height: 14),
             Text(
               t.licenseIssuedLabel,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textMuted,
+                color: context.palette.textMuted,
               ),
             ),
             const SizedBox(height: 6),
@@ -1017,7 +1042,7 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
               key: const Key('license-date'),
               onPressed: _pickDate,
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.border, width: 1.5),
+                side: BorderSide(color: context.palette.border, width: 1.5),
                 alignment: AlignmentDirectional.centerStart,
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
@@ -1059,10 +1084,10 @@ class _LanguageSheet extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               trailing: users.language == language
-                  ? const Icon(Icons.check_circle, color: AppColors.primary)
+                  ? Icon(Icons.check_circle, color: context.palette.primaryText)
                   : null,
               onTap: () async {
-                final describe = errorMessage;
+                const describe = errorMessage;
                 final sheetContext = context;
                 Navigator.pop(context);
                 try {
@@ -1074,6 +1099,50 @@ class _LanguageSheet extends StatelessWidget {
                     );
                   }
                 }
+              },
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+String _themeLabel(AppLocalizations t, ThemeMode mode) => switch (mode) {
+  ThemeMode.system => t.themeSystem,
+  ThemeMode.light => t.themeLight,
+  ThemeMode.dark => t.themeDark,
+};
+
+class _ThemeSheet extends StatelessWidget {
+  const _ThemeSheet();
+
+  static const _icons = {
+    ThemeMode.system: Icons.brightness_auto_outlined,
+    ThemeMode.light: Icons.light_mode_outlined,
+    ThemeMode.dark: Icons.dark_mode_outlined,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final users = AppScope.of(context).users;
+    return _SheetFrame(
+      title: t.appearanceLabel,
+      child: Column(
+        children: [
+          for (final mode in ThemeMode.values)
+            ListTile(
+              leading: Icon(_icons[mode]),
+              title: Text(
+                _themeLabel(t, mode),
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              trailing: users.themeMode == mode
+                  ? Icon(Icons.check_circle, color: context.palette.primaryText)
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                users.setThemeMode(mode);
               },
             ),
         ],

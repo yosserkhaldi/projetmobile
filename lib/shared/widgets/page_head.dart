@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 class PageHead extends StatelessWidget {
   const PageHead(
     this.title, {
@@ -26,7 +28,10 @@ class PageHead extends StatelessWidget {
                 ),
               ),
               if (subtitle != null)
-                Text(subtitle!, style: TextStyle(color: Colors.grey.shade600)),
+                Text(
+                  subtitle!,
+                  style: TextStyle(color: context.palette.textMuted),
+                ),
             ],
           ),
         ),

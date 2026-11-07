@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 
@@ -69,10 +69,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                   _codeSent
                       ? t.forgotCodeSent(ltr(_email.text.trim()))
                       : t.forgotIntro,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     height: 1.45,
-                    color: AppColors.textMuted,
+                    color: context.palette.textMuted,
                   ),
                 ),
                 const SizedBox(height: 18),

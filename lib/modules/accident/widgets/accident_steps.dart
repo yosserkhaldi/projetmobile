@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 class ContextStep extends StatelessWidget {
   const ContextStep({required this.place, super.key});
@@ -88,9 +88,9 @@ class DescriptionStep extends StatelessWidget {
         title: const Text('Il y a des blessés'),
       ),
       if (injured)
-        const Card(
-          color: AppColors.errorBg,
-          child: ListTile(
+        Card(
+          color: context.palette.errorBg,
+          child: const ListTile(
             title: Text(
               'Urgences : SAMU 190 • Police 197 • Protection civile 198',
             ),

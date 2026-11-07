@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 
 class ClaimCard extends StatelessWidget {
@@ -25,8 +26,8 @@ class ClaimCard extends StatelessWidget {
           ),
           Text('${claim.type} • ${claim.severity}'),
           const SizedBox(height: 4),
-          Text(claim.place, style: TextStyle(color: Colors.grey.shade600)),
-          Text(claim.date, style: TextStyle(color: Colors.grey.shade600)),
+          Text(claim.place, style: TextStyle(color: context.palette.textMuted)),
+          Text(claim.date, style: TextStyle(color: context.palette.textMuted)),
         ],
       ),
     ),

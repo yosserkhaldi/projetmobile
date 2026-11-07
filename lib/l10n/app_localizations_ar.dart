@@ -501,4 +501,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get errorInvalidData => 'بعض البيانات غير صالحة.';
+
+  @override
+  String get appearanceLabel => 'المظهر';
+
+  @override
+  String get themeSystem => 'مثل الهاتف';
+
+  @override
+  String get themeLight => 'فاتح';
+
+  @override
+  String get themeDark => 'داكن';
 }

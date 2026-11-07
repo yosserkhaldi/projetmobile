@@ -1,6 +1,5 @@
 {
   "@@locale": "ar",
-
   "appTitle": "Mon Constat Digital",
   "brand": "Mon Constat",
   "save": "حفظ",
@@ -12,18 +11,15 @@
   "or": "أو",
   "validate": "تأكيد",
   "notProvided": "غير محدد",
-
   "requiredField": "حقل إلزامي.",
   "invalidEmail": "بريد إلكتروني غير صالح.",
   "invalidPhone": "رقم هاتف غير صالح.",
   "passwordTooShort": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل.",
   "codeFormat": "يتكوّن الرمز من 6 أرقام.",
   "passwordsDontMatch": "كلمتا المرور غير متطابقتين.",
-
   "roleDriver": "سائق",
   "roleAgent": "عون تأمين",
   "roleAdmin": "مسؤول",
-
   "heroTitleLine1": "المعاينة الودية،",
   "heroTitleLine2": "بدون ورق.",
   "heroSubtitle": "صرّح بالحادث ووقّع وتابع ملفك من هاتفك.",
@@ -40,7 +36,6 @@
   "biometricLoginReason": "سجّل الدخول إلى Mon Constat",
   "biometricEnableReason": "أكّد لتفعيل الدخول بالبصمة",
   "languageSwitcher": "لغة التطبيق",
-
   "registerTitle": "إنشاء حساب",
   "firstNameLabel": "الاسم",
   "lastNameLabel": "اللقب",
@@ -48,13 +43,11 @@
   "phoneLabel": "الهاتف",
   "confirmPasswordLabel": "تأكيد كلمة المرور",
   "createMyAccount": "إنشاء حسابي",
-
   "otpTitle": "التحقق من هاتفي",
   "otpInstructions": "أدخل الرمز المكوّن من 6 أرقام المرسل عبر رسالة قصيرة إلى {phone}.",
   "otpCodeLabel": "رمز التحقق",
   "resendCode": "إعادة إرسال الرمز",
   "resendCodeIn": "إعادة إرسال الرمز ({seconds} ث)",
-
   "forgotTitle": "نسيت كلمة المرور",
   "forgotIntro": "أدخل بريدك الإلكتروني لتتلقى رمز إعادة التعيين.",
   "forgotCodeSent": "إذا كان هناك حساب مرتبط بـ {email}، فقد أُرسل إليه رمز صالح لمدة 15 دقيقة.",
@@ -63,7 +56,6 @@
   "receiveCode": "تلقّي رمز",
   "changePassword": "تغيير كلمة المرور",
   "passwordChanged": "تم تغيير كلمة المرور. يمكنك تسجيل الدخول.",
-
   "profileTitle": "ملفي الشخصي",
   "profileSubtitle": "الهوية ورخصة السياقة والتفضيلات",
   "profileCompletion": "اكتمل الملف بنسبة {percent}٪",
@@ -96,12 +88,10 @@
   "editLicenseTitle": "تعديل الرخصة",
   "changeProfilePhoto": "تغيير صورة الملف",
   "phoneChangeNotice": "يجب تأكيد الرقم الجديد عبر رسالة قصيرة.",
-
   "takePhoto": "التقاط صورة",
   "chooseFromGallery": "اختيار من المعرض",
   "deletePhoto": "حذف الصورة",
   "photoSaved": "تم حفظ الصورة",
-
   "accountsTitle": "إدارة الحسابات",
   "accountsSubtitle": "الأدوار والأعوان والإيقاف",
   "createAgentTooltip": "إنشاء عون",
@@ -109,11 +99,9 @@
   "noAccounts": "لا توجد حسابات.",
   "roleLabel": "الدور",
   "companyLabel": "الشركة",
-
   "createAgentTitle": "إنشاء عون",
   "tempPasswordLabel": "كلمة مرور مؤقتة",
   "createAccountButton": "إنشاء الحساب",
-
   "companiesTitle": "شركات التأمين",
   "companiesSubtitle": "الشركات والوكالات",
   "addCompany": "إضافة شركة",
@@ -131,7 +119,6 @@
   "deleteCompanyTitle": "حذف {name}؟",
   "deleteCompanyBody": "ستُحذف وكالاتها أيضًا.",
   "deleteAgencyTooltip": "حذف الوكالة",
-
   "adminTitle": "الإدارة",
   "adminSubtitle": "نظرة عامة على المنصة",
   "demoData": "بيانات تجريبية",
@@ -142,7 +129,6 @@
   "heatmapTitle": "خريطة المناطق الأكثر حوادث",
   "severityTitle": "التوزيع حسب الخطورة",
   "severityMaterial": "{percent}٪ أضرار مادية",
-
   "navHome": "الرئيسية",
   "navVehicles": "السيارات",
   "navClaims": "الملفات",
@@ -152,7 +138,6 @@
   "navCases": "الحوادث",
   "navAccounts": "الحسابات",
   "navCompanies": "الشركات",
-
   "errorGeneric": "حدث خطأ. أعد المحاولة.",
   "errorNetwork": "تعذّر الاتصال بالخادم. تحقّق من الشبكة.",
   "errorInvalidCredentials": "المعرّف أو كلمة المرور غير صحيحة.",
@@ -168,5 +153,9 @@
   "errorUnsupportedImage": "الصيغ المقبولة: JPEG أو PNG أو WebP.",
   "errorCompanyInUse": "ما زال أعوان مرتبطون بهذه الشركة.",
   "errorSelfChange": "لا يمكنك تغيير دورك أو حالة حسابك بنفسك.",
-  "errorInvalidData": "بعض البيانات غير صالحة."
+  "errorInvalidData": "بعض البيانات غير صالحة.",
+  "appearanceLabel": "المظهر",
+  "themeSystem": "مثل الهاتف",
+  "themeLight": "فاتح",
+  "themeDark": "داكن"
 }

@@ -147,6 +147,7 @@ final companies = AppScope.of(context).admin.companies; // après loadCompanies(
 
 Toute l'interface suit [DESIGN.md](DESIGN.md).
 
-- Utiliser `AppColors` et `AppTheme`, sans valeur de couleur écrite en dur dans les écrans.
+- Couleurs : `context.palette.surface`, `context.palette.text`… (`lib/core/theme/app_palette.dart`), jamais une couleur fixe ni `Colors.white` / `Colors.grey`, sinon l'écran casse en mode sombre. `AppColors` reste pour ce qui ne change pas (ambre, conducteurs A et B).
+- Textes : dans `lib/l10n/app_fr.arb` (puis `app_en.arb`, `app_ar.arb`), utilisés avec `context.t.maCle`. L'arabe s'affiche de droite à gauche : préférer `EdgeInsetsDirectional` et `PositionedDirectional`.
 - Polices : Manrope, Bricolage Grotesque et JetBrains Mono, déjà incluses dans `assets/fonts/`.
 - Le conducteur A est toujours bleu et le conducteur B toujours ambre.

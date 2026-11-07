@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
 
@@ -25,9 +25,9 @@ class ClaimDetail extends StatelessWidget {
           ),
           ...claim.timeline.map(
             (e) => ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.check_circle,
-                color: AppColors.successText,
+                color: context.palette.successText,
               ),
               title: Text(e),
             ),

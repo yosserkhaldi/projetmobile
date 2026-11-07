@@ -56,6 +56,8 @@ class _MonConstatAppState extends State<MonConstatApp> {
         debugShowCheckedModeBanner: false,
         title: 'Mon Constat Digital',
         theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: stores.users.themeMode,
         // Français, arabe (de droite à gauche) ou anglais, selon le choix de
         // l'utilisateur. Textes dans lib/l10n/*.arb.
         locale: Locale(stores.users.language.code),

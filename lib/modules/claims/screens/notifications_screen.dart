@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -16,10 +16,10 @@ class NotificationsScreen extends StatelessWidget {
           leading: const CircleAvatar(child: Icon(Icons.notifications)),
           title: Text(s.notifications[i]),
           subtitle: const Text('Maintenant'),
-          trailing: const Icon(
+          trailing: Icon(
             Icons.circle,
             size: 10,
-            color: AppColors.primary,
+            color: context.palette.primaryText,
           ),
         ),
       ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/users/models/company.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
@@ -98,7 +98,9 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.errorText),
+            style: TextButton.styleFrom(
+              foregroundColor: context.palette.errorText,
+            ),
             child: Text(context.t.delete),
           ),
         ],
@@ -161,7 +163,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
               ),
               subtitle: Text(
                 context.t.agencyCount(company.agencies.length),
-                style: const TextStyle(color: AppColors.textMuted),
+                style: TextStyle(color: context.palette.textMuted),
               ),
               shape: const Border(),
               children: [
@@ -192,7 +194,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                     TextButton(
                       onPressed: () => _deleteCompany(company),
                       style: TextButton.styleFrom(
-                        foregroundColor: AppColors.errorText,
+                        foregroundColor: context.palette.errorText,
                       ),
                       child: Text(context.t.delete),
                     ),

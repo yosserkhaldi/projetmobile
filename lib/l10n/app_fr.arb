@@ -1,6 +1,5 @@
 {
   "@@locale": "fr",
-
   "appTitle": "Mon Constat Digital",
   "brand": "Mon Constat",
   "save": "Enregistrer",
@@ -12,18 +11,15 @@
   "or": "ou",
   "validate": "Valider",
   "notProvided": "Non renseigné",
-
   "requiredField": "Champ obligatoire.",
   "invalidEmail": "Adresse e-mail invalide.",
   "invalidPhone": "Numéro de téléphone invalide.",
   "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
   "codeFormat": "Le code contient 6 chiffres.",
   "passwordsDontMatch": "Les mots de passe ne correspondent pas.",
-
   "roleDriver": "Conducteur",
   "roleAgent": "Agent d'assurance",
   "roleAdmin": "Administrateur",
-
   "heroTitleLine1": "Le constat,",
   "heroTitleLine2": "sans papier.",
   "heroSubtitle": "Déclarez, signez et suivez votre sinistre depuis votre téléphone.",
@@ -40,7 +36,6 @@
   "biometricLoginReason": "Connectez-vous à Mon Constat",
   "biometricEnableReason": "Confirmez pour activer la connexion biométrique",
   "languageSwitcher": "Langue de l'application",
-
   "registerTitle": "Créer un compte",
   "firstNameLabel": "Prénom",
   "lastNameLabel": "Nom",
@@ -48,29 +43,50 @@
   "phoneLabel": "Téléphone",
   "confirmPasswordLabel": "Confirmer le mot de passe",
   "createMyAccount": "Créer mon compte",
-
   "otpTitle": "Vérifier mon téléphone",
   "otpInstructions": "Saisissez le code à 6 chiffres envoyé par SMS au {phone}.",
-  "@otpInstructions": { "placeholders": { "phone": { "type": "String" } } },
+  "@otpInstructions": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
   "otpCodeLabel": "Code de vérification",
   "resendCode": "Renvoyer le code",
   "resendCodeIn": "Renvoyer le code ({seconds} s)",
-  "@resendCodeIn": { "placeholders": { "seconds": { "type": "int" } } },
-
+  "@resendCodeIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "forgotTitle": "Mot de passe oublié",
   "forgotIntro": "Saisissez votre adresse e-mail pour recevoir un code de réinitialisation.",
   "forgotCodeSent": "Si un compte existe pour {email}, un code valable 15 minutes vient de lui être envoyé.",
-  "@forgotCodeSent": { "placeholders": { "email": { "type": "String" } } },
+  "@forgotCodeSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
   "codeFromEmailLabel": "Code reçu par e-mail",
   "newPasswordLabel": "Nouveau mot de passe",
   "receiveCode": "Recevoir un code",
   "changePassword": "Changer le mot de passe",
   "passwordChanged": "Mot de passe modifié. Vous pouvez vous connecter.",
-
   "profileTitle": "Mon profil",
   "profileSubtitle": "Identité, permis et préférences",
   "profileCompletion": "Profil complété à {percent} %",
-  "@profileCompletion": { "placeholders": { "percent": { "type": "int" } } },
+  "@profileCompletion": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "profileCompleteHint": "Complétez votre permis : il servira à remplir le constat.",
   "profileComplete": "Profil complet, prêt pour un constat.",
   "sectionIdentity": "Identité",
@@ -88,7 +104,13 @@
   "licenseEmpty": "Aucun permis enregistré. Il sert à remplir votre partie du constat.",
   "addLicense": "Ajouter mon permis",
   "licenseIssuedOn": "Délivré le {date}",
-  "@licenseIssuedOn": { "placeholders": { "date": { "type": "String" } } },
+  "@licenseIssuedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "licensePhotoAdd": "Ajouter la photo du permis",
   "replace": "Remplacer",
   "biometricTitle": "Connexion par empreinte",
@@ -101,12 +123,10 @@
   "editLicenseTitle": "Modifier le permis",
   "changeProfilePhoto": "Changer la photo de profil",
   "phoneChangeNotice": "Un nouveau numéro devra être vérifié par SMS.",
-
   "takePhoto": "Prendre une photo",
   "chooseFromGallery": "Choisir dans la galerie",
   "deletePhoto": "Supprimer la photo",
   "photoSaved": "Photo enregistrée",
-
   "accountsTitle": "Gestion des comptes",
   "accountsSubtitle": "Rôles, agents et suspensions",
   "createAgentTooltip": "Créer un agent",
@@ -114,17 +134,21 @@
   "noAccounts": "Aucun compte trouvé.",
   "roleLabel": "Rôle",
   "companyLabel": "Compagnie",
-
   "createAgentTitle": "Créer un agent",
   "tempPasswordLabel": "Mot de passe provisoire",
   "createAccountButton": "Créer le compte",
-
   "companiesTitle": "Compagnies d'assurance",
   "companiesSubtitle": "Compagnies et agences",
   "addCompany": "Ajouter une compagnie",
   "noCompanies": "Aucune compagnie enregistrée.",
   "agencyCount": "{count, plural, =0{Aucune agence} =1{1 agence} other{{count} agences}}",
-  "@agencyCount": { "placeholders": { "count": { "type": "int" } } },
+  "@agencyCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "addAgency": "Ajouter une agence",
   "rename": "Renommer",
   "newCompany": "Nouvelle compagnie",
@@ -135,10 +159,15 @@
   "agencyNameLabel": "Nom de l'agence",
   "cityLabel": "Ville",
   "deleteCompanyTitle": "Supprimer {name} ?",
-  "@deleteCompanyTitle": { "placeholders": { "name": { "type": "String" } } },
+  "@deleteCompanyTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deleteCompanyBody": "Ses agences seront aussi supprimées.",
   "deleteAgencyTooltip": "Supprimer l'agence",
-
   "adminTitle": "Administration",
   "adminSubtitle": "Vue globale de la plateforme",
   "demoData": "Données de démonstration",
@@ -149,8 +178,13 @@
   "heatmapTitle": "Carte des zones à forte accidentalité",
   "severityTitle": "Répartition par gravité",
   "severityMaterial": "{percent} % matériel",
-  "@severityMaterial": { "placeholders": { "percent": { "type": "int" } } },
-
+  "@severityMaterial": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "navHome": "Accueil",
   "navVehicles": "Véhicules",
   "navClaims": "Dossiers",
@@ -160,7 +194,6 @@
   "navCases": "Sinistres",
   "navAccounts": "Comptes",
   "navCompanies": "Compagnies",
-
   "errorGeneric": "Une erreur est survenue. Réessayez.",
   "errorNetwork": "Connexion au serveur impossible. Vérifiez votre réseau.",
   "errorInvalidCredentials": "Identifiant ou mot de passe incorrect.",
@@ -176,5 +209,9 @@
   "errorUnsupportedImage": "Format accepté : JPEG, PNG ou WebP.",
   "errorCompanyInUse": "Cette compagnie a encore des agents rattachés.",
   "errorSelfChange": "Impossible de modifier votre propre rôle ou statut.",
-  "errorInvalidData": "Certaines données sont invalides."
+  "errorInvalidData": "Certaines données sont invalides.",
+  "appearanceLabel": "Apparence",
+  "themeSystem": "Comme le téléphone",
+  "themeLight": "Clair",
+  "themeDark": "Sombre"
 }

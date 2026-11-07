@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
@@ -36,7 +37,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     padding: const EdgeInsets.all(12),
                     constraints: const BoxConstraints(maxWidth: 300),
                     decoration: BoxDecoration(
-                      color: mine ? AppColors.primary : Colors.white,
+                      color: mine ? AppColors.primary : context.palette.surface,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Column(
@@ -46,13 +47,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           m.author,
                           style: TextStyle(
                             fontSize: 11,
-                            color: mine ? Colors.white70 : Colors.grey,
+                            color: mine
+                                ? Colors.white70
+                                : context.palette.textMuted,
                           ),
                         ),
                         Text(
                           m.text,
                           style: TextStyle(
-                            color: mine ? Colors.white : Colors.black,
+                            color: mine ? Colors.white : context.palette.text,
                           ),
                         ),
                         const Text('✓✓', style: TextStyle(fontSize: 10)),

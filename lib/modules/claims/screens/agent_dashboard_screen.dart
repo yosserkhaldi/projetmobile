@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
@@ -21,9 +21,13 @@ class AgentDashboard extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             children: [
-              _metric('À traiter', '${s.claims.length}', AppColors.warningText),
-              _metric('En expertise', '3', AppColors.primary),
-              _metric('Clôturés', '18', AppColors.successText),
+              _metric(
+                'À traiter',
+                '${s.claims.length}',
+                context.palette.warningText,
+              ),
+              _metric('En expertise', '3', context.palette.primaryText),
+              _metric('Clôturés', '18', context.palette.successText),
             ],
           ),
           const SizedBox(height: 22),

@@ -1,6 +1,5 @@
 {
   "@@locale": "en",
-
   "appTitle": "Mon Constat Digital",
   "brand": "Mon Constat",
   "save": "Save",
@@ -12,18 +11,15 @@
   "or": "or",
   "validate": "Confirm",
   "notProvided": "Not provided",
-
   "requiredField": "Required field.",
   "invalidEmail": "Invalid email address.",
   "invalidPhone": "Invalid phone number.",
   "passwordTooShort": "The password must be at least 8 characters long.",
   "codeFormat": "The code has 6 digits.",
   "passwordsDontMatch": "The passwords do not match.",
-
   "roleDriver": "Driver",
   "roleAgent": "Insurance agent",
   "roleAdmin": "Administrator",
-
   "heroTitleLine1": "Accident reports,",
   "heroTitleLine2": "paper-free.",
   "heroSubtitle": "Report, sign and follow your claim from your phone.",
@@ -40,7 +36,6 @@
   "biometricLoginReason": "Sign in to Mon Constat",
   "biometricEnableReason": "Confirm to turn on biometric sign-in",
   "languageSwitcher": "App language",
-
   "registerTitle": "Create an account",
   "firstNameLabel": "First name",
   "lastNameLabel": "Last name",
@@ -48,13 +43,11 @@
   "phoneLabel": "Phone",
   "confirmPasswordLabel": "Confirm password",
   "createMyAccount": "Create my account",
-
   "otpTitle": "Verify my phone",
   "otpInstructions": "Enter the 6-digit code sent by SMS to {phone}.",
   "otpCodeLabel": "Verification code",
   "resendCode": "Resend code",
   "resendCodeIn": "Resend code ({seconds} s)",
-
   "forgotTitle": "Forgot password",
   "forgotIntro": "Enter your email address to receive a reset code.",
   "forgotCodeSent": "If an account exists for {email}, a code valid for 15 minutes has just been sent to it.",
@@ -63,7 +56,6 @@
   "receiveCode": "Get a code",
   "changePassword": "Change password",
   "passwordChanged": "Password changed. You can now sign in.",
-
   "profileTitle": "My profile",
   "profileSubtitle": "Identity, licence and preferences",
   "profileCompletion": "Profile {percent}% complete",
@@ -96,12 +88,10 @@
   "editLicenseTitle": "Edit licence",
   "changeProfilePhoto": "Change profile photo",
   "phoneChangeNotice": "A new number will need to be verified by SMS.",
-
   "takePhoto": "Take a photo",
   "chooseFromGallery": "Choose from gallery",
   "deletePhoto": "Delete photo",
   "photoSaved": "Photo saved",
-
   "accountsTitle": "Accounts",
   "accountsSubtitle": "Roles, agents and suspensions",
   "createAgentTooltip": "Create an agent",
@@ -109,11 +99,9 @@
   "noAccounts": "No accounts found.",
   "roleLabel": "Role",
   "companyLabel": "Company",
-
   "createAgentTitle": "Create an agent",
   "tempPasswordLabel": "Temporary password",
   "createAccountButton": "Create account",
-
   "companiesTitle": "Insurance companies",
   "companiesSubtitle": "Companies and branches",
   "addCompany": "Add a company",
@@ -131,7 +119,6 @@
   "deleteCompanyTitle": "Delete {name}?",
   "deleteCompanyBody": "Its branches will also be deleted.",
   "deleteAgencyTooltip": "Delete branch",
-
   "adminTitle": "Administration",
   "adminSubtitle": "Platform overview",
   "demoData": "Demo data",
@@ -142,7 +129,6 @@
   "heatmapTitle": "Accident hotspot map",
   "severityTitle": "Breakdown by severity",
   "severityMaterial": "{percent}% damage only",
-
   "navHome": "Home",
   "navVehicles": "Vehicles",
   "navClaims": "Claims",
@@ -152,7 +138,6 @@
   "navCases": "Claims",
   "navAccounts": "Accounts",
   "navCompanies": "Companies",
-
   "errorGeneric": "Something went wrong. Please try again.",
   "errorNetwork": "Cannot reach the server. Check your connection.",
   "errorInvalidCredentials": "Wrong login or password.",
@@ -168,5 +153,9 @@
   "errorUnsupportedImage": "Accepted formats: JPEG, PNG or WebP.",
   "errorCompanyInUse": "Agents are still attached to this company.",
   "errorSelfChange": "You cannot change your own role or status.",
-  "errorInvalidData": "Some of the data is invalid."
+  "errorInvalidData": "Some of the data is invalid.",
+  "appearanceLabel": "Appearance",
+  "themeSystem": "Same as phone",
+  "themeLight": "Light",
+  "themeDark": "Dark"
 }

@@ -1023,6 +1023,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Certaines données sont invalides.'**
   String get errorInvalidData;
+
+  /// No description provided for @appearanceLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Apparence'**
+  String get appearanceLabel;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In fr, this message translates to:
+  /// **'Comme le téléphone'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Clair'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sombre'**
+  String get themeDark;
 }
 
 class _AppLocalizationsDelegate

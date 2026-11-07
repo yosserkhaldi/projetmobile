@@ -1,11 +1,12 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
@@ -107,13 +108,13 @@ Future<void> changePhoto(BuildContext context, UserPhoto photo) async {
           ),
           if (hasPhoto)
             ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.delete_outline,
-                color: AppColors.errorText,
+                color: context.palette.errorText,
               ),
               title: Text(
                 context.t.deletePhoto,
-                style: const TextStyle(color: AppColors.errorText),
+                style: TextStyle(color: context.palette.errorText),
               ),
               onTap: () => Navigator.pop(sheet, 'delete'),
             ),

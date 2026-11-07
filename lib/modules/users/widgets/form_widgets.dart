@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
@@ -99,10 +98,10 @@ class LabeledField extends StatelessWidget {
     children: [
       Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,
-          color: AppColors.textMuted,
+          color: context.palette.textMuted,
         ),
       ),
       const SizedBox(height: 6),
@@ -171,19 +170,19 @@ class ErrorBanner extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: AppColors.errorBg,
+      color: context.palette.errorBg,
       borderRadius: BorderRadius.circular(AppRadius.input),
     ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.error_outline, color: AppColors.errorText, size: 20),
+        Icon(Icons.error_outline, color: context.palette.errorText, size: 20),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             message,
-            style: const TextStyle(
-              color: AppColors.errorText,
+            style: TextStyle(
+              color: context.palette.errorText,
               fontWeight: FontWeight.w700,
               fontSize: 13,
             ),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter/foundation.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
@@ -31,6 +32,7 @@ class UserStore extends ChangeNotifier {
   static const _userKey = 'current_user';
   static const _deviceKey = 'biometric_token';
   static const _languageKey = 'app_language';
+  static const _themeKey = 'theme_mode';
 
   final ApiClient _api;
   final SessionStorage _storage;
@@ -42,6 +44,9 @@ class UserStore extends ChangeNotifier {
   /// Langue de l'interface. Gardée sur le téléphone, et sur le compte une
   /// fois connecté.
   AppLanguage language = AppLanguage.fr;
+
+  /// Clair, sombre, ou comme le téléphone. Reste sur ce téléphone.
+  ThemeMode themeMode = ThemeMode.system;
 
   // Vrai si la langue a été choisie sur ce téléphone : ce choix l'emporte
   // sur celui du compte à la connexion.
@@ -64,6 +69,11 @@ class UserStore extends ChangeNotifier {
   /// rester possible hors ligne.
   Future<void> restore() async {
     try {
+      final theme = await _storage.read(_themeKey);
+      themeMode = ThemeMode.values.firstWhere(
+        (mode) => mode.name == theme,
+        orElse: () => ThemeMode.system,
+      );
       final saved = await _storage.read(_languageKey);
       if (saved != null) {
         language = AppLanguage.fromApi(saved);
@@ -222,6 +232,12 @@ class UserStore extends ChangeNotifier {
     }
     await _storage.write(_deviceKey, session['deviceToken'] as String);
     await _startSession(session);
+  }
+
+  Future<void> setThemeMode(ThemeMode value) async {
+    themeMode = value;
+    notifyListeners();
+    await _storage.write(_themeKey, value.name);
   }
 
   /// Change la langue tout de suite, puis l'enregistre sur le compte.

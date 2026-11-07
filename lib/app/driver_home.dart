@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/app/help_screen.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
@@ -37,7 +38,7 @@ class DriverHome extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Card(
-              color: AppColors.ink,
+              color: context.palette.hero,
               child: Padding(
                 padding: const EdgeInsets.all(22),
                 child: Column(
@@ -146,7 +147,7 @@ class DriverHome extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(i, color: AppColors.primary),
+            Icon(i, color: c.palette.primaryText),
             const SizedBox(height: 8),
             Text(
               t,

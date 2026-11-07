@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/agent_form_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
@@ -97,7 +97,7 @@ class _UsersScreenState extends State<UsersScreen> {
               onSubmitted: (_) => _load(),
               decoration: InputDecoration(
                 hintText: context.t.searchHint,
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
               ),
             ),
           ),
@@ -142,7 +142,7 @@ class _UsersScreenState extends State<UsersScreen> {
             subtitle: Text(
               '${user.email}\n${user.role.labelIn(context.t)}'
               '${user.companyName == null ? '' : ' • ${user.companyName}'}',
-              style: const TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: context.palette.textMuted),
             ),
             isThreeLine: true,
             // Un administrateur ne peut pas modifier son propre compte ici.

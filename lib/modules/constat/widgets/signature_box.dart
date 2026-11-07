@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 class SignatureBox extends StatelessWidget {
   const SignatureBox(this.label, {super.key});
   final String label;
@@ -8,8 +10,8 @@ class SignatureBox extends StatelessWidget {
     height: 130,
     width: double.infinity,
     decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: Colors.grey),
+      color: context.palette.surface,
+      border: Border.all(color: context.palette.border),
       borderRadius: BorderRadius.circular(14),
     ),
     child: Center(

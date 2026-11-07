@@ -417,6 +417,60 @@ void main() {
     );
   });
 
+  group('apparence', () {
+    testWidgets('mode sombre choisi dans le profil, gardé au redémarrage', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      await scrollProfileTo(tester, find.text('Apparence'));
+      await tester.tap(find.text('Apparence'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sombre'));
+      await tester.pumpAndSettle();
+
+      final theme = Theme.of(tester.element(find.text('Apparence')));
+      expect(theme.brightness, Brightness.dark);
+      expect(backend.storage.values['theme_mode'], 'dark');
+      expect(tester.takeException(), isNull);
+
+      // Au redémarrage, l'écran de connexion est déjà sombre.
+      await tester.tap(find.text('Se déconnecter'));
+      await tester.pumpAndSettle();
+      final restarted = FakeBackend()..storage.values['theme_mode'] = 'dark';
+      await tester.pumpWidget(const SizedBox());
+      await pumpApp(tester, restarted);
+      expect(
+        Theme.of(tester.element(find.text('Connexion'))).brightness,
+        Brightness.dark,
+      );
+    });
+
+    testWidgets('mode sombre : chaque écran du module s affiche sans erreur', (
+      tester,
+    ) async {
+      final backend =
+          FakeBackend(
+              user: userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+            )
+            ..storage.values['theme_mode'] = 'dark'
+            ..users = [userJson(id: 'me', role: 'ADMIN'), userJson(id: 'u2')]
+            ..companies = [
+              {'id': 'c1', 'name': 'STAR Assurances', 'agencies': []},
+            ];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      for (final tab in ['Comptes', 'Compagnies', 'Profil', 'Tableau']) {
+        await tester.tap(find.text(tab));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: tab);
+      }
+    });
+  });
+
   group('administration', () {
     FakeBackend adminBackend() =>
         FakeBackend(

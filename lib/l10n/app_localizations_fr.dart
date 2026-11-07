@@ -509,4 +509,16 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errorInvalidData => 'Certaines données sont invalides.';
+
+  @override
+  String get appearanceLabel => 'Apparence';
+
+  @override
+  String get themeSystem => 'Comme le téléphone';
+
+  @override
+  String get themeLight => 'Clair';
+
+  @override
+  String get themeDark => 'Sombre';
 }
