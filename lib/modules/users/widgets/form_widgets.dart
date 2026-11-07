@@ -3,40 +3,63 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
 
-abstract final class Validators {
-  static String? required(String? value) =>
-      (value ?? '').trim().isEmpty ? 'Champ obligatoire.' : null;
+/// Règles des champs, avec les messages dans la langue de l'application.
+class Validators {
+  const Validators(this.t);
+  final AppLocalizations t;
 
-  static String? email(String? value) =>
+  String? required(String? value) =>
+      (value ?? '').trim().isEmpty ? t.requiredField : null;
+
+  String? email(String? value) =>
       RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch((value ?? '').trim())
       ? null
-      : 'Adresse e-mail invalide.';
+      : t.invalidEmail;
 
-  static String? phone(String? value) =>
+  String? phone(String? value) =>
       RegExp(
         r'^\+?\d{8,15}$',
       ).hasMatch((value ?? '').replaceAll(RegExp(r'[\s.-]'), ''))
       ? null
-      : 'Numéro de téléphone invalide.';
+      : t.invalidPhone;
 
-  static String? password(String? value) => (value ?? '').length < 8
-      ? 'Le mot de passe doit contenir au moins 8 caractères.'
-      : null;
+  String? password(String? value) =>
+      (value ?? '').length < 8 ? t.passwordTooShort : null;
 
-  static String? code(String? value) =>
-      RegExp(r'^\d{6}$').hasMatch((value ?? '').trim())
-      ? null
-      : 'Le code contient 6 chiffres.';
+  String? code(String? value) =>
+      RegExp(r'^\d{6}$').hasMatch((value ?? '').trim()) ? null : t.codeFormat;
 }
 
-/// Message d'erreur affiché à partir de n'importe quelle exception.
-String errorMessage(Object error) => switch (error) {
-  ApiException(:final message) => message,
-  BiometricException(:final message) => message,
-  _ => 'Une erreur est survenue. Réessayez.',
-};
+/// Message à afficher pour une erreur.
+///
+/// En français, le message de l'API est le plus précis. Dans les autres
+/// langues, le code d'erreur est traduit ici.
+String errorMessage(BuildContext context, Object error) {
+  final t = context.t;
+  if (error is BiometricException) return t.errorBiometricUnavailable;
+  if (error is! ApiException) return t.errorGeneric;
+  if (error.isNetwork) return t.errorNetwork;
+  if (t.localeName == 'fr') return error.message;
+  return switch (error.code) {
+    'INVALID_CREDENTIALS' => t.errorInvalidCredentials,
+    'ACCOUNT_LOCKED' => t.errorAccountLocked,
+    'ACCOUNT_SUSPENDED' => t.errorAccountSuspended,
+    'ALREADY_EXISTS' => t.errorAlreadyExists,
+    'INVALID_CODE' => t.errorInvalidCode,
+    'CODE_COOLDOWN' => t.errorCodeCooldown,
+    'SESSION_EXPIRED' || 'TOKEN_INVALID' => t.errorSessionExpired,
+    'BIOMETRIC_INVALID' => t.errorBiometricInvalid,
+    'FILE_TOO_LARGE' => t.errorFileTooLarge,
+    'UNSUPPORTED_IMAGE' => t.errorUnsupportedImage,
+    'COMPANY_IN_USE' => t.errorCompanyInUse,
+    'SELF_CHANGE' => t.errorSelfChange,
+    'VALIDATION_ERROR' => t.errorInvalidData,
+    _ => t.errorGeneric,
+  };
+}
 
 /// Champ avec le libellé au-dessus, comme sur la maquette.
 class LabeledField extends StatelessWidget {
@@ -52,6 +75,7 @@ class LabeledField extends StatelessWidget {
     this.autofillHints,
     this.hint,
     this.style,
+    this.textDirection,
     super.key,
   });
 
@@ -65,6 +89,9 @@ class LabeledField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final String? hint;
   final TextStyle? style;
+
+  /// Force le sens d'écriture (numéros, e-mails) quand l'interface est en arabe.
+  final TextDirection? textDirection;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -88,6 +115,7 @@ class LabeledField extends StatelessWidget {
         readOnly: readOnly,
         onTap: onTap,
         autofillHints: autofillHints,
+        textDirection: textDirection,
         style:
             style ?? const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         decoration: InputDecoration(hintText: hint, suffixIcon: suffixIcon),
@@ -126,7 +154,7 @@ class _PasswordFieldState extends State<PasswordField> {
     obscureText: _hidden,
     autofillHints: widget.autofillHints,
     suffixIcon: IconButton(
-      tooltip: _hidden ? 'Afficher le mot de passe' : 'Masquer le mot de passe',
+      tooltip: _hidden ? context.t.showPassword : context.t.hidePassword,
       onPressed: () => setState(() => _hidden = !_hidden),
       icon: Icon(
         _hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
@@ -197,6 +225,8 @@ mixin FormActions<T extends StatefulWidget> on State<T> {
   bool busy = false;
   String? error;
 
+  Validators get validators => Validators(context.t);
+
   Future<void> submit(
     Future<void> Function() action, {
     bool validate = true,
@@ -210,7 +240,7 @@ mixin FormActions<T extends StatefulWidget> on State<T> {
     try {
       await action();
     } catch (e) {
-      if (mounted) setState(() => error = errorMessage(e));
+      if (mounted) setState(() => error = errorMessage(context, e));
     } finally {
       if (mounted) setState(() => busy = false);
     }

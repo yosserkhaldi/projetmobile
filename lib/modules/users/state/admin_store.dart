@@ -91,6 +91,18 @@ class AdminStore extends ChangeNotifier {
         ),
       );
 
+  Future<void> updateAgency(
+    Company company,
+    Agency agency,
+    String name,
+    String city,
+  ) => _thenReload(
+    _api.patch(
+      '/companies/${company.id}/agencies/${agency.id}',
+      body: {'name': name, 'city': city},
+    ),
+  );
+
   Future<void> deleteAgency(Company company, Agency agency) => _thenReload(
     _api.delete('/companies/${company.id}/agencies/${agency.id}'),
   );

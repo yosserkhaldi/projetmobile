@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/agent_form_screen.dart';
@@ -40,7 +41,7 @@ class _UsersScreenState extends State<UsersScreen> {
     try {
       await admin.loadUsers(query: _search.text.trim());
     } catch (e) {
-      if (mounted) setState(() => _error = errorMessage(e));
+      if (mounted) setState(() => _error = errorMessage(context, e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -48,10 +49,11 @@ class _UsersScreenState extends State<UsersScreen> {
 
   Future<void> _run(Future<void> Function() action) async {
     final messenger = ScaffoldMessenger.of(context);
+    String describe(Object error) => errorMessage(context, error);
     try {
       await action();
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(errorMessage(e))));
+      messenger.showSnackBar(SnackBar(content: Text(describe(e))));
     }
   }
 
@@ -77,11 +79,11 @@ class _UsersScreenState extends State<UsersScreen> {
       child: Column(
         children: [
           PageHead(
-            'Gestion des comptes',
-            subtitle: 'Rôles, agents et suspensions',
+            context.t.accountsTitle,
+            subtitle: context.t.accountsSubtitle,
             actions: [
               IconButton.filled(
-                tooltip: 'Créer un agent',
+                tooltip: context.t.createAgentTooltip,
                 onPressed: () => open(context, const AgentFormScreen()),
                 icon: const Icon(Icons.person_add_alt),
               ),
@@ -93,8 +95,8 @@ class _UsersScreenState extends State<UsersScreen> {
               controller: _search,
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => _load(),
-              decoration: const InputDecoration(
-                hintText: 'Nom, e-mail ou téléphone',
+              decoration: InputDecoration(
+                hintText: context.t.searchHint,
                 prefixIcon: Icon(Icons.search),
               ),
             ),
@@ -113,13 +115,13 @@ class _UsersScreenState extends State<UsersScreen> {
         child: Column(
           children: [
             ErrorBanner(_error!),
-            TextButton(onPressed: _load, child: const Text('Réessayer')),
+            TextButton(onPressed: _load, child: Text(context.t.retry)),
           ],
         ),
       );
     }
     if (users.isEmpty) {
-      return const Center(child: Text('Aucun compte trouvé.'));
+      return Center(child: Text(context.t.noAccounts));
     }
     final admin = AppScope.of(context).admin;
     return ListView.builder(
@@ -138,7 +140,7 @@ class _UsersScreenState extends State<UsersScreen> {
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             subtitle: Text(
-              '${user.email}\n${user.role.label}'
+              '${user.email}\n${user.role.labelIn(context.t)}'
               '${user.companyName == null ? '' : ' • ${user.companyName}'}',
               style: const TextStyle(color: AppColors.textMuted),
             ),
@@ -178,7 +180,7 @@ class _RoleSheetState extends State<_RoleSheet> with FormActions {
       try {
         await AppScope.of(context).admin.loadCompanies();
       } catch (e) {
-        if (mounted) setState(() => error = errorMessage(e));
+        if (mounted) setState(() => error = errorMessage(context, e));
       }
     });
   }
@@ -210,10 +212,13 @@ class _RoleSheetState extends State<_RoleSheet> with FormActions {
             ],
             DropdownButtonFormField<UserRole>(
               initialValue: _role,
-              decoration: const InputDecoration(labelText: 'Rôle'),
+              decoration: InputDecoration(labelText: context.t.roleLabel),
               items: [
                 for (final role in UserRole.values)
-                  DropdownMenuItem(value: role, child: Text(role.label)),
+                  DropdownMenuItem(
+                    value: role,
+                    child: Text(role.labelIn(context.t)),
+                  ),
               ],
               onChanged: (value) => setState(() => _role = value!),
             ),
@@ -225,8 +230,8 @@ class _RoleSheetState extends State<_RoleSheet> with FormActions {
                 initialValue: companies.any((c) => c.id == _companyId)
                     ? _companyId
                     : null,
-                decoration: const InputDecoration(labelText: 'Compagnie'),
-                validator: Validators.required,
+                decoration: InputDecoration(labelText: context.t.companyLabel),
+                validator: validators.required,
                 items: [
                   for (final company in companies)
                     DropdownMenuItem(
@@ -239,7 +244,7 @@ class _RoleSheetState extends State<_RoleSheet> with FormActions {
             ],
             const SizedBox(height: 18),
             BusyButton(
-              label: 'Enregistrer',
+              label: context.t.save,
               busy: busy,
               onPressed: () {
                 final navigator = Navigator.of(context);

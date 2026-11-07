@@ -30,6 +30,7 @@ class UserStore extends ChangeNotifier {
 
   static const _userKey = 'current_user';
   static const _deviceKey = 'biometric_token';
+  static const _languageKey = 'app_language';
 
   final ApiClient _api;
   final SessionStorage _storage;
@@ -37,6 +38,14 @@ class UserStore extends ChangeNotifier {
 
   AuthStatus status = AuthStatus.unknown;
   AppUser? currentUser;
+
+  /// Langue de l'interface. Gardée sur le téléphone, et sur le compte une
+  /// fois connecté.
+  AppLanguage language = AppLanguage.fr;
+
+  // Vrai si la langue a été choisie sur ce téléphone : ce choix l'emporte
+  // sur celui du compte à la connexion.
+  bool _languageChosen = false;
 
   /// Le téléphone a un capteur configuré.
   bool biometricAvailable = false;
@@ -55,6 +64,11 @@ class UserStore extends ChangeNotifier {
   /// rester possible hors ligne.
   Future<void> restore() async {
     try {
+      final saved = await _storage.read(_languageKey);
+      if (saved != null) {
+        language = AppLanguage.fromApi(saved);
+        _languageChosen = true;
+      }
       biometricAvailable = await _biometric.isAvailable();
       biometricEnabled =
           biometricAvailable && await _storage.read(_deviceKey) != null;
@@ -112,6 +126,7 @@ class UserStore extends ChangeNotifier {
         'email': email,
         'phone': phone,
         'password': password,
+        'language': language.apiValue,
       },
     );
     await _startSession(session as Map<String, dynamic>);
@@ -160,12 +175,8 @@ class UserStore extends ChangeNotifier {
 
   /// Active la connexion biométrique après une empreinte réussie.
   /// Renvoie `false` si l'utilisateur annule.
-  Future<bool> enableBiometric() async {
-    if (!await _biometric.authenticate(
-      'Confirmez pour activer la connexion biométrique',
-    )) {
-      return false;
-    }
+  Future<bool> enableBiometric(String reason) async {
+    if (!await _biometric.authenticate(reason)) return false;
     final key = await _api.post('/auth/biometric') as Map<String, dynamic>;
     await _storage.write(_deviceKey, key['deviceToken'] as String);
     biometricEnabled = true;
@@ -188,10 +199,10 @@ class UserStore extends ChangeNotifier {
   }
 
   /// Connexion par empreinte. Ne fait rien si l'utilisateur annule.
-  Future<void> loginWithBiometric() async {
+  Future<void> loginWithBiometric(String reason) async {
     final token = await _storage.read(_deviceKey);
     if (token == null) return;
-    if (!await _biometric.authenticate('Connectez-vous à Mon Constat')) return;
+    if (!await _biometric.authenticate(reason)) return;
     final Map<String, dynamic> session;
     try {
       session =
@@ -211,6 +222,23 @@ class UserStore extends ChangeNotifier {
     }
     await _storage.write(_deviceKey, session['deviceToken'] as String);
     await _startSession(session);
+  }
+
+  /// Change la langue tout de suite, puis l'enregistre sur le compte.
+  Future<void> setLanguage(AppLanguage value) async {
+    _languageChosen = true;
+    if (value == language) return;
+    language = value;
+    notifyListeners();
+    await _storage.write(_languageKey, value.apiValue);
+    if (status == AuthStatus.signedIn) {
+      try {
+        await updateProfile({'language': value.apiValue});
+      } on ApiException catch (error) {
+        // Sans réseau, la langue reste appliquée sur ce téléphone.
+        if (!error.isNetwork) rethrow;
+      }
+    }
   }
 
   Future<void> uploadPhoto(
@@ -244,6 +272,24 @@ class UserStore extends ChangeNotifier {
   Future<void> _startSession(Map<String, dynamic> session) async {
     await _api.openSession(session);
     _applySession(session);
+    await _syncLanguage();
+  }
+
+  /// À la connexion : la langue choisie sur ce téléphone est enregistrée sur
+  /// le compte. Sur un nouveau téléphone, c'est celle du compte qui s'applique.
+  Future<void> _syncLanguage() async {
+    final user = currentUser!;
+    if (!_languageChosen) {
+      language = user.language;
+      notifyListeners();
+      return;
+    }
+    if (user.language == language) return;
+    try {
+      await updateProfile({'language': language.apiValue});
+    } on ApiException {
+      // La langue reste appliquée sur ce téléphone ; le compte suivra plus tard.
+    }
   }
 
   void _applySession(Map<String, dynamic> session) {

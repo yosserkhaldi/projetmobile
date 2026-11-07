@@ -149,7 +149,9 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/agents', async (req, res) => {
-  const { password, ...data } = createAgentSchema.parse(req.body);
+  const { password, language: _, ...data } = createAgentSchema.parse(
+    req.body,
+  );
   const user = await prisma.user
     .create({
       data: {

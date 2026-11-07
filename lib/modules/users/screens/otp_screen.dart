@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 
 /// Vérifie le téléphone. Le code part à l'inscription, ou ici avec [sendOnOpen].
@@ -58,7 +59,7 @@ class _OtpScreenState extends State<OtpScreen> with FormActions {
       await users.resendPhoneCode();
       if (mounted) _startCooldown();
     } catch (e) {
-      if (mounted) setState(() => error = errorMessage(e));
+      if (mounted) setState(() => error = errorMessage(context, e));
     }
   }
 
@@ -73,29 +74,19 @@ class _OtpScreenState extends State<OtpScreen> with FormActions {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final phone = AppScope.of(context).users.currentUser?.phone ?? '';
     return Scaffold(
-      appBar: AppBar(title: const Text('Vérifier mon téléphone')),
+      appBar: AppBar(title: Text(t.otpTitle)),
       body: SafeArea(
         child: Form(
           key: formKey,
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              Text.rich(
-                TextSpan(
-                  text: 'Saisissez le code à 6 chiffres envoyé par SMS au ',
-                  children: [
-                    TextSpan(
-                      text: phone,
-                      style: const TextStyle(
-                        fontFamily: AppFonts.mono,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const TextSpan(text: '.'),
-                  ],
-                ),
+              Text(
+                // Numéro isolé pour qu'il reste lisible en arabe.
+                t.otpInstructions(ltr(phone)),
                 style: const TextStyle(
                   fontSize: 14,
                   height: 1.45,
@@ -108,10 +99,11 @@ class _OtpScreenState extends State<OtpScreen> with FormActions {
                 const SizedBox(height: 14),
               ],
               LabeledField(
-                label: 'Code de vérification',
+                label: t.otpCodeLabel,
                 controller: _code,
                 keyboardType: TextInputType.number,
-                validator: Validators.code,
+                validator: validators.code,
+                textDirection: TextDirection.ltr,
                 autofillHints: const [AutofillHints.oneTimeCode],
                 style: const TextStyle(
                   fontFamily: AppFonts.mono,
@@ -121,19 +113,15 @@ class _OtpScreenState extends State<OtpScreen> with FormActions {
                 ),
               ),
               const SizedBox(height: 18),
-              BusyButton(label: 'Valider', busy: busy, onPressed: _verify),
+              BusyButton(label: t.validate, busy: busy, onPressed: _verify),
               const SizedBox(height: 6),
               TextButton(
                 onPressed: _wait > 0 ? null : _resend,
-                child: Text(
-                  _wait > 0
-                      ? 'Renvoyer le code ($_wait s)'
-                      : 'Renvoyer le code',
-                ),
+                child: Text(_wait > 0 ? t.resendCodeIn(_wait) : t.resendCode),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Plus tard'),
+                child: Text(t.later),
               ),
             ],
           ),

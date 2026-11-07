@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/app/driver_home.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/screens/agent_dashboard_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claims_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/messages_screen.dart';
@@ -44,26 +45,27 @@ class _MainShellState extends State<MainShell> {
             CompaniesScreen(),
             ProfileScreen(),
           ];
+    final t = context.t;
     final items = store.role == UserRole.driver
-        ? const [
-            ('Accueil', Icons.home_rounded),
-            ('Véhicules', Icons.directions_car),
-            ('Dossiers', Icons.folder),
-            ('Messages', Icons.chat),
-            ('Profil', Icons.person),
+        ? [
+            (t.navHome, Icons.home_rounded),
+            (t.navVehicles, Icons.directions_car),
+            (t.navClaims, Icons.folder),
+            (t.navMessages, Icons.chat),
+            (t.navProfile, Icons.person),
           ]
         : store.role == UserRole.agent
-        ? const [
-            ('Tableau', Icons.dashboard),
-            ('Sinistres', Icons.folder),
-            ('Messages', Icons.chat),
-            ('Profil', Icons.person),
+        ? [
+            (t.navDashboard, Icons.dashboard),
+            (t.navCases, Icons.folder),
+            (t.navMessages, Icons.chat),
+            (t.navProfile, Icons.person),
           ]
-        : const [
-            ('Tableau', Icons.dashboard),
-            ('Comptes', Icons.people),
-            ('Compagnies', Icons.business),
-            ('Profil', Icons.person),
+        : [
+            (t.navDashboard, Icons.dashboard),
+            (t.navAccounts, Icons.people),
+            (t.navCompanies, Icons.business),
+            (t.navProfile, Icons.person),
           ];
     if (index >= pages.length) index = 0;
     return Scaffold(

@@ -1,11 +1,11 @@
+/// Libellés traduits : `role.labelIn(context.t)` (lib/l10n/l10n.dart).
 enum UserRole {
-  driver('DRIVER', 'Conducteur'),
-  agent('AGENT', "Agent d'assurance"),
-  admin('ADMIN', 'Administrateur');
+  driver('DRIVER'),
+  agent('AGENT'),
+  admin('ADMIN');
 
-  const UserRole(this.apiValue, this.label);
+  const UserRole(this.apiValue);
   final String apiValue;
-  final String label;
 
   static UserRole fromApi(String value) =>
       values.firstWhere((role) => role.apiValue == value);
@@ -22,6 +22,8 @@ enum AppLanguage {
 
   static AppLanguage fromApi(String value) =>
       values.firstWhere((language) => language.apiValue == value);
+
+  String get code => apiValue.toLowerCase();
 }
 
 class AppUser {

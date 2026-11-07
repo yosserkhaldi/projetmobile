@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 
 /// Création d'un compte agent par un administrateur.
@@ -25,7 +26,7 @@ class _AgentFormScreenState extends State<AgentFormScreen> with FormActions {
       try {
         await AppScope.of(context).admin.loadCompanies();
       } catch (e) {
-        if (mounted) setState(() => error = errorMessage(e));
+        if (mounted) setState(() => error = errorMessage(context, e));
       }
     });
   }
@@ -64,7 +65,7 @@ class _AgentFormScreenState extends State<AgentFormScreen> with FormActions {
   Widget build(BuildContext context) {
     final companies = AppScope.of(context).admin.companies;
     return Scaffold(
-      appBar: AppBar(title: const Text('Créer un agent')),
+      appBar: AppBar(title: Text(context.t.createAgentTitle)),
       body: SafeArea(
         child: Form(
           key: formKey,
@@ -78,41 +79,43 @@ class _AgentFormScreenState extends State<AgentFormScreen> with FormActions {
                   const SizedBox(height: 14),
                 ],
                 LabeledField(
-                  label: 'Prénom',
+                  label: context.t.firstNameLabel,
                   controller: _firstName,
-                  validator: Validators.required,
+                  validator: validators.required,
                 ),
                 const SizedBox(height: 14),
                 LabeledField(
-                  label: 'Nom',
+                  label: context.t.lastNameLabel,
                   controller: _lastName,
-                  validator: Validators.required,
+                  validator: validators.required,
                 ),
                 const SizedBox(height: 14),
                 LabeledField(
-                  label: 'E-mail',
+                  label: context.t.emailLabel,
                   controller: _email,
                   keyboardType: TextInputType.emailAddress,
-                  validator: Validators.email,
+                  validator: validators.email,
                 ),
                 const SizedBox(height: 14),
                 LabeledField(
-                  label: 'Téléphone',
+                  label: context.t.phoneLabel,
                   controller: _phone,
                   keyboardType: TextInputType.phone,
-                  validator: Validators.phone,
+                  validator: validators.phone,
                 ),
                 const SizedBox(height: 14),
                 PasswordField(
-                  label: 'Mot de passe provisoire',
+                  label: context.t.tempPasswordLabel,
                   controller: _password,
-                  validator: Validators.password,
+                  validator: validators.password,
                 ),
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(
                   initialValue: _companyId,
-                  decoration: const InputDecoration(labelText: 'Compagnie'),
-                  validator: Validators.required,
+                  decoration: InputDecoration(
+                    labelText: context.t.companyLabel,
+                  ),
+                  validator: validators.required,
                   items: [
                     for (final company in companies)
                       DropdownMenuItem(
@@ -124,7 +127,7 @@ class _AgentFormScreenState extends State<AgentFormScreen> with FormActions {
                 ),
                 const SizedBox(height: 22),
                 BusyButton(
-                  label: "Créer le compte",
+                  label: context.t.createAccountButton,
                   busy: busy,
                   onPressed: _create,
                 ),

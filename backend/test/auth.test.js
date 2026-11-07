@@ -24,6 +24,7 @@ test('inscription : crée un conducteur et ne renvoie aucun secret', async (t) =
   assert.equal(body.user.phone, '+21620123456');
   assert.equal(body.user.role, 'DRIVER', 'le rôle envoyé est ignoré');
   assert.equal(body.user.phoneVerified, false);
+  assert.equal(body.user.language, 'FR');
   assert.equal(body.user.passwordHash, undefined);
   assert.ok(body.accessToken && body.refreshToken);
   assert.equal(sent.sms.length, 1);
@@ -32,6 +33,15 @@ test('inscription : crée un conducteur et ne renvoie aucun secret', async (t) =
     where: { email: 'sami@example.com' },
   });
   assert.ok(row.passwordHash.startsWith('$2'), 'mot de passe haché avec bcrypt');
+});
+
+test('inscription : garde la langue choisie avant de créer le compte', async (t) => {
+  const { call } = await startApi(t);
+  const { status, body } = await call('POST', '/auth/register', {
+    body: driver({ language: 'AR' }),
+  });
+  assert.equal(status, 201);
+  assert.equal(body.user.language, 'AR');
 });
 
 test('inscription : refuse un doublon et les données invalides', async (t) => {

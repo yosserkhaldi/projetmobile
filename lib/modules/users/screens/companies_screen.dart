@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/users/models/company.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
@@ -31,7 +32,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
     try {
       await admin.loadCompanies();
     } catch (e) {
-      if (mounted) setState(() => _error = errorMessage(e));
+      if (mounted) setState(() => _error = errorMessage(context, e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -39,10 +40,11 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
 
   Future<void> _run(Future<void> Function() action) async {
     final messenger = ScaffoldMessenger.of(context);
+    String describe(Object error) => errorMessage(context, error);
     try {
       await action();
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(errorMessage(e))));
+      messenger.showSnackBar(SnackBar(content: Text(describe(e))));
     }
   }
 
@@ -51,8 +53,8 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
     final values = await showDialog<List<String>>(
       context: context,
       builder: (_) => _NameDialog(
-        title: company == null ? 'Nouvelle compagnie' : 'Renommer la compagnie',
-        fields: const ['Nom de la compagnie'],
+        title: company == null ? context.t.newCompany : context.t.renameCompany,
+        fields: [context.t.companyNameLabel],
         initial: [company?.name ?? ''],
       ),
     );
@@ -64,18 +66,22 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
     );
   }
 
-  Future<void> _addAgency(Company company) async {
+  Future<void> _editAgency(Company company, [Agency? agency]) async {
     final admin = AppScope.of(context).admin;
     final values = await showDialog<List<String>>(
       context: context,
-      builder: (_) => const _NameDialog(
-        title: 'Nouvelle agence',
-        fields: ["Nom de l'agence", 'Ville'],
-        initial: ['', ''],
+      builder: (_) => _NameDialog(
+        title: agency == null ? context.t.newAgency : context.t.editAgency,
+        fields: [context.t.agencyNameLabel, context.t.cityLabel],
+        initial: [agency?.name ?? '', agency?.city ?? ''],
       ),
     );
     if (values == null) return;
-    await _run(() => admin.addAgency(company, values[0], values[1]));
+    await _run(
+      () => agency == null
+          ? admin.addAgency(company, values[0], values[1])
+          : admin.updateAgency(company, agency, values[0], values[1]),
+    );
   }
 
   Future<void> _deleteCompany(Company company) async {
@@ -83,17 +89,17 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('Supprimer ${company.name} ?'),
-        content: const Text('Ses agences seront aussi supprimées.'),
+        title: Text(context.t.deleteCompanyTitle(company.name)),
+        content: Text(context.t.deleteCompanyBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Annuler'),
+            child: Text(context.t.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.errorText),
-            child: const Text('Supprimer'),
+            child: Text(context.t.delete),
           ),
         ],
       ),
@@ -108,11 +114,11 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
       child: Column(
         children: [
           PageHead(
-            "Compagnies d'assurance",
-            subtitle: 'Compagnies et agences',
+            context.t.companiesTitle,
+            subtitle: context.t.companiesSubtitle,
             actions: [
               IconButton.filled(
-                tooltip: 'Ajouter une compagnie',
+                tooltip: context.t.addCompany,
                 onPressed: _editCompany,
                 icon: const Icon(Icons.add),
               ),
@@ -132,13 +138,13 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
         child: Column(
           children: [
             ErrorBanner(_error!),
-            TextButton(onPressed: _load, child: const Text('Réessayer')),
+            TextButton(onPressed: _load, child: Text(context.t.retry)),
           ],
         ),
       );
     }
     if (companies.isEmpty) {
-      return const Center(child: Text('Aucune compagnie enregistrée.'));
+      return Center(child: Text(context.t.noCompanies));
     }
     final admin = AppScope.of(context).admin;
     return ListView(
@@ -154,7 +160,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               subtitle: Text(
-                '${company.agencies.length} agence${company.agencies.length > 1 ? 's' : ''}',
+                context.t.agencyCount(company.agencies.length),
                 style: const TextStyle(color: AppColors.textMuted),
               ),
               shape: const Border(),
@@ -164,8 +170,9 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                     dense: true,
                     title: Text(agency.name),
                     subtitle: Text(agency.city),
+                    onTap: () => _editAgency(company, agency),
                     trailing: IconButton(
-                      tooltip: "Supprimer l'agence",
+                      tooltip: context.t.deleteAgencyTooltip,
                       icon: const Icon(Icons.delete_outline),
                       onPressed: () =>
                           _run(() => admin.deleteAgency(company, agency)),
@@ -175,19 +182,19 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                   alignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: () => _addAgency(company),
-                      child: const Text('Ajouter une agence'),
+                      onPressed: () => _editAgency(company),
+                      child: Text(context.t.addAgency),
                     ),
                     TextButton(
                       onPressed: () => _editCompany(company),
-                      child: const Text('Renommer'),
+                      child: Text(context.t.rename),
                     ),
                     TextButton(
                       onPressed: () => _deleteCompany(company),
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.errorText,
                       ),
-                      child: const Text('Supprimer'),
+                      child: Text(context.t.delete),
                     ),
                   ],
                 ),
@@ -240,7 +247,7 @@ class _NameDialogState extends State<_NameDialog> {
             LabeledField(
               label: widget.fields[i],
               controller: _controllers[i],
-              validator: Validators.required,
+              validator: Validators(context.t).required,
             ),
           ],
         ],
@@ -249,7 +256,7 @@ class _NameDialogState extends State<_NameDialog> {
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Annuler'),
+        child: Text(context.t.cancel),
       ),
       FilledButton(
         onPressed: () {
@@ -259,7 +266,7 @@ class _NameDialogState extends State<_NameDialog> {
             ]);
           }
         },
-        child: const Text('Enregistrer'),
+        child: Text(context.t.save),
       ),
     ],
   );

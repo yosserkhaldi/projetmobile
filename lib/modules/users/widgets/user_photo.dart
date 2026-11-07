@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
@@ -85,6 +86,8 @@ Future<void> changePhoto(BuildContext context, UserPhoto photo) async {
   final users = AppScope.of(context).users;
   final messenger = ScaffoldMessenger.of(context);
   final hasPhoto = photo.idOf(users.currentUser!) != null;
+  final saved = context.t.photoSaved;
+  String describe(Object error) => errorMessage(context, error);
 
   final choice = await showModalBottomSheet<String>(
     context: context,
@@ -94,12 +97,12 @@ Future<void> changePhoto(BuildContext context, UserPhoto photo) async {
         children: [
           ListTile(
             leading: const Icon(Icons.photo_camera_outlined),
-            title: const Text('Prendre une photo'),
+            title: Text(context.t.takePhoto),
             onTap: () => Navigator.pop(sheet, 'camera'),
           ),
           ListTile(
             leading: const Icon(Icons.photo_library_outlined),
-            title: const Text('Choisir dans la galerie'),
+            title: Text(context.t.chooseFromGallery),
             onTap: () => Navigator.pop(sheet, 'gallery'),
           ),
           if (hasPhoto)
@@ -108,9 +111,9 @@ Future<void> changePhoto(BuildContext context, UserPhoto photo) async {
                 Icons.delete_outline,
                 color: AppColors.errorText,
               ),
-              title: const Text(
-                'Supprimer la photo',
-                style: TextStyle(color: AppColors.errorText),
+              title: Text(
+                context.t.deletePhoto,
+                style: const TextStyle(color: AppColors.errorText),
               ),
               onTap: () => Navigator.pop(sheet, 'delete'),
             ),
@@ -134,8 +137,8 @@ Future<void> changePhoto(BuildContext context, UserPhoto photo) async {
     );
     if (file == null) return;
     await users.uploadPhoto(photo, await file.readAsBytes(), file.name);
-    messenger.showSnackBar(const SnackBar(content: Text('Photo enregistrée')));
+    messenger.showSnackBar(SnackBar(content: Text(saved)));
   } catch (e) {
-    messenger.showSnackBar(SnackBar(content: Text(errorMessage(e))));
+    messenger.showSnackBar(SnackBar(content: Text(describe(e))));
   }
 }

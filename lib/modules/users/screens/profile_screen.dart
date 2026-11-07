@@ -1,317 +1,307 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' show DateFormat;
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/otp_screen.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
-import 'package:mon_constat_digital/shared/widgets/page_head.dart';
 
-class ProfileScreen extends StatefulWidget {
+/// Catégories du permis tunisien.
+const licenseCategories = [
+  'A1',
+  'A',
+  'B',
+  'B+E',
+  'C',
+  'C+E',
+  'D',
+  'D1',
+  'D+E',
+  'H',
+];
+
+/// Profil en sections. Chaque section se modifie dans sa propre feuille.
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> with FormActions {
-  final _firstName = TextEditingController();
-  final _lastName = TextEditingController();
-  final _phone = TextEditingController();
-  final _licenseNumber = TextEditingController();
-  final _licenseCategory = TextEditingController();
-  final _licenseIssuedAt = TextEditingController();
-  AppLanguage _language = AppLanguage.fr;
-  bool _ready = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final user = AppScope.of(context).users.currentUser;
-    if (_ready || user == null) return;
-    _ready = true;
-    _firstName.text = user.firstName;
-    _lastName.text = user.lastName;
-    _phone.text = user.phone;
-    _licenseNumber.text = user.licenseNumber ?? '';
-    _licenseCategory.text = user.licenseCategory ?? '';
-    _licenseIssuedAt.text = user.licenseIssuedAt ?? '';
-    _language = user.language;
-  }
-
-  @override
-  void dispose() {
-    for (final controller in [
-      _firstName,
-      _lastName,
-      _phone,
-      _licenseNumber,
-      _licenseCategory,
-      _licenseIssuedAt,
-    ]) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  Future<void> _pickIssueDate() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      firstDate: DateTime(1950),
-      lastDate: now,
-      initialDate: DateTime.tryParse(_licenseIssuedAt.text) ?? now,
-    );
-    if (picked != null) {
-      _licenseIssuedAt.text = picked.toIso8601String().substring(0, 10);
-    }
-  }
-
-  void _save() {
-    final users = AppScope.of(context).users;
-    final messenger = ScaffoldMessenger.of(context);
-    submit(() async {
-      await users.updateProfile({
-        'firstName': _firstName.text.trim(),
-        'lastName': _lastName.text.trim(),
-        'phone': _phone.text.trim(),
-        'language': _language.apiValue,
-        'licenseNumber': _licenseNumber.text.trim(),
-        'licenseCategory': _licenseCategory.text.trim(),
-        'licenseIssuedAt': _licenseIssuedAt.text.trim(),
-      });
-      // Le numéro enregistré peut être normalisé par l'API (+216).
-      _phone.text = users.currentUser?.phone ?? _phone.text;
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Profil enregistré')),
-      );
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final users = AppScope.of(context).users;
     final user = users.currentUser;
     if (user == null) return const SizedBox.shrink();
+
     return Scaffold(
       body: SafeArea(
-        child: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          children: [
+            Row(
               children: [
-                const PageHead(
-                  'Mon profil',
-                  subtitle: 'Identité, permis et préférences',
-                ),
-                const SizedBox(height: 8),
-                _IdentityCard(user: user),
-                const SizedBox(height: 16),
-                if (error != null) ...[
-                  ErrorBanner(error!),
-                  const SizedBox(height: 14),
-                ],
-                LabeledField(
-                  label: 'Prénom',
-                  controller: _firstName,
-                  validator: Validators.required,
-                ),
-                const SizedBox(height: 14),
-                LabeledField(
-                  label: 'Nom',
-                  controller: _lastName,
-                  validator: Validators.required,
-                ),
-                const SizedBox(height: 14),
-                LabeledField(
-                  label: 'Téléphone',
-                  controller: _phone,
-                  keyboardType: TextInputType.phone,
-                  validator: Validators.phone,
-                ),
-                const SizedBox(height: 8),
-                _PhoneStatus(verified: user.phoneVerified),
-                const SizedBox(height: 22),
-                const _SectionTitle('Permis de conduire'),
-                const SizedBox(height: 10),
-                LabeledField(
-                  label: 'N° de permis',
-                  controller: _licenseNumber,
-                  style: const TextStyle(
-                    fontFamily: AppFonts.mono,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                if (Navigator.canPop(context)) const BackButton(),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 4),
+                    child: Text(
+                      t.profileTitle,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                LabeledField(label: 'Catégorie', controller: _licenseCategory),
-                const SizedBox(height: 14),
-                LabeledField(
-                  label: 'Date de délivrance',
-                  controller: _licenseIssuedAt,
-                  readOnly: true,
-                  onTap: _pickIssueDate,
-                  hint: 'AAAA-MM-JJ',
-                  suffixIcon: const Icon(Icons.calendar_today_outlined),
-                  style: const TextStyle(
-                    fontFamily: AppFonts.mono,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                _LicensePhoto(user: user),
-                const SizedBox(height: 22),
-                const _SectionTitle('Préférences'),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<AppLanguage>(
-                  initialValue: _language,
-                  decoration: const InputDecoration(labelText: 'Langue'),
-                  items: [
-                    for (final language in AppLanguage.values)
-                      DropdownMenuItem(
-                        value: language,
-                        child: Text(language.label),
-                      ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) setState(() => _language = value);
-                  },
-                ),
-                if (users.biometricAvailable) ...[
-                  const SizedBox(height: 8),
-                  const _BiometricSwitch(),
-                ],
-                const SizedBox(height: 22),
-                BusyButton(label: 'Enregistrer', busy: busy, onPressed: _save),
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  onPressed: users.logout,
-                  icon: const Icon(Icons.logout),
-                  label: const Text('Se déconnecter'),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 12),
+            _ProfileHeader(user: user),
+            const SizedBox(height: 22),
+            _Section(
+              title: t.sectionIdentity,
+              editKey: const Key('edit-identity'),
+              onEdit: () => _showSheet(context, _IdentitySheet(user: user)),
+              children: [
+                _InfoRow(
+                  icon: Icons.person_outline,
+                  label: t.fullNameLabel,
+                  value: user.name,
+                ),
+                _InfoRow(
+                  icon: Icons.mail_outline,
+                  label: t.emailLabel,
+                  value: ltr(user.email),
+                  trailing: Tooltip(
+                    message: t.emailNotEditable,
+                    child: const Icon(
+                      Icons.lock_outline,
+                      size: 18,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ),
+                _InfoRow(
+                  icon: Icons.phone_outlined,
+                  label: t.phoneLabel,
+                  value: ltr(user.phone),
+                  mono: true,
+                ),
+              ],
+            ),
+            _Section(
+              title: t.sectionLicense,
+              editKey: const Key('edit-license'),
+              onEdit: () => _showSheet(context, _LicenseSheet(user: user)),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _LicenseCard(user: user),
+                      const SizedBox(height: 12),
+                      _LicensePhoto(user: user),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            _Section(
+              title: t.sectionSecurity,
+              children: [
+                _PhoneVerification(verified: user.phoneVerified),
+                if (users.biometricAvailable) const _BiometricSwitch(),
+              ],
+            ),
+            _Section(
+              title: t.sectionPreferences,
+              children: [
+                ListTile(
+                  leading: const Icon(
+                    Icons.translate,
+                    color: AppColors.primary,
+                  ),
+                  title: Text(
+                    t.languageLabel,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        users.language.label,
+                        style: const TextStyle(color: AppColors.textMuted),
+                      ),
+                      const Icon(Icons.chevron_right),
+                    ],
+                  ),
+                  onTap: () => _showSheet(context, const _LanguageSheet()),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            TextButton.icon(
+              onPressed: users.logout,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.errorText,
+                minimumSize: const Size.fromHeight(52),
+              ),
+              icon: const Icon(Icons.logout),
+              label: Text(
+                t.logout,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.title);
-  final String title;
+Future<void> _showSheet(BuildContext context, Widget sheet) =>
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: AppColors.canvas,
+      builder: (_) => sheet,
+    );
 
-  @override
-  Widget build(BuildContext context) => Text(
-    title.toUpperCase(),
-    style: const TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w800,
-      letterSpacing: 0.6,
-      color: AppColors.textMuted,
-    ),
-  );
+/// Part du profil remplie : utile au constat, qui reprend ces informations.
+double profileCompletion(AppUser user) {
+  final items = [
+    user.photoId != null,
+    user.phoneVerified,
+    user.licenseNumber != null,
+    user.licenseCategory != null,
+    user.licenseIssuedAt != null,
+    user.licensePhotoId != null,
+  ];
+  return items.where((done) => done).length / items.length;
 }
 
-class _IdentityCard extends StatelessWidget {
-  const _IdentityCard({required this.user});
+String formatDate(BuildContext context, String isoDate) {
+  final date = DateTime.tryParse(isoDate);
+  if (date == null) return isoDate;
+  return DateFormat.yMMMMd(context.t.localeName).format(date);
+}
+
+// ---------------------------------------------------------------------------
+// En-tête
+
+class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader({required this.user});
   final AppUser user;
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: EdgeInsets.zero,
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final completion = profileCompletion(user);
+    final percent = (completion * 100).round();
+    final role = user.companyName == null
+        ? user.role.labelIn(t)
+        : '${user.role.labelIn(t)} · ${user.companyName}';
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.ink,
+        borderRadius: BorderRadius.circular(AppRadius.hero),
+      ),
+      child: Stack(
         children: [
-          Semantics(
-            button: true,
-            label: 'Changer la photo de profil',
-            child: InkWell(
-              onTap: () => changePhoto(context, UserPhoto.profile),
-              borderRadius: BorderRadius.circular(AppRadius.input),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadius.input),
-                    child: Container(
-                      width: 56,
-                      height: 56,
-                      color: AppColors.primaryTint,
-                      child: UserPhotoView(
-                        user: user,
-                        photo: UserPhoto.profile,
-                        placeholder: Center(
-                          child: Text(
-                            user.firstName.characters.first.toUpperCase(),
+          // Anneau décoratif de la maquette, en partie hors du cadre.
+          PositionedDirectional(
+            end: -60,
+            top: -70,
+            child: Container(
+              width: 190,
+              height: 190,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.navy800, width: 28),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _Avatar(user: user),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.name,
                             style: const TextStyle(
                               fontFamily: AppFonts.display,
                               fontWeight: FontWeight.w800,
                               fontSize: 22,
-                              color: AppColors.primary,
+                              letterSpacing: -0.4,
+                              color: Colors.white,
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 4),
+                          Text(
+                            role,
+                            style: const TextStyle(
+                              color: AppColors.onDarkStrong,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _Pill(
+                            icon: user.phoneVerified
+                                ? Icons.verified_outlined
+                                : Icons.error_outline,
+                            label: user.phoneVerified
+                                ? t.phoneVerified
+                                : t.phoneNotVerified,
+                            color: user.phoneVerified
+                                ? const Color(0xFF7FE0CC)
+                                : AppColors.accent,
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  Positioned(
-                    right: -4,
-                    bottom: -4,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.surface, width: 2),
-                      ),
-                      child: const Icon(
-                        Icons.photo_camera,
-                        size: 12,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 15,
-                  ),
+                  ],
                 ),
+                const SizedBox(height: 20),
                 Text(
-                  user.email,
+                  t.profileCompletion(percent),
                   style: const TextStyle(
-                    color: AppColors.textMuted,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
                     fontSize: 13,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: completion,
+                    minHeight: 6,
+                    color: AppColors.accent,
+                    backgroundColor: AppColors.navy700,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 Text(
-                  user.companyName == null
-                      ? user.role.label
-                      : '${user.role.label} • ${user.companyName}',
+                  completion == 1 ? t.profileComplete : t.profileCompleteHint,
                   style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
+                    color: AppColors.onDarkBody,
                     fontSize: 12,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -319,56 +309,313 @@ class _IdentityCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.user});
+  final AppUser user;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: context.t.changeProfilePhoto,
+    child: InkWell(
+      onTap: () => changePhoto(context, UserPhoto.profile),
+      borderRadius: BorderRadius.circular(18),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Container(
+              width: 68,
+              height: 68,
+              color: AppColors.navy700,
+              child: UserPhotoView(
+                user: user,
+                photo: UserPhoto.profile,
+                placeholder: Center(
+                  child: Text(
+                    user.firstName.characters.first.toUpperCase(),
+                    style: const TextStyle(
+                      fontFamily: AppFonts.display,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 28,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            end: -4,
+            bottom: -4,
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: AppColors.accent,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.ink, width: 2),
+              ),
+              child: const Icon(
+                Icons.photo_camera,
+                size: 13,
+                color: AppColors.ink,
+              ),
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
 
-class _PhoneStatus extends StatelessWidget {
-  const _PhoneStatus({required this.verified});
-  final bool verified;
+class _Pill extends StatelessWidget {
+  const _Pill({required this.icon, required this.label, required this.color});
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: AppColors.navy800,
+      borderRadius: BorderRadius.circular(AppRadius.pill),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: color),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Sections
+
+class _Section extends StatelessWidget {
+  const _Section({
+    required this.title,
+    required this.children,
+    this.onEdit,
+    this.editKey,
+  });
+
+  final String title;
+  final List<Widget> children;
+  final VoidCallback? onEdit;
+  final Key? editKey;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 18),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.only(start: 4, bottom: 6),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.6,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ),
+              if (onEdit != null)
+                TextButton.icon(
+                  key: editKey,
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined, size: 16),
+                  label: Text(
+                    context.t.edit,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        Card(
+          margin: EdgeInsets.zero,
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              for (var i = 0; i < children.length; i += 1) ...[
+                if (i > 0)
+                  const Divider(height: 1, color: AppColors.surfaceAlt),
+                children[i],
+              ],
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.trailing,
+    this.mono = false,
+  });
+
+  final IconData icon;
+  final String label, value;
+  final Widget? trailing;
+  final bool mono;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    leading: Icon(icon, color: AppColors.primary),
+    title: Text(
+      label,
+      style: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        color: AppColors.textMuted,
+      ),
+    ),
+    subtitle: Text(
+      value,
+      style: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: AppColors.ink,
+        fontFamily: mono ? AppFonts.mono : null,
+      ),
+    ),
+    trailing: trailing,
+  );
+}
+
+class _LicenseCard extends StatelessWidget {
+  const _LicenseCard({required this.user});
+  final AppUser user;
 
   @override
   Widget build(BuildContext context) {
-    if (verified) {
-      return const Row(
+    final t = context.t;
+    if (user.licenseNumber == null &&
+        user.licenseCategory == null &&
+        user.licenseIssuedAt == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(Icons.verified_outlined, size: 16, color: AppColors.successText),
-          SizedBox(width: 6),
           Text(
-            'Numéro vérifié',
-            style: TextStyle(
-              color: AppColors.successText,
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-            ),
+            t.licenseEmpty,
+            style: const TextStyle(color: AppColors.textMuted, height: 1.4),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () => _showSheet(context, _LicenseSheet(user: user)),
+            icon: const Icon(Icons.badge_outlined),
+            label: Text(t.addLicense),
           ),
         ],
       );
     }
+    final categories = (user.licenseCategory ?? '')
+        .split(',')
+        .map((c) => c.trim())
+        .where((c) => c.isNotEmpty);
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.warningBg,
-        borderRadius: BorderRadius.circular(AppRadius.md),
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(AppRadius.card),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Expanded(
-            child: Text(
-              'Numéro non vérifié',
-              style: TextStyle(
-                color: AppColors.warningText,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  t.sectionLicense.toUpperCase(),
+                  style: const TextStyle(
+                    color: AppColors.onPrimaryMuted,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    letterSpacing: 0.6,
+                  ),
+                ),
               ),
+              const Icon(Icons.badge_outlined, color: AppColors.onPrimaryMuted),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            user.licenseNumber ?? t.notProvided,
+            textDirection: TextDirection.ltr,
+            style: const TextStyle(
+              fontFamily: AppFonts.mono,
+              fontWeight: FontWeight.w700,
+              fontSize: 20,
+              color: Colors.white,
             ),
           ),
-          TextButton(
-            onPressed: () => open(context, const OtpScreen(sendOnOpen: true)),
-            child: const Text(
-              'Vérifier',
-              style: TextStyle(color: AppColors.warningText),
-            ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              for (final category in categories)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryRaised,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: Text(
+                    category,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              if (user.licenseIssuedAt != null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 4),
+                  child: Text(
+                    t.licenseIssuedOn(
+                      formatDate(context, user.licenseIssuedAt!),
+                    ),
+                    style: const TextStyle(
+                      color: AppColors.onPrimaryMuted,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -382,12 +629,13 @@ class _LicensePhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final hasPhoto = user.licensePhotoId != null;
     return InkWell(
       onTap: () => changePhoto(context, UserPhoto.license),
       borderRadius: BorderRadius.circular(AppRadius.input),
       child: Container(
-        height: hasPhoto ? 170 : 56,
+        height: hasPhoto ? 170 : 52,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: hasPhoto ? AppColors.surface : AppColors.primaryTint,
@@ -403,8 +651,8 @@ class _LicensePhoto extends StatelessWidget {
                     photo: UserPhoto.license,
                     placeholder: const SizedBox.shrink(),
                   ),
-                  Positioned(
-                    right: 8,
+                  PositionedDirectional(
+                    end: 8,
                     bottom: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -415,9 +663,9 @@ class _LicensePhoto extends StatelessWidget {
                         color: AppColors.ink,
                         borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
-                      child: const Text(
-                        'Remplacer',
-                        style: TextStyle(
+                      child: Text(
+                        t.replace,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
@@ -427,19 +675,19 @@ class _LicensePhoto extends StatelessWidget {
                   ),
                 ],
               )
-            : const Row(
+            : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.document_scanner_outlined,
                     color: AppColors.primary,
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Flexible(
                     child: Text(
-                      'Ajouter la photo du permis',
+                      t.licensePhotoAdd,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w800,
                       ),
@@ -448,6 +696,33 @@ class _LicensePhoto extends StatelessWidget {
                 ],
               ),
       ),
+    );
+  }
+}
+
+class _PhoneVerification extends StatelessWidget {
+  const _PhoneVerification({required this.verified});
+  final bool verified;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    return ListTile(
+      leading: Icon(
+        verified ? Icons.verified_user_outlined : Icons.sms_outlined,
+        color: verified ? AppColors.successText : AppColors.warningText,
+      ),
+      title: Text(
+        verified ? t.phoneVerified : t.phoneNotVerified,
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+      trailing: verified
+          ? null
+          : FilledButton.tonal(
+              style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+              onPressed: () => open(context, const OtpScreen(sendOnOpen: true)),
+              child: Text(t.verify),
+            ),
     );
   }
 }
@@ -463,21 +738,21 @@ class _BiometricSwitchState extends State<_BiometricSwitch> {
   bool _busy = false;
 
   Future<void> _toggle(bool enable) async {
+    final t = context.t;
     final users = AppScope.of(context).users;
     final messenger = ScaffoldMessenger.of(context);
+    String describe(Object error) => errorMessage(context, error);
     setState(() => _busy = true);
     try {
       if (enable) {
-        if (await users.enableBiometric()) {
-          messenger.showSnackBar(
-            const SnackBar(content: Text('Connexion biométrique activée')),
-          );
+        if (await users.enableBiometric(t.biometricEnableReason)) {
+          messenger.showSnackBar(SnackBar(content: Text(t.biometricEnabled)));
         }
       } else {
         await users.disableBiometric();
       }
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(errorMessage(e))));
+      messenger.showSnackBar(SnackBar(content: Text(describe(e))));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -485,15 +760,324 @@ class _BiometricSwitchState extends State<_BiometricSwitch> {
 
   @override
   Widget build(BuildContext context) => SwitchListTile(
-    contentPadding: EdgeInsets.zero,
+    secondary: const Icon(Icons.fingerprint, color: AppColors.primary),
     value: AppScope.of(context).users.biometricEnabled,
     onChanged: _busy ? null : _toggle,
-    title: const Text(
-      'Connexion par empreinte',
-      style: TextStyle(fontWeight: FontWeight.w700),
+    title: Text(
+      context.t.biometricTitle,
+      style: const TextStyle(fontWeight: FontWeight.w700),
     ),
-    subtitle: const Text(
-      'Empreinte ou reconnaissance faciale, 30 jours sur ce téléphone',
+    subtitle: Text(context.t.biometricSubtitle),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Feuilles de modification
+
+class _SheetFrame extends StatelessWidget {
+  const _SheetFrame({required this.title, required this.child});
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.fromLTRB(
+      20,
+      0,
+      20,
+      20 + MediaQuery.viewInsetsOf(context).bottom,
+    ),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontSize: 22),
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
     ),
   );
+}
+
+class _IdentitySheet extends StatefulWidget {
+  const _IdentitySheet({required this.user});
+  final AppUser user;
+
+  @override
+  State<_IdentitySheet> createState() => _IdentitySheetState();
+}
+
+class _IdentitySheetState extends State<_IdentitySheet> with FormActions {
+  late final _firstName = TextEditingController(text: widget.user.firstName);
+  late final _lastName = TextEditingController(text: widget.user.lastName);
+  late final _phone = TextEditingController(text: widget.user.phone);
+
+  @override
+  void dispose() {
+    _firstName.dispose();
+    _lastName.dispose();
+    _phone.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final users = AppScope.of(context).users;
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final saved = context.t.profileSaved;
+    submit(() async {
+      await users.updateProfile({
+        'firstName': _firstName.text.trim(),
+        'lastName': _lastName.text.trim(),
+        'phone': _phone.text.trim(),
+      });
+      navigator.pop();
+      messenger.showSnackBar(SnackBar(content: Text(saved)));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    return _SheetFrame(
+      title: t.editIdentityTitle,
+      child: Form(
+        key: formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (error != null) ...[
+              ErrorBanner(error!),
+              const SizedBox(height: 14),
+            ],
+            LabeledField(
+              label: t.firstNameLabel,
+              controller: _firstName,
+              validator: validators.required,
+            ),
+            const SizedBox(height: 14),
+            LabeledField(
+              label: t.lastNameLabel,
+              controller: _lastName,
+              validator: validators.required,
+            ),
+            const SizedBox(height: 14),
+            LabeledField(
+              label: t.phoneLabel,
+              controller: _phone,
+              keyboardType: TextInputType.phone,
+              validator: validators.phone,
+              textDirection: TextDirection.ltr,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              t.phoneChangeNotice,
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+            ),
+            const SizedBox(height: 20),
+            BusyButton(label: t.save, busy: busy, onPressed: _save),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LicenseSheet extends StatefulWidget {
+  const _LicenseSheet({required this.user});
+  final AppUser user;
+
+  @override
+  State<_LicenseSheet> createState() => _LicenseSheetState();
+}
+
+class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
+  late final _number = TextEditingController(
+    text: widget.user.licenseNumber ?? '',
+  );
+  late final _categories = {
+    for (final c in (widget.user.licenseCategory ?? '').split(','))
+      if (c.trim().isNotEmpty) c.trim(),
+  };
+  late String? _issuedAt = widget.user.licenseIssuedAt;
+
+  @override
+  void dispose() {
+    _number.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      firstDate: DateTime(1950),
+      lastDate: now,
+      initialDate: DateTime.tryParse(_issuedAt ?? '') ?? now,
+    );
+    if (picked != null) {
+      setState(() => _issuedAt = picked.toIso8601String().substring(0, 10));
+    }
+  }
+
+  void _save() {
+    final users = AppScope.of(context).users;
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final saved = context.t.profileSaved;
+    // Ordre officiel des catégories, quel que soit l'ordre des clics.
+    final categories = licenseCategories.where(_categories.contains).join(', ');
+    submit(() async {
+      await users.updateProfile({
+        'licenseNumber': _number.text.trim(),
+        'licenseCategory': categories,
+        'licenseIssuedAt': _issuedAt ?? '',
+      });
+      navigator.pop();
+      messenger.showSnackBar(SnackBar(content: Text(saved)));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    return _SheetFrame(
+      title: t.editLicenseTitle,
+      child: Form(
+        key: formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (error != null) ...[
+              ErrorBanner(error!),
+              const SizedBox(height: 14),
+            ],
+            LabeledField(
+              label: t.licenseNumberLabel,
+              controller: _number,
+              textDirection: TextDirection.ltr,
+              style: const TextStyle(
+                fontFamily: AppFonts.mono,
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              t.licenseCategoryLabel,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final category in licenseCategories)
+                  FilterChip(
+                    label: Text(category),
+                    selected: _categories.contains(category),
+                    showCheckmark: false,
+                    selectedColor: AppColors.ink,
+                    labelStyle: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: _categories.contains(category)
+                          ? Colors.white
+                          : AppColors.ink,
+                    ),
+                    onSelected: (on) => setState(
+                      () => on
+                          ? _categories.add(category)
+                          : _categories.remove(category),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              t.licenseIssuedLabel,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const SizedBox(height: 6),
+            OutlinedButton.icon(
+              key: const Key('license-date'),
+              onPressed: _pickDate,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.border, width: 1.5),
+                alignment: AlignmentDirectional.centerStart,
+                minimumSize: const Size.fromHeight(52),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.input),
+                ),
+              ),
+              icon: const Icon(Icons.calendar_today_outlined),
+              label: Text(
+                _issuedAt == null
+                    ? t.notProvided
+                    : formatDate(context, _issuedAt!),
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+            const SizedBox(height: 20),
+            BusyButton(label: t.save, busy: busy, onPressed: _save),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LanguageSheet extends StatelessWidget {
+  const _LanguageSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final users = AppScope.of(context).users;
+    final messenger = ScaffoldMessenger.of(context);
+    return _SheetFrame(
+      title: context.t.languageLabel,
+      child: Column(
+        children: [
+          for (final language in AppLanguage.values)
+            ListTile(
+              title: Text(
+                language.label,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              trailing: users.language == language
+                  ? const Icon(Icons.check_circle, color: AppColors.primary)
+                  : null,
+              onTap: () async {
+                final describe = errorMessage;
+                final sheetContext = context;
+                Navigator.pop(context);
+                try {
+                  await users.setLanguage(language);
+                } catch (e) {
+                  if (sheetContext.mounted) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(describe(sheetContext, e))),
+                    );
+                  }
+                }
+              },
+            ),
+        ],
+      ),
+    );
+  }
 }

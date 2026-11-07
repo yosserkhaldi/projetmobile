@@ -20,6 +20,21 @@ Future<void> pumpApp(WidgetTester tester, FakeBackend backend) async {
 
 Finder field(String label) => find.byKey(ValueKey(label));
 
+/// Fait défiler le profil jusqu'à [target].
+Future<void> scrollProfileTo(WidgetTester tester, Finder target) async {
+  await tester.scrollUntilVisible(
+    target,
+    200,
+    scrollable: find
+        .descendant(
+          of: find.byType(ProfileScreen),
+          matching: find.byType(Scrollable),
+        )
+        .first,
+  );
+  await tester.pumpAndSettle();
+}
+
 Future<void> signIn(WidgetTester tester) async {
   await tester.enterText(field('E-mail ou téléphone'), 'sami@example.com');
   await tester.enterText(field('Mot de passe'), 'Password123!');
@@ -144,13 +159,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(ProfileScreen), findsOneWidget);
 
-      await tester.ensureVisible(find.text('Se déconnecter'));
-      await tester.pumpAndSettle();
+      await scrollProfileTo(tester, find.text('Se déconnecter'));
       await tester.tap(find.text('Se déconnecter'));
       await tester.pumpAndSettle();
       expect(find.text('Connexion'), findsOneWidget);
       expect(find.byType(ProfileScreen), findsNothing);
       expect(backend.requests, contains('POST /auth/logout'));
+      // Seule la langue choisie reste sur le téléphone.
       expect(backend.storage.values, isEmpty);
     });
   });
@@ -257,27 +272,149 @@ void main() {
     expect(find.textContaining('Mot de passe modifié'), findsOneWidget);
   });
 
-  testWidgets('profil : enregistre sur le serveur', (tester) async {
-    final backend = FakeBackend();
-    await pumpApp(tester, backend);
-    await signIn(tester);
-    await tester.ensureVisible(find.text('Mon permis'));
-    await tester.tap(find.text('Mon permis'));
-    await tester.pumpAndSettle();
-    expect(find.text('Mon profil'), findsOneWidget);
+  group('profil', () {
+    Future<void> openProfile(WidgetTester tester, FakeBackend backend) async {
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.ensureVisible(find.text('Mon permis'));
+      await tester.tap(find.text('Mon permis'));
+      await tester.pumpAndSettle();
+      expect(find.text('Mon profil'), findsOneWidget);
+    }
 
-    await tester.enterText(field('Prénom'), 'Samir');
-    await tester.enterText(field('N° de permis'), '12/345678');
-    await tester.ensureVisible(find.text('Enregistrer'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Enregistrer'));
-    await tester.pumpAndSettle();
-    final sent = backend.bodies['PATCH /users/me']!;
-    expect(sent['firstName'], 'Samir');
-    expect(sent['licenseNumber'], '12/345678');
-    expect(backend.stores.users.userName, 'Samir Ben Ali');
-    expect(find.text('Profil enregistré'), findsOneWidget);
-    expect(tester.takeException(), isNull);
+    testWidgets('sections, complétion et permis vide', (tester) async {
+      final backend = FakeBackend();
+      await openProfile(tester, backend);
+      // Téléphone vérifié : 1 élément sur 6.
+      expect(find.text('Profil complété à 17 %'), findsOneWidget);
+      expect(find.text('IDENTITÉ'), findsOneWidget);
+      await scrollProfileTo(tester, find.text('Ajouter mon permis'));
+      expect(find.text('PRÉFÉRENCES'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets("modifier l'identité dans sa feuille", (tester) async {
+      final backend = FakeBackend();
+      await openProfile(tester, backend);
+      await tester.tap(find.byKey(const Key('edit-identity')));
+      await tester.pumpAndSettle();
+      expect(find.text("Modifier l'identité"), findsOneWidget);
+
+      await tester.enterText(field('Prénom'), 'Samir');
+      await tester.tap(find.text('Enregistrer'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['PATCH /users/me'], {
+        'firstName': 'Samir',
+        'lastName': 'Ben Ali',
+        'phone': '+21620000001',
+      });
+      expect(backend.stores.users.userName, 'Samir Ben Ali');
+      expect(find.text("Modifier l'identité"), findsNothing);
+      expect(find.text('Samir Ben Ali'), findsWidgets);
+      expect(find.text('Profil enregistré'), findsOneWidget);
+    });
+
+    testWidgets('modifier le permis : numéro et catégories dans l ordre', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(field('N° de permis'), '12/345678');
+      await tester.tap(find.text('B'));
+      await tester.tap(find.text('A'));
+      await tester.pump();
+      await tester.ensureVisible(find.text('Enregistrer'));
+      await tester.tap(find.text('Enregistrer'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['PATCH /users/me'], {
+        'licenseNumber': '12/345678',
+        'licenseCategory': 'A, B',
+        'licenseIssuedAt': '',
+      });
+      await scrollProfileTo(tester, find.text('12/345678'));
+      expect(find.text('Profil complété à 50 %'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('langues', () {
+    testWidgets("connexion en anglais, puis l'arabe de droite à gauche", (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      await tester.tap(find.text('EN'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sign in'), findsNWidgets(2));
+      expect(find.text('Email or phone'), findsOneWidget);
+      expect(backend.storage.values['app_language'], 'EN');
+
+      await tester.tap(find.text('ع'));
+      await tester.pumpAndSettle();
+      expect(find.text('تسجيل الدخول'), findsNWidgets(2));
+      final direction = Directionality.of(
+        tester.element(find.text('كلمة المرور')),
+      );
+      expect(direction, TextDirection.rtl);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('erreur traduite à partir du code de l API', (tester) async {
+      final backend = FakeBackend()
+        ..failures['POST /auth/login'] = (
+          401,
+          'INVALID_CREDENTIALS',
+          'Identifiant ou mot de passe incorrect.',
+        );
+      backend.storage.values['app_language'] = 'EN';
+      await pumpApp(tester, backend);
+      await tester.enterText(field('Email or phone'), 'sami@example.com');
+      await tester.enterText(field('Password'), 'x');
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.pumpAndSettle();
+      expect(find.text('Wrong login or password.'), findsOneWidget);
+    });
+
+    testWidgets('langue choisie avant la connexion : gardée et enregistrée', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      await tester.tap(find.text('EN'));
+      await tester.pumpAndSettle();
+      await tester.enterText(field('Email or phone'), 'sami@example.com');
+      await tester.enterText(field('Password'), 'Password123!');
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['PATCH /users/me'], {'language': 'EN'});
+      expect(find.text('Profile'), findsOneWidget);
+    });
+
+    testWidgets(
+      'nouveau téléphone : la langue du compte, puis le choix du profil',
+      (tester) async {
+        final backend = FakeBackend(user: {...userJson(), 'language': 'AR'});
+        await pumpApp(tester, backend);
+        await signIn(tester);
+        // Le compte est en arabe : l'interface suit après la connexion.
+        expect(find.text('الملف'), findsOneWidget);
+        await tester.tap(find.text('الملف'));
+        await tester.pumpAndSettle();
+
+        await scrollProfileTo(tester, find.text('اللغة'));
+        await tester.tap(find.text('اللغة'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('English'));
+        await tester.pumpAndSettle();
+        expect(backend.bodies['PATCH /users/me'], {'language': 'EN'});
+        expect(find.text('Profile'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 
   group('administration', () {
@@ -388,8 +525,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final toggle = find.text('Connexion par empreinte');
-      await tester.ensureVisible(toggle);
-      await tester.pumpAndSettle();
+      await scrollProfileTo(tester, toggle);
       await tester.tap(toggle);
       await tester.pumpAndSettle();
       expect(backend.requests, contains('POST /auth/biometric'));
@@ -399,8 +535,7 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.text('Se déconnecter'));
-      await tester.pumpAndSettle();
+      await scrollProfileTo(tester, find.text('Se déconnecter'));
       await tester.tap(find.text('Se déconnecter'));
       await tester.pumpAndSettle();
       expect(find.text('Empreinte ou Face ID'), findsOneWidget);

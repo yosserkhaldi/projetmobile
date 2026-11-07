@@ -35,12 +35,16 @@ const code = z
   .string({ error: 'Code obligatoire.' })
   .regex(/^\d{6}$/, 'Le code contient 6 chiffres.');
 
+const language = z.enum(['FR', 'AR', 'EN'], { error: 'Langue invalide.' });
+
 export const registerSchema = z.object({
   firstName: name('Prénom'),
   lastName: name('Nom'),
   email,
   phone,
   password,
+  // Langue choisie sur l'écran de connexion, avant l'inscription.
+  language: language.optional(),
 });
 
 // La connexion accepte l'e-mail ou le téléphone, comme sur la maquette.
@@ -84,7 +88,7 @@ export const updateProfileSchema = z
     firstName: name('Prénom'),
     lastName: name('Nom'),
     phone,
-    language: z.enum(['FR', 'AR', 'EN'], { error: 'Langue invalide.' }),
+    language,
     licenseNumber: z.preprocess(
       emptyToNull,
       z.string().trim().max(40).nullable(),

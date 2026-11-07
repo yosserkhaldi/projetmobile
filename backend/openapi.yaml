@@ -629,6 +629,7 @@ components:
         email: { type: string, format: email }
         phone: { type: string, description: 8 chiffres pour un numéro tunisien }
         password: { type: string, minLength: 8 }
+        language: { type: string, enum: [FR, AR, EN], description: Facultatif, FR par défaut }
     ProfileInput:
       type: object
       properties:

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:mon_constat_digital/app/main_shell.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/screens/auth_screen.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 
@@ -48,15 +48,22 @@ class _MonConstatAppState extends State<MonConstatApp> {
   @override
   Widget build(BuildContext context) => AppScope(
     stores: stores,
-    child: MaterialApp(
-      navigatorKey: _navigator,
-      debugShowCheckedModeBanner: false,
-      title: 'Mon Constat Digital',
-      theme: AppTheme.light,
-      locale: const Locale('fr'),
-      supportedLocales: const [Locale('fr')],
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      home: const _SessionGate(),
+    // Reconstruit l'application quand la langue change.
+    child: ListenableBuilder(
+      listenable: stores.users,
+      builder: (context, home) => MaterialApp(
+        navigatorKey: _navigator,
+        debugShowCheckedModeBanner: false,
+        title: 'Mon Constat Digital',
+        theme: AppTheme.light,
+        // Français, arabe (de droite à gauche) ou anglais, selon le choix de
+        // l'utilisateur. Textes dans lib/l10n/*.arb.
+        locale: Locale(stores.users.language.code),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        home: home,
+      ),
+      child: const _SessionGate(),
     ),
   );
 }
