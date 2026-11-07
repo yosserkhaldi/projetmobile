@@ -23,7 +23,6 @@ class _AccidentWizardState extends State<AccidentWizard> {
   late final TextEditingController place;
   final witnessName = TextEditingController();
   final witnessPhone = TextEditingController();
-  final guest = TextEditingController();
   final observations = TextEditingController();
   int step = 0;
 
@@ -56,7 +55,6 @@ class _AccidentWizardState extends State<AccidentWizard> {
     place.dispose();
     witnessName.dispose();
     witnessPhone.dispose();
-    guest.dispose();
     observations.dispose();
     super.dispose();
   }
@@ -112,7 +110,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
       onChanged: _touch,
     ),
     2 => EvidenceStep(draft: draft, onChanged: _touch),
-    3 => GuestDriverStep(guest: guest),
+    3 => GuestDriverStep(draft: draft, onChanged: _touch),
     4 => CircumstancesStep(
       draft: draft,
       observations: observations,
@@ -189,6 +187,15 @@ class _AccidentWizardState extends State<AccidentWizard> {
     }
     if (step == 2 && draft.evidenceCount < 2) {
       _showError('Ajoutez au moins 2 photos avant de continuer.');
+      return false;
+    }
+    if (step == 3 &&
+        (draft.driverBName.trim().length < 2 ||
+            draft.driverBPlate.trim().length < 3 ||
+            draft.driverBInsurer.trim().length < 2)) {
+      _showError(
+        'Complétez le nom, l’immatriculation et l’assurance du conducteur B.',
+      );
       return false;
     }
     if (step == 4 && draft.circumstances.isEmpty) {

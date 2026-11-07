@@ -2,37 +2,122 @@ import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
+import 'package:mon_constat_digital/modules/accident/widgets/accident_review.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/signature_box.dart';
+import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
 
 class GuestDriverStep extends StatelessWidget {
-  const GuestDriverStep({required this.guest, super.key});
-  final TextEditingController guest;
+  const GuestDriverStep({
+    required this.draft,
+    required this.onChanged,
+    super.key,
+  });
+  final AccidentDraft draft;
+  final VoidCallback onChanged;
 
   @override
   Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Card(
+        color: AppColors.primaryTint,
         child: ListTile(
           leading: Icon(Icons.screen_lock_portrait),
-          title: Text('Mode invité isolé'),
-          subtitle: Text('Le conducteur B ne peut pas consulter vos données.'),
+          title: Text('Informations du conducteur B'),
+          subtitle: Text(
+            'Données nécessaires au constat, isolées de votre profil.',
+          ),
         ),
       ),
-      TextField(
-        controller: guest,
-        decoration: const InputDecoration(labelText: 'Nom du conducteur B'),
+      const SizedBox(height: 10),
+      _DriverField(
+        initialValue: draft.driverBName,
+        label: 'Nom complet *',
+        icon: Icons.person_outline,
+        onChanged: (value) {
+          draft.driverBName = value;
+          onChanged();
+        },
       ),
       const SizedBox(height: 12),
-      const TextField(
-        decoration: InputDecoration(labelText: 'Permis / véhicule / assurance'),
+      _DriverField(
+        initialValue: draft.driverBPermit,
+        label: 'Numéro de permis',
+        icon: Icons.badge_outlined,
+        onChanged: (value) {
+          draft.driverBPermit = value;
+          onChanged();
+        },
       ),
       const SizedBox(height: 12),
-      OutlinedButton.icon(
-        onPressed: () {},
-        icon: const Icon(Icons.qr_code_scanner),
-        label: const Text('Rejoindre par QR code'),
+      _DriverField(
+        initialValue: draft.driverBPlate,
+        label: 'Immatriculation *',
+        icon: Icons.directions_car_outlined,
+        capitalization: TextCapitalization.characters,
+        onChanged: (value) {
+          draft.driverBPlate = value;
+          onChanged();
+        },
+      ),
+      const SizedBox(height: 18),
+      const Text(
+        'ASSURANCE',
+        style: TextStyle(
+          color: AppColors.textMuted,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          letterSpacing: .5,
+        ),
+      ),
+      const SizedBox(height: 8),
+      _DriverField(
+        initialValue: draft.driverBInsurer,
+        label: 'Compagnie d’assurance *',
+        icon: Icons.shield_outlined,
+        onChanged: (value) {
+          draft.driverBInsurer = value;
+          onChanged();
+        },
+      ),
+      const SizedBox(height: 16),
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Le partage sécurisé par QR code sera ajouté ultérieurement.',
+              ),
+            ),
+          ),
+          icon: const Icon(Icons.qr_code_scanner),
+          label: const Text('Remplir ensemble par QR code'),
+        ),
       ),
     ],
+  );
+}
+
+class _DriverField extends StatelessWidget {
+  const _DriverField({
+    required this.initialValue,
+    required this.label,
+    required this.icon,
+    required this.onChanged,
+    this.capitalization = TextCapitalization.none,
+  });
+  final String initialValue, label;
+  final IconData icon;
+  final ValueChanged<String> onChanged;
+  final TextCapitalization capitalization;
+
+  @override
+  Widget build(BuildContext context) => TextFormField(
+    initialValue: initialValue,
+    textCapitalization: capitalization,
+    onChanged: onChanged,
+    decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
   );
 }
 
@@ -121,51 +206,13 @@ class SketchStep extends StatelessWidget {
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 12),
-      Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            draft.sketchConfirmed = !draft.sketchConfirmed;
-            onChanged();
-          },
-          child: Container(
-            height: 220,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: draft.sketchConfirmed
-                  ? AppColors.primaryTint
-                  : AppColors.surface,
-              border: Border.all(
-                color: draft.sketchConfirmed
-                    ? AppColors.primary
-                    : AppColors.border,
-                width: 2,
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  draft.sketchConfirmed
-                      ? Icons.check_circle
-                      : Icons.gesture_rounded,
-                  size: 56,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  draft.sketchConfirmed
-                      ? 'Croquis confirmé'
-                      : 'Zone de croquis tactile',
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                const Text('Touchez pour confirmer le schéma'),
-              ],
-            ),
-          ),
-        ),
+      DrawingPad(
+        strokes: draft.sketchStrokes,
+        hint: 'Dessinez les voies, les véhicules et leur direction',
+        onChanged: () {
+          draft.sketchConfirmed = draft.sketchStrokes.isNotEmpty;
+          onChanged();
+        },
       ),
       const SizedBox(height: 18),
       const Text(
@@ -213,21 +260,23 @@ class SignatureStep extends StatelessWidget {
       const SizedBox(height: 16),
       SignatureBox(
         'Signature conducteur A',
-        signed: draft.driverASigned,
-        onTap: () {
-          draft.driverASigned = !draft.driverASigned;
+        strokes: draft.driverASignature,
+        onChanged: () {
+          draft.driverASigned = draft.driverASignature.isNotEmpty;
           onChanged();
         },
       ),
       const SizedBox(height: 14),
       SignatureBox(
         'Signature conducteur B',
-        signed: draft.driverBSigned,
-        onTap: () {
-          draft.driverBSigned = !draft.driverBSigned;
+        strokes: draft.driverBSignature,
+        onChanged: () {
+          draft.driverBSigned = draft.driverBSignature.isNotEmpty;
           onChanged();
         },
       ),
+      const SizedBox(height: 14),
+      AccidentReview(draft: draft),
       const SizedBox(height: 14),
       const Card(
         child: ListTile(
