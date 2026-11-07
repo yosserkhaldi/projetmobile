@@ -51,8 +51,12 @@ class AccidentDrafts extends Table {
       text().withDefault(const Constant('{}'))();
   BoolColumn get videoAdded => boolean()();
   BoolColumn get voiceNoteAdded => boolean()();
+  TextColumn get videoPath => text().withDefault(const Constant(''))();
+  TextColumn get voiceNotePath => text().withDefault(const Constant(''))();
   TextColumn get driverBName => text().withDefault(const Constant(''))();
   TextColumn get driverBPermit => text().withDefault(const Constant(''))();
+  TextColumn get driverBPermitExpiry =>
+      text().withDefault(const Constant(''))();
   TextColumn get driverBPlate => text().withDefault(const Constant(''))();
   TextColumn get driverBInsurer => text().withDefault(const Constant(''))();
   TextColumn get driverBPolicy => text().withDefault(const Constant(''))();
@@ -82,7 +86,7 @@ class AccidentDatabase extends _$AccidentDatabase {
     : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -103,6 +107,13 @@ class AccidentDatabase extends _$AccidentDatabase {
         await m.addColumn(accidentDrafts, accidentDrafts.sketchStrokesJson);
         await m.addColumn(accidentDrafts, accidentDrafts.driverASignatureJson);
         await m.addColumn(accidentDrafts, accidentDrafts.driverBSignatureJson);
+      }
+      if (from < 4) {
+        await m.addColumn(accidentDrafts, accidentDrafts.driverBPermitExpiry);
+      }
+      if (from < 5) {
+        await m.addColumn(accidentDrafts, accidentDrafts.videoPath);
+        await m.addColumn(accidentDrafts, accidentDrafts.voiceNotePath);
       }
     },
   );
@@ -158,8 +169,11 @@ class AccidentDatabase extends _$AccidentDatabase {
     'evidence_paths_json': r.evidencePathsJson,
     'video_added': r.videoAdded ? 1 : 0,
     'voice_note_added': r.voiceNoteAdded ? 1 : 0,
+    'video_path': r.videoPath,
+    'voice_note_path': r.voiceNotePath,
     'driver_b_name': r.driverBName,
     'driver_b_permit': r.driverBPermit,
+    'driver_b_permit_expiry': r.driverBPermitExpiry,
     'driver_b_plate': r.driverBPlate,
     'driver_b_insurer': r.driverBInsurer,
     'driver_b_policy': r.driverBPolicy,
@@ -197,8 +211,11 @@ class AccidentDatabase extends _$AccidentDatabase {
       evidencePathsJson: Value(m['evidence_paths_json'] as String),
       videoAdded: m['video_added'] == 1,
       voiceNoteAdded: m['voice_note_added'] == 1,
+      videoPath: Value(m['video_path'] as String),
+      voiceNotePath: Value(m['voice_note_path'] as String),
       driverBName: Value(m['driver_b_name'] as String),
       driverBPermit: Value(m['driver_b_permit'] as String),
+      driverBPermitExpiry: Value(m['driver_b_permit_expiry'] as String),
       driverBPlate: Value(m['driver_b_plate'] as String),
       driverBInsurer: Value(m['driver_b_insurer'] as String),
       driverBPolicy: Value(m['driver_b_policy'] as String),

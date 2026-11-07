@@ -53,6 +53,10 @@ dependencies:
   printing: ^5.15.1
   local_auth: ^3.0.2
   intl: any
+  google_mlkit_text_recognition: ^1.0.1
+  record: ^7.1.2
+  audioplayers: ^6.8.1
+  video_player: ^2.14.1
 
 dev_dependencies:
   flutter_test:

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
+import 'package:mon_constat_digital/modules/accident/services/accident_media_service.dart';
+import 'package:mon_constat_digital/modules/accident/services/driving_license_ocr_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_review.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/signature_box.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
 
-class GuestDriverStep extends StatelessWidget {
+class GuestDriverStep extends StatefulWidget {
   const GuestDriverStep({
     required this.draft,
     required this.onChanged,
@@ -14,6 +16,15 @@ class GuestDriverStep extends StatelessWidget {
   });
   final AccidentDraft draft;
   final VoidCallback onChanged;
+
+  @override
+  State<GuestDriverStep> createState() => _GuestDriverStepState();
+}
+
+class _GuestDriverStepState extends State<GuestDriverStep> {
+  final _media = AccidentMediaService();
+  final _ocr = DrivingLicenseOcrService();
+  bool _scanning = false;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -30,34 +41,92 @@ class GuestDriverStep extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 10),
+      Card(
+        color: AppColors.successBg,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(
+                    Icons.document_scanner_outlined,
+                    color: AppColors.successText,
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Scanner le permis avec l’IA',
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 5),
+              const Text(
+                'La photo est analysée localement. Vérifiez toujours les données détectées.',
+                style: TextStyle(color: AppColors.textMuted),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _scanning ? null : _scanLicense,
+                  icon: _scanning
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.camera_alt_outlined),
+                  label: Text(
+                    _scanning ? 'Analyse en cours…' : 'Photographier le permis',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
       _DriverField(
-        initialValue: draft.driverBName,
+        initialValue: widget.draft.driverBName,
         label: 'Nom complet *',
         icon: Icons.person_outline,
         onChanged: (value) {
-          draft.driverBName = value;
-          onChanged();
+          widget.draft.driverBName = value;
+          widget.onChanged();
         },
       ),
       const SizedBox(height: 12),
       _DriverField(
-        initialValue: draft.driverBPermit,
+        initialValue: widget.draft.driverBPermit,
         label: 'Numéro de permis',
         icon: Icons.badge_outlined,
         onChanged: (value) {
-          draft.driverBPermit = value;
-          onChanged();
+          widget.draft.driverBPermit = value;
+          widget.onChanged();
         },
       ),
       const SizedBox(height: 12),
       _DriverField(
-        initialValue: draft.driverBPlate,
+        initialValue: widget.draft.driverBPermitExpiry,
+        label: 'Date de validité du permis',
+        icon: Icons.event_available_outlined,
+        onChanged: (value) {
+          widget.draft.driverBPermitExpiry = value;
+          widget.onChanged();
+        },
+      ),
+      const SizedBox(height: 12),
+      _DriverField(
+        initialValue: widget.draft.driverBPlate,
         label: 'Immatriculation *',
         icon: Icons.directions_car_outlined,
         capitalization: TextCapitalization.characters,
         onChanged: (value) {
-          draft.driverBPlate = value;
-          onChanged();
+          widget.draft.driverBPlate = value;
+          widget.onChanged();
         },
       ),
       const SizedBox(height: 18),
@@ -72,12 +141,12 @@ class GuestDriverStep extends StatelessWidget {
       ),
       const SizedBox(height: 8),
       _DriverField(
-        initialValue: draft.driverBInsurer,
+        initialValue: widget.draft.driverBInsurer,
         label: 'Compagnie d’assurance *',
         icon: Icons.shield_outlined,
         onChanged: (value) {
-          draft.driverBInsurer = value;
-          onChanged();
+          widget.draft.driverBInsurer = value;
+          widget.onChanged();
         },
       ),
       const SizedBox(height: 16),
@@ -97,9 +166,140 @@ class GuestDriverStep extends StatelessWidget {
       ),
     ],
   );
+
+  Future<void> _scanLicense() async {
+    setState(() => _scanning = true);
+    try {
+      final path = await _media.capturePhoto('permis_conducteur_b');
+      if (path == null || !mounted) return;
+      final data = await _ocr.scan(path);
+      if (!mounted) return;
+      if (data.rawText.isEmpty) {
+        _message(
+          'Aucun texte détecté. Reprenez la photo avec plus de lumière.',
+        );
+        return;
+      }
+      final confirmed = await showDialog<DrivingLicenseData>(
+        context: context,
+        builder: (_) => _LicenseReviewDialog(data: data),
+      );
+      if (confirmed == null || !mounted) return;
+      widget.draft
+        ..driverBName = confirmed.fullName
+        ..driverBPermit = confirmed.licenseNumber
+        ..driverBPermitExpiry = confirmed.expiryDate;
+      widget.onChanged();
+      setState(() {});
+      _message('Permis analysé. Vérifiez les champs avant de continuer.');
+    } catch (_) {
+      if (mounted) {
+        _message('Analyse impossible. Vérifiez la photo et réessayez.');
+      }
+    } finally {
+      if (mounted) setState(() => _scanning = false);
+    }
+  }
+
+  void _message(String text) => ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(text)));
 }
 
-class _DriverField extends StatelessWidget {
+class _LicenseReviewDialog extends StatefulWidget {
+  const _LicenseReviewDialog({required this.data});
+  final DrivingLicenseData data;
+
+  @override
+  State<_LicenseReviewDialog> createState() => _LicenseReviewDialogState();
+}
+
+class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
+  late final TextEditingController _name;
+  late final TextEditingController _number;
+  late final TextEditingController _expiry;
+
+  @override
+  void initState() {
+    super.initState();
+    _name = TextEditingController(text: widget.data.fullName);
+    _number = TextEditingController(text: widget.data.licenseNumber);
+    _expiry = TextEditingController(text: widget.data.expiryDate);
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _number.dispose();
+    _expiry.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Vérifier les données détectées'),
+    content: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'L’OCR peut faire des erreurs. Corrigez les champs avant confirmation.',
+            style: TextStyle(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _name,
+            decoration: const InputDecoration(labelText: 'Nom complet'),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _number,
+            decoration: const InputDecoration(labelText: 'Numéro du permis'),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _expiry,
+            decoration: const InputDecoration(labelText: 'Date de validité'),
+          ),
+          const SizedBox(height: 12),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Texte reconnu par ML Kit'),
+            children: [
+              SelectableText(
+                widget.data.rawText,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Annuler'),
+      ),
+      FilledButton(
+        onPressed: () => Navigator.pop(
+          context,
+          DrivingLicenseData(
+            fullName: _name.text.trim(),
+            licenseNumber: _number.text.trim(),
+            expiryDate: _expiry.text.trim(),
+            rawText: widget.data.rawText,
+          ),
+        ),
+        child: const Text('Utiliser ces données'),
+      ),
+    ],
+  );
+}
+
+class _DriverField extends StatefulWidget {
   const _DriverField({
     required this.initialValue,
     required this.label,
@@ -113,11 +313,45 @@ class _DriverField extends StatelessWidget {
   final TextCapitalization capitalization;
 
   @override
+  State<_DriverField> createState() => _DriverFieldState();
+}
+
+class _DriverFieldState extends State<_DriverField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void didUpdateWidget(covariant _DriverField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialValue != _controller.text) {
+      _controller.value = TextEditingValue(
+        text: widget.initialValue,
+        selection: TextSelection.collapsed(offset: widget.initialValue.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => TextFormField(
-    initialValue: initialValue,
-    textCapitalization: capitalization,
-    onChanged: onChanged,
-    decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
+    controller: _controller,
+    textCapitalization: widget.capitalization,
+    textInputAction: TextInputAction.next,
+    onChanged: widget.onChanged,
+    decoration: InputDecoration(
+      labelText: widget.label,
+      prefixIcon: Icon(widget.icon),
+    ),
   );
 }
 
