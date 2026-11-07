@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
@@ -12,6 +14,19 @@ class MonConstatApp extends StatefulWidget {
 
 class _MonConstatAppState extends State<MonConstatApp> {
   final stores = AppStores();
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(stores.accidents.initialize());
+  }
+
+  @override
+  void dispose() {
+    stores.accidents.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => AppScope(
     stores: stores,
