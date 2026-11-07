@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
+import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
 
 class AccidentReview extends StatelessWidget {
   const AccidentReview({required this.draft, super.key});
   final AccidentDraft draft;
+  static final _pdf = AccidentPdfService();
 
   @override
   Widget build(BuildContext context) => Column(
@@ -20,6 +22,8 @@ class AccidentReview extends StatelessWidget {
         'Vérifiez toutes les informations avant la transmission.',
         style: TextStyle(color: AppColors.textMuted),
       ),
+      const SizedBox(height: 14),
+      _PdfActions(draft: draft, service: _pdf),
       const SizedBox(height: 14),
       _Section(
         title: 'Accident',
@@ -99,6 +103,92 @@ class AccidentReview extends StatelessWidget {
       '${value.month.toString().padLeft(2, '0')}/${value.year} '
       '${value.hour.toString().padLeft(2, '0')}:'
       '${value.minute.toString().padLeft(2, '0')}';
+}
+
+class _PdfActions extends StatefulWidget {
+  const _PdfActions({required this.draft, required this.service});
+  final AccidentDraft draft;
+  final AccidentPdfService service;
+
+  @override
+  State<_PdfActions> createState() => _PdfActionsState();
+}
+
+class _PdfActionsState extends State<_PdfActions> {
+  bool _busy = false;
+
+  Future<void> _run(Future<void> Function() action) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await action();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Impossible de générer le PDF. Réessayez.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Card(
+    color: AppColors.primaryTint,
+    child: Padding(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.picture_as_pdf_outlined, color: AppColors.primary),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Constat PDF',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 5),
+          const Text(
+            'Le document reprend les informations, photos, croquis et signatures.',
+            style: TextStyle(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 12),
+          if (_busy)
+            const LinearProgressIndicator()
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () =>
+                        _run(() => widget.service.preview(widget.draft)),
+                    icon: const Icon(Icons.visibility_outlined),
+                    label: const Text('Aperçu'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () =>
+                        _run(() => widget.service.share(widget.draft)),
+                    icon: const Icon(Icons.share_outlined),
+                    label: const Text('Partager'),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _Section extends StatelessWidget {
