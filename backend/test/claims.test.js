@@ -1,0 +1,314 @@
+import assert from 'node:assert/strict';
+import { after, before, beforeEach, describe, test } from 'node:test';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+
+import jwt from 'jsonwebtoken';
+import { io } from 'socket.io-client';
+
+// Base dédiée : TEST_DATABASE_URL=... npx prisma migrate deploy, puis npm test.
+const url = process.env.TEST_DATABASE_URL;
+
+describe('API sinistres', { skip: !url }, () => {
+  let server;
+  let base;
+  let prisma;
+  let seq = 0;
+
+  const driver = { 'x-user-id': 'd1', 'x-user-role': 'driver', 'x-user-name': 'Sami' };
+  const other = { 'x-user-id': 'd2', 'x-user-role': 'driver' };
+  const agent = { 'x-user-id': 'a1', 'x-user-role': 'agent', 'x-user-name': 'Leïla' };
+
+  async function call(headers, method, route, body) {
+    const form = body instanceof FormData;
+    const response = await fetch(`${base}/api/claims${route}`, {
+      method,
+      headers: {
+        ...headers,
+        ...(body && !form ? { 'content-type': 'application/json' } : {}),
+      },
+      body: form ? body : body && JSON.stringify(body),
+    });
+    const text = await response.text();
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      json = text;
+    }
+    return { status: response.status, body: json };
+  }
+
+  async function createClaim(extra = {}) {
+    const id = `SIN-T${++seq}`;
+    const created = await call(driver, 'POST', '/', {
+      id,
+      type: 'Collision',
+      place: 'Tunis',
+      date: '2026-11-07 10:00',
+      severity: 'Grave',
+      circumstances: ['Reculait'],
+      ...extra,
+    });
+    assert.equal(created.status, 201);
+    return id;
+  }
+
+  async function inReview() {
+    const id = await createClaim();
+    await call(agent, 'POST', `/${id}/take-charge`);
+    return id;
+  }
+
+  before(async () => {
+    process.env.DATABASE_URL = url;
+    process.env.JWT_SECRET = 'secret-test';
+    process.env.UPLOAD_DIR = mkdtempSync(path.join(tmpdir(), 'claims-'));
+    const { createApp } = await import('../src/app.js');
+    const { attachClaimsSocket } = await import(
+      '../src/modules/claims/claims.socket.js'
+    );
+    const { db } = await import('../src/modules/claims/claims.db.js');
+    prisma = db();
+    server = createApp().listen(0);
+    await new Promise((resolve) => server.once('listening', resolve));
+    attachClaimsSocket(server);
+    base = `http://127.0.0.1:${server.address().port}`;
+  });
+
+  beforeEach(async () => {
+    await prisma.processedRequest.deleteMany();
+    await prisma.claimNotification.deleteMany();
+    await prisma.claim.deleteMany();
+  });
+
+  after(async () => {
+    await prisma.$disconnect();
+    await new Promise((resolve) => server.close(resolve));
+  });
+
+  test('refuse une requête sans identité', async () => {
+    assert.equal((await call({}, 'GET', '/')).status, 401);
+  });
+
+  test('accepte un JWT signé', async () => {
+    const token = jwt.sign({ sub: 'd1', role: 'driver', name: 'Sami' }, 'secret-test');
+    const response = await call({ authorization: `Bearer ${token}` }, 'GET', '/');
+    assert.equal(response.status, 200);
+    const bad = await call({ authorization: 'Bearer faux' }, 'GET', '/');
+    assert.equal(bad.status, 401);
+  });
+
+  test('un dossier suit tout le parcours jusqu’à la clôture', async () => {
+    const id = await createClaim();
+    let claim = (await call(agent, 'POST', `/${id}/take-charge`)).body;
+    assert.equal(claim.status, 'En instruction');
+    assert.equal(claim.agentName, 'Leïla');
+
+    claim = (
+      await call(agent, 'POST', `/${id}/document-requests`, {
+        id: 'r1',
+        label: 'Devis',
+      })
+    ).body;
+    assert.equal(claim.status, 'Pièce demandée');
+
+    const form = new FormData();
+    form.set('id', 'doc1');
+    form.set('requestId', 'r1');
+    form.set('file', new Blob(['contenu']), 'devis.pdf');
+    claim = (await call(driver, 'POST', `/${id}/documents`, form)).body;
+    assert.equal(claim.status, 'En instruction');
+    assert.equal(claim.requests[0].documentId, 'doc1');
+
+    const file = await call(driver, 'GET', '/files/document/doc1');
+    assert.equal(file.status, 200);
+    assert.equal(file.body, 'contenu');
+    assert.equal((await call(other, 'GET', '/files/document/doc1')).status, 404);
+
+    claim = (
+      await call(agent, 'POST', `/${id}/expertise`, {
+        expertName: 'M. Trabelsi',
+        appointment: '2026-12-01T09:00:00.000Z',
+      })
+    ).body;
+    assert.equal(claim.status, 'Expertise');
+
+    const report = new FormData();
+    report.set('file', new Blob(['rapport']), 'rapport.pdf');
+    await call(agent, 'POST', `/${id}/expert-report`, report);
+
+    claim = (
+      await call(agent, 'POST', `/${id}/close`, {
+        responsibility: 100,
+        indemnity: 1250.5,
+      })
+    ).body;
+    assert.equal(claim.status, 'Clôturé');
+    assert.equal(claim.indemnity, 1250.5);
+    assert.deepEqual(
+      claim.documents.map((d) => d.kind),
+      ['Pièce', "Rapport d'expertise"],
+    );
+    assert.equal(claim.events.at(-1).label, 'Clôturé');
+
+    const notifications = (await call(driver, 'GET', '/notifications')).body;
+    assert.equal(notifications.length, 5);
+    assert.equal((await call(other, 'GET', '/notifications')).body.length, 0);
+  });
+
+  test('refuse un passage hors du cycle de vie', async () => {
+    const id = await createClaim();
+    const response = await call(agent, 'POST', `/${id}/close`, {
+      responsibility: 50,
+      indemnity: 10,
+    });
+    assert.equal(response.status, 409);
+    const claim = (await call(agent, 'GET', `/${id}`)).body;
+    assert.equal(claim.status, 'Transmis');
+    assert.equal(claim.indemnity, null);
+  });
+
+  test('valide la décision', async () => {
+    const id = await inReview();
+    const close = (body) => call(agent, 'POST', `/${id}/close`, body);
+    assert.equal((await close({ responsibility: 30, indemnity: 1 })).status, 400);
+    assert.equal((await close({ responsibility: 50, indemnity: -1 })).status, 400);
+    assert.equal((await close({ responsibility: 50 })).status, 400);
+    const reject = await call(agent, 'POST', `/${id}/reject`, { reason: '  ' });
+    assert.equal(reject.status, 400);
+    const ok = await call(agent, 'POST', `/${id}/reject`, { reason: 'Hors garantie' });
+    assert.equal(ok.body.status, 'Rejeté');
+    assert.equal(ok.body.decisionReason, 'Hors garantie');
+  });
+
+  test('applique les rôles et isole les conducteurs', async () => {
+    const id = await createClaim();
+    assert.equal((await call(driver, 'POST', `/${id}/take-charge`)).status, 403);
+    assert.equal((await call(other, 'GET', `/${id}`)).status, 404);
+    assert.equal((await call(other, 'GET', '/')).body.length, 0);
+    assert.equal((await call(agent, 'GET', '/')).body.length, 1);
+    assert.equal((await call(other, 'GET', `/${id}/messages`)).status, 404);
+  });
+
+  test('filtre par statut, gravité et texte', async () => {
+    const id = await createClaim();
+    await createClaim({ severity: 'Léger', place: 'Sfax' });
+    await call(agent, 'POST', `/${id}/take-charge`);
+    const list = async (query) =>
+      (await call(agent, 'GET', `/?${query}`)).body.length;
+    assert.equal(await list('severity=Grave'), 1);
+    assert.equal(await list(`status=${encodeURIComponent('En instruction')}`), 1);
+    assert.equal(await list('q=sfax'), 1);
+    assert.equal(await list('from=2100-01-01'), 0);
+  });
+
+  test('un renvoi avec la même clé ne s’applique pas deux fois', async () => {
+    const id = await inReview();
+    const headers = { ...driver, 'idempotency-key': 'k1' };
+    const first = await call(headers, 'POST', `/${id}/messages`, messageForm());
+    const second = await call(headers, 'POST', `/${id}/messages`, messageForm());
+    assert.equal(first.status, 201);
+    assert.equal(second.status, 201);
+    assert.equal(second.body.id, first.body.id);
+    assert.equal((await call(driver, 'GET', `/${id}/messages`)).body.length, 1);
+
+    const keyed = { ...agent, 'idempotency-key': 'k2' };
+    const request = { id: 'r9', label: 'Facture' };
+    await call(keyed, 'POST', `/${id}/document-requests`, request);
+    await call(keyed, 'POST', `/${id}/document-requests`, request);
+    const claim = (await call(agent, 'GET', `/${id}`)).body;
+    assert.equal(claim.requests.length, 1);
+  });
+
+  function messageForm() {
+    const form = new FormData();
+    form.set('id', 'm1');
+    form.set('body', 'Bonjour');
+    return form;
+  }
+
+  test('une erreur annule toute la transaction', async () => {
+    const id = await inReview();
+    const form = new FormData();
+    form.set('requestId', 'inconnue');
+    form.set('name', 'x.pdf');
+    const response = await call(driver, 'POST', `/${id}/documents`, form);
+    assert.equal(response.status, 400);
+    const claim = (await call(agent, 'GET', `/${id}`)).body;
+    assert.equal(claim.documents.length, 0);
+  });
+
+  test('messagerie : pièce jointe et accusé de lecture', async () => {
+    const id = await createClaim();
+    const form = messageForm();
+    form.set('file', new Blob(['photo']), 'photo.jpg');
+    await call(driver, 'POST', `/${id}/messages`, form);
+
+    const empty = new FormData();
+    empty.set('body', '   ');
+    assert.equal((await call(driver, 'POST', `/${id}/messages`, empty)).status, 400);
+
+    await call(driver, 'POST', `/${id}/messages/read`);
+    let [message] = (await call(driver, 'GET', `/${id}/messages`)).body;
+    assert.equal(message.read, false, 'on ne lit pas ses propres messages');
+
+    await call(agent, 'POST', `/${id}/messages/read`);
+    [message] = (await call(driver, 'GET', `/${id}/messages`)).body;
+    assert.equal(message.read, true);
+    assert.equal(message.attachmentName, 'photo.jpg');
+    assert.equal((await call(agent, 'GET', '/files/message/m1')).body, 'photo');
+  });
+
+  test('sync renvoie dossiers, notifications et messages', async () => {
+    const id = await createClaim();
+    await createClaim();
+    await call(agent, 'POST', `/${id}/take-charge`);
+    const { body } = await call(driver, 'GET', '/sync');
+    assert.equal(body.claims.length, 2);
+    assert.equal(body.notifications.length, 1);
+    assert.deepEqual(body.messages, []);
+  });
+
+  test('marque lues seulement ses notifications', async () => {
+    const id = await inReview();
+    const [notification] = (await call(driver, 'GET', '/notifications')).body;
+    await call(other, 'POST', '/notifications/read', { ids: [notification.id] });
+    assert.equal((await call(driver, 'GET', '/notifications')).body[0].read, false);
+    await call(driver, 'POST', '/notifications/read', { ids: [notification.id] });
+    assert.equal((await call(driver, 'GET', '/notifications')).body[0].read, true);
+    assert.ok(id);
+  });
+
+  test('prévient en direct le conducteur du dossier, pas les autres', async () => {
+    const id = await createClaim();
+    const connect = (auth) =>
+      new Promise((resolve, reject) => {
+        const socket = io(base, { path: '/api/claims/socket', auth });
+        socket.once('connect', () => resolve(socket));
+        socket.once('connect_error', reject);
+      });
+    const mine = await connect({ userId: 'd1', role: 'driver' });
+    const theirs = await connect({ userId: 'd2', role: 'driver' });
+    let leaked = false;
+    theirs.on('claims:changed', () => {
+      leaked = true;
+    });
+    const event = new Promise((resolve) => mine.once('claims:changed', resolve));
+    await call(agent, 'POST', `/${id}/take-charge`);
+    assert.deepEqual(await event, { claimId: id });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    assert.equal(leaked, false);
+    mine.close();
+    theirs.close();
+
+    await assert.rejects(connect({}));
+  });
+
+  test('la documentation répond', async () => {
+    const response = await fetch(`${base}/api/claims/openapi.json`);
+    assert.equal(response.status, 200);
+    assert.ok((await response.json()).paths['/{id}/close']);
+  });
+});

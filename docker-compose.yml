@@ -23,9 +23,12 @@ services:
       JWT_SECRET: secret-de-developpement
     ports:
       - "3000:3000"
+    volumes:
+      - uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   db-data:
+  uploads:
