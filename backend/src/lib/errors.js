@@ -35,6 +35,11 @@ export function errorHandler(err, _req, res, _next) {
     );
   }
   if (err instanceof HttpError) return send(err.status, err.code, err.message);
+  if (err?.name === 'MulterError') {
+    return err.code === 'LIMIT_FILE_SIZE'
+      ? send(413, 'FILE_TOO_LARGE', 'Image trop lourde : 5 Mo maximum.')
+      : send(400, 'BAD_UPLOAD', 'Envoi de fichier invalide.');
+  }
   if (isRecordNotFound(err)) {
     return send(404, 'NOT_FOUND', 'Ressource introuvable.');
   }

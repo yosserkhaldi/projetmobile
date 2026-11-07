@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -67,7 +68,34 @@ class ApiClient {
   Future<dynamic> patch(String path, {Object? body}) =>
       _request('PATCH', path, body: body);
 
-  Future<dynamic> delete(String path) => _request('DELETE', path);
+  Future<dynamic> delete(String path, {Object? body}) =>
+      _request('DELETE', path, body: body);
+
+  /// Envoie un fichier en multipart, dans le champ [field].
+  Future<dynamic> upload(
+    String path, {
+    required String field,
+    required List<int> bytes,
+    required String filename,
+    String method = 'PUT',
+  }) async {
+    final response = await _execute(
+      () => http.MultipartRequest(method, _uri(path))
+        ..files.add(
+          http.MultipartFile.fromBytes(field, bytes, filename: filename),
+        ),
+    );
+    return _decode(response);
+  }
+
+  /// Télécharge un fichier protégé (photo…) avec le jeton de l'utilisateur.
+  Future<Uint8List> getBytes(String path) async {
+    final response = await _execute(() => http.Request('GET', _uri(path)));
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.bodyBytes;
+    }
+    return _decode(response) as Never;
+  }
 
   /// Enregistre la session reçue à la connexion ou à l'inscription.
   Future<void> openSession(Map<String, dynamic> session) async {
@@ -111,12 +139,10 @@ class ApiClient {
           'Session expirée. Reconnectez-vous.',
         );
       }
-      final response = await _send(
-        'POST',
-        '/auth/refresh',
-        body: {'refreshToken': token},
-        auth: false,
-      );
+      final request = http.Request('POST', _uri('/auth/refresh'))
+        ..headers['Content-Type'] = 'application/json'
+        ..body = jsonEncode({'refreshToken': token});
+      final response = await _send(request, auth: false);
       final session = _decode(response) as Map<String, dynamic>;
       await openSession(session);
       onSessionRefreshed?.call(session);
@@ -130,6 +156,9 @@ class ApiClient {
     }
   }
 
+  Uri _uri(String path, [Map<String, String>? query]) =>
+      Uri.parse('$_baseUrl$path').replace(queryParameters: query);
+
   Future<dynamic> _request(
     String method,
     String path, {
@@ -137,44 +166,39 @@ class ApiClient {
     Map<String, String>? query,
     bool auth = true,
   }) async {
-    var response = await _send(
-      method,
-      path,
-      body: body,
-      query: query,
-      auth: auth,
-    );
+    http.BaseRequest build() {
+      final request = http.Request(method, _uri(path, query));
+      if (body != null) {
+        request.headers['Content-Type'] = 'application/json';
+        request.body = jsonEncode(body);
+      }
+      return request;
+    }
+
+    return _decode(await _execute(build, auth: auth));
+  }
+
+  /// Envoie la requête. En cas de 401, renouvelle la session puis la rejoue
+  /// une fois : [build] crée une nouvelle requête à chaque essai.
+  Future<http.Response> _execute(
+    http.BaseRequest Function() build, {
+    bool auth = true,
+  }) async {
+    var response = await _send(build(), auth: auth);
     if (auth && response.statusCode == 401) {
       await refreshSession();
-      response = await _send(
-        method,
-        path,
-        body: body,
-        query: query,
-        auth: auth,
-      );
+      response = await _send(build(), auth: auth);
     }
-    return _decode(response);
+    return response;
   }
 
   Future<http.Response> _send(
-    String method,
-    String path, {
-    Object? body,
-    Map<String, String>? query,
+    http.BaseRequest request, {
     required bool auth,
   }) async {
-    final request =
-        http.Request(
-            method,
-            Uri.parse('$_baseUrl$path').replace(queryParameters: query),
-          )
-          ..headers.addAll({
-            if (body != null) 'Content-Type': 'application/json',
-            if (auth && _accessToken != null)
-              'Authorization': 'Bearer $_accessToken',
-          });
-    if (body != null) request.body = jsonEncode(body);
+    if (auth && _accessToken != null) {
+      request.headers['Authorization'] = 'Bearer $_accessToken';
+    }
     try {
       final streamed = await _http.send(request).timeout(_timeout);
       return await http.Response.fromStream(streamed).timeout(_timeout);

@@ -43,12 +43,16 @@ model User {
   failedLogins    Int       @default(0)
   lockedUntil     DateTime?
   companyId       String?   @db.Uuid
+  // Noms de fichiers dans UPLOAD_DIR/users. Jamais servis publiquement.
+  photoFile        String?
+  licensePhotoFile String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   company           Company?           @relation(fields: [companyId], references: [id], onDelete: Restrict)
   refreshTokens     RefreshToken[]
   verificationCodes VerificationCode[]
+  deviceKeys        DeviceKey[]
 
   @@index([role])
   @@index([companyId])
@@ -100,4 +104,20 @@ model VerificationCode {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, purpose])
+}
+
+// Connexion biométrique : clé longue durée gardée sur l'appareil,
+// utilisable seulement après l'empreinte ou la reconnaissance faciale.
+model DeviceKey {
+  id         String    @id @default(uuid()) @db.Uuid
+  tokenHash  String    @unique
+  userId     String    @db.Uuid
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

@@ -1,5 +1,9 @@
+import { readFileSync } from 'node:fs';
+
 import cors from 'cors';
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import { parse } from 'yaml';
 
 import { errorHandler, notFoundHandler } from './lib/errors.js';
 import accidentsRoutes from './modules/accidents/accidents.routes.js';
@@ -9,6 +13,11 @@ import authRoutes from './modules/users/auth.routes.js';
 import companiesRoutes from './modules/users/companies.routes.js';
 import usersRoutes from './modules/users/users.routes.js';
 import vehiclesRoutes from './modules/vehicles/vehicles.routes.js';
+
+// Contrat d'API partagé : http://localhost:3000/api/docs
+const apiDocs = parse(
+  readFileSync(new URL('../openapi.yaml', import.meta.url), 'utf8'),
+);
 
 export function createApp() {
   const app = express();
@@ -20,6 +29,7 @@ export function createApp() {
   app.use(express.json());
 
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apiDocs));
 
   // Chaque module ajoute ses endpoints dans son propre fichier de routes.
   app.use('/api/auth', authRoutes);

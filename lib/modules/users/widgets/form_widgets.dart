@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
+import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
 
 abstract final class Validators {
   static String? required(String? value) =>
@@ -31,9 +32,11 @@ abstract final class Validators {
 }
 
 /// Message d'erreur affiché à partir de n'importe quelle exception.
-String errorMessage(Object error) => error is ApiException
-    ? error.message
-    : 'Une erreur est survenue. Réessayez.';
+String errorMessage(Object error) => switch (error) {
+  ApiException(:final message) => message,
+  BiometricException(:final message) => message,
+  _ => 'Une erreur est survenue. Réessayez.',
+};
 
 /// Champ avec le libellé au-dessus, comme sur la maquette.
 class LabeledField extends StatelessWidget {
@@ -194,8 +197,11 @@ mixin FormActions<T extends StatefulWidget> on State<T> {
   bool busy = false;
   String? error;
 
-  Future<void> submit(Future<void> Function() action) async {
-    if (!(formKey.currentState?.validate() ?? true)) return;
+  Future<void> submit(
+    Future<void> Function() action, {
+    bool validate = true,
+  }) async {
+    if (validate && !(formKey.currentState?.validate() ?? true)) return;
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
       busy = true;

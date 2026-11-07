@@ -68,6 +68,28 @@ void main() {
     expect(await api.hasStoredSession(), isTrue);
   });
 
+  test(
+    'envoi de fichier : rejoué avec un nouveau jeton après un 401',
+    () async {
+      backend.validAccessToken = 'autre-jeton';
+      await api.upload(
+        '/users/me/photo',
+        field: 'photo',
+        bytes: [1, 2, 3],
+        filename: 'a.jpg',
+      );
+      expect(backend.requests, [
+        'PUT /users/me/photo',
+        'POST /auth/refresh',
+        'PUT /users/me/photo',
+      ]);
+    },
+  );
+
+  test('téléchargement protégé : renvoie les octets', () async {
+    expect(await api.getBytes('/users/u1/photo'), tinyPng);
+  });
+
   test("erreur métier : garde le code et le message de l'API", () async {
     backend.failures['GET /companies'] = (409, 'CONFLICT', 'Message clair.');
     await expectLater(

@@ -1,5 +1,6 @@
 // À importer avant `src/` : fixe l'environnement de test.
 import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -10,6 +11,7 @@ process.env.DATABASE_URL =
   process.env.TEST_DATABASE_URL ??
   'postgresql://monconstat:monconstat@localhost:5434/monconstat_test';
 process.env.JWT_SECRET = 'secret-de-test';
+process.env.UPLOAD_DIR = join(tmpdir(), `monconstat-test-${process.pid}`);
 
 const { createApp } = await import('../src/app.js');
 const { prisma } = await import('../src/lib/prisma.js');
@@ -27,7 +29,7 @@ export function migrate() {
 
 export const resetDatabase = () =>
   prisma.$executeRawUnsafe(
-    'TRUNCATE "User", "Company", "Agency", "RefreshToken", "VerificationCode" CASCADE',
+    'TRUNCATE "User", "Company", "Agency", "RefreshToken", "VerificationCode", "DeviceKey" CASCADE',
   );
 
 /** Démarre l'API sur un port libre et capture les SMS et e-mails envoyés. */
@@ -44,15 +46,23 @@ export async function startApi(t) {
   t.after(() => server.close());
   const base = `http://127.0.0.1:${server.address().port}/api`;
 
-  const call = async (method, path, { body, token } = {}) => {
+  const call = async (method, path, { body, token, form } = {}) => {
     const response = await fetch(base + path, {
       method,
       headers: {
         ...(body !== undefined && { 'Content-Type': 'application/json' }),
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: form ?? (body === undefined ? undefined : JSON.stringify(body)),
     });
+    const type = response.headers.get('content-type') ?? '';
+    if (type.startsWith('image/')) {
+      return {
+        status: response.status,
+        type,
+        bytes: Buffer.from(await response.arrayBuffer()),
+      };
+    }
     const text = await response.text();
     return { status: response.status, body: text ? JSON.parse(text) : null };
   };

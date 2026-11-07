@@ -40,6 +40,8 @@ class AppUser {
     this.licenseIssuedAt,
     this.companyId,
     this.companyName,
+    this.photoId,
+    this.licensePhotoId,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,8 @@ class AppUser {
       licenseIssuedAt: json['licenseIssuedAt'] as String?,
       companyId: company?['id'] as String?,
       companyName: company?['name'] as String?,
+      photoId: json['photoId'] as String?,
+      licensePhotoId: json['licensePhotoId'] as String?,
     );
   }
 
@@ -71,6 +75,9 @@ class AppUser {
   /// Date au format AAAA-MM-JJ.
   final String? licenseIssuedAt;
   final String? companyId, companyName;
+
+  /// Changent à chaque nouvelle photo. `null` : pas de photo.
+  final String? photoId, licensePhotoId;
 
   String get name => '$firstName $lastName';
 
@@ -90,5 +97,7 @@ class AppUser {
     'company': companyId == null
         ? null
         : {'id': companyId, 'name': companyName},
+    'photoId': photoId,
+    'licensePhotoId': licensePhotoId,
   };
 }

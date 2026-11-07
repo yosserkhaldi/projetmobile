@@ -27,6 +27,10 @@ adb reverse tcp:3000 tcp:3000
 
 Pour viser un autre serveur : `flutter run --dart-define=API_URL=http://192.168.1.10:3000/api`.
 
+> **Erreur Java/Gradle au premier build Android :** Android Studio récent fournit Java 25, trop récent pour la version de Gradle du projet. Installer un JDK 17 puis : `flutter config --jdk-dir="C:\Program Files\Java\jdk-17"`.
+>
+> **Huawei / Xiaomi :** au premier `flutter run`, accepter l'invite « Installer via USB » sur le téléphone.
+
 Avant chaque push :
 
 ```bash
@@ -69,6 +73,8 @@ npm test                     # nécessite la base : docker compose up db
 ```
 
 Pour modifier le schéma : éditer `backend/prisma/schema.prisma`, puis `npm run db:migrate`.
+
+Contrat d'API (Swagger) : `http://localhost:3000/api/docs`, à partir de `backend/openapi.yaml`. Chaque module y documente ses endpoints ; un test vérifie que chaque route documentée existe.
 
 ## Organisation du code
 

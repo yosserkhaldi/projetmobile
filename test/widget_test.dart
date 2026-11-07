@@ -1,7 +1,11 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mon_constat_digital/main.dart';
 import 'package:mon_constat_digital/modules/users/screens/profile_screen.dart';
+import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 
 import 'support/fake_backend.dart';
 
@@ -322,6 +326,118 @@ void main() {
       expect(backend.bodies['POST /companies'], {'name': 'COMAR'});
       expect(find.text('COMAR'), findsOneWidget);
     });
+  });
+
+  group('connexion biométrique', () {
+    FakeBackend enrolled() =>
+        FakeBackend()..storage.values['biometric_token'] = 'device-0';
+
+    testWidgets('bouton masqué tant qu elle n est pas activée', (tester) async {
+      await pumpApp(tester, FakeBackend());
+      expect(find.text('Empreinte ou Face ID'), findsNothing);
+    });
+
+    testWidgets('empreinte reconnue : connexion et nouvelle clé', (
+      tester,
+    ) async {
+      final backend = enrolled();
+      await pumpApp(tester, backend);
+      await tester.tap(find.text('Empreinte ou Face ID'));
+      await tester.pumpAndSettle();
+      expect(backend.biometric.prompts, 1);
+      expect(backend.bodies['POST /auth/biometric/login'], {
+        'deviceToken': 'device-0',
+      });
+      expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
+      expect(backend.storage.values['biometric_token'], 'device-1');
+    });
+
+    testWidgets('empreinte annulée : aucune requête', (tester) async {
+      final backend = enrolled()..biometric.accept = false;
+      await pumpApp(tester, backend);
+      await tester.tap(find.text('Empreinte ou Face ID'));
+      await tester.pumpAndSettle();
+      expect(backend.requests, isNot(contains('POST /auth/biometric/login')));
+      expect(find.text('Connexion'), findsOneWidget);
+    });
+
+    testWidgets('clé expirée : message, clé oubliée, bouton retiré', (
+      tester,
+    ) async {
+      final backend = enrolled()
+        ..failures['POST /auth/biometric/login'] = (
+          401,
+          'BIOMETRIC_INVALID',
+          'Connexion biométrique expirée.',
+        );
+      await pumpApp(tester, backend);
+      await tester.tap(find.text('Empreinte ou Face ID'));
+      await tester.pumpAndSettle();
+      expect(find.text('Connexion biométrique expirée.'), findsOneWidget);
+      expect(find.text('Empreinte ou Face ID'), findsNothing);
+      expect(backend.storage.values.containsKey('biometric_token'), isFalse);
+    });
+
+    testWidgets('activation depuis le profil, puis déconnexion conservée', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+
+      final toggle = find.text('Connexion par empreinte');
+      await tester.ensureVisible(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('POST /auth/biometric'));
+      expect(backend.storage.values['biometric_token'], 'device-1');
+      expect(find.text('Connexion biométrique activée'), findsOneWidget);
+      // Le message disparaît avant de toucher « Se déconnecter » qu'il recouvre.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Se déconnecter'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Se déconnecter'));
+      await tester.pumpAndSettle();
+      expect(find.text('Empreinte ou Face ID'), findsOneWidget);
+    });
+
+    testWidgets('sans capteur : pas d option dans le profil', (tester) async {
+      final backend = FakeBackend()..biometric.available = false;
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      expect(find.text('Connexion par empreinte'), findsNothing);
+    });
+  });
+
+  testWidgets('photo de profil : envoyée puis affichée', (tester) async {
+    final backend = FakeBackend();
+    await pumpApp(tester, backend);
+    await signIn(tester);
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Image), findsNothing);
+
+    await backend.stores.users.uploadPhoto(
+      UserPhoto.profile,
+      Uint8List.fromList([9, 9, 9]),
+      'moi.jpg',
+    );
+    await tester.pumpAndSettle();
+    final upload = backend.uploads['PUT /users/me/photo']!;
+    expect(upload.headers['Content-Type'], startsWith('multipart/form-data'));
+    expect(
+      utf8.decode(upload.bodyBytes, allowMalformed: true),
+      contains('name="photo"; filename="moi.jpg"'),
+    );
+    expect(find.byType(Image), findsOneWidget);
+    expect(backend.requests, contains('GET /users/u1/photo'));
   });
 
   testWidgets('démarre le parcours de déclaration', (tester) async {

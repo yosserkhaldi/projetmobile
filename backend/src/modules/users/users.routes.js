@@ -6,6 +6,12 @@ import {
   isUniqueViolation,
 } from '../../lib/errors.js';
 import { prisma } from '../../lib/prisma.js';
+import {
+  deleteImage,
+  imagePath,
+  saveImage,
+  singleImage,
+} from '../../lib/uploads.js';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import {
   hashPassword,
@@ -70,6 +76,51 @@ router.patch('/me', async (req, res) => {
     .catch(rethrowConflict);
   res.json({ user: publicUser(user) });
 });
+
+// Photo de profil et photo du permis : champ multipart `photo`.
+const PHOTOS = {
+  photo: 'photoFile',
+  'license-photo': 'licensePhotoFile',
+};
+const PHOTO_FOLDER = 'users';
+
+for (const [route, column] of Object.entries(PHOTOS)) {
+  router.put(`/me/${route}`, singleImage('photo'), async (req, res) => {
+    const name = await saveImage(req.file, PHOTO_FOLDER);
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { [column]: name },
+      include: withCompany,
+    });
+    await deleteImage(req.user[column], PHOTO_FOLDER);
+    res.json({ user: publicUser(user) });
+  });
+
+  router.delete(`/me/${route}`, async (req, res) => {
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { [column]: null },
+      include: withCompany,
+    });
+    await deleteImage(req.user[column], PHOTO_FOLDER);
+    res.json({ user: publicUser(user) });
+  });
+
+  // Le titulaire et les administrateurs seulement. Le module 5 pourra ouvrir
+  // l'accès à l'agent chargé du dossier.
+  router.get(`/:id/${route}`, async (req, res) => {
+    const { id } = idParams.parse(req.params);
+    if (req.user.id !== id && req.user.role !== 'ADMIN') {
+      throw new HttpError(403, 'FORBIDDEN', 'Accès refusé.');
+    }
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user?.[column]) {
+      throw new HttpError(404, 'NOT_FOUND', 'Aucune photo.');
+    }
+    res.set('Cache-Control', 'private, max-age=86400');
+    res.sendFile(imagePath(user[column], PHOTO_FOLDER));
+  });
+}
 
 // Tout ce qui suit est réservé aux administrateurs.
 router.use(requireRole('ADMIN'));

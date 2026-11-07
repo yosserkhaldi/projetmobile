@@ -130,3 +130,11 @@ export const agencySchema = z.object({
   name: name("Nom de l'agence"),
   city: name('Ville'),
 });
+
+export const biometricLoginSchema = z.object({
+  deviceToken: z.string({ error: 'Clé biométrique obligatoire.' }).min(1),
+});
+
+export const disableBiometricSchema = z.object({
+  deviceToken: z.string().min(1).optional(),
+});

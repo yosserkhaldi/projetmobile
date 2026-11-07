@@ -26,6 +26,11 @@ class _AuthScreenState extends State<AuthScreen> with FormActions {
     super.dispose();
   }
 
+  void _biometricLogin() {
+    final users = AppScope.of(context).users;
+    submit(users.loginWithBiometric, validate: false);
+  }
+
   void _login() {
     final users = AppScope.of(context).users;
     submit(() => users.login(_identifier.text.trim(), _password.text));
@@ -100,6 +105,32 @@ class _AuthScreenState extends State<AuthScreen> with FormActions {
       ),
       const SizedBox(height: 4),
       BusyButton(label: 'Se connecter', busy: busy, onPressed: _login),
+      if (AppScope.of(context).users.biometricEnabled) ...[
+        const SizedBox(height: 14),
+        const Row(
+          children: [
+            Expanded(child: Divider(color: AppColors.border)),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'ou',
+                style: TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Expanded(child: Divider(color: AppColors.border)),
+          ],
+        ),
+        const SizedBox(height: 14),
+        OutlinedButton.icon(
+          onPressed: busy ? null : _biometricLogin,
+          icon: const Icon(Icons.fingerprint),
+          label: const Text('Empreinte ou Face ID'),
+        ),
+      ],
       const SizedBox(height: 16),
       Wrap(
         alignment: WrapAlignment.center,

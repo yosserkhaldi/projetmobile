@@ -3,6 +3,8 @@ import { Router } from 'express';
 import { requireAuth } from '../../middleware/auth.js';
 import * as auth from './auth.service.js';
 import {
+  biometricLoginSchema,
+  disableBiometricSchema,
   forgotPasswordSchema,
   loginSchema,
   refreshSchema,
@@ -52,6 +54,21 @@ router.post('/password/forgot', async (req, res) => {
 
 router.post('/password/reset', async (req, res) => {
   await auth.resetPassword(resetPasswordSchema.parse(req.body));
+  res.status(204).end();
+});
+
+router.post('/biometric', requireAuth, async (req, res) => {
+  res.status(201).json(await auth.enableBiometric(req.user));
+});
+
+router.post('/biometric/login', async (req, res) => {
+  const { deviceToken } = biometricLoginSchema.parse(req.body);
+  res.json(await auth.biometricLogin(deviceToken));
+});
+
+router.delete('/biometric', requireAuth, async (req, res) => {
+  const { deviceToken } = disableBiometricSchema.parse(req.body ?? {});
+  await auth.disableBiometric(req.user, deviceToken);
   res.status(204).end();
 });
 

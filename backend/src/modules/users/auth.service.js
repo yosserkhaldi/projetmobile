@@ -19,6 +19,8 @@ const MAX_FAILED_LOGINS = 5;
 const LOCK_MS = 15 * 60_000;
 // Chaque rafraîchissement prolonge la session : elle expire après 30 min d'inactivité.
 const SESSION_MS = 30 * 60_000;
+// La clé biométrique dure 30 jours et change à chaque utilisation.
+const DEVICE_KEY_MS = 30 * 24 * 60 * 60_000;
 
 const CODE_TTL_MS = {
   PHONE_VERIFICATION: 10 * 60_000,
@@ -47,6 +49,9 @@ export function publicUser(user) {
     licenseCategory: user.licenseCategory,
     licenseIssuedAt: user.licenseIssuedAt?.toISOString().slice(0, 10) ?? null,
     company: user.company ?? null,
+    // Identifiants opaques : changent à chaque nouvelle photo (cache côté app).
+    photoId: user.photoFile ?? null,
+    licensePhotoId: user.licensePhotoFile ?? null,
   };
 }
 
@@ -66,11 +71,18 @@ async function openSession(user) {
   };
 }
 
+/** Ferme toutes les sessions et désactive la connexion biométrique. */
 export const revokeSessions = (userId) =>
-  prisma.refreshToken.updateMany({
-    where: { userId, revokedAt: null },
-    data: { revokedAt: new Date() },
-  });
+  prisma.$transaction([
+    prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    }),
+    prisma.deviceKey.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    }),
+  ]);
 
 /**
  * Enregistre un nouveau code, ce qui invalide les précédents.
@@ -299,4 +311,62 @@ export async function resetPassword({ email, code, password }) {
     },
   });
   await revokeSessions(user.id);
+}
+
+async function issueDeviceKey(userId) {
+  const deviceToken = newRefreshToken();
+  const expiresAt = new Date(Date.now() + DEVICE_KEY_MS);
+  await prisma.deviceKey.create({
+    data: { userId, tokenHash: hashToken(deviceToken), expiresAt },
+  });
+  return { deviceToken, expiresAt: expiresAt.toISOString() };
+}
+
+/** Active la connexion biométrique sur l'appareil qui fait la demande. */
+export const enableBiometric = (user) => issueDeviceKey(user.id);
+
+/**
+ * Connexion après une empreinte ou une reconnaissance faciale réussie sur
+ * l'appareil. La clé est remplacée à chaque usage, comme le jeton de session.
+ */
+export async function biometricLogin(deviceToken) {
+  const invalid = new HttpError(
+    401,
+    'BIOMETRIC_INVALID',
+    'Connexion biométrique expirée. Connectez-vous avec votre mot de passe.',
+  );
+  const key = await prisma.deviceKey.findUnique({
+    where: { tokenHash: hashToken(deviceToken) },
+    include: { user: { include: withCompany } },
+  });
+  if (!key) throw invalid;
+  if (key.revokedAt) {
+    // Une clé déjà utilisée qui revient peut avoir été copiée.
+    if (key.lastUsedAt) await revokeSessions(key.userId);
+    throw invalid;
+  }
+  if (key.expiresAt <= new Date()) throw invalid;
+  if (!key.user.active) {
+    throw new HttpError(403, 'ACCOUNT_SUSPENDED', 'Ce compte est suspendu.');
+  }
+  const rotated = await prisma.deviceKey.updateMany({
+    where: { id: key.id, revokedAt: null },
+    data: { revokedAt: new Date(), lastUsedAt: new Date() },
+  });
+  if (rotated.count === 0) throw invalid;
+
+  const session = await openSession(key.user);
+  return { ...session, ...(await issueDeviceKey(key.userId)) };
+}
+
+/** Désactive la connexion biométrique : sur un appareil, ou partout. */
+export async function disableBiometric(user, deviceToken) {
+  await prisma.deviceKey.updateMany({
+    where: {
+      userId: user.id,
+      revokedAt: null,
+      ...(deviceToken && { tokenHash: hashToken(deviceToken) }),
+    },
+    data: { revokedAt: new Date() },
+  });
 }

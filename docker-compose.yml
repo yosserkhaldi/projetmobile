@@ -23,6 +23,9 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://monconstat:monconstat@db:5432/monconstat
       JWT_SECRET: secret-de-developpement
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - uploads:/app/uploads
     ports:
       - "3000:3000"
     depends_on:
@@ -31,3 +34,4 @@ services:
 
 volumes:
   db-data:
+  uploads:

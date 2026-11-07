@@ -5,7 +5,9 @@ import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/otp_screen.dart';
+import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
+import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
 
@@ -162,6 +164,8 @@ class _ProfileScreenState extends State<ProfileScreen> with FormActions {
                     fontSize: 15,
                   ),
                 ),
+                const SizedBox(height: 14),
+                _LicensePhoto(user: user),
                 const SizedBox(height: 22),
                 const _SectionTitle('Préférences'),
                 const SizedBox(height: 10),
@@ -179,6 +183,10 @@ class _ProfileScreenState extends State<ProfileScreen> with FormActions {
                     if (value != null) setState(() => _language = value);
                   },
                 ),
+                if (users.biometricAvailable) ...[
+                  const SizedBox(height: 8),
+                  const _BiometricSwitch(),
+                ],
                 const SizedBox(height: 22),
                 BusyButton(label: 'Enregistrer', busy: busy, onPressed: _save),
                 const SizedBox(height: 8),
@@ -223,21 +231,56 @@ class _IdentityCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.primaryTint,
+          Semantics(
+            button: true,
+            label: 'Changer la photo de profil',
+            child: InkWell(
+              onTap: () => changePhoto(context, UserPhoto.profile),
               borderRadius: BorderRadius.circular(AppRadius.input),
-            ),
-            child: Text(
-              user.firstName.characters.first.toUpperCase(),
-              style: const TextStyle(
-                fontFamily: AppFonts.display,
-                fontWeight: FontWeight.w800,
-                fontSize: 20,
-                color: AppColors.primary,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.input),
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      color: AppColors.primaryTint,
+                      child: UserPhotoView(
+                        user: user,
+                        photo: UserPhoto.profile,
+                        placeholder: Center(
+                          child: Text(
+                            user.firstName.characters.first.toUpperCase(),
+                            style: const TextStyle(
+                              fontFamily: AppFonts.display,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 22,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: -4,
+                    bottom: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.surface, width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.photo_camera,
+                        size: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -331,4 +374,126 @@ class _PhoneStatus extends StatelessWidget {
       ),
     );
   }
+}
+
+class _LicensePhoto extends StatelessWidget {
+  const _LicensePhoto({required this.user});
+  final AppUser user;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPhoto = user.licensePhotoId != null;
+    return InkWell(
+      onTap: () => changePhoto(context, UserPhoto.license),
+      borderRadius: BorderRadius.circular(AppRadius.input),
+      child: Container(
+        height: hasPhoto ? 170 : 56,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: hasPhoto ? AppColors.surface : AppColors.primaryTint,
+          borderRadius: BorderRadius.circular(AppRadius.input),
+          border: Border.all(color: AppColors.primary, width: 1.5),
+        ),
+        child: hasPhoto
+            ? Stack(
+                fit: StackFit.expand,
+                children: [
+                  UserPhotoView(
+                    user: user,
+                    photo: UserPhoto.license,
+                    placeholder: const SizedBox.shrink(),
+                  ),
+                  Positioned(
+                    right: 8,
+                    bottom: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.ink,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                      ),
+                      child: const Text(
+                        'Remplacer',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.document_scanner_outlined,
+                    color: AppColors.primary,
+                  ),
+                  SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Ajouter la photo du permis',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class _BiometricSwitch extends StatefulWidget {
+  const _BiometricSwitch();
+
+  @override
+  State<_BiometricSwitch> createState() => _BiometricSwitchState();
+}
+
+class _BiometricSwitchState extends State<_BiometricSwitch> {
+  bool _busy = false;
+
+  Future<void> _toggle(bool enable) async {
+    final users = AppScope.of(context).users;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      if (enable) {
+        if (await users.enableBiometric()) {
+          messenger.showSnackBar(
+            const SnackBar(content: Text('Connexion biométrique activée')),
+          );
+        }
+      } else {
+        await users.disableBiometric();
+      }
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(errorMessage(e))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => SwitchListTile(
+    contentPadding: EdgeInsets.zero,
+    value: AppScope.of(context).users.biometricEnabled,
+    onChanged: _busy ? null : _toggle,
+    title: const Text(
+      'Connexion par empreinte',
+      style: TextStyle(fontWeight: FontWeight.w700),
+    ),
+    subtitle: const Text(
+      'Empreinte ou reconnaissance faciale, 30 jours sur ce téléphone',
+    ),
+  );
 }

@@ -5,6 +5,30 @@ import 'package:http/testing.dart';
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/network/token_storage.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
+
+/// Plus petit PNG valide (1 × 1 pixel).
+final tinyPng = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+);
+
+/// Capteur biométrique simulé.
+class FakeBiometric implements BiometricAuth {
+  bool available = true;
+
+  /// Réponse de l'utilisateur : reconnu (true) ou annulation (false).
+  bool accept = true;
+  int prompts = 0;
+
+  @override
+  Future<bool> isAvailable() async => available;
+
+  @override
+  Future<bool> authenticate(String reason) async {
+    prompts += 1;
+    return accept;
+  }
+}
 
 class MemoryStorage implements SessionStorage {
   final values = <String, String>{};
@@ -58,6 +82,9 @@ class FakeBackend {
   final storage = MemoryStorage();
   final requests = <String>[];
   final bodies = <String, Map<String, dynamic>>{};
+  final uploads = <String, http.Request>{};
+  final biometric = FakeBiometric();
+  int deviceKeys = 0;
 
   /// Le serveur est injoignable.
   bool offline = false;
@@ -76,6 +103,7 @@ class FakeBackend {
 
   late final AppStores stores = AppStores(
     storage: storage,
+    biometric: biometric,
     api: ApiClient(storage: storage, httpClient: client, baseUrl: 'http://api'),
   );
 
@@ -89,8 +117,11 @@ class FakeBackend {
     if (offline) throw http.ClientException('offline');
     final route = '${request.method} ${request.url.path}';
     requests.add(route);
-    if (request.body.isNotEmpty) {
+    final type = request.headers['Content-Type'] ?? '';
+    if (type.startsWith('application/json')) {
       bodies[route] = jsonDecode(request.body) as Map<String, dynamic>;
+    } else if (type.startsWith('multipart/')) {
+      uploads[route] = request;
     }
 
     final failure = failures[route];
@@ -116,6 +147,9 @@ class FakeBackend {
         refreshCount += 1;
         validAccessToken = 'access-${refreshCount + 1}';
         return _json(200, _session());
+      case 'POST /auth/biometric/login':
+        deviceKeys += 1;
+        return _json(200, {..._session(), 'deviceToken': 'device-$deviceKeys'});
       case 'POST /auth/logout':
       case 'POST /auth/phone/send':
       case 'POST /auth/password/forgot':
@@ -131,6 +165,21 @@ class FakeBackend {
     }
 
     final path = request.url.path;
+    if (route == 'POST /auth/biometric') {
+      deviceKeys += 1;
+      return _json(201, {
+        'deviceToken': 'device-$deviceKeys',
+        'expiresAt': '2026-12-07T00:00:00.000Z',
+      });
+    }
+    if (route == 'DELETE /auth/biometric') return http.Response('', 204);
+    if (route == 'PUT /users/me/photo') {
+      user = {...user, 'photoId': 'photo-${uploads.length}.jpg'};
+      return _json(200, {'user': user});
+    }
+    if (route == 'GET /users/${user['id']}/photo') {
+      return http.Response.bytes(tinyPng, 200);
+    }
     if (route == 'POST /auth/phone/verify') {
       user = {...user, 'phoneVerified': true};
       return _json(200, {'user': user});
