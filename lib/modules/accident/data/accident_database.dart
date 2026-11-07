@@ -129,10 +129,12 @@ class AccidentDatabase extends _$AccidentDatabase {
 
   /// Flux réactif du brouillon (bonus Drift : se met à jour à chaque écriture).
   Stream<AccidentDraft?> watchDraft() {
-    return (select(accidentDrafts)..where((t) => t.id.equals(1)))
-        .watchSingleOrNull()
-        .map((row) =>
-            row == null ? null : AccidentDraft.fromDatabaseMap(_rowToMap(row)));
+    return (select(
+      accidentDrafts,
+    )..where((t) => t.id.equals(1))).watchSingleOrNull().map(
+      (row) =>
+          row == null ? null : AccidentDraft.fromDatabaseMap(_rowToMap(row)),
+    );
   }
 
   static Map<String, Object?> _rowToMap(AccidentDraftRow r) => {

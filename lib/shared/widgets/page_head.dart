@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
 class PageHead extends StatelessWidget {
   const PageHead(
     this.title, {
@@ -31,7 +33,7 @@ class PageHead extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.grey.shade600,
+                    color: context.palette.textMuted,
                     fontSize: 14,
                     height: 1.35,
                     fontWeight: FontWeight.w500,

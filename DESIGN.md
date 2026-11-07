@@ -93,6 +93,29 @@ These are read from the maquette.
 | Signature pad | `#FFF8EA` | `#7A4300` | `#D9A440` (dashed border, baseline) |
 | Emergency numbers | `surface` | SAMU `#B4290F`, Police `#1537A8`, Protection civile `#A35A00` | |
 
+### Dark mode
+
+Users pick **Same as phone** (default), **Light** or **Dark** in Profil → Préférences. Colors live in `AppPalette` (`lib/core/theme/app_palette.dart`); screens read them with `context.palette.<role>`, never a fixed `AppColors` value, so both modes work.
+
+| Role | Light | Dark | Use |
+|---|---|---|---|
+| `canvas` | `#F2F4F7` | `#0A111C` | Screen background |
+| `surface` | `#FFFFFF` | `#131D2C` | Cards, inputs, nav bar |
+| `surfaceAlt` | `#EEF1F5` | `#1A2638` | Tags, tracks, inner dividers |
+| `text` | `#0B1626` | `#E8EDF5` | Main text |
+| `textMuted` | `#4A5568` | `#9AA8BD` | Secondary text, labels |
+| `border` / `borderSoft` | `#DCE1E8` / `#E4E8EE` | `#2A3850` / `#223047` | Inputs / cards |
+| `primary` | `#1537A8` | `#3358D4` | Button fills |
+| `primaryText` | `#1537A8` | `#8FA8FF` | Links, icons, active nav |
+| `primaryTint` | `#E7ECFB` | `#1B2B57` | Info chips, nav indicator |
+| `hero` / `heroRing` / `heroTrack` | `#0B1626` / `#16243A` / `#1E2D45` | `#16243A` / `#1E2D45` / `#2A3A55` | Dark blocks (profile header, "Un accident ?") |
+| `licenseCard` / `licenseChip` | `#1537A8` / `#2448BD` | `#2448BD` / `#3A5CD0` | Licence card |
+| warning bg / text | `#FFF1D6` / `#7A4300` | `#3A2A0A` / `#FFC766` | |
+| success bg / text | `#E4F4F0` / `#0F6B5E` | `#0F3B33` / `#7FE0CC` | |
+| error bg / text | `#FDECEA` / `#A3261A` | `#3D1714` / `#FF9A8C` | |
+
+Amber (`#F5A524`) and the A/B colors do not change. Dark contrast (WCAG): text on canvas 16.1, muted on surface 7.0, `primaryText` on surface 7.4, white on `primary` 6.0, warning 9.0, success 7.9, error 7.7. All pass AA.
+
 ### Charts and maps
 
 - **Chart series, in order:** `#1537A8`, `#F5A524`, `#0B1626`, `#8FA3D9`.
@@ -276,7 +299,7 @@ Only the rows marked Maquette are defined there. **Proposed** rows extend the sa
 2. **Same case, different status.** Home shows *En instruction* while Suivi and Messagerie show *Pièce demandée* for `SIN-2026-0418`.
 3. **Small touch targets.** Language toggle 32, segmented options 36, chips 40, against 44 elsewhere. **Proposed:** use at least 44 in the roadside flow.
 4. **Placeholder content.** The franchise shows a literal `[MONTANT] DT`; the dashboard uses "Compagnie A–D".
-5. **Dark mode.** No dark theme is defined. The dark screens are fixed per-screen designs. **Proposed:** light only for v1.
+5. **Dark mode.** Not in the maquette. Implemented from the palette above (section 3, Dark mode).
 
 ## 10. Flutter tokens
 

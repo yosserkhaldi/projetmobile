@@ -1,5 +1,6 @@
 package com.example.flutter_workshops_5sae1_2627
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// FragmentActivity : nécessaire à local_auth (connexion biométrique).
+class MainActivity : FlutterFragmentActivity()

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 class Stat extends StatelessWidget {
   const Stat(this.t, this.v, this.d, this.i, {super.key});
@@ -13,13 +13,13 @@ class Stat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(i, color: AppColors.primary),
+          Icon(i, color: context.palette.primaryText),
           Text(
             v,
             style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w900),
           ),
           Text(t),
-          Text(d, style: const TextStyle(color: AppColors.successText)),
+          Text(d, style: TextStyle(color: context.palette.successText)),
         ],
       ),
     ),
