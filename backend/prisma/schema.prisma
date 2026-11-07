@@ -1,0 +1,103 @@
+// Module 1 : utilisateurs et compagnies.
+// Les autres modules ajoutent leurs modèles ici. Le schéma est validé par l'équipe.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  DRIVER
+  AGENT
+  ADMIN
+}
+
+enum Language {
+  FR
+  AR
+  EN
+}
+
+enum CodePurpose {
+  PHONE_VERIFICATION
+  PASSWORD_RESET
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  firstName       String
+  lastName        String
+  email           String    @unique
+  phone           String    @unique
+  passwordHash    String
+  role            Role      @default(DRIVER)
+  active          Boolean   @default(true)
+  phoneVerifiedAt DateTime?
+  language        Language  @default(FR)
+  licenseNumber   String?
+  licenseCategory String?
+  licenseIssuedAt DateTime? @db.Date
+  failedLogins    Int       @default(0)
+  lockedUntil     DateTime?
+  companyId       String?   @db.Uuid
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  company           Company?           @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  refreshTokens     RefreshToken[]
+  verificationCodes VerificationCode[]
+
+  @@index([role])
+  @@index([companyId])
+}
+
+model Company {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  agencies Agency[]
+  agents   User[]
+}
+
+model Agency {
+  id        String @id @default(uuid()) @db.Uuid
+  name      String
+  city      String
+  companyId String @db.Uuid
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, name])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  tokenHash String    @unique
+  userId    String    @db.Uuid
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationCode {
+  id         String      @id @default(uuid()) @db.Uuid
+  userId     String      @db.Uuid
+  purpose    CodePurpose
+  codeHash   String
+  attempts   Int         @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+}

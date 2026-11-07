@@ -1,155 +1,194 @@
 import 'package:flutter/material.dart';
 
-import 'package:mon_constat_digital/app/main_shell.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
-import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/core/theme/app_theme.dart';
+import 'package:mon_constat_digital/modules/users/screens/forgot_password_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/register_screen.dart';
+import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
+import 'package:mon_constat_digital/shared/navigation.dart';
 
+/// Écran de connexion. Le rôle vient du compte : il n'est plus choisi ici.
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
   @override
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
-  final email = TextEditingController(text: 'sami@example.com');
-  final password = TextEditingController(text: 'Password123!');
-  bool login = true, hidden = true;
-  UserRole role = UserRole.driver;
+class _AuthScreenState extends State<AuthScreen> with FormActions {
+  final _identifier = TextEditingController();
+  final _password = TextEditingController();
+
+  @override
+  void dispose() {
+    _identifier.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
+  void _login() {
+    final users = AppScope.of(context).users;
+    submit(() => users.login(_identifier.text.trim(), _password.text));
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
+    backgroundColor: AppColors.ink,
     body: SafeArea(
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Icon(
-                  Icons.car_crash_rounded,
-                  size: 58,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Mon Constat Digital',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
+      bottom: false,
+      child: CustomScrollView(
+        slivers: [
+          const SliverToBoxAdapter(child: _Hero()),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppColors.canvas,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+              ),
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: Form(
+                    key: formKey,
+                    child: AutofillGroup(child: _form(context)),
                   ),
                 ),
-                const Text(
-                  'Votre constat, simple, rapide et sécurisé.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 28),
-                SegmentedButton<UserRole>(
-                  segments: UserRole.values
-                      .map(
-                        (r) => ButtonSegment(
-                          value: r,
-                          label: Text(
-                            r == UserRole.driver
-                                ? 'Conducteur'
-                                : r == UserRole.agent
-                                ? 'Agent'
-                                : 'Admin',
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  selected: {role},
-                  onSelectionChanged: (v) => setState(() => role = v.first),
-                ),
-                const SizedBox(height: 20),
-                if (!login) ...[
-                  const TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Nom et prénom',
-                      prefixIcon: Icon(Icons.person_outline),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Téléphone',
-                      prefixIcon: Icon(Icons.phone_outlined),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                TextField(
-                  controller: email,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'E-mail',
-                    prefixIcon: Icon(Icons.mail_outline),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: password,
-                  obscureText: hidden,
-                  decoration: InputDecoration(
-                    labelText: 'Mot de passe',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      onPressed: () => setState(() => hidden = !hidden),
-                      icon: Icon(
-                        hidden ? Icons.visibility : Icons.visibility_off,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                FilledButton.icon(
-                  onPressed: () {
-                    AppScope.of(context).users.setRole(role);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MainShell()),
-                    );
-                  },
-                  icon: Icon(login ? Icons.login : Icons.person_add),
-                  label: Text(login ? 'Se connecter' : 'Créer mon compte'),
-                ),
-                TextButton(
-                  onPressed: () => setState(() => login = !login),
-                  child: Text(
-                    login ? 'Créer un compte' : 'J’ai déjà un compte',
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => _otpDialog(context),
-                  child: const Text('Mot de passe oublié / Vérification OTP'),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     ),
   );
 
-  void _otpDialog(BuildContext context) => showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Vérification'),
-      content: const TextField(
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(labelText: 'Code OTP à 6 chiffres'),
+  Widget _form(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        'Connexion',
+        style: Theme.of(
+          context,
+        ).textTheme.titleLarge?.copyWith(fontSize: 22, letterSpacing: -0.4),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Annuler'),
+      const SizedBox(height: 16),
+      if (error != null) ...[ErrorBanner(error!), const SizedBox(height: 16)],
+      LabeledField(
+        label: 'E-mail ou téléphone',
+        controller: _identifier,
+        keyboardType: TextInputType.emailAddress,
+        validator: Validators.required,
+        autofillHints: const [AutofillHints.username],
+      ),
+      const SizedBox(height: 16),
+      PasswordField(
+        label: 'Mot de passe',
+        controller: _password,
+        validator: Validators.required,
+        autofillHints: const [AutofillHints.password],
+      ),
+      Align(
+        alignment: AlignmentDirectional.centerEnd,
+        child: TextButton(
+          onPressed: () => open(context, const ForgotPasswordScreen()),
+          child: const Text(
+            'Mot de passe oublié ?',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
         ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Valider'),
+      ),
+      const SizedBox(height: 4),
+      BusyButton(label: 'Se connecter', busy: busy, onPressed: _login),
+      const SizedBox(height: 16),
+      Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          const Text(
+            'Pas encore de compte ?',
+            style: TextStyle(
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          TextButton(
+            onPressed: () => open(context, const RegisterScreen()),
+            child: const Text(
+              'Créer un compte',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+class _Hero extends StatelessWidget {
+  const _Hero();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(24, 36, 24, 28),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.accent,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: const Icon(
+                Icons.description_outlined,
+                color: AppColors.ink,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Mon Constat',
+              style: TextStyle(
+                fontFamily: AppFonts.display,
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+                letterSpacing: -0.3,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 26),
+        const Text.rich(
+          TextSpan(
+            style: TextStyle(
+              fontFamily: AppFonts.display,
+              fontWeight: FontWeight.w800,
+              fontSize: 38,
+              height: 1,
+              letterSpacing: -1.2,
+              color: Colors.white,
+            ),
+            children: [
+              TextSpan(text: 'Le constat,\n'),
+              TextSpan(
+                text: 'sans papier.',
+                style: TextStyle(color: AppColors.accent),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'Déclarez, signez et suivez votre sinistre depuis votre téléphone.',
+          style: TextStyle(
+            fontSize: 15,
+            height: 1.5,
+            color: AppColors.onDarkBody,
+          ),
         ),
       ],
     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/modules/users/widgets/stat.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
 
@@ -15,11 +16,28 @@ class AdminDashboard extends StatelessWidget {
           'Administration',
           subtitle: 'Vue globale de la plateforme',
         ),
+        // Les vrais chiffres arriveront avec les données des modules 3 et 5.
+        Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.warningBg,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: const Text(
+            'Données de démonstration',
+            style: TextStyle(
+              color: AppColors.warningText,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        ),
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: 2,
-          childAspectRatio: 1.35,
+          childAspectRatio: 1.1,
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
           children: const [

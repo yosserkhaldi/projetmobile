@@ -1,6 +1,142 @@
 import { Router } from 'express';
 
-// Module 1 : authentification, profil, rôles, administration.
+import {
+  HttpError,
+  isForeignKeyViolation,
+  isUniqueViolation,
+} from '../../lib/errors.js';
+import { prisma } from '../../lib/prisma.js';
+import { requireAuth, requireRole } from '../../middleware/auth.js';
+import {
+  hashPassword,
+  publicUser,
+  revokeSessions,
+  withCompany,
+} from './auth.service.js';
+import {
+  createAgentSchema,
+  idParams,
+  listUsersQuery,
+  updateProfileSchema,
+  updateRoleSchema,
+  updateStatusSchema,
+} from './users.schemas.js';
+
+// Module 1 : profil et administration des comptes.
 const router = Router();
+
+function rethrowConflict(err) {
+  if (isUniqueViolation(err)) {
+    throw new HttpError(
+      409,
+      'ALREADY_EXISTS',
+      'E-mail ou téléphone déjà utilisé.',
+    );
+  }
+  if (isForeignKeyViolation(err)) {
+    throw new HttpError(400, 'COMPANY_NOT_FOUND', 'Compagnie introuvable.');
+  }
+  throw err;
+}
+
+// Un administrateur ne peut pas se retirer ses propres droits :
+// la plateforme garde toujours au moins un administrateur actif.
+function refuseSelfChange(req, id) {
+  if (req.user.id === id) {
+    throw new HttpError(
+      409,
+      'SELF_CHANGE',
+      'Impossible de modifier votre propre rôle ou statut.',
+    );
+  }
+}
+
+router.use(requireAuth);
+
+router.get('/me', (req, res) => {
+  res.json({ user: publicUser(req.user) });
+});
+
+router.patch('/me', async (req, res) => {
+  const { licenseIssuedAt, ...data } = updateProfileSchema.parse(req.body);
+  if (licenseIssuedAt !== undefined) {
+    data.licenseIssuedAt = licenseIssuedAt ? new Date(licenseIssuedAt) : null;
+  }
+  // Un nouveau numéro doit être vérifié à nouveau.
+  if (data.phone && data.phone !== req.user.phone) data.phoneVerifiedAt = null;
+
+  const user = await prisma.user
+    .update({ where: { id: req.user.id }, data, include: withCompany })
+    .catch(rethrowConflict);
+  res.json({ user: publicUser(user) });
+});
+
+// Tout ce qui suit est réservé aux administrateurs.
+router.use(requireRole('ADMIN'));
+
+router.get('/', async (req, res) => {
+  const { q, role, page, pageSize } = listUsersQuery.parse(req.query);
+  const where = {
+    ...(role && { role }),
+    ...(q && {
+      OR: ['firstName', 'lastName', 'email', 'phone'].map((field) => ({
+        [field]: { contains: q, mode: 'insensitive' },
+      })),
+    }),
+  };
+  const [items, total] = await prisma.$transaction([
+    prisma.user.findMany({
+      where,
+      include: withCompany,
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }, { id: 'asc' }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.user.count({ where }),
+  ]);
+  res.json({ items: items.map(publicUser), total, page, pageSize });
+});
+
+router.post('/agents', async (req, res) => {
+  const { password, ...data } = createAgentSchema.parse(req.body);
+  const user = await prisma.user
+    .create({
+      data: {
+        ...data,
+        role: 'AGENT',
+        passwordHash: await hashPassword(password),
+      },
+      include: withCompany,
+    })
+    .catch(rethrowConflict);
+  res.status(201).json({ user: publicUser(user) });
+});
+
+router.patch('/:id/role', async (req, res) => {
+  const { id } = idParams.parse(req.params);
+  const { role, companyId } = updateRoleSchema.parse(req.body);
+  refuseSelfChange(req, id);
+  const user = await prisma.user
+    .update({
+      where: { id },
+      data: { role, companyId: role === 'AGENT' ? companyId : null },
+      include: withCompany,
+    })
+    .catch(rethrowConflict);
+  res.json({ user: publicUser(user) });
+});
+
+router.patch('/:id/status', async (req, res) => {
+  const { id } = idParams.parse(req.params);
+  const { active } = updateStatusSchema.parse(req.body);
+  refuseSelfChange(req, id);
+  const user = await prisma.user.update({
+    where: { id },
+    data: { active },
+    include: withCompany,
+  });
+  if (!active) await revokeSessions(id);
+  res.json({ user: publicUser(user) });
+});
 
 export default router;

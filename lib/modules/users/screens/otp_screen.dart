@@ -1,0 +1,144 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+
+import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/core/theme/app_theme.dart';
+import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
+
+/// Vérifie le téléphone. Le code part à l'inscription, ou ici avec [sendOnOpen].
+class OtpScreen extends StatefulWidget {
+  const OtpScreen({this.sendOnOpen = false, super.key});
+
+  /// Depuis le profil, aucun code n'a encore été envoyé pour cette ouverture.
+  final bool sendOnOpen;
+
+  @override
+  State<OtpScreen> createState() => _OtpScreenState();
+}
+
+class _OtpScreenState extends State<OtpScreen> with FormActions {
+  static const _cooldown = 60;
+
+  final _code = TextEditingController();
+  Timer? _timer;
+  int _wait = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.sendOnOpen) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _resend());
+    } else {
+      _startCooldown();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _code.dispose();
+    super.dispose();
+  }
+
+  void _startCooldown() {
+    setState(() => _wait = _cooldown);
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() => _wait -= 1);
+      if (_wait <= 0) timer.cancel();
+    });
+  }
+
+  Future<void> _resend() async {
+    final users = AppScope.of(context).users;
+    setState(() => error = null);
+    try {
+      await users.resendPhoneCode();
+      if (mounted) _startCooldown();
+    } catch (e) {
+      if (mounted) setState(() => error = errorMessage(e));
+    }
+  }
+
+  void _verify() {
+    final users = AppScope.of(context).users;
+    final navigator = Navigator.of(context);
+    submit(() async {
+      await users.verifyPhone(_code.text.trim());
+      navigator.pop();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final phone = AppScope.of(context).users.currentUser?.phone ?? '';
+    return Scaffold(
+      appBar: AppBar(title: const Text('Vérifier mon téléphone')),
+      body: SafeArea(
+        child: Form(
+          key: formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              Text.rich(
+                TextSpan(
+                  text: 'Saisissez le code à 6 chiffres envoyé par SMS au ',
+                  children: [
+                    TextSpan(
+                      text: phone,
+                      style: const TextStyle(
+                        fontFamily: AppFonts.mono,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const TextSpan(text: '.'),
+                  ],
+                ),
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.45,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 18),
+              if (error != null) ...[
+                ErrorBanner(error!),
+                const SizedBox(height: 14),
+              ],
+              LabeledField(
+                label: 'Code de vérification',
+                controller: _code,
+                keyboardType: TextInputType.number,
+                validator: Validators.code,
+                autofillHints: const [AutofillHints.oneTimeCode],
+                style: const TextStyle(
+                  fontFamily: AppFonts.mono,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  letterSpacing: 6,
+                ),
+              ),
+              const SizedBox(height: 18),
+              BusyButton(label: 'Valider', busy: busy, onPressed: _verify),
+              const SizedBox(height: 6),
+              TextButton(
+                onPressed: _wait > 0 ? null : _resend,
+                child: Text(
+                  _wait > 0
+                      ? 'Renvoyer le code ($_wait s)'
+                      : 'Renvoyer le code',
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Plus tard'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
