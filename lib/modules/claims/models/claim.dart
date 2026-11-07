@@ -84,6 +84,41 @@ class Claim {
     return DateTime(part(3), part(2), part(1), part(4), part(5));
   }
 
+  /// Reprend l'état de [other], sans changer d'objet : les écrans ouverts
+  /// gardent leur référence.
+  void updateFrom(Claim other) {
+    type = other.type;
+    place = other.place;
+    date = other.date;
+    status = other.status;
+    severity = other.severity;
+    observations = other.observations;
+    agentName = other.agentName;
+    expertName = other.expertName;
+    expertAppointment = other.expertAppointment;
+    responsibility = other.responsibility;
+    indemnity = other.indemnity;
+    decisionReason = other.decisionReason;
+    timeline
+      ..clear()
+      ..addAll(other.timeline);
+    timelineDates
+      ..clear()
+      ..addAll(other.timelineDates);
+    documents
+      ..clear()
+      ..addAll(other.documents);
+    requests
+      ..clear()
+      ..addAll(other.requests);
+    circumstances
+      ..clear()
+      ..addAll(other.circumstances);
+    impactZones
+      ..clear()
+      ..addAll(other.impactZones);
+  }
+
   /// Copie figée, pour écrire en base l'état du dossier à un instant donné.
   Claim snapshot() =>
       Claim(

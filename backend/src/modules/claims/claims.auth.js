@@ -28,7 +28,7 @@ export function requireUser(req, _res, next) {
     token: header.startsWith('Bearer ') ? header.slice(7) : null,
     userId: req.get('x-user-id'),
     role: req.get('x-user-role'),
-    name: req.get('x-user-name'),
+    name: decodeURIComponent(req.get('x-user-name') ?? '') || undefined,
   });
   next();
 }

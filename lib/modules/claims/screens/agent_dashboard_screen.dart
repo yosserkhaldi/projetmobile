@@ -6,6 +6,7 @@ import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/notifications_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/offline_banner.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
@@ -23,6 +24,7 @@ class AgentDashboard extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(18),
         children: [
+          const OfflineBanner(),
           PageHead(
             'Espace agent',
             subtitle: 'Instruction des sinistres',
@@ -38,13 +40,11 @@ class AgentDashboard extends StatelessWidget {
               ),
             ],
           ),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
+          Row(
             children: [
               _metric('À traiter', '${pending.length}', AppColors.warningText),
               _metric(
-                'En expertise',
+                'Expertises',
                 '${s.countByStatus((e) => e == ClaimStatus.expertise)}',
                 AppColors.primary,
               ),
@@ -80,8 +80,7 @@ class AgentDashboard extends StatelessWidget {
     );
   }
 
-  Widget _metric(String t, String v, Color c) => SizedBox(
-    width: 110,
+  Widget _metric(String t, String v, Color c) => Expanded(
     child: Card(
       child: Padding(
         padding: const EdgeInsets.all(14),

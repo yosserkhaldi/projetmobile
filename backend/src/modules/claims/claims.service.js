@@ -171,7 +171,7 @@ export async function requestDocument(tx, user, id, input) {
 export async function addDocument(tx, user, id, input, file) {
   const claim = await load(tx, id, user);
   const documentId = input.id ?? randomUUID();
-  const name = required(file?.originalname ?? input.name, 'Fichier requis.');
+  const name = required(input.name ?? file?.originalname, 'Fichier requis.');
   await tx.claimDocument.create({
     data: {
       id: documentId,
@@ -228,7 +228,7 @@ export async function addExpertReport(tx, user, id, input, file) {
     data: {
       id: input.id ?? randomUUID(),
       claimId: id,
-      name: required(file?.originalname ?? input.name, 'Fichier requis.'),
+      name: required(input.name ?? file?.originalname, 'Fichier requis.'),
       kind: "Rapport d'expertise",
       storedName: file?.filename,
     },
@@ -300,7 +300,7 @@ export async function sendMessage(tx, user, id, input, file) {
       author: user.name,
       senderRole: user.role,
       body,
-      attachmentName: file?.originalname,
+      attachmentName: input.attachmentName ?? file?.originalname,
       attachmentStored: file?.filename,
     },
   });

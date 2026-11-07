@@ -6,6 +6,7 @@ import 'package:mon_constat_digital/modules/claims/models/chat_message.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/document_picker.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/offline_banner.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen(this.claim, {super.key});
@@ -59,6 +60,7 @@ class _ChatScreenState extends State<ChatScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            const OfflineBanner(),
             Expanded(
               child: messages.isEmpty
                   ? const Center(
@@ -151,16 +153,24 @@ class _Bubble extends StatelessWidget {
               if (message.text.isNotEmpty)
                 Text(message.text, style: TextStyle(color: foreground)),
               if (message.attachmentName != null)
-                Row(
-                  children: [
-                    Icon(Icons.attach_file, size: 16, color: foreground),
-                    Expanded(
-                      child: Text(
-                        message.attachmentName!,
-                        style: TextStyle(color: foreground),
+                InkWell(
+                  onTap: () => saveFromServer(
+                    context,
+                    kind: 'message',
+                    id: message.id,
+                    name: message.attachmentName!,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.attach_file, size: 16, color: foreground),
+                      Expanded(
+                        child: Text(
+                          message.attachmentName!,
+                          style: TextStyle(color: foreground),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,

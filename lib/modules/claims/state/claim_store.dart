@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/modules/claims/data/ids.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_notification.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
+import 'package:mon_constat_digital/modules/claims/state/claims_sync.dart';
 import 'package:mon_constat_digital/modules/claims/state/persisted_store.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 
@@ -16,6 +17,9 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
   }
 
   final ClaimsDao _dao;
+
+  /// Absent quand l'application reste locale.
+  ClaimsSync? sync;
   final claims = seedClaims();
   final notifications = seedNotifications();
 
@@ -39,6 +43,42 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     notifications
       ..clear()
       ..addAll(savedNotifications);
+  }
+
+  /// Recharge depuis SQLite après une synchronisation.
+  Future<void> reload() async {
+    final fresh = await _dao.loadClaims();
+    final known = {for (final claim in claims) claim.id: claim};
+    final merged = fresh.map((claim) {
+      final existing = known[claim.id];
+      return existing == null ? claim : (existing..updateFrom(claim));
+    }).toList();
+    claims
+      ..clear()
+      ..addAll(merged);
+    final savedNotifications = await _dao.loadNotifications();
+    notifications
+      ..clear()
+      ..addAll(savedNotifications);
+    notifyListeners();
+  }
+
+  void _send(
+    String path, {
+    Map<String, dynamic> body = const {},
+    bool multipart = false,
+    String? filePath,
+  }) {
+    final queue = sync;
+    if (queue == null) return;
+    persist(
+      () => queue.enqueue(
+        path,
+        body: body,
+        multipart: multipart,
+        filePath: filePath,
+      ),
+    );
   }
 
   Claim? claimById(String? id) {
@@ -70,6 +110,20 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
       await _dao.insertClaim(snapshot);
       await _dao.insertNotification(notification);
     });
+    _send(
+      '',
+      body: {
+        'id': snapshot.id,
+        'type': snapshot.type,
+        'place': snapshot.place,
+        'date': snapshot.date,
+        'severity': snapshot.severity,
+        'observations': snapshot.observations,
+        'circumstances': snapshot.circumstances,
+        'impactZones': snapshot.impactZones,
+        'timeline': snapshot.timeline,
+      },
+    );
   }
 
   /// Applique un changement du cycle de vie. Refuse un passage non prévu.
@@ -84,6 +138,7 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     if (!ClaimStatus.canMove(claim.status, ClaimStatus.inReview)) return;
     claim.agentName = agentName;
     updateClaim(claim, ClaimStatus.inReview);
+    _send('/${claim.id}/take-charge');
   }
 
   void requestDocument(Claim claim, String label, {String note = ''}) {
@@ -94,6 +149,10 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     );
     claim.requests.add(request);
     persist(() => _dao.insertRequest(claim.id, request));
+    _send(
+      '/${claim.id}/document-requests',
+      body: {'id': request.id, 'label': label, 'note': request.note},
+    );
     if (claim.status == ClaimStatus.documentRequested) {
       _saveEvent(claim, 'Pièce demandée : $label');
       _sendNotification(
@@ -129,6 +188,12 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
         persist(() => _dao.fulfillRequest(request.id, document.id));
       }
     }
+    _send(
+      '/${claim.id}/documents',
+      multipart: true,
+      filePath: path,
+      body: {'id': document.id, 'name': name, 'requestId': request?.id},
+    );
     _sendNotification(
       UserRole.agent,
       '${claim.id} : pièce déposée ($name)',
@@ -146,6 +211,13 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     claim
       ..expertName = expert.trim()
       ..expertAppointment = appointment;
+    _send(
+      '/${claim.id}/expertise',
+      body: {
+        'expertName': claim.expertName,
+        'appointment': appointment.toUtc().toIso8601String(),
+      },
+    );
     if (claim.status == ClaimStatus.expertise) {
       _saveEvent(claim, 'Rendez-vous déplacé');
       _sendNotification(
@@ -167,6 +239,12 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     );
     claim.documents.add(document);
     persist(() => _dao.insertDocument(claim.id, document));
+    _send(
+      '/${claim.id}/expert-report',
+      multipart: true,
+      filePath: path,
+      body: {'id': document.id, 'name': name},
+    );
     _saveEvent(claim, 'Rapport d’expertise joint');
   }
 
@@ -177,12 +255,17 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
       ..responsibility = responsibility
       ..indemnity = indemnity;
     updateClaim(claim, ClaimStatus.closed);
+    _send(
+      '/${claim.id}/close',
+      body: {'responsibility': responsibility, 'indemnity': indemnity},
+    );
   }
 
   void rejectClaim(Claim claim, String reason) {
     if (!ClaimStatus.canMove(claim.status, ClaimStatus.rejected)) return;
     claim.decisionReason = reason.trim();
     updateClaim(claim, ClaimStatus.rejected);
+    _send('/${claim.id}/reject', body: {'reason': claim.decisionReason});
   }
 
   void markNotificationRead(ClaimNotification notification) {
@@ -190,6 +273,12 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     notification.read = true;
     notifyListeners();
     persist(() => _dao.markNotificationsRead([notification.id]));
+    _send(
+      '/notifications/read',
+      body: {
+        'ids': [notification.id],
+      },
+    );
   }
 
   void markAllNotificationsRead(UserRole role) {
@@ -201,6 +290,7 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     }
     notifyListeners();
     persist(() => _dao.markNotificationsRead(ids));
+    _send('/notifications/read', body: {'ids': ids});
   }
 
   void _applyStatus(Claim claim, String status, {String? event}) {

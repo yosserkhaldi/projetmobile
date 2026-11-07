@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_filter.dart';
@@ -193,6 +194,10 @@ void main() {
         ..circumstances.add('Reculait');
       await pump(tester, ClaimDetail(claim, agentMode: true));
       expect(find.textContaining('A 100 %, B 0 %'), findsOneWidget);
+      final bar = find.byWidgetPredicate(
+        (w) => w is ColoredBox && w.color == AppColors.driverA,
+      );
+      expect(tester.getSize(bar).height, 8);
 
       await tester.tap(find.text('Clôturer le dossier'));
       await tester.pump();

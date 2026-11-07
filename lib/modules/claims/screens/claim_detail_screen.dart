@@ -26,7 +26,7 @@ class ClaimDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppScope.of(context);
+    final online = AppScope.of(context).claimsSync != null;
     final requests = claim.openRequests.toList();
     return Scaffold(
       appBar: AppBar(
@@ -94,8 +94,25 @@ class ClaimDetail extends StatelessWidget {
               leading: const Icon(Icons.attach_file),
               title: Text(document.name),
               subtitle: Text(document.kind),
+              trailing: online
+                  ? IconButton(
+                      tooltip: 'Télécharger',
+                      onPressed: () => saveFromServer(
+                        context,
+                        kind: 'document',
+                        id: document.id,
+                        name: document.name,
+                      ),
+                      icon: const Icon(Icons.download),
+                    )
+                  : null,
             ),
           ),
+          if (claim.documents.isEmpty && agentMode)
+            const Text(
+              'Aucune pièce déposée.',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
           if (!ClaimStatus.isFinal(claim.status) && !agentMode)
             OutlinedButton.icon(
               onPressed: () => _upload(context),

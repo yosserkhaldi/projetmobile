@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/offline_banner.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
 
@@ -46,6 +47,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
     return SafeArea(
       child: Column(
         children: [
+          const OfflineBanner(),
           PageHead(
             widget.agentMode ? 'Sinistres reçus' : 'Mes dossiers',
             subtitle: '${claims.length} sur ${store.claims.length} dossiers',

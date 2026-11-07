@@ -5,6 +5,7 @@ import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_seed.dart';
 import 'package:mon_constat_digital/modules/claims/data/ids.dart';
 import 'package:mon_constat_digital/modules/claims/models/chat_message.dart';
+import 'package:mon_constat_digital/modules/claims/state/claims_sync.dart';
 import 'package:mon_constat_digital/modules/claims/state/persisted_store.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 
@@ -15,6 +16,9 @@ class MessageStore extends ChangeNotifier with PersistedStore {
   }
 
   final ClaimsDao _dao;
+
+  /// Absent quand l'application reste locale.
+  ClaimsSync? sync;
   final messages = seedMessages();
 
   Future<void> _load() async {
@@ -30,6 +34,15 @@ class MessageStore extends ChangeNotifier with PersistedStore {
     messages
       ..clear()
       ..addAll(savedMessages);
+  }
+
+  /// Recharge depuis SQLite après une synchronisation.
+  Future<void> reload() async {
+    final fresh = await _dao.loadMessages();
+    messages
+      ..clear()
+      ..addAll(fresh);
+    notifyListeners();
   }
 
   List<ChatMessage> messagesFor(String claimId) =>
@@ -66,6 +79,21 @@ class MessageStore extends ChangeNotifier with PersistedStore {
     messages.add(message);
     notifyListeners();
     persist(() => _dao.insertMessage(message));
+    final queue = sync;
+    if (queue != null) {
+      persist(
+        () => queue.enqueue(
+          '/$claimId/messages',
+          multipart: true,
+          filePath: attachmentPath,
+          body: {
+            'id': message.id,
+            'body': message.text,
+            'attachmentName': attachmentName,
+          },
+        ),
+      );
+    }
   }
 
   /// Accusé de lecture : marque les messages reçus par [reader] sur ce dossier.
@@ -80,5 +108,9 @@ class MessageStore extends ChangeNotifier with PersistedStore {
     notifyListeners();
     final ids = unread.map((m) => m.id).toList();
     persist(() => _dao.markMessagesRead(ids));
+    final queue = sync;
+    if (queue != null) {
+      persist(() => queue.enqueue('/$claimId/messages/read'));
+    }
   }
 }

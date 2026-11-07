@@ -103,5 +103,11 @@ class SyncOutbox extends Table {
   TextColumn get method => text()();
   TextColumn get path => text()();
   TextColumn get body => text().withDefault(const Constant('{}'))();
+  BoolColumn get multipart => boolean().withDefault(const Constant(false))();
   TextColumn get filePath => text().nullable()();
+
+  /// Auteur du changement : le rôle actif peut changer avant l'envoi.
+  TextColumn get actorId => text()();
+  TextColumn get actorRole => text()();
+  TextColumn get actorName => text()();
 }

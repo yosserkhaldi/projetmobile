@@ -3173,6 +3173,21 @@ class $SyncOutboxTable extends SyncOutbox
     requiredDuringInsert: false,
     defaultValue: const Constant('{}'),
   );
+  static const VerificationMeta _multipartMeta = const VerificationMeta(
+    'multipart',
+  );
+  @override
+  late final GeneratedColumn<bool> multipart = GeneratedColumn<bool>(
+    'multipart',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("multipart" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _filePathMeta = const VerificationMeta(
     'filePath',
   );
@@ -3184,8 +3199,52 @@ class $SyncOutboxTable extends SyncOutbox
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _actorIdMeta = const VerificationMeta(
+    'actorId',
+  );
   @override
-  List<GeneratedColumn> get $columns => [seq, id, method, path, body, filePath];
+  late final GeneratedColumn<String> actorId = GeneratedColumn<String>(
+    'actor_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _actorRoleMeta = const VerificationMeta(
+    'actorRole',
+  );
+  @override
+  late final GeneratedColumn<String> actorRole = GeneratedColumn<String>(
+    'actor_role',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _actorNameMeta = const VerificationMeta(
+    'actorName',
+  );
+  @override
+  late final GeneratedColumn<String> actorName = GeneratedColumn<String>(
+    'actor_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    seq,
+    id,
+    method,
+    path,
+    body,
+    multipart,
+    filePath,
+    actorId,
+    actorRole,
+    actorName,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -3231,11 +3290,41 @@ class $SyncOutboxTable extends SyncOutbox
         body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
       );
     }
+    if (data.containsKey('multipart')) {
+      context.handle(
+        _multipartMeta,
+        multipart.isAcceptableOrUnknown(data['multipart']!, _multipartMeta),
+      );
+    }
     if (data.containsKey('file_path')) {
       context.handle(
         _filePathMeta,
         filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta),
       );
+    }
+    if (data.containsKey('actor_id')) {
+      context.handle(
+        _actorIdMeta,
+        actorId.isAcceptableOrUnknown(data['actor_id']!, _actorIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_actorIdMeta);
+    }
+    if (data.containsKey('actor_role')) {
+      context.handle(
+        _actorRoleMeta,
+        actorRole.isAcceptableOrUnknown(data['actor_role']!, _actorRoleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_actorRoleMeta);
+    }
+    if (data.containsKey('actor_name')) {
+      context.handle(
+        _actorNameMeta,
+        actorName.isAcceptableOrUnknown(data['actor_name']!, _actorNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_actorNameMeta);
     }
     return context;
   }
@@ -3266,10 +3355,26 @@ class $SyncOutboxTable extends SyncOutbox
         DriftSqlType.string,
         data['${effectivePrefix}body'],
       )!,
+      multipart: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}multipart'],
+      )!,
       filePath: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}file_path'],
       ),
+      actorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}actor_id'],
+      )!,
+      actorRole: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}actor_role'],
+      )!,
+      actorName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}actor_name'],
+      )!,
     );
   }
 
@@ -3285,14 +3390,24 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
   final String method;
   final String path;
   final String body;
+  final bool multipart;
   final String? filePath;
+
+  /// Auteur du changement : le rôle actif peut changer avant l'envoi.
+  final String actorId;
+  final String actorRole;
+  final String actorName;
   const OutboxRow({
     required this.seq,
     required this.id,
     required this.method,
     required this.path,
     required this.body,
+    required this.multipart,
     this.filePath,
+    required this.actorId,
+    required this.actorRole,
+    required this.actorName,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3302,9 +3417,13 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     map['method'] = Variable<String>(method);
     map['path'] = Variable<String>(path);
     map['body'] = Variable<String>(body);
+    map['multipart'] = Variable<bool>(multipart);
     if (!nullToAbsent || filePath != null) {
       map['file_path'] = Variable<String>(filePath);
     }
+    map['actor_id'] = Variable<String>(actorId);
+    map['actor_role'] = Variable<String>(actorRole);
+    map['actor_name'] = Variable<String>(actorName);
     return map;
   }
 
@@ -3315,9 +3434,13 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       method: Value(method),
       path: Value(path),
       body: Value(body),
+      multipart: Value(multipart),
       filePath: filePath == null && nullToAbsent
           ? const Value.absent()
           : Value(filePath),
+      actorId: Value(actorId),
+      actorRole: Value(actorRole),
+      actorName: Value(actorName),
     );
   }
 
@@ -3332,7 +3455,11 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       method: serializer.fromJson<String>(json['method']),
       path: serializer.fromJson<String>(json['path']),
       body: serializer.fromJson<String>(json['body']),
+      multipart: serializer.fromJson<bool>(json['multipart']),
       filePath: serializer.fromJson<String?>(json['filePath']),
+      actorId: serializer.fromJson<String>(json['actorId']),
+      actorRole: serializer.fromJson<String>(json['actorRole']),
+      actorName: serializer.fromJson<String>(json['actorName']),
     );
   }
   @override
@@ -3344,7 +3471,11 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       'method': serializer.toJson<String>(method),
       'path': serializer.toJson<String>(path),
       'body': serializer.toJson<String>(body),
+      'multipart': serializer.toJson<bool>(multipart),
       'filePath': serializer.toJson<String?>(filePath),
+      'actorId': serializer.toJson<String>(actorId),
+      'actorRole': serializer.toJson<String>(actorRole),
+      'actorName': serializer.toJson<String>(actorName),
     };
   }
 
@@ -3354,14 +3485,22 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     String? method,
     String? path,
     String? body,
+    bool? multipart,
     Value<String?> filePath = const Value.absent(),
+    String? actorId,
+    String? actorRole,
+    String? actorName,
   }) => OutboxRow(
     seq: seq ?? this.seq,
     id: id ?? this.id,
     method: method ?? this.method,
     path: path ?? this.path,
     body: body ?? this.body,
+    multipart: multipart ?? this.multipart,
     filePath: filePath.present ? filePath.value : this.filePath,
+    actorId: actorId ?? this.actorId,
+    actorRole: actorRole ?? this.actorRole,
+    actorName: actorName ?? this.actorName,
   );
   OutboxRow copyWithCompanion(SyncOutboxCompanion data) {
     return OutboxRow(
@@ -3370,7 +3509,11 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       method: data.method.present ? data.method.value : this.method,
       path: data.path.present ? data.path.value : this.path,
       body: data.body.present ? data.body.value : this.body,
+      multipart: data.multipart.present ? data.multipart.value : this.multipart,
       filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      actorId: data.actorId.present ? data.actorId.value : this.actorId,
+      actorRole: data.actorRole.present ? data.actorRole.value : this.actorRole,
+      actorName: data.actorName.present ? data.actorName.value : this.actorName,
     );
   }
 
@@ -3382,13 +3525,28 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
           ..write('method: $method, ')
           ..write('path: $path, ')
           ..write('body: $body, ')
-          ..write('filePath: $filePath')
+          ..write('multipart: $multipart, ')
+          ..write('filePath: $filePath, ')
+          ..write('actorId: $actorId, ')
+          ..write('actorRole: $actorRole, ')
+          ..write('actorName: $actorName')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(seq, id, method, path, body, filePath);
+  int get hashCode => Object.hash(
+    seq,
+    id,
+    method,
+    path,
+    body,
+    multipart,
+    filePath,
+    actorId,
+    actorRole,
+    actorName,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3398,7 +3556,11 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
           other.method == this.method &&
           other.path == this.path &&
           other.body == this.body &&
-          other.filePath == this.filePath);
+          other.multipart == this.multipart &&
+          other.filePath == this.filePath &&
+          other.actorId == this.actorId &&
+          other.actorRole == this.actorRole &&
+          other.actorName == this.actorName);
 }
 
 class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
@@ -3407,14 +3569,22 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
   final Value<String> method;
   final Value<String> path;
   final Value<String> body;
+  final Value<bool> multipart;
   final Value<String?> filePath;
+  final Value<String> actorId;
+  final Value<String> actorRole;
+  final Value<String> actorName;
   const SyncOutboxCompanion({
     this.seq = const Value.absent(),
     this.id = const Value.absent(),
     this.method = const Value.absent(),
     this.path = const Value.absent(),
     this.body = const Value.absent(),
+    this.multipart = const Value.absent(),
     this.filePath = const Value.absent(),
+    this.actorId = const Value.absent(),
+    this.actorRole = const Value.absent(),
+    this.actorName = const Value.absent(),
   });
   SyncOutboxCompanion.insert({
     this.seq = const Value.absent(),
@@ -3422,17 +3592,28 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
     required String method,
     required String path,
     this.body = const Value.absent(),
+    this.multipart = const Value.absent(),
     this.filePath = const Value.absent(),
+    required String actorId,
+    required String actorRole,
+    required String actorName,
   }) : id = Value(id),
        method = Value(method),
-       path = Value(path);
+       path = Value(path),
+       actorId = Value(actorId),
+       actorRole = Value(actorRole),
+       actorName = Value(actorName);
   static Insertable<OutboxRow> custom({
     Expression<int>? seq,
     Expression<String>? id,
     Expression<String>? method,
     Expression<String>? path,
     Expression<String>? body,
+    Expression<bool>? multipart,
     Expression<String>? filePath,
+    Expression<String>? actorId,
+    Expression<String>? actorRole,
+    Expression<String>? actorName,
   }) {
     return RawValuesInsertable({
       if (seq != null) 'seq': seq,
@@ -3440,7 +3621,11 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
       if (method != null) 'method': method,
       if (path != null) 'path': path,
       if (body != null) 'body': body,
+      if (multipart != null) 'multipart': multipart,
       if (filePath != null) 'file_path': filePath,
+      if (actorId != null) 'actor_id': actorId,
+      if (actorRole != null) 'actor_role': actorRole,
+      if (actorName != null) 'actor_name': actorName,
     });
   }
 
@@ -3450,7 +3635,11 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
     Value<String>? method,
     Value<String>? path,
     Value<String>? body,
+    Value<bool>? multipart,
     Value<String?>? filePath,
+    Value<String>? actorId,
+    Value<String>? actorRole,
+    Value<String>? actorName,
   }) {
     return SyncOutboxCompanion(
       seq: seq ?? this.seq,
@@ -3458,7 +3647,11 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
       method: method ?? this.method,
       path: path ?? this.path,
       body: body ?? this.body,
+      multipart: multipart ?? this.multipart,
       filePath: filePath ?? this.filePath,
+      actorId: actorId ?? this.actorId,
+      actorRole: actorRole ?? this.actorRole,
+      actorName: actorName ?? this.actorName,
     );
   }
 
@@ -3480,8 +3673,20 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
     if (body.present) {
       map['body'] = Variable<String>(body.value);
     }
+    if (multipart.present) {
+      map['multipart'] = Variable<bool>(multipart.value);
+    }
     if (filePath.present) {
       map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (actorId.present) {
+      map['actor_id'] = Variable<String>(actorId.value);
+    }
+    if (actorRole.present) {
+      map['actor_role'] = Variable<String>(actorRole.value);
+    }
+    if (actorName.present) {
+      map['actor_name'] = Variable<String>(actorName.value);
     }
     return map;
   }
@@ -3494,7 +3699,11 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
           ..write('method: $method, ')
           ..write('path: $path, ')
           ..write('body: $body, ')
-          ..write('filePath: $filePath')
+          ..write('multipart: $multipart, ')
+          ..write('filePath: $filePath, ')
+          ..write('actorId: $actorId, ')
+          ..write('actorRole: $actorRole, ')
+          ..write('actorName: $actorName')
           ..write(')'))
         .toString();
   }
@@ -5887,7 +6096,11 @@ typedef $$SyncOutboxTableCreateCompanionBuilder =
       required String method,
       required String path,
       Value<String> body,
+      Value<bool> multipart,
       Value<String?> filePath,
+      required String actorId,
+      required String actorRole,
+      required String actorName,
     });
 typedef $$SyncOutboxTableUpdateCompanionBuilder =
     SyncOutboxCompanion Function({
@@ -5896,7 +6109,11 @@ typedef $$SyncOutboxTableUpdateCompanionBuilder =
       Value<String> method,
       Value<String> path,
       Value<String> body,
+      Value<bool> multipart,
       Value<String?> filePath,
+      Value<String> actorId,
+      Value<String> actorRole,
+      Value<String> actorName,
     });
 
 class $$SyncOutboxTableFilterComposer
@@ -5933,8 +6150,28 @@ class $$SyncOutboxTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get multipart => $composableBuilder(
+    column: $table.multipart,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get filePath => $composableBuilder(
     column: $table.filePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get actorId => $composableBuilder(
+    column: $table.actorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get actorRole => $composableBuilder(
+    column: $table.actorRole,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get actorName => $composableBuilder(
+    column: $table.actorName,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -5973,8 +6210,28 @@ class $$SyncOutboxTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get multipart => $composableBuilder(
+    column: $table.multipart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get filePath => $composableBuilder(
     column: $table.filePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get actorId => $composableBuilder(
+    column: $table.actorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get actorRole => $composableBuilder(
+    column: $table.actorRole,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get actorName => $composableBuilder(
+    column: $table.actorName,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -6003,8 +6260,20 @@ class $$SyncOutboxTableAnnotationComposer
   GeneratedColumn<String> get body =>
       $composableBuilder(column: $table.body, builder: (column) => column);
 
+  GeneratedColumn<bool> get multipart =>
+      $composableBuilder(column: $table.multipart, builder: (column) => column);
+
   GeneratedColumn<String> get filePath =>
       $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<String> get actorId =>
+      $composableBuilder(column: $table.actorId, builder: (column) => column);
+
+  GeneratedColumn<String> get actorRole =>
+      $composableBuilder(column: $table.actorRole, builder: (column) => column);
+
+  GeneratedColumn<String> get actorName =>
+      $composableBuilder(column: $table.actorName, builder: (column) => column);
 }
 
 class $$SyncOutboxTableTableManager
@@ -6043,14 +6312,22 @@ class $$SyncOutboxTableTableManager
                 Value<String> method = const Value.absent(),
                 Value<String> path = const Value.absent(),
                 Value<String> body = const Value.absent(),
+                Value<bool> multipart = const Value.absent(),
                 Value<String?> filePath = const Value.absent(),
+                Value<String> actorId = const Value.absent(),
+                Value<String> actorRole = const Value.absent(),
+                Value<String> actorName = const Value.absent(),
               }) => SyncOutboxCompanion(
                 seq: seq,
                 id: id,
                 method: method,
                 path: path,
                 body: body,
+                multipart: multipart,
                 filePath: filePath,
+                actorId: actorId,
+                actorRole: actorRole,
+                actorName: actorName,
               ),
           createCompanionCallback:
               ({
@@ -6059,14 +6336,22 @@ class $$SyncOutboxTableTableManager
                 required String method,
                 required String path,
                 Value<String> body = const Value.absent(),
+                Value<bool> multipart = const Value.absent(),
                 Value<String?> filePath = const Value.absent(),
+                required String actorId,
+                required String actorRole,
+                required String actorName,
               }) => SyncOutboxCompanion.insert(
                 seq: seq,
                 id: id,
                 method: method,
                 path: path,
                 body: body,
+                multipart: multipart,
                 filePath: filePath,
+                actorId: actorId,
+                actorRole: actorRole,
+                actorName: actorName,
               ),
           withReferenceMapper: (p0) => p0
               .map(

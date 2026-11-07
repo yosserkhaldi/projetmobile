@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
+import 'package:mon_constat_digital/modules/claims/data/claims_api.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_tables.dart';
 import 'package:mon_constat_digital/modules/claims/models/chat_message.dart';
@@ -120,8 +121,8 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
 
   Future<void> insertClaim(Claim claim) => transaction(() async {
     await into(claims).insert(_fields(claim).copyWith(id: Value(claim.id)));
-    for (final label in claim.timeline) {
-      await insertEvent(claim.id, label);
+    for (final (index, label) in claim.timeline.indexed) {
+      await insertEvent(claim.id, label, at: claim.timelineDates[index]);
     }
     for (final document in claim.documents) {
       await insertDocument(claim.id, document);
@@ -140,9 +141,14 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
         if (event != null) await insertEvent(snapshot.id, event);
       });
 
-  Future<void> insertEvent(String claimId, String label) => into(
-    claimTimelineEvents,
-  ).insert(ClaimTimelineEventsCompanion.insert(claimId: claimId, label: label));
+  Future<void> insertEvent(String claimId, String label, {DateTime? at}) =>
+      into(claimTimelineEvents).insert(
+        ClaimTimelineEventsCompanion.insert(
+          claimId: claimId,
+          label: label,
+          createdAt: Value.absentIfNull(at),
+        ),
+      );
 
   Future<void> insertDocument(String claimId, ClaimDocument document) =>
       into(claimDocuments).insert(
@@ -248,4 +254,70 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
       (update(chatMessages)..where((t) => t.uid.isIn(ids))).write(
         const ChatMessagesCompanion(isRead: Value(true)),
       );
+
+  Future<void> enqueue(ApiRequest request) => into(syncOutbox).insert(
+    SyncOutboxCompanion.insert(
+      id: request.id,
+      method: request.method,
+      path: request.path,
+      body: Value(jsonEncode(request.body)),
+      multipart: Value(request.multipart),
+      filePath: Value(request.filePath),
+      actorId: request.identity.id,
+      actorRole: request.identity.role,
+      actorName: request.identity.name,
+    ),
+  );
+
+  /// File d'envoi, dans l'ordre des changements.
+  Future<List<ApiRequest>> pendingRequests() async {
+    final rows = await (select(
+      syncOutbox,
+    )..orderBy([(t) => OrderingTerm.asc(t.seq)])).get();
+    return rows
+        .map(
+          (row) => ApiRequest(
+            id: row.id,
+            method: row.method,
+            path: row.path,
+            body: jsonDecode(row.body) as Map<String, dynamic>,
+            multipart: row.multipart,
+            filePath: row.filePath,
+            identity: (
+              id: row.actorId,
+              role: row.actorRole,
+              name: row.actorName,
+            ),
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> removeRequest(String id) =>
+      (delete(syncOutbox)..where((t) => t.id.equals(id))).go();
+
+  /// Remplace le local par l'état du serveur. Ne fait rien, et renvoie faux,
+  /// si un changement attend encore d'être envoyé.
+  Future<bool> replaceFromServer(ServerSnapshot snapshot) =>
+      transaction(() async {
+        final pending = await select(syncOutbox).get();
+        if (pending.isNotEmpty) return false;
+
+        await delete(claims).go();
+        await (delete(
+          claimNotifications,
+        )..where((t) => t.claimId.isNotNull())).go();
+        await delete(chatMessages).go();
+
+        for (final claim in snapshot.claims.reversed) {
+          await insertClaim(claim);
+        }
+        for (final notification in snapshot.notifications.reversed) {
+          await insertNotification(notification);
+        }
+        for (final message in snapshot.messages) {
+          await insertMessage(message);
+        }
+        return true;
+      });
 }

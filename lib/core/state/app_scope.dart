@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
+import 'package:mon_constat_digital/modules/claims/state/claims_sync.dart';
 import 'package:mon_constat_digital/modules/accident/state/accident_store.dart';
 import 'package:mon_constat_digital/modules/claims/state/message_store.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
@@ -8,11 +9,20 @@ import 'package:mon_constat_digital/modules/vehicles/state/vehicle_store.dart';
 
 /// Regroupe l'état de chaque module. Chaque module garde son propre store.
 class AppStores {
+  AppStores() {
+    claimsSync = ClaimsSync.start(
+      claims: claims,
+      messages: messages,
+      users: users,
+    );
+  }
+
   final accidents = AccidentStore();
   final users = UserStore();
   final vehicles = VehicleStore();
   final claims = ClaimStore();
   final messages = MessageStore();
+  late final ClaimsSync? claimsSync;
 
   late final Listenable listenable = Listenable.merge([
     accidents,

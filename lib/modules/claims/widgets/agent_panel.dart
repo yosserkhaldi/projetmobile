@@ -267,6 +267,7 @@ class _DecisionCardState extends State<_DecisionCard> {
             child: SizedBox(
               height: 8,
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (share > 0)
                     Expanded(

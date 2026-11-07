@@ -2,6 +2,33 @@
 
 Owner: Salma. Branch: `module-5`. Reference: cahier des charges **v3** (3 Oct 2026), the version the repo matches (5 modules, Node.js, Prisma, drift). If the professor approved another version, only section "Scope" below needs checking.
 
+## Status
+
+Phases 1, 2 and 3 are done. Still needed from Salma: try the app on an Android or iOS device or emulator.
+
+## Run the demo
+
+```bash
+docker compose up --build                      # API on port 3000
+docker compose exec api node prisma/seed.js    # demo case SIN-2026-0418
+flutter run --dart-define=API_URL=http://10.0.2.2:3000   # Android emulator
+flutter run -d chrome --dart-define=API_URL=http://localhost:3000
+```
+
+Log in as a driver in one app and as an agent in another: changes appear live. Swagger: `http://localhost:3000/api/claims/docs`.
+
+## Test
+
+```bash
+flutter test
+docker compose exec db psql -U monconstat -c 'CREATE DATABASE monconstat_test'
+cd backend
+DATABASE_URL=postgresql://monconstat:monconstat@localhost:5432/monconstat_test npx prisma migrate deploy
+TEST_DATABASE_URL=postgresql://monconstat:monconstat@localhost:5432/monconstat_test npm test
+cd ..
+LIVE_API_URL=http://localhost:3000 flutter test test/claims_live_test.dart   # two phones, real API
+```
+
 ## Scope (from v3)
 
 | Ref | Requirement | Phase |
@@ -67,7 +94,7 @@ Payments (cahier), Firebase push (teacher rule; notifications are in-app and liv
 
 ## Shared files
 
-Listed here so the team can be warned: `pubspec.yaml`, `backend/package.json`, `backend/src/server.js`, `backend/src/app.js`, `docker-compose.yml`, and the claim creation lines in `accident_wizard.dart`.
+Listed here so the team can be warned: `pubspec.yaml`, `backend/package.json`, `backend/Dockerfile`, `backend/src/server.js`, `docker-compose.yml`, `lib/core/state/app_scope.dart`, the notification badge in `lib/app/driver_home.dart`, the claim creation lines in `accident_wizard.dart`, and the debug `AndroidManifest.xml` (allows http to the local API). `backend/prisma/schema/base.prisma` is new and shared by all modules.
 
 ## Definition of done
 

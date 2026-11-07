@@ -40,6 +40,21 @@ const write = (action) => async (req, res) => {
 
 const agent = requireRole('agent');
 
+// L'application web de développement appelle l'API depuis un autre port.
+router.use((req, res, next) => {
+  res.set({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers':
+      'authorization, content-type, idempotency-key, x-user-id, x-user-name, x-user-role',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  });
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+  next();
+});
+
 router.get('/openapi.json', (_req, res) => res.json(openapi));
 router.use('/docs', swaggerUi.serve, swaggerUi.setup(openapi));
 
