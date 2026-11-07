@@ -29,7 +29,7 @@ class AccidentStore extends ChangeNotifier {
       }
       isPersistent = true;
     } catch (_) {
-      // Les tests et plateformes sans sqflite continuent en mémoire.
+      // Les tests et plateformes sans SQLite (Drift) continuent en mémoire.
       isPersistent = false;
     } finally {
       isLoading = false;

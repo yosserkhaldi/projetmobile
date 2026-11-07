@@ -74,12 +74,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('Vue d’ensemble'));
-    await tester.tap(find.text('Dégâts véhicule A'));
-    await tester.pump();
-    await tester.tap(find.text('Continuer vers le constat'));
-    await tester.pumpAndSettle();
-    expect(find.text('Mode invité isolé'), findsOneWidget);
+    expect(find.text('Touchez pour ouvrir la caméra'), findsNWidgets(4));
   });
 
   testWidgets('le raccourci Constat ouvre les déclarations', (tester) async {

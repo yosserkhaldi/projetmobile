@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
+import 'package:mon_constat_digital/modules/accident/screens/location_picker_screen.dart';
+import 'package:mon_constat_digital/modules/accident/services/accident_location_service.dart';
+import 'package:mon_constat_digital/modules/accident/services/accident_media_service.dart';
 
-class ContextStep extends StatelessWidget {
+class ContextStep extends StatefulWidget {
   const ContextStep({
     required this.draft,
     required this.place,
@@ -15,6 +20,24 @@ class ContextStep extends StatelessWidget {
   final VoidCallback onChanged;
 
   @override
+  State<ContextStep> createState() => _ContextStepState();
+}
+
+class _ContextStepState extends State<ContextStep> {
+  final _locationService = AccidentLocationService();
+  bool _locating = false;
+  String? _locationError;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.draft.latitude == null &&
+        !Platform.environment.containsKey('FLUTTER_TEST')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _detectAndAsk());
+    }
+  }
+
+  @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -24,10 +47,10 @@ class ContextStep extends StatelessWidget {
         text: 'Vérifiez les informations détectées automatiquement.',
       ),
       TextFormField(
-        controller: place,
+        controller: widget.place,
         onChanged: (value) {
-          draft.place = value;
-          onChanged();
+          widget.draft.place = value;
+          widget.onChanged();
         },
         validator: (value) => value == null || value.trim().length < 3
             ? 'Indiquez le lieu de l’accident'
@@ -36,47 +59,79 @@ class ContextStep extends StatelessWidget {
           labelText: 'Lieu de l’accident',
           prefixIcon: const Icon(Icons.location_on_outlined),
           suffixIcon: IconButton(
-            tooltip: 'Actualiser la position',
-            onPressed: () {
-              place.text = 'Position GPS détectée — Tunis';
-              draft.place = place.text;
-              onChanged();
-            },
-            icon: const Icon(Icons.my_location),
+            tooltip: 'Choisir sur la carte',
+            onPressed: _locating ? null : _chooseLocation,
+            icon: _locating
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.my_location),
           ),
         ),
       ),
+      if (_locationError != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.error_outline, color: AppColors.errorSolid),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _locationError!,
+                  style: const TextStyle(color: AppColors.errorText),
+                ),
+              ),
+            ],
+          ),
+        ),
+      if (widget.draft.latitude != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            'GPS ${widget.draft.latitude!.toStringAsFixed(6)}, '
+            '${widget.draft.longitude!.toStringAsFixed(6)} • '
+            'précision ±${(widget.draft.locationAccuracy ?? 0).round()} m',
+            style: const TextStyle(
+              color: AppColors.successText,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       const SizedBox(height: 12),
       InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: () async {
           final date = await showDatePicker(
             context: context,
-            initialDate: draft.occurredAt,
+            initialDate: widget.draft.occurredAt,
             firstDate: DateTime.now().subtract(const Duration(days: 7)),
             lastDate: DateTime.now(),
           );
           if (date == null || !context.mounted) return;
           final time = await showTimePicker(
             context: context,
-            initialTime: TimeOfDay.fromDateTime(draft.occurredAt),
+            initialTime: TimeOfDay.fromDateTime(widget.draft.occurredAt),
           );
           if (time == null) return;
-          draft.occurredAt = DateTime(
+          widget.draft.occurredAt = DateTime(
             date.year,
             date.month,
             date.day,
             time.hour,
             time.minute,
           );
-          onChanged();
+          widget.onChanged();
         },
         child: InputDecorator(
           decoration: const InputDecoration(
             labelText: 'Date et heure',
             prefixIcon: Icon(Icons.schedule_outlined),
           ),
-          child: Text(_dateTime(draft.occurredAt)),
+          child: Text(_dateTime(widget.draft.occurredAt)),
         ),
       ),
       const SizedBox(height: 18),
@@ -84,10 +139,10 @@ class ContextStep extends StatelessWidget {
       const SizedBox(height: 8),
       _Choices(
         values: const ['Ensoleillé', 'Pluie', 'Brouillard'],
-        selected: draft.weather,
+        selected: widget.draft.weather,
         onSelected: (value) {
-          draft.weather = value;
-          onChanged();
+          widget.draft.weather = value;
+          widget.onChanged();
         },
       ),
       const SizedBox(height: 16),
@@ -95,15 +150,15 @@ class ContextStep extends StatelessWidget {
       const SizedBox(height: 8),
       _Choices(
         values: const ['Sèche', 'Mouillée', 'Glissante'],
-        selected: draft.road,
+        selected: widget.draft.road,
         onSelected: (value) {
-          draft.road = value;
-          onChanged();
+          widget.draft.road = value;
+          widget.onChanged();
         },
       ),
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
-        initialValue: draft.light,
+        initialValue: widget.draft.light,
         items: const [
           'Jour',
           'Crépuscule',
@@ -112,8 +167,8 @@ class ContextStep extends StatelessWidget {
         ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
         onChanged: (value) {
           if (value == null) return;
-          draft.light = value;
-          onChanged();
+          widget.draft.light = value;
+          widget.onChanged();
         },
         decoration: const InputDecoration(
           labelText: 'Luminosité',
@@ -122,6 +177,110 @@ class ContextStep extends StatelessWidget {
       ),
     ],
   );
+
+  Future<void> _chooseLocation() async {
+    setState(() {
+      _locating = true;
+      _locationError = null;
+    });
+    try {
+      final location = await Navigator.push<AccidentLocation>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => LocationPickerScreen(
+            initialLatitude: widget.draft.latitude,
+            initialLongitude: widget.draft.longitude,
+            initialLabel: widget.draft.place,
+          ),
+        ),
+      );
+      if (location == null) return;
+      if (!mounted) return;
+      _applyLocation(location);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lieu de l’accident confirmé et sauvegardé.'),
+        ),
+      );
+    } on AccidentLocationException catch (error) {
+      if (mounted) setState(() => _locationError = error.message);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _locationError = 'Position indisponible. Réessayez dans un instant.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
+  Future<void> _detectAndAsk() async {
+    if (_locating || !mounted) return;
+    setState(() {
+      _locating = true;
+      _locationError = null;
+    });
+    try {
+      final detected = await _locationService.determineLocation();
+      if (!mounted) return;
+      final useDetected = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => AlertDialog(
+          icon: const Icon(Icons.my_location, color: AppColors.primary),
+          title: const Text('Position détectée'),
+          content: Text(
+            '${detected.label}\n\nVoulez-vous utiliser cette localisation ?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Choisir une autre'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Utiliser cette position'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted) return;
+      if (useDetected ?? false) {
+        _applyLocation(detected);
+      } else {
+        final selected = await Navigator.push<AccidentLocation>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => LocationPickerScreen(
+              initialLatitude: detected.latitude,
+              initialLongitude: detected.longitude,
+              initialLabel: detected.label,
+            ),
+          ),
+        );
+        if (selected != null && mounted) _applyLocation(selected);
+      }
+    } on AccidentLocationException catch (error) {
+      if (mounted) setState(() => _locationError = error.message);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _locationError = 'Localisation automatique impossible.');
+      }
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
+  void _applyLocation(AccidentLocation location) {
+    widget.place.text = location.label;
+    widget.draft
+      ..place = location.label
+      ..latitude = location.latitude
+      ..longitude = location.longitude
+      ..locationAccuracy = location.accuracy;
+    widget.onChanged();
+  }
 
   static String _dateTime(DateTime value) {
     String two(int number) => number.toString().padLeft(2, '0');
@@ -279,6 +438,7 @@ class EvidenceStep extends StatelessWidget {
   const EvidenceStep({required this.draft, required this.onChanged, super.key});
   final AccidentDraft draft;
   final VoidCallback onChanged;
+  static final _media = AccidentMediaService();
 
   @override
   Widget build(BuildContext context) => Column(
@@ -302,24 +462,34 @@ class EvidenceStep extends StatelessWidget {
                 backgroundColor: entry.value
                     ? AppColors.successBg
                     : AppColors.primaryTint,
-                child: Icon(
-                  entry.value ? Icons.check : Icons.camera_alt_outlined,
-                  color: entry.value
-                      ? AppColors.successText
-                      : AppColors.primary,
-                ),
+                backgroundImage: draft.evidencePaths[entry.key] != null
+                    ? FileImage(File(draft.evidencePaths[entry.key]!))
+                    : null,
+                child: draft.evidencePaths[entry.key] == null
+                    ? Icon(
+                        entry.value ? Icons.check : Icons.camera_alt_outlined,
+                        color: entry.value
+                            ? AppColors.successText
+                            : AppColors.primary,
+                      )
+                    : null,
               ),
               title: Text(
                 entry.key,
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
               subtitle: Text(
-                entry.value ? 'Photo ajoutée' : 'Touchez pour simuler la prise',
+                entry.value
+                    ? 'Photo enregistrée • touchez pour reprendre'
+                    : 'Touchez pour ouvrir la caméra',
               ),
               trailing: Icon(
                 entry.value ? Icons.refresh : Icons.add_circle_outline,
               ),
-              onTap: () {
+              onTap: () async {
+                final photoPath = await _media.capturePhoto(entry.key);
+                if (photoPath == null) return;
+                draft.evidencePaths[entry.key] = photoPath;
                 draft.evidence[entry.key] = true;
                 onChanged();
               },

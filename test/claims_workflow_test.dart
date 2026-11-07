@@ -178,6 +178,8 @@ void main() {
         ),
       );
       await tester.pump();
+      // Laisse l'ouverture différée de la base du module 3 se terminer.
+      await tester.pump(const Duration(seconds: 1));
     }
 
     testWidgets('l’agent prend en charge un dossier transmis', (tester) async {
