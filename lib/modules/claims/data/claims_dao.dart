@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_tables.dart';
 import 'package:mon_constat_digital/modules/claims/models/chat_message.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
+import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_notification.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 
@@ -22,6 +23,7 @@ part 'claims_dao.g.dart';
     ClaimNotifications,
     ChatMessages,
     SyncOutbox,
+    ClaimInsights,
   ],
 )
 class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
@@ -80,6 +82,12 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
                 kind: d.kind,
                 path: d.path,
                 requestId: d.requestId,
+                analysis: d.analysis == null
+                    ? null
+                    : DocumentAnalysis.fromJson(
+                        jsonDecode(d.analysis!) as Map<String, dynamic>,
+                      ),
+                analysisJson: d.analysis,
               ),
             ),
       );
@@ -159,6 +167,7 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
           kind: Value(document.kind),
           path: Value(document.path),
           requestId: Value(document.requestId),
+          analysis: Value(document.analysisJson),
         ),
       );
 
@@ -263,6 +272,8 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
       body: Value(jsonEncode(request.body)),
       multipart: Value(request.multipart),
       filePath: Value(request.filePath),
+      fileBytes: Value(request.fileBytes),
+      fileName: Value(request.fileName),
       actorId: request.identity.id,
       actorRole: request.identity.role,
       actorName: request.identity.name,
@@ -283,6 +294,8 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
             body: jsonDecode(row.body) as Map<String, dynamic>,
             multipart: row.multipart,
             filePath: row.filePath,
+            fileBytes: row.fileBytes,
+            fileName: row.fileName,
             identity: (
               id: row.actorId,
               role: row.actorRole,
@@ -296,6 +309,16 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
   Future<void> removeRequest(String id) =>
       (delete(syncOutbox)..where((t) => t.id.equals(id))).go();
 
+  Future<Map<String, ClaimInsight>> loadInsights() async {
+    final rows = await select(claimInsights).get();
+    return {
+      for (final row in rows)
+        row.claimId: ClaimInsight.fromJson(
+          jsonDecode(row.json) as Map<String, dynamic>,
+        ),
+    };
+  }
+
   /// Remplace le local par l'état du serveur. Ne fait rien, et renvoie faux,
   /// si un changement attend encore d'être envoyé.
   Future<bool> replaceFromServer(ServerSnapshot snapshot) =>
@@ -308,6 +331,7 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
           claimNotifications,
         )..where((t) => t.claimId.isNotNull())).go();
         await delete(chatMessages).go();
+        await delete(claimInsights).go();
 
         for (final claim in snapshot.claims.reversed) {
           await insertClaim(claim);
@@ -317,6 +341,14 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
         }
         for (final message in snapshot.messages) {
           await insertMessage(message);
+        }
+        for (final MapEntry(:key, :value) in snapshot.insights.entries) {
+          await into(claimInsights).insert(
+            ClaimInsightsCompanion.insert(
+              claimId: key,
+              json: jsonEncode(value.raw),
+            ),
+          );
         }
         return true;
       });

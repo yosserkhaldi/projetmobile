@@ -49,6 +49,9 @@ class ClaimDocuments extends Table {
   TextColumn get kind => text().withDefault(const Constant('Pièce'))();
   TextColumn get path => text().nullable()();
   TextColumn get requestId => text().nullable()();
+
+  /// Lecture de la pièce par l'IA, encodée en JSON.
+  TextColumn get analysis => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
@@ -106,8 +109,22 @@ class SyncOutbox extends Table {
   BoolColumn get multipart => boolean().withDefault(const Constant(false))();
   TextColumn get filePath => text().nullable()();
 
+  /// Contenu du fichier quand le navigateur ne donne pas de chemin.
+  BlobColumn get fileBytes => blob().nullable()();
+  TextColumn get fileName => text().nullable()();
+
   /// Auteur du changement : le rôle actif peut changer avant l'envoi.
   TextColumn get actorId => text()();
   TextColumn get actorRole => text()();
   TextColumn get actorName => text()();
+}
+
+/// Dernière analyse reçue du serveur, lisible hors ligne.
+@DataClassName('ClaimInsightRow')
+class ClaimInsights extends Table {
+  TextColumn get claimId => text()();
+  TextColumn get json => text()();
+
+  @override
+  Set<Column> get primaryKey => {claimId};
 }

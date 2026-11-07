@@ -20,6 +20,8 @@ model Claim {
   responsibility    Int?
   indemnity         Float?
   decisionReason    String?
+  // Proposition du système au moment de la décision, pour mesurer l'écart.
+  aiProposal        Json?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -46,6 +48,8 @@ model ClaimDocument {
   kind       String   @default("Pièce")
   storedName String?
   requestId  String?
+  // Données lues dans la pièce par Claude, absentes sans clé.
+  analysis   Json?
   createdAt  DateTime @default(now())
   claim      Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
 
@@ -97,4 +101,33 @@ model ProcessedRequest {
   status    Int
   body      Json
   createdAt DateTime @default(now())
+}
+
+// Texte généré par Claude, réutilisé tant que le dossier ne change pas.
+model ClaimAiNote {
+  claimId   String
+  kind      String
+  hash      String
+  text      String
+  updatedAt DateTime @updatedAt
+
+  @@id([claimId, kind])
+}
+
+// Journal des appels à Claude : coût, échecs, qui a demandé quoi.
+model AiCall {
+  id           Int      @id @default(autoincrement())
+  claimId      String?
+  feature      String
+  actorRole    String
+  source       String
+  model        String?
+  ok           Boolean
+  error        String?
+  inputTokens  Int?
+  outputTokens Int?
+  ms           Int?
+  createdAt    DateTime @default(now())
+
+  @@index([claimId])
 }

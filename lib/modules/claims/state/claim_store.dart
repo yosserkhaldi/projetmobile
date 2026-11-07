@@ -5,6 +5,7 @@ import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_seed.dart';
 import 'package:mon_constat_digital/modules/claims/data/ids.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
+import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_notification.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/state/claims_sync.dart';
@@ -23,7 +24,26 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
   final claims = seedClaims();
   final notifications = seedNotifications();
 
+  /// Analyses du serveur par dossier. Vide quand l'application reste locale.
+  final insights = <String, ClaimInsight>{};
+
+  ClaimInsight? insightFor(String claimId) => insights[claimId];
+
+  /// Dossiers les plus urgents d'abord. Sans analyse, l'ordre ne change pas.
+  List<Claim> byPriority(Iterable<Claim> list) {
+    int score(Claim claim) => insightFor(claim.id)?.priority ?? 0;
+    final sorted = list.toList();
+    // Le tri de Dart n'est pas stable : la position départage les égalités.
+    final position = {for (final (i, claim) in sorted.indexed) claim: i};
+    sorted.sort((a, b) {
+      final byScore = score(b).compareTo(score(a));
+      return byScore != 0 ? byScore : position[a]!.compareTo(position[b]!);
+    });
+    return sorted;
+  }
+
   Future<void> _load() async {
+    insights.addAll(await _dao.loadInsights());
     final savedClaims = await _dao.loadClaims();
     if (savedClaims.isEmpty) {
       await _dao.transaction(() async {
@@ -60,6 +80,9 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     notifications
       ..clear()
       ..addAll(savedNotifications);
+    insights
+      ..clear()
+      ..addAll(await _dao.loadInsights());
     notifyListeners();
   }
 
@@ -68,6 +91,8 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     Map<String, dynamic> body = const {},
     bool multipart = false,
     String? filePath,
+    Uint8List? fileBytes,
+    String? fileName,
   }) {
     final queue = sync;
     if (queue == null) return;
@@ -77,6 +102,8 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
         body: body,
         multipart: multipart,
         filePath: filePath,
+        fileBytes: fileBytes,
+        fileName: fileName,
       ),
     );
   }
@@ -170,6 +197,7 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     Claim claim,
     String name, {
     String? path,
+    Uint8List? bytes,
     DocumentRequest? request,
   }) {
     final document = ClaimDocument(
@@ -192,6 +220,8 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
       '/${claim.id}/documents',
       multipart: true,
       filePath: path,
+      fileBytes: bytes,
+      fileName: name,
       body: {'id': document.id, 'name': name, 'requestId': request?.id},
     );
     _sendNotification(
@@ -230,7 +260,12 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     }
   }
 
-  void addExpertReport(Claim claim, String name, {String? path}) {
+  void addExpertReport(
+    Claim claim,
+    String name, {
+    String? path,
+    Uint8List? bytes,
+  }) {
     final document = ClaimDocument(
       id: newId(),
       name: name,
@@ -243,6 +278,8 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
       '/${claim.id}/expert-report',
       multipart: true,
       filePath: path,
+      fileBytes: bytes,
+      fileName: name,
       body: {'id': document.id, 'name': name},
     );
     _saveEvent(claim, 'Rapport d’expertise joint');

@@ -54,7 +54,12 @@ class AgentPanel extends StatelessWidget {
             onPressed: () async {
               final file = await pickDocument();
               if (file == null) return;
-              store.addExpertReport(claim, file.name, path: file.path);
+              store.addExpertReport(
+                claim,
+                file.name,
+                path: file.path,
+                bytes: file.bytes,
+              );
             },
             icon: const Icon(Icons.upload_file),
             label: const Text('Joindre le rapport d’expertise'),

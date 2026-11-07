@@ -4,8 +4,10 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
+import 'package:mon_constat_digital/modules/claims/screens/assistant_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/chat_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/agent_panel.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/analysis_card.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_timeline.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/document_picker.dart';
@@ -21,17 +23,31 @@ class ClaimDetail extends StatelessWidget {
     final store = AppScope.of(context).claims;
     final file = await pickDocument();
     if (file == null) return;
-    store.addDocument(claim, file.name, path: file.path, request: request);
+    store.addDocument(
+      claim,
+      file.name,
+      path: file.path,
+      bytes: file.bytes,
+      request: request,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final online = AppScope.of(context).claimsSync != null;
+    final stores = AppScope.of(context);
+    final online = stores.claimsSync != null;
+    final insight = stores.claims.insightFor(claim.id);
     final requests = claim.openRequests.toList();
     return Scaffold(
       appBar: AppBar(
         title: Text(claim.id),
         actions: [
+          if (online)
+            IconButton(
+              tooltip: 'Assistant',
+              onPressed: () => open(context, AssistantScreen(claim)),
+              icon: const Icon(Icons.support_agent),
+            ),
           IconButton(
             tooltip: 'Messagerie',
             onPressed: () => open(context, ChatScreen(claim)),
@@ -43,6 +59,14 @@ class ClaimDetail extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           ClaimCard(claim),
+          if (insight != null && agentMode && insight.isForAgent) ...[
+            const SizedBox(height: 12),
+            AnalysisCard(claim, insight),
+          ],
+          if (insight?.headline != null && !agentMode) ...[
+            const SizedBox(height: 12),
+            GuidanceCard(insight!),
+          ],
           if (claim.status == ClaimStatus.closed ||
               claim.status == ClaimStatus.rejected) ...[
             const SizedBox(height: 12),
@@ -93,7 +117,7 @@ class ClaimDetail extends StatelessWidget {
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.attach_file),
               title: Text(document.name),
-              subtitle: Text(document.kind),
+              subtitle: Text(_describe(document)),
               trailing: online
                   ? IconButton(
                       tooltip: 'Télécharger',
@@ -127,6 +151,16 @@ class ClaimDetail extends StatelessWidget {
       ),
     );
   }
+}
+
+String _describe(ClaimDocument document) {
+  final analysis = document.analysis;
+  if (analysis == null) return document.kind;
+  final amount = analysis.amount == null
+      ? ''
+      : ', ${analysis.amount!.round()} TND';
+  final warning = analysis.matches ? '' : ' Ne correspond pas à la demande.';
+  return '${analysis.type}$amount. ${analysis.summary}$warning';
 }
 
 class _Title extends StatelessWidget {

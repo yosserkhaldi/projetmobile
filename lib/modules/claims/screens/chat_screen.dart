@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
@@ -7,10 +9,14 @@ import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/document_picker.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/offline_banner.dart';
+import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen(this.claim, {super.key});
+  const ChatScreen(this.claim, {this.suggest, super.key});
   final Claim claim;
+
+  /// Remplace l'appel au serveur dans les tests.
+  final Future<List<String>> Function()? suggest;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -18,6 +24,8 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final input = TextEditingController();
+  List<String> suggestions = const [];
+  bool suggesting = false;
 
   @override
   void dispose() {
@@ -25,7 +33,30 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  void _send({String? attachmentName, String? attachmentPath}) {
+  /// Sur demande seulement : chaque suggestion peut coûter un appel à Claude.
+  Future<void> _suggest() async {
+    final sync = AppScope.of(context).claimsSync;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => suggesting = true);
+    try {
+      final replies =
+          await widget.suggest?.call() ??
+          await sync!.api.suggestReplies(widget.claim.id, sync.identity);
+      if (mounted) setState(() => suggestions = replies);
+    } catch (_) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Suggestions indisponibles.')),
+      );
+    } finally {
+      if (mounted) setState(() => suggesting = false);
+    }
+  }
+
+  void _send({
+    String? attachmentName,
+    String? attachmentPath,
+    Uint8List? attachmentBytes,
+  }) {
     final stores = AppScope.of(context);
     stores.messages.sendMessage(
       widget.claim.id,
@@ -34,14 +65,20 @@ class _ChatScreenState extends State<ChatScreen> {
       input.text,
       attachmentName: attachmentName,
       attachmentPath: attachmentPath,
+      attachmentBytes: attachmentBytes,
     );
     input.clear();
+    if (suggestions.isNotEmpty) setState(() => suggestions = const []);
   }
 
   Future<void> _attach() async {
     final file = await pickDocument();
     if (file == null || !mounted) return;
-    _send(attachmentName: file.name, attachmentPath: file.path);
+    _send(
+      attachmentName: file.name,
+      attachmentPath: file.path,
+      attachmentBytes: file.bytes,
+    );
   }
 
   @override
@@ -78,10 +115,38 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
             ),
+            if (suggestions.isNotEmpty)
+              SizedBox(
+                height: 44,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  children: [
+                    for (final reply in suggestions)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ActionChip(
+                          label: Text(reply),
+                          onPressed: () => input.text = reply,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
+                  if (role == UserRole.agent &&
+                      (stores.claimsSync != null ||
+                          widget.suggest != null)) ...[
+                    IconButton.outlined(
+                      tooltip: 'Suggérer une réponse',
+                      onPressed: suggesting ? null : _suggest,
+                      icon: const Icon(Icons.lightbulb_outline),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   IconButton.outlined(
                     tooltip: 'Joindre un fichier',
                     onPressed: _attach,

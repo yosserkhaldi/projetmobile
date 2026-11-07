@@ -14,6 +14,7 @@ mixin _$ClaimsDaoMixin on DatabaseAccessor<ClaimsDatabase> {
       attachedDatabase.claimNotifications;
   $ChatMessagesTable get chatMessages => attachedDatabase.chatMessages;
   $SyncOutboxTable get syncOutbox => attachedDatabase.syncOutbox;
+  $ClaimInsightsTable get claimInsights => attachedDatabase.claimInsights;
   ClaimsDaoManager get managers => ClaimsDaoManager(this);
 }
 
@@ -46,4 +47,6 @@ class ClaimsDaoManager {
       $$ChatMessagesTableTableManager(_db.attachedDatabase, _db.chatMessages);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db.attachedDatabase, _db.syncOutbox);
+  $$ClaimInsightsTableTableManager get claimInsights =>
+      $$ClaimInsightsTableTableManager(_db.attachedDatabase, _db.claimInsights);
 }

@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
+import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_status_chip.dart';
 
 class ClaimCard extends StatelessWidget {
-  const ClaimCard(this.claim, {super.key});
+  const ClaimCard(this.claim, {this.insight, super.key});
   final Claim claim;
+
+  /// Affiche ce qui rend le dossier prioritaire, pour l'agent.
+  final ClaimInsight? insight;
   @override
   Widget build(BuildContext context) => Card(
     child: Padding(
@@ -40,6 +44,28 @@ class ClaimCard extends StatelessWidget {
               fontSize: 12,
             ),
           ),
+          if (insight?.reasons.isNotEmpty ?? false) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(
+                  Icons.priority_high,
+                  size: 16,
+                  color: AppColors.warningText,
+                ),
+                Expanded(
+                  child: Text(
+                    insight!.reasons.join(' • '),
+                    style: const TextStyle(
+                      color: AppColors.warningText,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     ),

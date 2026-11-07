@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
+import 'package:mon_constat_digital/modules/claims/screens/analytics_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/notifications_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
@@ -16,9 +17,9 @@ class AgentDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = AppScope.of(context).claims;
-    final pending = s.claims
-        .where((claim) => ClaimStatus.isOpenForAgent(claim.status))
-        .toList();
+    final pending = s.byPriority(
+      s.claims.where((claim) => ClaimStatus.isOpenForAgent(claim.status)),
+    );
     final unread = s.unreadCount(UserRole.agent);
     return SafeArea(
       child: ListView(
@@ -29,6 +30,11 @@ class AgentDashboard extends StatelessWidget {
             'Espace agent',
             subtitle: 'Instruction des sinistres',
             actions: [
+              IconButton(
+                tooltip: 'Statistiques',
+                onPressed: () => open(context, const AnalyticsScreen()),
+                icon: const Icon(Icons.bar_chart),
+              ),
               IconButton(
                 tooltip: 'Notifications',
                 onPressed: () => open(context, const NotificationsScreen()),
@@ -71,7 +77,7 @@ class AgentDashboard extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 10),
               child: InkWell(
                 onTap: () => open(context, ClaimDetail(c, agentMode: true)),
-                child: ClaimCard(c),
+                child: ClaimCard(c, insight: s.insightFor(c.id)),
               ),
             ),
           ),

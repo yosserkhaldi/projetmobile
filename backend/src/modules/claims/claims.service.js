@@ -1,5 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
+import {
+  analyze,
+  decisionRecord,
+  insightsFor,
+  priorClaimsOf,
+} from './ai/insights.js';
 import { db } from './claims.db.js';
 import { badRequest, conflict, notFound } from './claims.errors.js';
 import { announceChange } from './claims.socket.js';
@@ -10,6 +16,18 @@ const aggregate = {
   documents: { orderBy: { createdAt: 'asc' } },
   requests: { orderBy: { createdAt: 'asc' } },
 };
+
+// Réservé à l'agent : la proposition et la lecture des pièces par l'IA.
+export function visibleTo(user, claim) {
+  if (user.role !== 'driver') return claim;
+  const { aiProposal: _proposal, documents, ...rest } = claim;
+  return {
+    ...rest,
+    ...(documents && {
+      documents: documents.map(({ analysis: _analysis, ...document }) => document),
+    }),
+  };
+}
 
 const canSee = (user, claim) =>
   user.role !== 'driver' || claim.driverId === user.id;
@@ -68,7 +86,7 @@ async function move(tx, claim, status, data = {}, detail) {
 
 const reply = async (tx, id, user, status = 200) => {
   const claim = await load(tx, id, user);
-  return { status, body: claim, claim };
+  return { status, body: visibleTo(user, claim), claim };
 };
 
 export async function listClaims(user, { status, severity, from, to, q }) {
@@ -99,7 +117,11 @@ export async function listClaims(user, { status, severity, from, to, q }) {
   return claims;
 }
 
-export const getClaim = (user, id) => load(db(), id, user);
+export const getClaim = async (user, id) =>
+  visibleTo(user, await load(db(), id, user));
+
+// Dossier complet pour le serveur : l'accès est vérifié, rien n'est retiré.
+export const claimForAi = (user, id) => load(db(), id, user);
 
 export const createClaim = (tx, user, input) => {
   const id = required(input.id, 'Identifiant du dossier requis.');
@@ -239,6 +261,16 @@ export async function addExpertReport(tx, user, id, input, file) {
   return reply(tx, id, user, 201);
 }
 
+async function proposalAtDecision(tx, claim) {
+  const others = await tx.claim.findMany({
+    where: { driverId: claim.driverId },
+    select: { id: true, driverId: true, createdAt: true },
+  });
+  return decisionRecord(
+    analyze(claim, { priorClaims: priorClaimsOf(claim, others) }),
+  );
+}
+
 export async function closeClaim(tx, user, id, input) {
   const claim = await load(tx, id, user);
   const { responsibility, indemnity } = input;
@@ -248,14 +280,21 @@ export async function closeClaim(tx, user, id, input) {
   if (typeof indemnity !== 'number' || !(indemnity >= 0)) {
     throw badRequest('Montant invalide.');
   }
-  await move(tx, claim, Status.closed, { responsibility, indemnity });
+  await move(tx, claim, Status.closed, {
+    responsibility,
+    indemnity,
+    aiProposal: await proposalAtDecision(tx, claim),
+  });
   return reply(tx, id, user);
 }
 
 export async function rejectClaim(tx, user, id, input) {
   const claim = await load(tx, id, user);
   const decisionReason = required(input.reason, 'Motif requis.');
-  await move(tx, claim, Status.rejected, { decisionReason });
+  await move(tx, claim, Status.rejected, {
+    decisionReason,
+    aiProposal: await proposalAtDecision(tx, claim),
+  });
   return reply(tx, id, user);
 }
 
@@ -338,5 +377,10 @@ export async function snapshot(user) {
       orderBy: { sentAt: 'asc' },
     }),
   ]);
-  return { claims, notifications, messages };
+  return {
+    claims: claims.map((claim) => visibleTo(user, claim)),
+    notifications,
+    messages,
+    insights: insightsFor(user, claims),
+  };
 }

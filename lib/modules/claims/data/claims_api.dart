@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:mon_constat_digital/modules/claims/models/chat_message.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
+import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_notification.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 
@@ -12,10 +13,16 @@ import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 typedef ApiIdentity = ({String id, String role, String name});
 
 class ServerSnapshot {
-  const ServerSnapshot(this.claims, this.notifications, this.messages);
+  const ServerSnapshot(
+    this.claims,
+    this.notifications,
+    this.messages, {
+    this.insights = const {},
+  });
   final List<Claim> claims;
   final List<ClaimNotification> notifications;
   final List<ChatMessage> messages;
+  final Map<String, ClaimInsight> insights;
 }
 
 /// Une requête en attente, telle que stockée dans la file d'envoi.
@@ -28,13 +35,16 @@ class ApiRequest {
     this.body = const {},
     this.multipart = false,
     this.filePath,
+    this.fileBytes,
+    this.fileName,
   });
 
   final String id, method, path;
   final ApiIdentity identity;
   final Map<String, dynamic> body;
   final bool multipart;
-  final String? filePath;
+  final String? filePath, fileName;
+  final Uint8List? fileBytes;
 }
 
 class ClaimsApi {
@@ -72,7 +82,7 @@ class ClaimsApi {
     request.body.forEach((key, value) {
       if (value != null) multipart.fields[key] = '$value';
     });
-    final file = await _file(request.filePath);
+    final file = await _file(request);
     if (file != null) multipart.files.add(file);
     final response = await _client.send(multipart);
     await response.stream.drain<void>();
@@ -80,7 +90,16 @@ class ClaimsApi {
   }
 
   /// Un fichier disparu de l'appareil ne doit pas bloquer la file.
-  Future<http.MultipartFile?> _file(String? path) async {
+  Future<http.MultipartFile?> _file(ApiRequest request) async {
+    final bytes = request.fileBytes;
+    if (bytes != null) {
+      return http.MultipartFile.fromBytes(
+        'file',
+        bytes,
+        filename: request.fileName,
+      );
+    }
+    final path = request.filePath;
     if (path == null) return null;
     try {
       return await http.MultipartFile.fromPath('file', path);
@@ -121,8 +140,70 @@ class ClaimsApi {
       rows('claims').map(_claim).toList(),
       rows('notifications').map(_notification).toList(),
       rows('messages').map(_message).toList(),
+      insights: {
+        for (final MapEntry(:key, :value)
+            in (json['insights'] as Map<String, dynamic>? ?? const {}).entries)
+          key: ClaimInsight.fromJson(value as Map<String, dynamic>),
+      },
     );
   }
+
+  Future<Map<String, dynamic>> _ask(
+    String method,
+    String path,
+    ApiIdentity identity, [
+    Map<String, dynamic> body = const {},
+  ]) async {
+    final uri = Uri.parse('$baseUrl$_root$path');
+    final headers = _headers(identity);
+    final response = method == 'GET'
+        ? await _client.get(uri, headers: headers)
+        : await _client.post(
+            uri,
+            headers: {...headers, 'content-type': 'application/json'},
+            body: jsonEncode(body),
+          );
+    if (response.statusCode != 200) {
+      throw http.ClientException('Réponse ${response.statusCode}');
+    }
+    return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  /// [messages] : échanges précédents, le dernier étant la question.
+  Future<AiAnswer> askAssistant(
+    String claimId,
+    List<({String role, String content})> messages,
+    ApiIdentity identity,
+  ) async {
+    final json = await _ask('POST', '/$claimId/ai/assistant', identity, {
+      'messages': [
+        for (final m in messages) {'role': m.role, 'content': m.content},
+      ],
+    });
+    return (
+      text: json['answer'] as String,
+      fromClaude: json['source'] == 'claude',
+    );
+  }
+
+  Future<AiAnswer> summarize(String claimId, ApiIdentity identity) async {
+    final json = await _ask('POST', '/$claimId/ai/summary', identity);
+    return (
+      text: json['summary'] as String,
+      fromClaude: json['source'] == 'claude',
+    );
+  }
+
+  Future<List<String>> suggestReplies(
+    String claimId,
+    ApiIdentity identity,
+  ) async {
+    final json = await _ask('POST', '/$claimId/ai/replies', identity);
+    return _strings(json['replies']);
+  }
+
+  Future<Map<String, dynamic>> analytics(ApiIdentity identity) =>
+      _ask('GET', '/analytics', identity);
 
   DateTime _date(Object? value) => DateTime.parse(value! as String).toLocal();
 
@@ -167,6 +248,14 @@ class ClaimsApi {
               name: d['name'] as String,
               kind: d['kind'] as String,
               requestId: d['requestId'] as String?,
+              analysis: d['analysis'] == null
+                  ? null
+                  : DocumentAnalysis.fromJson(
+                      d['analysis'] as Map<String, dynamic>,
+                    ),
+              analysisJson: d['analysis'] == null
+                  ? null
+                  : jsonEncode(d['analysis']),
             ),
           ),
     );

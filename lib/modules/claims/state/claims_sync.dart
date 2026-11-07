@@ -57,6 +57,7 @@ class ClaimsSync extends ChangeNotifier {
 
   bool online = true;
   bool _again = false;
+  bool _disposed = false;
   Future<void>? _running;
   late UserRole _role;
   Timer? _timer;
@@ -104,6 +105,8 @@ class ClaimsSync extends ChangeNotifier {
     Map<String, dynamic> body = const {},
     bool multipart = false,
     String? filePath,
+    Uint8List? fileBytes,
+    String? fileName,
   }) async {
     await _dao.enqueue(
       ApiRequest(
@@ -114,6 +117,8 @@ class ClaimsSync extends ChangeNotifier {
         body: body,
         multipart: multipart,
         filePath: filePath,
+        fileBytes: fileBytes,
+        fileName: fileName,
       ),
     );
     unawaited(synchronize());
@@ -173,13 +178,14 @@ class ClaimsSync extends ChangeNotifier {
   }
 
   void _setOnline(bool value) {
-    if (online == value) return;
+    if (_disposed || online == value) return;
     online = value;
     notifyListeners();
   }
 
   @override
   void dispose() {
+    _disposed = true;
     _timer?.cancel();
     _socket?.dispose();
     users.removeListener(_onUserChanged);

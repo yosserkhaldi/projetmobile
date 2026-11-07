@@ -6,9 +6,21 @@ import { Router } from 'express';
 import multer from 'multer';
 import swaggerUi from 'swagger-ui-express';
 
+import { analytics } from './ai/analytics.js';
+import {
+  analyzeDocument,
+  askAssistant,
+  loadContext,
+  suggestReplies,
+  summarize,
+} from './ai/assistant.js';
+import { claudeEnabled, claudeModel } from './ai/claude.js';
+import { driverView, model } from './ai/insights.js';
 import { requireRole, requireUser } from './claims.auth.js';
-import { HttpError } from './claims.errors.js';
+import { db } from './claims.db.js';
+import { badRequest, HttpError } from './claims.errors.js';
 import * as claims from './claims.service.js';
+import { announceChange } from './claims.socket.js';
 
 // Module 5 : sinistres, suivi, notifications, messagerie.
 const router = Router();
@@ -40,6 +52,71 @@ const write = (action) => async (req, res) => {
 
 const agent = requireRole('agent');
 
+// Limite les appels payants : au plus 30 par minute et par utilisateur.
+const aiCalls = new Map();
+function aiLimit(req, res, next) {
+  const now = Date.now();
+  const recent = (aiCalls.get(req.user.id) ?? []).filter((t) => now - t < 60_000);
+  if (recent.length >= 30) {
+    res.status(429).json({ error: 'Trop de demandes, réessayez dans une minute.' });
+    return;
+  }
+  aiCalls.set(req.user.id, [...recent, now]);
+  next();
+}
+
+// Une question : historique borné, seuls les derniers échanges comptent.
+function conversation(input) {
+  if (!Array.isArray(input) || input.length === 0) {
+    throw badRequest('Conversation requise.');
+  }
+  const messages = input.slice(-12).map(({ role, content }) => {
+    if (!['user', 'assistant'].includes(role) || typeof content !== 'string') {
+      throw badRequest('Message invalide.');
+    }
+    return { role, content: content.trim().slice(0, 2000) };
+  });
+  if (messages.at(-1).role !== 'user' || !messages.at(-1).content) {
+    throw badRequest('Question requise.');
+  }
+  // L'API attend une conversation qui commence par l'utilisateur.
+  while (messages[0].role !== 'user') messages.shift();
+  return messages;
+}
+
+// Lit les pièces reçues, après la réponse : l'utilisateur n'attend pas Claude.
+async function readDocuments(claimId) {
+  if (!claudeEnabled()) return;
+  const claim = await db().claim.findUnique({
+    where: { id: claimId },
+    include: { documents: true, requests: true },
+  });
+  if (!claim) return;
+  let changed = false;
+  for (const document of claim.documents) {
+    if (document.analysis || !document.storedName) continue;
+    const analysis = await analyzeDocument(document, claim, uploadDir);
+    if (!analysis) continue;
+    await db().claimDocument.update({
+      where: { id: document.id },
+      data: { analysis },
+    });
+    changed = true;
+  }
+  if (changed) announceChange(claim);
+}
+
+const thenRead = (req, res, next) => {
+  res.on('finish', () => {
+    if (res.statusCode < 400) {
+      readDocuments(req.params.id).catch((error) =>
+        console.warn(`Lecture de pièce : ${error.message}`),
+      );
+    }
+  });
+  next();
+};
+
 // L'application web de développement appelle l'API depuis un autre port.
 router.use((req, res, next) => {
   res.set({
@@ -65,7 +142,8 @@ router.use((req, _res, next) => {
 });
 
 router.get('/', async (req, res) => {
-  res.json(await claims.listClaims(req.user, req.query));
+  const list = await claims.listClaims(req.user, req.query);
+  res.json(list.map((claim) => claims.visibleTo(req.user, claim)));
 });
 router.post(
   '/',
@@ -75,6 +153,22 @@ router.post(
 
 router.get('/sync', async (req, res) => {
   res.json(await claims.snapshot(req.user));
+});
+
+router.get('/ai/status', (_req, res) => {
+  res.json({
+    claude: claudeEnabled(),
+    claudeModel: claudeEnabled() ? claudeModel() : null,
+    ml: { version: model.version, trainedOn: model.trainedOn },
+  });
+});
+
+router.get('/analytics', agent, async (_req, res) => {
+  const [all, calls] = await Promise.all([
+    claims.listClaims({ role: 'agent' }, {}),
+    db().aiCall.findMany({ select: { source: true, ok: true } }),
+  ]);
+  res.json(analytics(all, calls));
 });
 
 router.get('/notifications', async (req, res) => {
@@ -109,6 +203,7 @@ router.post(
 );
 router.post(
   '/:id/documents',
+  thenRead,
   upload.single('file'),
   write((tx, req) =>
     claims.addDocument(tx, req.user, req.params.id, req.body, req.file),
@@ -124,6 +219,7 @@ router.post(
 router.post(
   '/:id/expert-report',
   agent,
+  thenRead,
   upload.single('file'),
   write((tx, req) =>
     claims.addExpertReport(tx, req.user, req.params.id, req.body, req.file),
@@ -154,6 +250,28 @@ router.post(
   '/:id/messages/read',
   write((tx, req) => claims.markMessagesRead(tx, req.user, req.params.id)),
 );
+
+router.get('/:id/insights', async (req, res) => {
+  const claim = await claims.claimForAi(req.user, req.params.id);
+  const analysis = await loadContext(claim, req.user.role);
+  res.json(
+    req.user.role === 'driver'
+      ? { driver: driverView(claim, analysis) }
+      : analysis,
+  );
+});
+router.post('/:id/ai/assistant', aiLimit, async (req, res) => {
+  const claim = await claims.claimForAi(req.user, req.params.id);
+  res.json(await askAssistant(claim, req.user, conversation(req.body.messages)));
+});
+router.post('/:id/ai/summary', agent, aiLimit, async (req, res) => {
+  const claim = await claims.claimForAi(req.user, req.params.id);
+  res.json(await summarize(claim, req.user));
+});
+router.post('/:id/ai/replies', agent, aiLimit, async (req, res) => {
+  const claim = await claims.claimForAi(req.user, req.params.id);
+  res.json(await suggestReplies(claim, req.user));
+});
 
 router.use((error, _req, res, _next) => {
   if (error instanceof HttpError) {

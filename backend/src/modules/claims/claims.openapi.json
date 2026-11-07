@@ -581,6 +581,166 @@
           }
         ]
       }
+    },
+    "/ai/status": {
+      "get": {
+        "summary": "État de la couche IA : Claude actif ou non, version du modèle",
+        "tags": [
+          "Intelligence"
+        ],
+        "responses": {
+          "200": {
+            "description": "État"
+          }
+        }
+      }
+    },
+    "/analytics": {
+      "get": {
+        "summary": "Statistiques et écart entre le système et les décisions (agent)",
+        "tags": [
+          "Intelligence"
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistiques"
+          },
+          "403": {
+            "description": "Réservé à l’agent"
+          }
+        }
+      }
+    },
+    "/{id}/insights": {
+      "get": {
+        "summary": "Analyse du dossier. Le conducteur ne reçoit que son guide.",
+        "tags": [
+          "Intelligence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analyse"
+          }
+        }
+      }
+    },
+    "/{id}/ai/assistant": {
+      "post": {
+        "summary": "Question sur le dossier. Claude avec outils en lecture seule, ou règles sans clé.",
+        "tags": [
+          "Intelligence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "messages"
+                ],
+                "properties": {
+                  "messages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "assistant"
+                          ]
+                        },
+                        "content": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "answer, source (claude ou rules)"
+          },
+          "400": {
+            "description": "Conversation invalide"
+          },
+          "429": {
+            "description": "Trop de demandes"
+          }
+        }
+      }
+    },
+    "/{id}/ai/summary": {
+      "post": {
+        "summary": "Synthèse du dossier (agent), en cache tant qu’il ne change pas",
+        "tags": [
+          "Intelligence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "summary, source"
+          }
+        }
+      }
+    },
+    "/{id}/ai/replies": {
+      "post": {
+        "summary": "Réponses suggérées pour la messagerie (agent)",
+        "tags": [
+          "Intelligence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "replies, source"
+          }
+        }
+      }
     }
   }
 }

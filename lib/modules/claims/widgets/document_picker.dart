@@ -4,14 +4,19 @@ import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 
-typedef PickedFile = ({String name, String? path});
+/// Le navigateur ne donne pas de chemin : il donne le contenu dans [bytes].
+typedef PickedFile = ({String name, String? path, Uint8List? bytes});
 
 /// Ouvre le sélecteur de fichiers. Remplaçable dans les tests.
 Future<PickedFile?> Function() pickDocument = () async {
   final files = await FilePicker.pickFiles();
   if (files.isEmpty) return null;
   final file = files.first;
-  return (name: file.name, path: kIsWeb ? null : file.path);
+  return (
+    name: file.name,
+    path: kIsWeb ? null : file.path,
+    bytes: kIsWeb ? await file.readAsBytes() : null,
+  );
 };
 
 /// Télécharge un fichier du dossier et propose de l'enregistrer.

@@ -218,7 +218,7 @@ void main() {
     testWidgets('le conducteur dépose la pièce demandée', (tester) async {
       final original = pickDocument;
       addTearDown(() => pickDocument = original);
-      pickDocument = () async => (name: 'devis.pdf', path: null);
+      pickDocument = () async => (name: 'devis.pdf', path: null, bytes: null);
 
       final claim = claimWith(ClaimStatus.documentRequested)
         ..requests.add(const DocumentRequest(id: 'r1', label: 'Devis'));

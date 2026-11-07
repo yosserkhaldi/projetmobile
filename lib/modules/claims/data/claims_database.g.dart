@@ -1267,6 +1267,17 @@ class $ClaimDocumentsTable extends ClaimDocuments
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _analysisMeta = const VerificationMeta(
+    'analysis',
+  );
+  @override
+  late final GeneratedColumn<String> analysis = GeneratedColumn<String>(
+    'analysis',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1288,6 +1299,7 @@ class $ClaimDocumentsTable extends ClaimDocuments
     kind,
     path,
     requestId,
+    analysis,
     createdAt,
   ];
   @override
@@ -1345,6 +1357,12 @@ class $ClaimDocumentsTable extends ClaimDocuments
         requestId.isAcceptableOrUnknown(data['request_id']!, _requestIdMeta),
       );
     }
+    if (data.containsKey('analysis')) {
+      context.handle(
+        _analysisMeta,
+        analysis.isAcceptableOrUnknown(data['analysis']!, _analysisMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1388,6 +1406,10 @@ class $ClaimDocumentsTable extends ClaimDocuments
         DriftSqlType.string,
         data['${effectivePrefix}request_id'],
       ),
+      analysis: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}analysis'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1409,6 +1431,9 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
   final String kind;
   final String? path;
   final String? requestId;
+
+  /// Lecture de la pièce par l'IA, encodée en JSON.
+  final String? analysis;
   final DateTime createdAt;
   const DocumentRow({
     required this.id,
@@ -1418,6 +1443,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     required this.kind,
     this.path,
     this.requestId,
+    this.analysis,
     required this.createdAt,
   });
   @override
@@ -1434,6 +1460,9 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     if (!nullToAbsent || requestId != null) {
       map['request_id'] = Variable<String>(requestId);
     }
+    if (!nullToAbsent || analysis != null) {
+      map['analysis'] = Variable<String>(analysis);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -1449,6 +1478,9 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       requestId: requestId == null && nullToAbsent
           ? const Value.absent()
           : Value(requestId),
+      analysis: analysis == null && nullToAbsent
+          ? const Value.absent()
+          : Value(analysis),
       createdAt: Value(createdAt),
     );
   }
@@ -1466,6 +1498,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       kind: serializer.fromJson<String>(json['kind']),
       path: serializer.fromJson<String?>(json['path']),
       requestId: serializer.fromJson<String?>(json['requestId']),
+      analysis: serializer.fromJson<String?>(json['analysis']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -1480,6 +1513,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       'kind': serializer.toJson<String>(kind),
       'path': serializer.toJson<String?>(path),
       'requestId': serializer.toJson<String?>(requestId),
+      'analysis': serializer.toJson<String?>(analysis),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -1492,6 +1526,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     String? kind,
     Value<String?> path = const Value.absent(),
     Value<String?> requestId = const Value.absent(),
+    Value<String?> analysis = const Value.absent(),
     DateTime? createdAt,
   }) => DocumentRow(
     id: id ?? this.id,
@@ -1501,6 +1536,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     kind: kind ?? this.kind,
     path: path.present ? path.value : this.path,
     requestId: requestId.present ? requestId.value : this.requestId,
+    analysis: analysis.present ? analysis.value : this.analysis,
     createdAt: createdAt ?? this.createdAt,
   );
   DocumentRow copyWithCompanion(ClaimDocumentsCompanion data) {
@@ -1512,6 +1548,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       kind: data.kind.present ? data.kind.value : this.kind,
       path: data.path.present ? data.path.value : this.path,
       requestId: data.requestId.present ? data.requestId.value : this.requestId,
+      analysis: data.analysis.present ? data.analysis.value : this.analysis,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1526,14 +1563,24 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
           ..write('kind: $kind, ')
           ..write('path: $path, ')
           ..write('requestId: $requestId, ')
+          ..write('analysis: $analysis, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, uid, claimId, name, kind, path, requestId, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    uid,
+    claimId,
+    name,
+    kind,
+    path,
+    requestId,
+    analysis,
+    createdAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1545,6 +1592,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
           other.kind == this.kind &&
           other.path == this.path &&
           other.requestId == this.requestId &&
+          other.analysis == this.analysis &&
           other.createdAt == this.createdAt);
 }
 
@@ -1556,6 +1604,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<DocumentRow> {
   final Value<String> kind;
   final Value<String?> path;
   final Value<String?> requestId;
+  final Value<String?> analysis;
   final Value<DateTime> createdAt;
   const ClaimDocumentsCompanion({
     this.id = const Value.absent(),
@@ -1565,6 +1614,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<DocumentRow> {
     this.kind = const Value.absent(),
     this.path = const Value.absent(),
     this.requestId = const Value.absent(),
+    this.analysis = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   ClaimDocumentsCompanion.insert({
@@ -1575,6 +1625,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<DocumentRow> {
     this.kind = const Value.absent(),
     this.path = const Value.absent(),
     this.requestId = const Value.absent(),
+    this.analysis = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : claimId = Value(claimId),
        name = Value(name);
@@ -1586,6 +1637,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<DocumentRow> {
     Expression<String>? kind,
     Expression<String>? path,
     Expression<String>? requestId,
+    Expression<String>? analysis,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -1596,6 +1648,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<DocumentRow> {
       if (kind != null) 'kind': kind,
       if (path != null) 'path': path,
       if (requestId != null) 'request_id': requestId,
+      if (analysis != null) 'analysis': analysis,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -1608,6 +1661,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<DocumentRow> {
     Value<String>? kind,
     Value<String?>? path,
     Value<String?>? requestId,
+    Value<String?>? analysis,
     Value<DateTime>? createdAt,
   }) {
     return ClaimDocumentsCompanion(
@@ -1618,6 +1672,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<DocumentRow> {
       kind: kind ?? this.kind,
       path: path ?? this.path,
       requestId: requestId ?? this.requestId,
+      analysis: analysis ?? this.analysis,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -1646,6 +1701,9 @@ class ClaimDocumentsCompanion extends UpdateCompanion<DocumentRow> {
     if (requestId.present) {
       map['request_id'] = Variable<String>(requestId.value);
     }
+    if (analysis.present) {
+      map['analysis'] = Variable<String>(analysis.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1662,6 +1720,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<DocumentRow> {
           ..write('kind: $kind, ')
           ..write('path: $path, ')
           ..write('requestId: $requestId, ')
+          ..write('analysis: $analysis, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -3199,6 +3258,28 @@ class $SyncOutboxTable extends SyncOutbox
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _fileBytesMeta = const VerificationMeta(
+    'fileBytes',
+  );
+  @override
+  late final GeneratedColumn<Uint8List> fileBytes = GeneratedColumn<Uint8List>(
+    'file_bytes',
+    aliasedName,
+    true,
+    type: DriftSqlType.blob,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fileNameMeta = const VerificationMeta(
+    'fileName',
+  );
+  @override
+  late final GeneratedColumn<String> fileName = GeneratedColumn<String>(
+    'file_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _actorIdMeta = const VerificationMeta(
     'actorId',
   );
@@ -3241,6 +3322,8 @@ class $SyncOutboxTable extends SyncOutbox
     body,
     multipart,
     filePath,
+    fileBytes,
+    fileName,
     actorId,
     actorRole,
     actorName,
@@ -3300,6 +3383,18 @@ class $SyncOutboxTable extends SyncOutbox
       context.handle(
         _filePathMeta,
         filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta),
+      );
+    }
+    if (data.containsKey('file_bytes')) {
+      context.handle(
+        _fileBytesMeta,
+        fileBytes.isAcceptableOrUnknown(data['file_bytes']!, _fileBytesMeta),
+      );
+    }
+    if (data.containsKey('file_name')) {
+      context.handle(
+        _fileNameMeta,
+        fileName.isAcceptableOrUnknown(data['file_name']!, _fileNameMeta),
       );
     }
     if (data.containsKey('actor_id')) {
@@ -3363,6 +3458,14 @@ class $SyncOutboxTable extends SyncOutbox
         DriftSqlType.string,
         data['${effectivePrefix}file_path'],
       ),
+      fileBytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}file_bytes'],
+      ),
+      fileName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_name'],
+      ),
       actorId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}actor_id'],
@@ -3393,6 +3496,10 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
   final bool multipart;
   final String? filePath;
 
+  /// Contenu du fichier quand le navigateur ne donne pas de chemin.
+  final Uint8List? fileBytes;
+  final String? fileName;
+
   /// Auteur du changement : le rôle actif peut changer avant l'envoi.
   final String actorId;
   final String actorRole;
@@ -3405,6 +3512,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     required this.body,
     required this.multipart,
     this.filePath,
+    this.fileBytes,
+    this.fileName,
     required this.actorId,
     required this.actorRole,
     required this.actorName,
@@ -3420,6 +3529,12 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     map['multipart'] = Variable<bool>(multipart);
     if (!nullToAbsent || filePath != null) {
       map['file_path'] = Variable<String>(filePath);
+    }
+    if (!nullToAbsent || fileBytes != null) {
+      map['file_bytes'] = Variable<Uint8List>(fileBytes);
+    }
+    if (!nullToAbsent || fileName != null) {
+      map['file_name'] = Variable<String>(fileName);
     }
     map['actor_id'] = Variable<String>(actorId);
     map['actor_role'] = Variable<String>(actorRole);
@@ -3438,6 +3553,12 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       filePath: filePath == null && nullToAbsent
           ? const Value.absent()
           : Value(filePath),
+      fileBytes: fileBytes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fileBytes),
+      fileName: fileName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fileName),
       actorId: Value(actorId),
       actorRole: Value(actorRole),
       actorName: Value(actorName),
@@ -3457,6 +3578,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       body: serializer.fromJson<String>(json['body']),
       multipart: serializer.fromJson<bool>(json['multipart']),
       filePath: serializer.fromJson<String?>(json['filePath']),
+      fileBytes: serializer.fromJson<Uint8List?>(json['fileBytes']),
+      fileName: serializer.fromJson<String?>(json['fileName']),
       actorId: serializer.fromJson<String>(json['actorId']),
       actorRole: serializer.fromJson<String>(json['actorRole']),
       actorName: serializer.fromJson<String>(json['actorName']),
@@ -3473,6 +3596,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       'body': serializer.toJson<String>(body),
       'multipart': serializer.toJson<bool>(multipart),
       'filePath': serializer.toJson<String?>(filePath),
+      'fileBytes': serializer.toJson<Uint8List?>(fileBytes),
+      'fileName': serializer.toJson<String?>(fileName),
       'actorId': serializer.toJson<String>(actorId),
       'actorRole': serializer.toJson<String>(actorRole),
       'actorName': serializer.toJson<String>(actorName),
@@ -3487,6 +3612,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     String? body,
     bool? multipart,
     Value<String?> filePath = const Value.absent(),
+    Value<Uint8List?> fileBytes = const Value.absent(),
+    Value<String?> fileName = const Value.absent(),
     String? actorId,
     String? actorRole,
     String? actorName,
@@ -3498,6 +3625,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     body: body ?? this.body,
     multipart: multipart ?? this.multipart,
     filePath: filePath.present ? filePath.value : this.filePath,
+    fileBytes: fileBytes.present ? fileBytes.value : this.fileBytes,
+    fileName: fileName.present ? fileName.value : this.fileName,
     actorId: actorId ?? this.actorId,
     actorRole: actorRole ?? this.actorRole,
     actorName: actorName ?? this.actorName,
@@ -3511,6 +3640,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       body: data.body.present ? data.body.value : this.body,
       multipart: data.multipart.present ? data.multipart.value : this.multipart,
       filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      fileBytes: data.fileBytes.present ? data.fileBytes.value : this.fileBytes,
+      fileName: data.fileName.present ? data.fileName.value : this.fileName,
       actorId: data.actorId.present ? data.actorId.value : this.actorId,
       actorRole: data.actorRole.present ? data.actorRole.value : this.actorRole,
       actorName: data.actorName.present ? data.actorName.value : this.actorName,
@@ -3527,6 +3658,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
           ..write('body: $body, ')
           ..write('multipart: $multipart, ')
           ..write('filePath: $filePath, ')
+          ..write('fileBytes: $fileBytes, ')
+          ..write('fileName: $fileName, ')
           ..write('actorId: $actorId, ')
           ..write('actorRole: $actorRole, ')
           ..write('actorName: $actorName')
@@ -3543,6 +3676,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     body,
     multipart,
     filePath,
+    $driftBlobEquality.hash(fileBytes),
+    fileName,
     actorId,
     actorRole,
     actorName,
@@ -3558,6 +3693,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
           other.body == this.body &&
           other.multipart == this.multipart &&
           other.filePath == this.filePath &&
+          $driftBlobEquality.equals(other.fileBytes, this.fileBytes) &&
+          other.fileName == this.fileName &&
           other.actorId == this.actorId &&
           other.actorRole == this.actorRole &&
           other.actorName == this.actorName);
@@ -3571,6 +3708,8 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
   final Value<String> body;
   final Value<bool> multipart;
   final Value<String?> filePath;
+  final Value<Uint8List?> fileBytes;
+  final Value<String?> fileName;
   final Value<String> actorId;
   final Value<String> actorRole;
   final Value<String> actorName;
@@ -3582,6 +3721,8 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
     this.body = const Value.absent(),
     this.multipart = const Value.absent(),
     this.filePath = const Value.absent(),
+    this.fileBytes = const Value.absent(),
+    this.fileName = const Value.absent(),
     this.actorId = const Value.absent(),
     this.actorRole = const Value.absent(),
     this.actorName = const Value.absent(),
@@ -3594,6 +3735,8 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
     this.body = const Value.absent(),
     this.multipart = const Value.absent(),
     this.filePath = const Value.absent(),
+    this.fileBytes = const Value.absent(),
+    this.fileName = const Value.absent(),
     required String actorId,
     required String actorRole,
     required String actorName,
@@ -3611,6 +3754,8 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
     Expression<String>? body,
     Expression<bool>? multipart,
     Expression<String>? filePath,
+    Expression<Uint8List>? fileBytes,
+    Expression<String>? fileName,
     Expression<String>? actorId,
     Expression<String>? actorRole,
     Expression<String>? actorName,
@@ -3623,6 +3768,8 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
       if (body != null) 'body': body,
       if (multipart != null) 'multipart': multipart,
       if (filePath != null) 'file_path': filePath,
+      if (fileBytes != null) 'file_bytes': fileBytes,
+      if (fileName != null) 'file_name': fileName,
       if (actorId != null) 'actor_id': actorId,
       if (actorRole != null) 'actor_role': actorRole,
       if (actorName != null) 'actor_name': actorName,
@@ -3637,6 +3784,8 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
     Value<String>? body,
     Value<bool>? multipart,
     Value<String?>? filePath,
+    Value<Uint8List?>? fileBytes,
+    Value<String?>? fileName,
     Value<String>? actorId,
     Value<String>? actorRole,
     Value<String>? actorName,
@@ -3649,6 +3798,8 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
       body: body ?? this.body,
       multipart: multipart ?? this.multipart,
       filePath: filePath ?? this.filePath,
+      fileBytes: fileBytes ?? this.fileBytes,
+      fileName: fileName ?? this.fileName,
       actorId: actorId ?? this.actorId,
       actorRole: actorRole ?? this.actorRole,
       actorName: actorName ?? this.actorName,
@@ -3679,6 +3830,12 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
     if (filePath.present) {
       map['file_path'] = Variable<String>(filePath.value);
     }
+    if (fileBytes.present) {
+      map['file_bytes'] = Variable<Uint8List>(fileBytes.value);
+    }
+    if (fileName.present) {
+      map['file_name'] = Variable<String>(fileName.value);
+    }
     if (actorId.present) {
       map['actor_id'] = Variable<String>(actorId.value);
     }
@@ -3701,9 +3858,223 @@ class SyncOutboxCompanion extends UpdateCompanion<OutboxRow> {
           ..write('body: $body, ')
           ..write('multipart: $multipart, ')
           ..write('filePath: $filePath, ')
+          ..write('fileBytes: $fileBytes, ')
+          ..write('fileName: $fileName, ')
           ..write('actorId: $actorId, ')
           ..write('actorRole: $actorRole, ')
           ..write('actorName: $actorName')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ClaimInsightsTable extends ClaimInsights
+    with TableInfo<$ClaimInsightsTable, ClaimInsightRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ClaimInsightsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _claimIdMeta = const VerificationMeta(
+    'claimId',
+  );
+  @override
+  late final GeneratedColumn<String> claimId = GeneratedColumn<String>(
+    'claim_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _jsonMeta = const VerificationMeta('json');
+  @override
+  late final GeneratedColumn<String> json = GeneratedColumn<String>(
+    'json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [claimId, json];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'claim_insights';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ClaimInsightRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('claim_id')) {
+      context.handle(
+        _claimIdMeta,
+        claimId.isAcceptableOrUnknown(data['claim_id']!, _claimIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_claimIdMeta);
+    }
+    if (data.containsKey('json')) {
+      context.handle(
+        _jsonMeta,
+        json.isAcceptableOrUnknown(data['json']!, _jsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_jsonMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {claimId};
+  @override
+  ClaimInsightRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ClaimInsightRow(
+      claimId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}claim_id'],
+      )!,
+      json: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}json'],
+      )!,
+    );
+  }
+
+  @override
+  $ClaimInsightsTable createAlias(String alias) {
+    return $ClaimInsightsTable(attachedDatabase, alias);
+  }
+}
+
+class ClaimInsightRow extends DataClass implements Insertable<ClaimInsightRow> {
+  final String claimId;
+  final String json;
+  const ClaimInsightRow({required this.claimId, required this.json});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['claim_id'] = Variable<String>(claimId);
+    map['json'] = Variable<String>(json);
+    return map;
+  }
+
+  ClaimInsightsCompanion toCompanion(bool nullToAbsent) {
+    return ClaimInsightsCompanion(claimId: Value(claimId), json: Value(json));
+  }
+
+  factory ClaimInsightRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ClaimInsightRow(
+      claimId: serializer.fromJson<String>(json['claimId']),
+      json: serializer.fromJson<String>(json['json']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'claimId': serializer.toJson<String>(claimId),
+      'json': serializer.toJson<String>(json),
+    };
+  }
+
+  ClaimInsightRow copyWith({String? claimId, String? json}) => ClaimInsightRow(
+    claimId: claimId ?? this.claimId,
+    json: json ?? this.json,
+  );
+  ClaimInsightRow copyWithCompanion(ClaimInsightsCompanion data) {
+    return ClaimInsightRow(
+      claimId: data.claimId.present ? data.claimId.value : this.claimId,
+      json: data.json.present ? data.json.value : this.json,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClaimInsightRow(')
+          ..write('claimId: $claimId, ')
+          ..write('json: $json')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(claimId, json);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ClaimInsightRow &&
+          other.claimId == this.claimId &&
+          other.json == this.json);
+}
+
+class ClaimInsightsCompanion extends UpdateCompanion<ClaimInsightRow> {
+  final Value<String> claimId;
+  final Value<String> json;
+  final Value<int> rowid;
+  const ClaimInsightsCompanion({
+    this.claimId = const Value.absent(),
+    this.json = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ClaimInsightsCompanion.insert({
+    required String claimId,
+    required String json,
+    this.rowid = const Value.absent(),
+  }) : claimId = Value(claimId),
+       json = Value(json);
+  static Insertable<ClaimInsightRow> custom({
+    Expression<String>? claimId,
+    Expression<String>? json,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (claimId != null) 'claim_id': claimId,
+      if (json != null) 'json': json,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ClaimInsightsCompanion copyWith({
+    Value<String>? claimId,
+    Value<String>? json,
+    Value<int>? rowid,
+  }) {
+    return ClaimInsightsCompanion(
+      claimId: claimId ?? this.claimId,
+      json: json ?? this.json,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (claimId.present) {
+      map['claim_id'] = Variable<String>(claimId.value);
+    }
+    if (json.present) {
+      map['json'] = Variable<String>(json.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClaimInsightsCompanion(')
+          ..write('claimId: $claimId, ')
+          ..write('json: $json, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -3723,6 +4094,7 @@ abstract class _$ClaimsDatabase extends GeneratedDatabase {
       $ClaimNotificationsTable(this);
   late final $ChatMessagesTable chatMessages = $ChatMessagesTable(this);
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
+  late final $ClaimInsightsTable claimInsights = $ClaimInsightsTable(this);
   late final Index claimDocumentsUid = Index(
     'claim_documents_uid',
     'CREATE UNIQUE INDEX claim_documents_uid ON claim_documents (uid)',
@@ -3748,6 +4120,7 @@ abstract class _$ClaimsDatabase extends GeneratedDatabase {
     claimNotifications,
     chatMessages,
     syncOutbox,
+    claimInsights,
     claimDocumentsUid,
     claimNotificationsUid,
     chatMessagesUid,
@@ -4807,6 +5180,7 @@ typedef $$ClaimDocumentsTableCreateCompanionBuilder =
       Value<String> kind,
       Value<String?> path,
       Value<String?> requestId,
+      Value<String?> analysis,
       Value<DateTime> createdAt,
     });
 typedef $$ClaimDocumentsTableUpdateCompanionBuilder =
@@ -4818,6 +5192,7 @@ typedef $$ClaimDocumentsTableUpdateCompanionBuilder =
       Value<String> kind,
       Value<String?> path,
       Value<String?> requestId,
+      Value<String?> analysis,
       Value<DateTime> createdAt,
     });
 
@@ -4884,6 +5259,11 @@ class $$ClaimDocumentsTableFilterComposer
 
   ColumnFilters<String> get requestId => $composableBuilder(
     column: $table.requestId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get analysis => $composableBuilder(
+    column: $table.analysis,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4955,6 +5335,11 @@ class $$ClaimDocumentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get analysis => $composableBuilder(
+    column: $table.analysis,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -5010,6 +5395,9 @@ class $$ClaimDocumentsTableAnnotationComposer
 
   GeneratedColumn<String> get requestId =>
       $composableBuilder(column: $table.requestId, builder: (column) => column);
+
+  GeneratedColumn<String> get analysis =>
+      $composableBuilder(column: $table.analysis, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -5075,6 +5463,7 @@ class $$ClaimDocumentsTableTableManager
                 Value<String> kind = const Value.absent(),
                 Value<String?> path = const Value.absent(),
                 Value<String?> requestId = const Value.absent(),
+                Value<String?> analysis = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => ClaimDocumentsCompanion(
                 id: id,
@@ -5084,6 +5473,7 @@ class $$ClaimDocumentsTableTableManager
                 kind: kind,
                 path: path,
                 requestId: requestId,
+                analysis: analysis,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -5095,6 +5485,7 @@ class $$ClaimDocumentsTableTableManager
                 Value<String> kind = const Value.absent(),
                 Value<String?> path = const Value.absent(),
                 Value<String?> requestId = const Value.absent(),
+                Value<String?> analysis = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => ClaimDocumentsCompanion.insert(
                 id: id,
@@ -5104,6 +5495,7 @@ class $$ClaimDocumentsTableTableManager
                 kind: kind,
                 path: path,
                 requestId: requestId,
+                analysis: analysis,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
@@ -6098,6 +6490,8 @@ typedef $$SyncOutboxTableCreateCompanionBuilder =
       Value<String> body,
       Value<bool> multipart,
       Value<String?> filePath,
+      Value<Uint8List?> fileBytes,
+      Value<String?> fileName,
       required String actorId,
       required String actorRole,
       required String actorName,
@@ -6111,6 +6505,8 @@ typedef $$SyncOutboxTableUpdateCompanionBuilder =
       Value<String> body,
       Value<bool> multipart,
       Value<String?> filePath,
+      Value<Uint8List?> fileBytes,
+      Value<String?> fileName,
       Value<String> actorId,
       Value<String> actorRole,
       Value<String> actorName,
@@ -6157,6 +6553,16 @@ class $$SyncOutboxTableFilterComposer
 
   ColumnFilters<String> get filePath => $composableBuilder(
     column: $table.filePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<Uint8List> get fileBytes => $composableBuilder(
+    column: $table.fileBytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fileName => $composableBuilder(
+    column: $table.fileName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6220,6 +6626,16 @@ class $$SyncOutboxTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<Uint8List> get fileBytes => $composableBuilder(
+    column: $table.fileBytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fileName => $composableBuilder(
+    column: $table.fileName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get actorId => $composableBuilder(
     column: $table.actorId,
     builder: (column) => ColumnOrderings(column),
@@ -6265,6 +6681,12 @@ class $$SyncOutboxTableAnnotationComposer
 
   GeneratedColumn<String> get filePath =>
       $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<Uint8List> get fileBytes =>
+      $composableBuilder(column: $table.fileBytes, builder: (column) => column);
+
+  GeneratedColumn<String> get fileName =>
+      $composableBuilder(column: $table.fileName, builder: (column) => column);
 
   GeneratedColumn<String> get actorId =>
       $composableBuilder(column: $table.actorId, builder: (column) => column);
@@ -6314,6 +6736,8 @@ class $$SyncOutboxTableTableManager
                 Value<String> body = const Value.absent(),
                 Value<bool> multipart = const Value.absent(),
                 Value<String?> filePath = const Value.absent(),
+                Value<Uint8List?> fileBytes = const Value.absent(),
+                Value<String?> fileName = const Value.absent(),
                 Value<String> actorId = const Value.absent(),
                 Value<String> actorRole = const Value.absent(),
                 Value<String> actorName = const Value.absent(),
@@ -6325,6 +6749,8 @@ class $$SyncOutboxTableTableManager
                 body: body,
                 multipart: multipart,
                 filePath: filePath,
+                fileBytes: fileBytes,
+                fileName: fileName,
                 actorId: actorId,
                 actorRole: actorRole,
                 actorName: actorName,
@@ -6338,6 +6764,8 @@ class $$SyncOutboxTableTableManager
                 Value<String> body = const Value.absent(),
                 Value<bool> multipart = const Value.absent(),
                 Value<String?> filePath = const Value.absent(),
+                Value<Uint8List?> fileBytes = const Value.absent(),
+                Value<String?> fileName = const Value.absent(),
                 required String actorId,
                 required String actorRole,
                 required String actorName,
@@ -6349,6 +6777,8 @@ class $$SyncOutboxTableTableManager
                 body: body,
                 multipart: multipart,
                 filePath: filePath,
+                fileBytes: fileBytes,
+                fileName: fileName,
                 actorId: actorId,
                 actorRole: actorRole,
                 actorName: actorName,
@@ -6387,6 +6817,164 @@ typedef $$SyncOutboxTableProcessedTableManager =
       OutboxRow,
       PrefetchHooks Function()
     >;
+typedef $$ClaimInsightsTableCreateCompanionBuilder =
+    ClaimInsightsCompanion Function({
+      required String claimId,
+      required String json,
+      Value<int> rowid,
+    });
+typedef $$ClaimInsightsTableUpdateCompanionBuilder =
+    ClaimInsightsCompanion Function({
+      Value<String> claimId,
+      Value<String> json,
+      Value<int> rowid,
+    });
+
+class $$ClaimInsightsTableFilterComposer
+    extends Composer<_$ClaimsDatabase, $ClaimInsightsTable> {
+  $$ClaimInsightsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get claimId => $composableBuilder(
+    column: $table.claimId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get json => $composableBuilder(
+    column: $table.json,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ClaimInsightsTableOrderingComposer
+    extends Composer<_$ClaimsDatabase, $ClaimInsightsTable> {
+  $$ClaimInsightsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get claimId => $composableBuilder(
+    column: $table.claimId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get json => $composableBuilder(
+    column: $table.json,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ClaimInsightsTableAnnotationComposer
+    extends Composer<_$ClaimsDatabase, $ClaimInsightsTable> {
+  $$ClaimInsightsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get claimId =>
+      $composableBuilder(column: $table.claimId, builder: (column) => column);
+
+  GeneratedColumn<String> get json =>
+      $composableBuilder(column: $table.json, builder: (column) => column);
+}
+
+class $$ClaimInsightsTableTableManager
+    extends
+        RootTableManager<
+          _$ClaimsDatabase,
+          $ClaimInsightsTable,
+          ClaimInsightRow,
+          $$ClaimInsightsTableFilterComposer,
+          $$ClaimInsightsTableOrderingComposer,
+          $$ClaimInsightsTableAnnotationComposer,
+          $$ClaimInsightsTableCreateCompanionBuilder,
+          $$ClaimInsightsTableUpdateCompanionBuilder,
+          (
+            ClaimInsightRow,
+            BaseReferences<
+              _$ClaimsDatabase,
+              $ClaimInsightsTable,
+              ClaimInsightRow
+            >,
+          ),
+          ClaimInsightRow,
+          PrefetchHooks Function()
+        > {
+  $$ClaimInsightsTableTableManager(
+    _$ClaimsDatabase db,
+    $ClaimInsightsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ClaimInsightsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ClaimInsightsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ClaimInsightsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> claimId = const Value.absent(),
+                Value<String> json = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ClaimInsightsCompanion(
+                claimId: claimId,
+                json: json,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String claimId,
+                required String json,
+                Value<int> rowid = const Value.absent(),
+              }) => ClaimInsightsCompanion.insert(
+                claimId: claimId,
+                json: json,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ClaimInsightsTable, ClaimInsightRow>(table),
+                  BaseReferences<
+                    _$ClaimsDatabase,
+                    $ClaimInsightsTable,
+                    ClaimInsightRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ClaimInsightsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ClaimsDatabase,
+      $ClaimInsightsTable,
+      ClaimInsightRow,
+      $$ClaimInsightsTableFilterComposer,
+      $$ClaimInsightsTableOrderingComposer,
+      $$ClaimInsightsTableAnnotationComposer,
+      $$ClaimInsightsTableCreateCompanionBuilder,
+      $$ClaimInsightsTableUpdateCompanionBuilder,
+      (
+        ClaimInsightRow,
+        BaseReferences<_$ClaimsDatabase, $ClaimInsightsTable, ClaimInsightRow>,
+      ),
+      ClaimInsightRow,
+      PrefetchHooks Function()
+    >;
 
 class $ClaimsDatabaseManager {
   final _$ClaimsDatabase _db;
@@ -6405,4 +6993,6 @@ class $ClaimsDatabaseManager {
       $$ChatMessagesTableTableManager(_db, _db.chatMessages);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
+  $$ClaimInsightsTableTableManager get claimInsights =>
+      $$ClaimInsightsTableTableManager(_db, _db.claimInsights);
 }

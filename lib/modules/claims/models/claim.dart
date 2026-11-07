@@ -1,3 +1,4 @@
+import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 
 class ClaimDocument {
@@ -7,6 +8,8 @@ class ClaimDocument {
     this.path,
     this.kind = ClaimDocument.supporting,
     this.requestId,
+    this.analysis,
+    this.analysisJson,
   });
 
   static const supporting = 'Pièce';
@@ -14,6 +17,10 @@ class ClaimDocument {
 
   final String id, name, kind;
   final String? path, requestId;
+
+  /// Réservé à l'agent : le serveur ne l'envoie pas au conducteur.
+  final DocumentAnalysis? analysis;
+  final String? analysisJson;
 }
 
 class DocumentRequest {

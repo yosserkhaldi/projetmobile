@@ -64,6 +64,7 @@ class MessageStore extends ChangeNotifier with PersistedStore {
     String text, {
     String? attachmentName,
     String? attachmentPath,
+    Uint8List? attachmentBytes,
   }) {
     if (text.trim().isEmpty && attachmentName == null) return;
     final message = ChatMessage(
@@ -86,6 +87,8 @@ class MessageStore extends ChangeNotifier with PersistedStore {
           '/$claimId/messages',
           multipart: true,
           filePath: attachmentPath,
+          fileBytes: attachmentBytes,
+          fileName: attachmentName,
           body: {
             'id': message.id,
             'body': message.text,

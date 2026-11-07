@@ -19,6 +19,7 @@ part 'claims_database.g.dart';
     ClaimNotifications,
     ChatMessages,
     SyncOutbox,
+    ClaimInsights,
   ],
   daos: [ClaimsDao],
 )
@@ -38,15 +39,26 @@ class ClaimsDatabase extends _$ClaimsDatabase {
   );
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
       if (from < 2) await _upgradeToV2(m);
+      if (from < 3) await _upgradeToV3(m, outboxExisted: from == 2);
     },
     beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
   );
+
+  /// Depuis la v1, la file d'envoi vient d'être créée avec toutes ses colonnes.
+  Future<void> _upgradeToV3(Migrator m, {required bool outboxExisted}) async {
+    await m.addColumn(claimDocuments, claimDocuments.analysis);
+    if (outboxExisted) {
+      await m.addColumn(syncOutbox, syncOutbox.fileBytes);
+      await m.addColumn(syncOutbox, syncOutbox.fileName);
+    }
+    await m.createTable(claimInsights);
+  }
 
   Future<void> _upgradeToV2(Migrator m) async {
     for (final column in [

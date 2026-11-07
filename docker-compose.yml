@@ -17,6 +17,10 @@ services:
 
   api:
     build: ./backend
+    # Facultatif : ANTHROPIC_API_KEY reste dans ce fichier, ignoré par git.
+    env_file:
+      - path: ./backend/.env
+        required: false
     environment:
       PORT: 3000
       DATABASE_URL: postgresql://monconstat:monconstat@db:5432/monconstat
