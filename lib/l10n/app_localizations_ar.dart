@@ -143,7 +143,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String otpInstructions(String phone) {
-    return 'أدخل الرمز المكوّن من 6 أرقام المرسل عبر رسالة قصيرة إلى $phone.';
+    return 'أدخل الرمز المكوّن من 6 أرقام المرسل عبر واتساب إلى $phone.';
   }
 
   @override
@@ -284,7 +284,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get changeProfilePhoto => 'تغيير صورة الملف';
 
   @override
-  String get phoneChangeNotice => 'يجب تأكيد الرقم الجديد عبر رسالة قصيرة.';
+  String get phoneChangeNotice => 'يجب تأكيد الرقم الجديد برمز عبر واتساب.';
 
   @override
   String get takePhoto => 'التقاط صورة';

@@ -44,7 +44,7 @@
   "confirmPasswordLabel": "Confirmer le mot de passe",
   "createMyAccount": "Créer mon compte",
   "otpTitle": "Vérifier mon téléphone",
-  "otpInstructions": "Saisissez le code à 6 chiffres envoyé par SMS au {phone}.",
+  "otpInstructions": "Saisissez le code à 6 chiffres envoyé sur WhatsApp au {phone}.",
   "@otpInstructions": {
     "placeholders": {
       "phone": {
@@ -122,7 +122,7 @@
   "editIdentityTitle": "Modifier l'identité",
   "editLicenseTitle": "Modifier le permis",
   "changeProfilePhoto": "Changer la photo de profil",
-  "phoneChangeNotice": "Un nouveau numéro devra être vérifié par SMS.",
+  "phoneChangeNotice": "Un nouveau numéro devra être vérifié par un code WhatsApp.",
   "takePhoto": "Prendre une photo",
   "chooseFromGallery": "Choisir dans la galerie",
   "deletePhoto": "Supprimer la photo",

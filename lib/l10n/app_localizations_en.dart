@@ -144,7 +144,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String otpInstructions(String phone) {
-    return 'Enter the 6-digit code sent by SMS to $phone.';
+    return 'Enter the 6-digit code sent on WhatsApp to $phone.';
   }
 
   @override
@@ -287,7 +287,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get phoneChangeNotice =>
-      'A new number will need to be verified by SMS.';
+      'A new number will need to be verified with a WhatsApp code.';
 
   @override
   String get takePhoto => 'Take a photo';

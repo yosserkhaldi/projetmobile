@@ -367,7 +367,7 @@ abstract class AppLocalizations {
   /// No description provided for @otpInstructions.
   ///
   /// In fr, this message translates to:
-  /// **'Saisissez le code à 6 chiffres envoyé par SMS au {phone}.'**
+  /// **'Saisissez le code à 6 chiffres envoyé sur WhatsApp au {phone}.'**
   String otpInstructions(String phone);
 
   /// No description provided for @otpCodeLabel.
@@ -625,7 +625,7 @@ abstract class AppLocalizations {
   /// No description provided for @phoneChangeNotice.
   ///
   /// In fr, this message translates to:
-  /// **'Un nouveau numéro devra être vérifié par SMS.'**
+  /// **'Un nouveau numéro devra être vérifié par un code WhatsApp.'**
   String get phoneChangeNotice;
 
   /// No description provided for @takePhoto.

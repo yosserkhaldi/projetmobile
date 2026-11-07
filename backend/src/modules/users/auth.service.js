@@ -148,7 +148,7 @@ async function consumeCode(userId, purpose, code) {
 async function sendPhoneCode(user) {
   const code = await createCode(user.id, 'PHONE_VERIFICATION');
   if (!code) return false;
-  await notifier.sendSms(
+  await notifier.sendToPhone(
     user.phone,
     `Mon Constat Digital : votre code est ${code}.`,
   );

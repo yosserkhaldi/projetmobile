@@ -35,7 +35,7 @@ export const resetDatabase = () =>
 /** Démarre l'API sur un port libre et capture les SMS et e-mails envoyés. */
 export async function startApi(t) {
   const sent = { sms: [], mail: [] };
-  t.mock.method(notifier, 'sendSms', async (to, text) => {
+  t.mock.method(notifier, 'sendToPhone', async (to, text) => {
     sent.sms.push({ to, text });
   });
   t.mock.method(notifier, 'sendMail', async (to, subject, text, html) => {
