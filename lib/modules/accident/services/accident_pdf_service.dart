@@ -48,6 +48,7 @@ class AccidentPdfService {
           _table([
             ('Nom', draft.driverBName),
             ('Permis', draft.driverBPermit),
+            ('Validité du permis', draft.driverBPermitExpiry),
             ('Immatriculation', draft.driverBPlate),
             ('Assurance', draft.driverBInsurer),
           ]),

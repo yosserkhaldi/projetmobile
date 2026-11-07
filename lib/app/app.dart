@@ -33,6 +33,7 @@ class _MonConstatAppState extends State<MonConstatApp>
     stores.users.addListener(_onUsersChanged);
     stores.users.restore();
     unawaited(stores.accidents.initialize());
+    unawaited(stores.vehicles.initialize());
   }
 
   @override
@@ -40,6 +41,7 @@ class _MonConstatAppState extends State<MonConstatApp>
     WidgetsBinding.instance.removeObserver(this);
     stores.users.removeListener(_onUsersChanged);
     stores.accidents.dispose();
+    stores.vehicles.dispose();
     super.dispose();
   }
 

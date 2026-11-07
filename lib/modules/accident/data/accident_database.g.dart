@@ -228,6 +228,30 @@ class $AccidentDraftsTable extends AccidentDrafts
       'CHECK ("voice_note_added" IN (0, 1))',
     ),
   );
+  static const VerificationMeta _videoPathMeta = const VerificationMeta(
+    'videoPath',
+  );
+  @override
+  late final GeneratedColumn<String> videoPath = GeneratedColumn<String>(
+    'video_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _voiceNotePathMeta = const VerificationMeta(
+    'voiceNotePath',
+  );
+  @override
+  late final GeneratedColumn<String> voiceNotePath = GeneratedColumn<String>(
+    'voice_note_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _driverBNameMeta = const VerificationMeta(
     'driverBName',
   );
@@ -252,6 +276,18 @@ class $AccidentDraftsTable extends AccidentDrafts
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _driverBPermitExpiryMeta =
+      const VerificationMeta('driverBPermitExpiry');
+  @override
+  late final GeneratedColumn<String> driverBPermitExpiry =
+      GeneratedColumn<String>(
+        'driver_b_permit_expiry',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
   static const VerificationMeta _driverBPlateMeta = const VerificationMeta(
     'driverBPlate',
   );
@@ -434,8 +470,11 @@ class $AccidentDraftsTable extends AccidentDrafts
     evidencePathsJson,
     videoAdded,
     voiceNoteAdded,
+    videoPath,
+    voiceNotePath,
     driverBName,
     driverBPermit,
+    driverBPermitExpiry,
     driverBPlate,
     driverBInsurer,
     driverBPolicy,
@@ -636,6 +675,21 @@ class $AccidentDraftsTable extends AccidentDrafts
     } else if (isInserting) {
       context.missing(_voiceNoteAddedMeta);
     }
+    if (data.containsKey('video_path')) {
+      context.handle(
+        _videoPathMeta,
+        videoPath.isAcceptableOrUnknown(data['video_path']!, _videoPathMeta),
+      );
+    }
+    if (data.containsKey('voice_note_path')) {
+      context.handle(
+        _voiceNotePathMeta,
+        voiceNotePath.isAcceptableOrUnknown(
+          data['voice_note_path']!,
+          _voiceNotePathMeta,
+        ),
+      );
+    }
     if (data.containsKey('driver_b_name')) {
       context.handle(
         _driverBNameMeta,
@@ -651,6 +705,15 @@ class $AccidentDraftsTable extends AccidentDrafts
         driverBPermit.isAcceptableOrUnknown(
           data['driver_b_permit']!,
           _driverBPermitMeta,
+        ),
+      );
+    }
+    if (data.containsKey('driver_b_permit_expiry')) {
+      context.handle(
+        _driverBPermitExpiryMeta,
+        driverBPermitExpiry.isAcceptableOrUnknown(
+          data['driver_b_permit_expiry']!,
+          _driverBPermitExpiryMeta,
         ),
       );
     }
@@ -874,6 +937,14 @@ class $AccidentDraftsTable extends AccidentDrafts
         DriftSqlType.bool,
         data['${effectivePrefix}voice_note_added'],
       )!,
+      videoPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}video_path'],
+      )!,
+      voiceNotePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}voice_note_path'],
+      )!,
       driverBName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}driver_b_name'],
@@ -881,6 +952,10 @@ class $AccidentDraftsTable extends AccidentDrafts
       driverBPermit: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}driver_b_permit'],
+      )!,
+      driverBPermitExpiry: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}driver_b_permit_expiry'],
       )!,
       driverBPlate: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -965,8 +1040,11 @@ class AccidentDraftRow extends DataClass
   final String evidencePathsJson;
   final bool videoAdded;
   final bool voiceNoteAdded;
+  final String videoPath;
+  final String voiceNotePath;
   final String driverBName;
   final String driverBPermit;
+  final String driverBPermitExpiry;
   final String driverBPlate;
   final String driverBInsurer;
   final String driverBPolicy;
@@ -1001,8 +1079,11 @@ class AccidentDraftRow extends DataClass
     required this.evidencePathsJson,
     required this.videoAdded,
     required this.voiceNoteAdded,
+    required this.videoPath,
+    required this.voiceNotePath,
     required this.driverBName,
     required this.driverBPermit,
+    required this.driverBPermitExpiry,
     required this.driverBPlate,
     required this.driverBInsurer,
     required this.driverBPolicy,
@@ -1046,8 +1127,11 @@ class AccidentDraftRow extends DataClass
     map['evidence_paths_json'] = Variable<String>(evidencePathsJson);
     map['video_added'] = Variable<bool>(videoAdded);
     map['voice_note_added'] = Variable<bool>(voiceNoteAdded);
+    map['video_path'] = Variable<String>(videoPath);
+    map['voice_note_path'] = Variable<String>(voiceNotePath);
     map['driver_b_name'] = Variable<String>(driverBName);
     map['driver_b_permit'] = Variable<String>(driverBPermit);
+    map['driver_b_permit_expiry'] = Variable<String>(driverBPermitExpiry);
     map['driver_b_plate'] = Variable<String>(driverBPlate);
     map['driver_b_insurer'] = Variable<String>(driverBInsurer);
     map['driver_b_policy'] = Variable<String>(driverBPolicy);
@@ -1092,8 +1176,11 @@ class AccidentDraftRow extends DataClass
       evidencePathsJson: Value(evidencePathsJson),
       videoAdded: Value(videoAdded),
       voiceNoteAdded: Value(voiceNoteAdded),
+      videoPath: Value(videoPath),
+      voiceNotePath: Value(voiceNotePath),
       driverBName: Value(driverBName),
       driverBPermit: Value(driverBPermit),
+      driverBPermitExpiry: Value(driverBPermitExpiry),
       driverBPlate: Value(driverBPlate),
       driverBInsurer: Value(driverBInsurer),
       driverBPolicy: Value(driverBPolicy),
@@ -1136,8 +1223,13 @@ class AccidentDraftRow extends DataClass
       evidencePathsJson: serializer.fromJson<String>(json['evidencePathsJson']),
       videoAdded: serializer.fromJson<bool>(json['videoAdded']),
       voiceNoteAdded: serializer.fromJson<bool>(json['voiceNoteAdded']),
+      videoPath: serializer.fromJson<String>(json['videoPath']),
+      voiceNotePath: serializer.fromJson<String>(json['voiceNotePath']),
       driverBName: serializer.fromJson<String>(json['driverBName']),
       driverBPermit: serializer.fromJson<String>(json['driverBPermit']),
+      driverBPermitExpiry: serializer.fromJson<String>(
+        json['driverBPermitExpiry'],
+      ),
       driverBPlate: serializer.fromJson<String>(json['driverBPlate']),
       driverBInsurer: serializer.fromJson<String>(json['driverBInsurer']),
       driverBPolicy: serializer.fromJson<String>(json['driverBPolicy']),
@@ -1181,8 +1273,11 @@ class AccidentDraftRow extends DataClass
       'evidencePathsJson': serializer.toJson<String>(evidencePathsJson),
       'videoAdded': serializer.toJson<bool>(videoAdded),
       'voiceNoteAdded': serializer.toJson<bool>(voiceNoteAdded),
+      'videoPath': serializer.toJson<String>(videoPath),
+      'voiceNotePath': serializer.toJson<String>(voiceNotePath),
       'driverBName': serializer.toJson<String>(driverBName),
       'driverBPermit': serializer.toJson<String>(driverBPermit),
+      'driverBPermitExpiry': serializer.toJson<String>(driverBPermitExpiry),
       'driverBPlate': serializer.toJson<String>(driverBPlate),
       'driverBInsurer': serializer.toJson<String>(driverBInsurer),
       'driverBPolicy': serializer.toJson<String>(driverBPolicy),
@@ -1220,8 +1315,11 @@ class AccidentDraftRow extends DataClass
     String? evidencePathsJson,
     bool? videoAdded,
     bool? voiceNoteAdded,
+    String? videoPath,
+    String? voiceNotePath,
     String? driverBName,
     String? driverBPermit,
+    String? driverBPermitExpiry,
     String? driverBPlate,
     String? driverBInsurer,
     String? driverBPolicy,
@@ -1258,8 +1356,11 @@ class AccidentDraftRow extends DataClass
     evidencePathsJson: evidencePathsJson ?? this.evidencePathsJson,
     videoAdded: videoAdded ?? this.videoAdded,
     voiceNoteAdded: voiceNoteAdded ?? this.voiceNoteAdded,
+    videoPath: videoPath ?? this.videoPath,
+    voiceNotePath: voiceNotePath ?? this.voiceNotePath,
     driverBName: driverBName ?? this.driverBName,
     driverBPermit: driverBPermit ?? this.driverBPermit,
+    driverBPermitExpiry: driverBPermitExpiry ?? this.driverBPermitExpiry,
     driverBPlate: driverBPlate ?? this.driverBPlate,
     driverBInsurer: driverBInsurer ?? this.driverBInsurer,
     driverBPolicy: driverBPolicy ?? this.driverBPolicy,
@@ -1318,12 +1419,19 @@ class AccidentDraftRow extends DataClass
       voiceNoteAdded: data.voiceNoteAdded.present
           ? data.voiceNoteAdded.value
           : this.voiceNoteAdded,
+      videoPath: data.videoPath.present ? data.videoPath.value : this.videoPath,
+      voiceNotePath: data.voiceNotePath.present
+          ? data.voiceNotePath.value
+          : this.voiceNotePath,
       driverBName: data.driverBName.present
           ? data.driverBName.value
           : this.driverBName,
       driverBPermit: data.driverBPermit.present
           ? data.driverBPermit.value
           : this.driverBPermit,
+      driverBPermitExpiry: data.driverBPermitExpiry.present
+          ? data.driverBPermitExpiry.value
+          : this.driverBPermitExpiry,
       driverBPlate: data.driverBPlate.present
           ? data.driverBPlate.value
           : this.driverBPlate,
@@ -1389,8 +1497,11 @@ class AccidentDraftRow extends DataClass
           ..write('evidencePathsJson: $evidencePathsJson, ')
           ..write('videoAdded: $videoAdded, ')
           ..write('voiceNoteAdded: $voiceNoteAdded, ')
+          ..write('videoPath: $videoPath, ')
+          ..write('voiceNotePath: $voiceNotePath, ')
           ..write('driverBName: $driverBName, ')
           ..write('driverBPermit: $driverBPermit, ')
+          ..write('driverBPermitExpiry: $driverBPermitExpiry, ')
           ..write('driverBPlate: $driverBPlate, ')
           ..write('driverBInsurer: $driverBInsurer, ')
           ..write('driverBPolicy: $driverBPolicy, ')
@@ -1430,8 +1541,11 @@ class AccidentDraftRow extends DataClass
     evidencePathsJson,
     videoAdded,
     voiceNoteAdded,
+    videoPath,
+    voiceNotePath,
     driverBName,
     driverBPermit,
+    driverBPermitExpiry,
     driverBPlate,
     driverBInsurer,
     driverBPolicy,
@@ -1470,8 +1584,11 @@ class AccidentDraftRow extends DataClass
           other.evidencePathsJson == this.evidencePathsJson &&
           other.videoAdded == this.videoAdded &&
           other.voiceNoteAdded == this.voiceNoteAdded &&
+          other.videoPath == this.videoPath &&
+          other.voiceNotePath == this.voiceNotePath &&
           other.driverBName == this.driverBName &&
           other.driverBPermit == this.driverBPermit &&
+          other.driverBPermitExpiry == this.driverBPermitExpiry &&
           other.driverBPlate == this.driverBPlate &&
           other.driverBInsurer == this.driverBInsurer &&
           other.driverBPolicy == this.driverBPolicy &&
@@ -1508,8 +1625,11 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
   final Value<String> evidencePathsJson;
   final Value<bool> videoAdded;
   final Value<bool> voiceNoteAdded;
+  final Value<String> videoPath;
+  final Value<String> voiceNotePath;
   final Value<String> driverBName;
   final Value<String> driverBPermit;
+  final Value<String> driverBPermitExpiry;
   final Value<String> driverBPlate;
   final Value<String> driverBInsurer;
   final Value<String> driverBPolicy;
@@ -1544,8 +1664,11 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
     this.evidencePathsJson = const Value.absent(),
     this.videoAdded = const Value.absent(),
     this.voiceNoteAdded = const Value.absent(),
+    this.videoPath = const Value.absent(),
+    this.voiceNotePath = const Value.absent(),
     this.driverBName = const Value.absent(),
     this.driverBPermit = const Value.absent(),
+    this.driverBPermitExpiry = const Value.absent(),
     this.driverBPlate = const Value.absent(),
     this.driverBInsurer = const Value.absent(),
     this.driverBPolicy = const Value.absent(),
@@ -1581,8 +1704,11 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
     this.evidencePathsJson = const Value.absent(),
     required bool videoAdded,
     required bool voiceNoteAdded,
+    this.videoPath = const Value.absent(),
+    this.voiceNotePath = const Value.absent(),
     this.driverBName = const Value.absent(),
     this.driverBPermit = const Value.absent(),
+    this.driverBPermitExpiry = const Value.absent(),
     this.driverBPlate = const Value.absent(),
     this.driverBInsurer = const Value.absent(),
     this.driverBPolicy = const Value.absent(),
@@ -1639,8 +1765,11 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
     Expression<String>? evidencePathsJson,
     Expression<bool>? videoAdded,
     Expression<bool>? voiceNoteAdded,
+    Expression<String>? videoPath,
+    Expression<String>? voiceNotePath,
     Expression<String>? driverBName,
     Expression<String>? driverBPermit,
+    Expression<String>? driverBPermitExpiry,
     Expression<String>? driverBPlate,
     Expression<String>? driverBInsurer,
     Expression<String>? driverBPolicy,
@@ -1676,8 +1805,12 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
       if (evidencePathsJson != null) 'evidence_paths_json': evidencePathsJson,
       if (videoAdded != null) 'video_added': videoAdded,
       if (voiceNoteAdded != null) 'voice_note_added': voiceNoteAdded,
+      if (videoPath != null) 'video_path': videoPath,
+      if (voiceNotePath != null) 'voice_note_path': voiceNotePath,
       if (driverBName != null) 'driver_b_name': driverBName,
       if (driverBPermit != null) 'driver_b_permit': driverBPermit,
+      if (driverBPermitExpiry != null)
+        'driver_b_permit_expiry': driverBPermitExpiry,
       if (driverBPlate != null) 'driver_b_plate': driverBPlate,
       if (driverBInsurer != null) 'driver_b_insurer': driverBInsurer,
       if (driverBPolicy != null) 'driver_b_policy': driverBPolicy,
@@ -1717,8 +1850,11 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
     Value<String>? evidencePathsJson,
     Value<bool>? videoAdded,
     Value<bool>? voiceNoteAdded,
+    Value<String>? videoPath,
+    Value<String>? voiceNotePath,
     Value<String>? driverBName,
     Value<String>? driverBPermit,
+    Value<String>? driverBPermitExpiry,
     Value<String>? driverBPlate,
     Value<String>? driverBInsurer,
     Value<String>? driverBPolicy,
@@ -1754,8 +1890,11 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
       evidencePathsJson: evidencePathsJson ?? this.evidencePathsJson,
       videoAdded: videoAdded ?? this.videoAdded,
       voiceNoteAdded: voiceNoteAdded ?? this.voiceNoteAdded,
+      videoPath: videoPath ?? this.videoPath,
+      voiceNotePath: voiceNotePath ?? this.voiceNotePath,
       driverBName: driverBName ?? this.driverBName,
       driverBPermit: driverBPermit ?? this.driverBPermit,
+      driverBPermitExpiry: driverBPermitExpiry ?? this.driverBPermitExpiry,
       driverBPlate: driverBPlate ?? this.driverBPlate,
       driverBInsurer: driverBInsurer ?? this.driverBInsurer,
       driverBPolicy: driverBPolicy ?? this.driverBPolicy,
@@ -1835,11 +1974,22 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
     if (voiceNoteAdded.present) {
       map['voice_note_added'] = Variable<bool>(voiceNoteAdded.value);
     }
+    if (videoPath.present) {
+      map['video_path'] = Variable<String>(videoPath.value);
+    }
+    if (voiceNotePath.present) {
+      map['voice_note_path'] = Variable<String>(voiceNotePath.value);
+    }
     if (driverBName.present) {
       map['driver_b_name'] = Variable<String>(driverBName.value);
     }
     if (driverBPermit.present) {
       map['driver_b_permit'] = Variable<String>(driverBPermit.value);
+    }
+    if (driverBPermitExpiry.present) {
+      map['driver_b_permit_expiry'] = Variable<String>(
+        driverBPermitExpiry.value,
+      );
     }
     if (driverBPlate.present) {
       map['driver_b_plate'] = Variable<String>(driverBPlate.value);
@@ -1910,8 +2060,11 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
           ..write('evidencePathsJson: $evidencePathsJson, ')
           ..write('videoAdded: $videoAdded, ')
           ..write('voiceNoteAdded: $voiceNoteAdded, ')
+          ..write('videoPath: $videoPath, ')
+          ..write('voiceNotePath: $voiceNotePath, ')
           ..write('driverBName: $driverBName, ')
           ..write('driverBPermit: $driverBPermit, ')
+          ..write('driverBPermitExpiry: $driverBPermitExpiry, ')
           ..write('driverBPlate: $driverBPlate, ')
           ..write('driverBInsurer: $driverBInsurer, ')
           ..write('driverBPolicy: $driverBPolicy, ')
@@ -1963,8 +2116,11 @@ typedef $$AccidentDraftsTableCreateCompanionBuilder =
       Value<String> evidencePathsJson,
       required bool videoAdded,
       required bool voiceNoteAdded,
+      Value<String> videoPath,
+      Value<String> voiceNotePath,
       Value<String> driverBName,
       Value<String> driverBPermit,
+      Value<String> driverBPermitExpiry,
       Value<String> driverBPlate,
       Value<String> driverBInsurer,
       Value<String> driverBPolicy,
@@ -2001,8 +2157,11 @@ typedef $$AccidentDraftsTableUpdateCompanionBuilder =
       Value<String> evidencePathsJson,
       Value<bool> videoAdded,
       Value<bool> voiceNoteAdded,
+      Value<String> videoPath,
+      Value<String> voiceNotePath,
       Value<String> driverBName,
       Value<String> driverBPermit,
+      Value<String> driverBPermitExpiry,
       Value<String> driverBPlate,
       Value<String> driverBInsurer,
       Value<String> driverBPolicy,
@@ -2127,6 +2286,16 @@ class $$AccidentDraftsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get videoPath => $composableBuilder(
+    column: $table.videoPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voiceNotePath => $composableBuilder(
+    column: $table.voiceNotePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get driverBName => $composableBuilder(
     column: $table.driverBName,
     builder: (column) => ColumnFilters(column),
@@ -2134,6 +2303,11 @@ class $$AccidentDraftsTableFilterComposer
 
   ColumnFilters<String> get driverBPermit => $composableBuilder(
     column: $table.driverBPermit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get driverBPermitExpiry => $composableBuilder(
+    column: $table.driverBPermitExpiry,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2312,6 +2486,16 @@ class $$AccidentDraftsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get videoPath => $composableBuilder(
+    column: $table.videoPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voiceNotePath => $composableBuilder(
+    column: $table.voiceNotePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get driverBName => $composableBuilder(
     column: $table.driverBName,
     builder: (column) => ColumnOrderings(column),
@@ -2319,6 +2503,11 @@ class $$AccidentDraftsTableOrderingComposer
 
   ColumnOrderings<String> get driverBPermit => $composableBuilder(
     column: $table.driverBPermit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get driverBPermitExpiry => $composableBuilder(
+    column: $table.driverBPermitExpiry,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -2479,6 +2668,14 @@ class $$AccidentDraftsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get videoPath =>
+      $composableBuilder(column: $table.videoPath, builder: (column) => column);
+
+  GeneratedColumn<String> get voiceNotePath => $composableBuilder(
+    column: $table.voiceNotePath,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get driverBName => $composableBuilder(
     column: $table.driverBName,
     builder: (column) => column,
@@ -2486,6 +2683,11 @@ class $$AccidentDraftsTableAnnotationComposer
 
   GeneratedColumn<String> get driverBPermit => $composableBuilder(
     column: $table.driverBPermit,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get driverBPermitExpiry => $composableBuilder(
+    column: $table.driverBPermitExpiry,
     builder: (column) => column,
   );
 
@@ -2612,8 +2814,11 @@ class $$AccidentDraftsTableTableManager
                 Value<String> evidencePathsJson = const Value.absent(),
                 Value<bool> videoAdded = const Value.absent(),
                 Value<bool> voiceNoteAdded = const Value.absent(),
+                Value<String> videoPath = const Value.absent(),
+                Value<String> voiceNotePath = const Value.absent(),
                 Value<String> driverBName = const Value.absent(),
                 Value<String> driverBPermit = const Value.absent(),
+                Value<String> driverBPermitExpiry = const Value.absent(),
                 Value<String> driverBPlate = const Value.absent(),
                 Value<String> driverBInsurer = const Value.absent(),
                 Value<String> driverBPolicy = const Value.absent(),
@@ -2648,8 +2853,11 @@ class $$AccidentDraftsTableTableManager
                 evidencePathsJson: evidencePathsJson,
                 videoAdded: videoAdded,
                 voiceNoteAdded: voiceNoteAdded,
+                videoPath: videoPath,
+                voiceNotePath: voiceNotePath,
                 driverBName: driverBName,
                 driverBPermit: driverBPermit,
+                driverBPermitExpiry: driverBPermitExpiry,
                 driverBPlate: driverBPlate,
                 driverBInsurer: driverBInsurer,
                 driverBPolicy: driverBPolicy,
@@ -2686,8 +2894,11 @@ class $$AccidentDraftsTableTableManager
                 Value<String> evidencePathsJson = const Value.absent(),
                 required bool videoAdded,
                 required bool voiceNoteAdded,
+                Value<String> videoPath = const Value.absent(),
+                Value<String> voiceNotePath = const Value.absent(),
                 Value<String> driverBName = const Value.absent(),
                 Value<String> driverBPermit = const Value.absent(),
+                Value<String> driverBPermitExpiry = const Value.absent(),
                 Value<String> driverBPlate = const Value.absent(),
                 Value<String> driverBInsurer = const Value.absent(),
                 Value<String> driverBPolicy = const Value.absent(),
@@ -2722,8 +2933,11 @@ class $$AccidentDraftsTableTableManager
                 evidencePathsJson: evidencePathsJson,
                 videoAdded: videoAdded,
                 voiceNoteAdded: voiceNoteAdded,
+                videoPath: videoPath,
+                voiceNotePath: voiceNotePath,
                 driverBName: driverBName,
                 driverBPermit: driverBPermit,
+                driverBPermitExpiry: driverBPermitExpiry,
                 driverBPlate: driverBPlate,
                 driverBInsurer: driverBInsurer,
                 driverBPolicy: driverBPolicy,

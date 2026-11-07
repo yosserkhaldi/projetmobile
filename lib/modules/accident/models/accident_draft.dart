@@ -26,8 +26,11 @@ class AccidentDraft {
   final Map<String, String?> evidencePaths = {};
   bool videoAdded = false;
   bool voiceNoteAdded = false;
+  String videoPath = '';
+  String voiceNotePath = '';
   String driverBName = '';
   String driverBPermit = '';
+  String driverBPermitExpiry = '';
   String driverBPlate = '';
   String driverBInsurer = '';
   String driverBPolicy = '';
@@ -68,8 +71,11 @@ class AccidentDraft {
     'evidence_paths_json': jsonEncode(evidencePaths),
     'video_added': videoAdded ? 1 : 0,
     'voice_note_added': voiceNoteAdded ? 1 : 0,
+    'video_path': videoPath,
+    'voice_note_path': voiceNotePath,
     'driver_b_name': driverBName,
     'driver_b_permit': driverBPermit,
+    'driver_b_permit_expiry': driverBPermitExpiry,
     'driver_b_plate': driverBPlate,
     'driver_b_insurer': driverBInsurer,
     'driver_b_policy': driverBPolicy,
@@ -105,8 +111,11 @@ class AccidentDraft {
       ..witnessPhone = row['witness_phone'] as String? ?? ''
       ..videoAdded = row['video_added'] == 1
       ..voiceNoteAdded = row['voice_note_added'] == 1
+      ..videoPath = row['video_path'] as String? ?? ''
+      ..voiceNotePath = row['voice_note_path'] as String? ?? ''
       ..driverBName = row['driver_b_name'] as String? ?? ''
       ..driverBPermit = row['driver_b_permit'] as String? ?? ''
+      ..driverBPermitExpiry = row['driver_b_permit_expiry'] as String? ?? ''
       ..driverBPlate = row['driver_b_plate'] as String? ?? ''
       ..driverBInsurer = row['driver_b_insurer'] as String? ?? ''
       ..driverBPolicy = row['driver_b_policy'] as String? ?? ''

@@ -9,6 +9,7 @@ import 'package:mon_constat_digital/modules/claims/state/message_store.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
 import 'package:mon_constat_digital/modules/users/state/admin_store.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
+import 'package:mon_constat_digital/modules/vehicles/data/vehicle_database.dart';
 import 'package:mon_constat_digital/modules/vehicles/state/vehicle_store.dart';
 
 /// Regroupe l'état de chaque module. Chaque module garde son propre store.
@@ -18,6 +19,7 @@ class AppStores {
     ApiClient? api,
     BiometricAuth? biometric,
     DeviceHeadersLoader? deviceHeaders,
+    VehicleDatabase? vehicleDb,
   }) : storage = storage ?? const SecureSessionStorage() {
     this.api = api ?? ApiClient(storage: this.storage);
     users = UserStore(
@@ -27,6 +29,7 @@ class AppStores {
       deviceHeaders: deviceHeaders ?? loadDeviceHeaders,
     );
     admin = AdminStore(this.api);
+    vehicles = VehicleStore(vehicleDb ?? VehicleDatabase());
     listenable = Listenable.merge([
       accidents,
       users,
@@ -44,7 +47,7 @@ class AppStores {
   late final UserStore users;
   late final AdminStore admin;
   final accidents = AccidentStore();
-  final vehicles = VehicleStore();
+  late final VehicleStore vehicles;
   final claims = ClaimStore();
   final messages = MessageStore();
 
