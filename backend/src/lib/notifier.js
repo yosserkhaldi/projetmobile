@@ -27,7 +27,7 @@ export const notifier = {
     logForDevelopment('SMS', to, text);
   },
 
-  async sendMail(to, subject, text) {
+  async sendMail(to, subject, text, html) {
     if (!process.env.SMTP_HOST) {
       logForDevelopment('E-MAIL', to, text);
       return;
@@ -37,6 +37,7 @@ export const notifier = {
       to,
       subject,
       text,
+      html,
     });
   },
 };

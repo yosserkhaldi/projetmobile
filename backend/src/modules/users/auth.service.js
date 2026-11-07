@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 
+import { passwordResetEmail } from '../../lib/emails.js';
 import { HttpError, isUniqueViolation } from '../../lib/errors.js';
 import { notifier } from '../../lib/notifier.js';
 import { prisma } from '../../lib/prisma.js';
@@ -288,12 +289,13 @@ export async function forgotPassword(email) {
   if (!user) return;
   const code = await createCode(user.id, 'PASSWORD_RESET');
   if (!code) return;
+  const message = passwordResetEmail({
+    firstName: user.firstName,
+    language: user.language,
+    code,
+  });
   await notifier
-    .sendMail(
-      user.email,
-      'Réinitialisation de votre mot de passe',
-      `Votre code de réinitialisation est ${code}. Il est valable 15 minutes.`,
-    )
+    .sendMail(user.email, message.subject, message.text, message.html)
     .catch((err) => console.error("Envoi de l'e-mail impossible", err));
 }
 

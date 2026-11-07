@@ -17,6 +17,11 @@ services:
 
   api:
     build: ./backend
+    # SMTP_* (e-mails) et autres réglages locaux. Facultatif : sans ce fichier,
+    # les e-mails s'affichent dans les logs.
+    env_file:
+      - path: ./backend/.env
+        required: false
     # Comptes de démonstration : voir backend/prisma/seed.js.
     command: sh -c "npx prisma migrate deploy && node prisma/seed.js && npm start"
     environment:

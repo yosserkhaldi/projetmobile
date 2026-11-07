@@ -38,8 +38,8 @@ export async function startApi(t) {
   t.mock.method(notifier, 'sendSms', async (to, text) => {
     sent.sms.push({ to, text });
   });
-  t.mock.method(notifier, 'sendMail', async (to, subject, text) => {
-    sent.mail.push({ to, subject, text });
+  t.mock.method(notifier, 'sendMail', async (to, subject, text, html) => {
+    sent.mail.push({ to, subject, text, html });
   });
   const server = createApp().listen(0);
   await new Promise((resolve) => server.once('listening', resolve));
