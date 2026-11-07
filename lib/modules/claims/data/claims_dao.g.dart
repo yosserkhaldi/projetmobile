@@ -8,9 +8,12 @@ mixin _$ClaimsDaoMixin on DatabaseAccessor<ClaimsDatabase> {
   $ClaimTimelineEventsTable get claimTimelineEvents =>
       attachedDatabase.claimTimelineEvents;
   $ClaimDocumentsTable get claimDocuments => attachedDatabase.claimDocuments;
+  $DocumentRequestsTable get documentRequests =>
+      attachedDatabase.documentRequests;
   $ClaimNotificationsTable get claimNotifications =>
       attachedDatabase.claimNotifications;
   $ChatMessagesTable get chatMessages => attachedDatabase.chatMessages;
+  $SyncOutboxTable get syncOutbox => attachedDatabase.syncOutbox;
   ClaimsDaoManager get managers => ClaimsDaoManager(this);
 }
 
@@ -29,6 +32,11 @@ class ClaimsDaoManager {
         _db.attachedDatabase,
         _db.claimDocuments,
       );
+  $$DocumentRequestsTableTableManager get documentRequests =>
+      $$DocumentRequestsTableTableManager(
+        _db.attachedDatabase,
+        _db.documentRequests,
+      );
   $$ClaimNotificationsTableTableManager get claimNotifications =>
       $$ClaimNotificationsTableTableManager(
         _db.attachedDatabase,
@@ -36,4 +44,6 @@ class ClaimsDaoManager {
       );
   $$ChatMessagesTableTableManager get chatMessages =>
       $$ChatMessagesTableTableManager(_db.attachedDatabase, _db.chatMessages);
+  $$SyncOutboxTableTableManager get syncOutbox =>
+      $$SyncOutboxTableTableManager(_db.attachedDatabase, _db.syncOutbox);
 }

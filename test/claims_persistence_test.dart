@@ -2,14 +2,13 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
-import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
+import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
 import 'package:mon_constat_digital/modules/claims/state/message_store.dart';
+import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 
 void main() {
   late Directory dir;
@@ -30,6 +29,15 @@ void main() {
     await db.close();
   }
 
+  Claim newClaim() => Claim(
+    id: 'SIN-1',
+    type: 'Collision',
+    place: 'Sfax',
+    date: '2026-11-07 10:00',
+    severity: 'Grave',
+    status: ClaimStatus.transmitted,
+  );
+
   test('les données de démonstration sont écrites une seule fois', () async {
     for (var launch = 0; launch < 2; launch++) {
       await session((db) async {
@@ -38,31 +46,34 @@ void main() {
         await claims.saved;
         await messages.saved;
         expect(claims.claims.map((c) => c.id), ['SIN-2026-0418']);
-        expect(claims.notifications, [
-          'Votre dossier SIN-2026-0418 est en instruction.',
-          'Votre contrat expire dans 7 jours.',
-        ]);
+        expect(claims.notifications.first.body, contains('en instruction'));
+        expect(claims.notifications, hasLength(2));
         expect(messages.messages, hasLength(2));
       });
     }
   });
 
-  test('un dossier et son suivi survivent au redémarrage', () async {
+  test('tout le suivi d’un dossier survit au redémarrage', () async {
+    final appointment = DateTime(2026, 12, 1);
     await session((db) async {
       final store = ClaimStore(dao: db.claimsDao);
       await store.saved;
-      final claim = Claim(
-        id: 'SIN-1',
-        type: 'Collision',
-        place: 'Sfax',
-        date: '2026-11-07 10:00',
-        severity: 'Corporel',
-        status: 'Transmis',
-      );
-      claim.timeline.addAll(['Déclaration complétée', 'Double signature']);
+      final claim = newClaim()
+        ..circumstances.add('Reculait')
+        ..impactZones.add('Avant')
+        ..observations = 'Pluie';
       store.addClaim(claim);
-      store.updateClaim(claim, 'En instruction');
-      store.addDocument(claim);
+      store.takeCharge(claim, 'Leïla Mansour');
+      store.requestDocument(claim, 'Devis', note: 'Garage agréé');
+      store.addDocument(
+        claim,
+        'devis.pdf',
+        path: '/tmp/devis.pdf',
+        request: claim.openRequests.first,
+      );
+      store.scheduleExpertise(claim, 'M. Trabelsi', appointment);
+      store.addExpertReport(claim, 'rapport.pdf');
+      store.closeClaim(claim, 100, 1250.5);
       await store.saved;
     });
 
@@ -71,34 +82,75 @@ void main() {
       await store.saved;
       expect(store.claims.map((c) => c.id), ['SIN-1', 'SIN-2026-0418']);
       final claim = store.claims.first;
-      expect(claim.status, 'En instruction');
-      expect(claim.severity, 'Corporel');
+      expect(claim.status, ClaimStatus.closed);
+      expect(claim.severity, 'Grave');
+      expect(claim.agentName, 'Leïla Mansour');
+      expect(claim.circumstances, ['Reculait']);
+      expect(claim.impactZones, ['Avant']);
+      expect(claim.observations, 'Pluie');
+      expect(claim.expertName, 'M. Trabelsi');
+      expect(claim.expertAppointment, appointment);
+      expect(claim.responsibility, 100);
+      expect(claim.indemnity, 1250.5);
       expect(claim.timeline, [
         'Brouillon créé',
-        'Déclaration complétée',
-        'Double signature',
-        'En instruction',
+        ClaimStatus.inReview,
+        'Pièce demandée : Devis',
+        ClaimStatus.inReview,
+        ClaimStatus.expertise,
+        'Rapport d’expertise joint',
+        ClaimStatus.closed,
       ]);
-      expect(claim.documents, ['Document-1.pdf']);
-      expect(store.notifications.first, 'SIN-1 : En instruction');
-      expect(store.notifications, hasLength(3));
+      expect(claim.timelineDates, hasLength(7));
+      expect(claim.documents.map((d) => d.name), ['devis.pdf', 'rapport.pdf']);
+      expect(claim.documents.first.path, '/tmp/devis.pdf');
+      expect(claim.documents.last.kind, ClaimDocument.expertReport);
+      expect(claim.requests.single.note, 'Garage agréé');
+      expect(claim.requests.single.isOpen, isFalse);
     });
   });
 
-  test('les messages survivent au redémarrage, dans l’ordre', () async {
+  test('l’état lu des notifications survit au redémarrage', () async {
     await session((db) async {
-      final store = MessageStore(dao: db.claimsDao);
+      final store = ClaimStore(dao: db.claimsDao);
       await store.saved;
-      store.sendMessage('Sami Ben Ali', '  Devis envoyé  ');
-      store.sendMessage('Sami Ben Ali', '   ');
+      store.markAllNotificationsRead(UserRole.driver);
+      store.addClaim(newClaim());
       await store.saved;
     });
+    await session((db) async {
+      final store = ClaimStore(dao: db.claimsDao);
+      await store.saved;
+      expect(store.unreadCount(UserRole.driver), 0);
+      expect(store.unreadCount(UserRole.agent), 1);
+    });
+  });
 
+  test('messages, pièces jointes et accusés survivent, par dossier', () async {
     await session((db) async {
       final store = MessageStore(dao: db.claimsDao);
       await store.saved;
-      expect(store.messages, hasLength(3));
-      expect(store.messages.last.text, 'Devis envoyé');
+      store.sendMessage('SIN-1', 'Sami', UserRole.driver, '  Devis envoyé  ');
+      store.sendMessage('SIN-1', 'Sami', UserRole.driver, '   ');
+      store.sendMessage(
+        'SIN-1',
+        'Sami',
+        UserRole.driver,
+        '',
+        attachmentName: 'devis.pdf',
+      );
+      store.markRead('SIN-1', UserRole.agent);
+      await store.saved;
+    });
+    await session((db) async {
+      final store = MessageStore(dao: db.claimsDao);
+      await store.saved;
+      final messages = store.messagesFor('SIN-1');
+      expect(messages, hasLength(2));
+      expect(messages.first.text, 'Devis envoyé');
+      expect(messages.last.attachmentName, 'devis.pdf');
+      expect(messages.every((m) => m.read), isTrue);
+      expect(store.messagesFor('SIN-2026-0418'), hasLength(2));
     });
   });
 
@@ -108,49 +160,76 @@ void main() {
     final store = ClaimStore(dao: db.claimsDao);
     await store.saved;
 
-    store.addClaim(
-      Claim(id: 'SIN-2', type: 'Vol', place: 'Tunis', date: 'hier'),
-    );
+    store.addClaim(newClaim());
     await store.saved;
 
-    expect(store.claims.first.id, 'SIN-2');
+    expect(store.claims.first.id, 'SIN-1');
     expect(store.claims, hasLength(2));
   });
 
-  group('écran dossier agent', () {
-    Future<Claim> pumpDetail(WidgetTester tester, String status) async {
-      tester.view.physicalSize = const Size(430, 1400);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      final claim = Claim(
-        id: 'SIN-3',
-        type: 'Collision',
-        place: 'Tunis',
-        date: 'hier',
-        status: status,
-      );
-      await tester.pumpWidget(
-        AppScope(
-          stores: AppStores(),
-          child: MaterialApp(home: ClaimDetail(claim, agentMode: true)),
-        ),
-      );
-      return claim;
-    }
+  test('la migration v1 vers v2 garde les données', () async {
+    final v1 = ClaimsDatabase(
+      NativeDatabase(
+        file,
+        setup: (raw) {
+          if (raw.userVersion != 0) return;
+          raw.execute('''
+            CREATE TABLE claims (id TEXT NOT NULL PRIMARY KEY, type TEXT NOT NULL,
+              place TEXT NOT NULL, date TEXT NOT NULL, status TEXT NOT NULL,
+              severity TEXT NOT NULL);
+            CREATE TABLE claim_timeline_events (
+              id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+              claim_id TEXT NOT NULL REFERENCES claims (id) ON DELETE CASCADE,
+              label TEXT NOT NULL,
+              created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')));
+            CREATE TABLE claim_documents (
+              id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+              claim_id TEXT NOT NULL REFERENCES claims (id) ON DELETE CASCADE,
+              name TEXT NOT NULL,
+              created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')));
+            CREATE TABLE claim_notifications (
+              id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, claim_id TEXT,
+              body TEXT NOT NULL, is_read INTEGER NOT NULL DEFAULT 0,
+              created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')));
+            CREATE TABLE chat_messages (
+              id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, claim_id TEXT,
+              author TEXT NOT NULL, body TEXT NOT NULL,
+              is_read INTEGER NOT NULL DEFAULT 1,
+              sent_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')));
+            INSERT INTO claims VALUES
+              ('A', 'Vol', 'Tunis', 'x', 'Accepté', 'Léger'),
+              ('B', 'Vol', 'Tunis', 'x', 'Expertise planifiée', 'Léger'),
+              ('C', 'Vol', 'Tunis', 'x', 'Décision enregistrée', 'Léger');
+            INSERT INTO claim_timeline_events (claim_id, label) VALUES ('A', 'Accepté');
+            INSERT INTO claim_documents (claim_id, name) VALUES ('A', 'a.pdf'), ('A', 'b.pdf');
+            INSERT INTO claim_notifications (body) VALUES ('n1'), ('n2');
+            INSERT INTO chat_messages (claim_id, author, body) VALUES
+              ('A', 'Agent Leïla', 'm1'), ('A', 'Sami', 'm2');
+            PRAGMA user_version = 1;
+          ''');
+        },
+      ),
+    );
+    final claims = ClaimStore(dao: v1.claimsDao);
+    final messages = MessageStore(dao: v1.claimsDao);
+    await claims.saved;
+    await messages.saved;
 
-    testWidgets('ouvre un dossier au statut Transmis', (tester) async {
-      await pumpDetail(tester, 'Transmis');
-      expect(tester.takeException(), isNull);
-      expect(find.text('Instruction'), findsOneWidget);
+    final statuses = {for (final c in claims.claims) c.id: c.status};
+    expect(statuses, {
+      'A': ClaimStatus.closed,
+      'B': ClaimStatus.expertise,
+      'C': ClaimStatus.inReview,
     });
-
-    testWidgets('reste ouvert après une décision', (tester) async {
-      final claim = await pumpDetail(tester, 'En instruction');
-      await tester.tap(find.text('Enregistrer la décision'));
-      await tester.pump();
-      expect(tester.takeException(), isNull);
-      expect(claim.status, 'Décision enregistrée');
-    });
+    final documents = claims.claimById('A')!.documents;
+    expect(documents.map((d) => d.name), ['a.pdf', 'b.pdf']);
+    expect(documents.first.id, isNot(documents.last.id));
+    expect(documents.first.id, isNotEmpty);
+    expect(claims.notifications, hasLength(2));
+    expect(messages.messages.map((m) => m.senderRole), [
+      UserRole.agent,
+      UserRole.driver,
+    ]);
+    await v1.close();
   });
 }

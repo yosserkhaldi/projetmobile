@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/claim_status_chip.dart';
 
 class ClaimCard extends StatelessWidget {
   const ClaimCard(this.claim, {super.key});
@@ -17,16 +19,27 @@ class ClaimCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   claim.id,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    fontFamily: 'JetBrainsMono',
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-              Chip(label: Text(claim.status)),
+              ClaimStatusChip(claim.status),
             ],
           ),
+          const SizedBox(height: 6),
           Text('${claim.type} • ${claim.severity}'),
           const SizedBox(height: 4),
-          Text(claim.place, style: TextStyle(color: Colors.grey.shade600)),
-          Text(claim.date, style: TextStyle(color: Colors.grey.shade600)),
+          Text(claim.place, style: const TextStyle(color: AppColors.textMuted)),
+          Text(
+            claim.date,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontFamily: 'JetBrainsMono',
+              fontSize: 12,
+            ),
+          ),
         ],
       ),
     ),

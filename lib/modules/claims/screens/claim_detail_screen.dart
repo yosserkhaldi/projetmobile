@@ -3,98 +3,201 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
+import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
+import 'package:mon_constat_digital/modules/claims/screens/chat_screen.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/agent_panel.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/claim_timeline.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/document_picker.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
+import 'package:mon_constat_digital/shared/navigation.dart';
 
 class ClaimDetail extends StatelessWidget {
   const ClaimDetail(this.claim, {this.agentMode = false, super.key});
   final Claim claim;
   final bool agentMode;
+
+  Future<void> _upload(BuildContext context, {DocumentRequest? request}) async {
+    final store = AppScope.of(context).claims;
+    final file = await pickDocument();
+    if (file == null) return;
+    store.addDocument(claim, file.name, path: file.path, request: request);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final s = AppScope.of(context).claims;
+    AppScope.of(context);
+    final requests = claim.openRequests.toList();
     return Scaffold(
-      appBar: AppBar(title: Text(claim.id)),
+      appBar: AppBar(
+        title: Text(claim.id),
+        actions: [
+          IconButton(
+            tooltip: 'Messagerie',
+            onPressed: () => open(context, ChatScreen(claim)),
+            icon: const Icon(Icons.chat_outlined),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           ClaimCard(claim),
-          const SizedBox(height: 16),
-          const Text(
-            'Chronologie',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-          ),
-          ...claim.timeline.map(
-            (e) => ListTile(
-              leading: const Icon(
-                Icons.check_circle,
-                color: AppColors.successText,
+          if (claim.status == ClaimStatus.closed ||
+              claim.status == ClaimStatus.rejected) ...[
+            const SizedBox(height: 12),
+            _DecisionSummary(claim),
+          ],
+          if (requests.isNotEmpty) ...[
+            const _Title('Pièces demandées'),
+            ...requests.map(
+              (request) => Card(
+                color: AppColors.warningBg,
+                child: ListTile(
+                  leading: const Icon(
+                    Icons.priority_high,
+                    color: AppColors.warningText,
+                  ),
+                  title: Text(request.label),
+                  subtitle: request.note.isEmpty ? null : Text(request.note),
+                  trailing: agentMode
+                      ? null
+                      : TextButton(
+                          onPressed: () => _upload(context, request: request),
+                          child: const Text('Déposer'),
+                        ),
+                ),
               ),
-              title: Text(e),
             ),
-          ),
-          const Divider(),
-          const Text(
-            'Pièces du dossier',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-          ),
+          ],
+          if (claim.expertName != null) ...[
+            const _Title('Expertise'),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.engineering),
+              title: Text(claim.expertName!),
+              subtitle: claim.expertAppointment == null
+                  ? null
+                  : Text(
+                      'Rendez-vous le ${formatDay(claim.expertAppointment!)}',
+                    ),
+            ),
+          ],
+          const _Title('Chronologie'),
+          ClaimTimeline(claim),
+          const _Title('Constat'),
+          _ConstatSummary(claim),
+          const _Title('Pièces du dossier'),
           ...claim.documents.map(
-            (e) => ListTile(
+            (document) => ListTile(
+              contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.attach_file),
-              title: Text(e),
+              title: Text(document.name),
+              subtitle: Text(document.kind),
             ),
           ),
-          OutlinedButton.icon(
-            onPressed: () => s.addDocument(claim),
-            icon: const Icon(Icons.upload_file),
-            label: const Text('Déposer une pièce'),
-          ),
-          if (agentMode) ...[
-            const SizedBox(height: 16),
-            const Text(
-              'Instruction',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+          if (!ClaimStatus.isFinal(claim.status) && !agentMode)
+            OutlinedButton.icon(
+              onPressed: () => _upload(context),
+              icon: const Icon(Icons.upload_file),
+              label: const Text('Déposer une pièce'),
             ),
-            DropdownButtonFormField<String>(
-              // Le statut peut changer hors de cette liste (Transmis, décision).
-              key: ValueKey(claim.status),
-              initialValue: claim.status,
-              items: {
-                claim.status,
-                'En instruction',
-                'Pièce demandée',
-                'Expertise planifiée',
-                'Accepté',
-                'Rejeté',
-                'Clôturé',
-              }.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-              onChanged: (v) {
-                if (v != null) s.updateClaim(claim, v);
-              },
-              decoration: const InputDecoration(labelText: 'Statut'),
-            ),
-            const SizedBox(height: 12),
-            const TextField(
-              decoration: InputDecoration(
-                labelText: 'Responsabilité',
-                hintText: '0 %, 50 % ou 100 %',
-              ),
-            ),
-            const SizedBox(height: 12),
-            const TextField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: "Montant d'indemnisation (TND)",
-              ),
-            ),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: () => s.updateClaim(claim, 'Décision enregistrée'),
-              icon: const Icon(Icons.gavel),
-              label: const Text('Enregistrer la décision'),
-            ),
+          if (agentMode && !ClaimStatus.isFinal(claim.status)) ...[
+            const _Title('Instruction'),
+            AgentPanel(claim),
           ],
         ],
       ),
+    );
+  }
+}
+
+class _Title extends StatelessWidget {
+  const _Title(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 20, bottom: 10),
+    child: Text(
+      text,
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+    ),
+  );
+}
+
+class _DecisionSummary extends StatelessWidget {
+  const _DecisionSummary(this.claim);
+  final Claim claim;
+
+  @override
+  Widget build(BuildContext context) {
+    final rejected = claim.status == ClaimStatus.rejected;
+    final share = claim.responsibility;
+    return Card(
+      color: rejected ? AppColors.errorBg : AppColors.successBg,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              rejected ? 'Dossier rejeté' : 'Dossier clôturé',
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            if (claim.decisionReason != null)
+              Text('Motif : ${claim.decisionReason}'),
+            if (share != null)
+              Text('Responsabilité : A $share %, B ${100 - share} %'),
+            if (claim.indemnity != null)
+              Text(
+                'Indemnisation : ${claim.indemnity!.toStringAsFixed(3)} TND',
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ConstatSummary extends StatelessWidget {
+  const _ConstatSummary(this.claim);
+  final Claim claim;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = [
+      if (claim.circumstances.isNotEmpty)
+        ('Circonstances', claim.circumstances.join(', ')),
+      if (claim.impactZones.isNotEmpty)
+        ('Point de choc', claim.impactZones.join(', ')),
+      if (claim.observations.isNotEmpty) ('Observations', claim.observations),
+    ];
+    if (rows.isEmpty) {
+      return const Text(
+        'Aucune information de constat.',
+        style: TextStyle(color: AppColors.textMuted),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final (label, value) in rows)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$label : ',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  TextSpan(text: value),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

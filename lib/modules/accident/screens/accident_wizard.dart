@@ -154,7 +154,10 @@ class _AccidentWizardState extends State<AccidentWizard> {
       date: draft.occurredAt.toString().substring(0, 16),
       severity: draft.severity,
       status: 'Transmis',
+      observations: draft.observations,
     );
+    claim.circumstances.addAll(draft.circumstances);
+    claim.impactZones.addAll(draft.impactZones);
     claim.timeline.addAll([
       'Déclaration complétée',
       '${draft.evidenceCount} preuves ajoutées',

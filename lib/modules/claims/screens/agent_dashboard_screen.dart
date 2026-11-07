@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
+import 'package:mon_constat_digital/modules/claims/screens/notifications_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
+import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
 
@@ -12,18 +15,44 @@ class AgentDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = AppScope.of(context).claims;
+    final pending = s.claims
+        .where((claim) => ClaimStatus.isOpenForAgent(claim.status))
+        .toList();
+    final unread = s.unreadCount(UserRole.agent);
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(18),
         children: [
-          const PageHead("Espace agent", subtitle: 'Instruction des sinistres'),
+          PageHead(
+            'Espace agent',
+            subtitle: 'Instruction des sinistres',
+            actions: [
+              IconButton(
+                tooltip: 'Notifications',
+                onPressed: () => open(context, const NotificationsScreen()),
+                icon: Badge(
+                  isLabelVisible: unread > 0,
+                  label: Text('$unread'),
+                  child: const Icon(Icons.notifications_outlined),
+                ),
+              ),
+            ],
+          ),
           Wrap(
             spacing: 10,
             runSpacing: 10,
             children: [
-              _metric('À traiter', '${s.claims.length}', AppColors.warningText),
-              _metric('En expertise', '3', AppColors.primary),
-              _metric('Clôturés', '18', AppColors.successText),
+              _metric('À traiter', '${pending.length}', AppColors.warningText),
+              _metric(
+                'En expertise',
+                '${s.countByStatus((e) => e == ClaimStatus.expertise)}',
+                AppColors.primary,
+              ),
+              _metric(
+                'Clôturés',
+                '${s.countByStatus((e) => e == ClaimStatus.closed)}',
+                AppColors.successText,
+              ),
             ],
           ),
           const SizedBox(height: 22),
@@ -32,7 +61,12 @@ class AgentDashboard extends StatelessWidget {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 10),
-          ...s.claims.map(
+          if (pending.isEmpty)
+            const Text(
+              'Aucun dossier à traiter.',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
+          ...pending.map(
             (c) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: InkWell(

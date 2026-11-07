@@ -2,92 +2,66 @@ import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/modules/claims/screens/chat_screen.dart';
+import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
 
-class MessagesScreen extends StatefulWidget {
+/// Une conversation par dossier.
+class MessagesScreen extends StatelessWidget {
   const MessagesScreen({super.key});
   @override
-  State<MessagesScreen> createState() => _MessagesScreenState();
-}
-
-class _MessagesScreenState extends State<MessagesScreen> {
-  final input = TextEditingController();
-  @override
   Widget build(BuildContext context) {
-    final s = AppScope.of(context).messages;
-    final userName = AppScope.of(context).users.userName;
+    final stores = AppScope.of(context);
+    final role = stores.users.role;
+    final claims = stores.claims.claims;
     return SafeArea(
       child: Column(
         children: [
-          const PageHead('Messagerie', subtitle: 'Dossier SIN-2026-0418'),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: s.messages.length,
-              itemBuilder: (_, i) {
-                final m = s.messages[i];
-                final mine = m.author == userName;
-                return Align(
-                  alignment: mine
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(12),
-                    constraints: const BoxConstraints(maxWidth: 300),
-                    decoration: BoxDecoration(
-                      color: mine ? AppColors.primary : Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          m.author,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: mine ? Colors.white70 : Colors.grey,
-                          ),
-                        ),
-                        Text(
-                          m.text,
-                          style: TextStyle(
-                            color: mine ? Colors.white : Colors.black,
-                          ),
-                        ),
-                        const Text('✓✓', style: TextStyle(fontSize: 10)),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+          const PageHead(
+            'Messagerie',
+            subtitle: 'Une conversation par dossier',
           ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.attach_file),
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: input,
-                    decoration: const InputDecoration(
-                      hintText: 'Votre message',
+          Expanded(
+            child: claims.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Aucun dossier.',
+                      style: TextStyle(color: AppColors.textMuted),
                     ),
+                  )
+                : ListView.builder(
+                    itemCount: claims.length,
+                    itemBuilder: (_, i) {
+                      final claim = claims[i];
+                      final messages = stores.messages.messagesFor(claim.id);
+                      final unread = stores.messages.unreadCount(
+                        role,
+                        claimId: claim.id,
+                      );
+                      return ListTile(
+                        onTap: () => open(context, ChatScreen(claim)),
+                        leading: const CircleAvatar(child: Icon(Icons.chat)),
+                        title: Text(
+                          claim.id,
+                          style: const TextStyle(
+                            fontFamily: 'JetBrainsMono',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        subtitle: Text(
+                          messages.isEmpty
+                              ? 'Aucun message'
+                              : messages.last.attachmentName ??
+                                    messages.last.text,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: unread == 0
+                            ? null
+                            : Badge(label: Text('$unread')),
+                      );
+                    },
                   ),
-                ),
-                IconButton.filled(
-                  onPressed: () {
-                    s.sendMessage(userName, input.text);
-                    input.clear();
-                  },
-                  icon: const Icon(Icons.send),
-                ),
-              ],
-            ),
           ),
         ],
       ),

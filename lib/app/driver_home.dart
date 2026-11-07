@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/modules/accident/screens/accident_wizard.dar
 import 'package:mon_constat_digital/modules/accident/screens/declarations_screen.dart';
 import 'package:mon_constat_digital/modules/accident/screens/emergency_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/notifications_screen.dart';
+import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
 import 'package:mon_constat_digital/modules/users/screens/profile_screen.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/alerts_screen.dart';
@@ -29,7 +30,8 @@ class DriverHome extends StatelessWidget {
               IconButton(
                 onPressed: () => open(context, const NotificationsScreen()),
                 icon: Badge(
-                  label: Text('${s.claims.notifications.length}'),
+                  isLabelVisible: s.claims.unreadCount(UserRole.driver) > 0,
+                  label: Text('${s.claims.unreadCount(UserRole.driver)}'),
                   child: const Icon(Icons.notifications_outlined),
                 ),
               ),
