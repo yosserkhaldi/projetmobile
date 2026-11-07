@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/app/main_shell.dart';
@@ -28,11 +30,13 @@ class _MonConstatAppState extends State<MonConstatApp> {
     super.initState();
     stores.users.addListener(_onUsersChanged);
     stores.users.restore();
+    unawaited(stores.accidents.initialize());
   }
 
   @override
   void dispose() {
     stores.users.removeListener(_onUsersChanged);
+    stores.accidents.dispose();
     super.dispose();
   }
 

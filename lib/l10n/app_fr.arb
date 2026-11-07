@@ -213,5 +213,6 @@
   "appearanceLabel": "Apparence",
   "themeSystem": "Comme le téléphone",
   "themeLight": "Clair",
-  "themeDark": "Sombre"
+  "themeDark": "Sombre",
+  "navDeclarations": "Déclarations"
 }

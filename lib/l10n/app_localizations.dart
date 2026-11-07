@@ -1047,6 +1047,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Sombre'**
   String get themeDark;
+
+  /// No description provided for @navDeclarations.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déclarations'**
+  String get navDeclarations;
 }
 
 class _AppLocalizationsDelegate

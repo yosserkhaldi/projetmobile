@@ -5,6 +5,7 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/screens/agent_dashboard_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claims_screen.dart';
+import 'package:mon_constat_digital/modules/accident/screens/declarations_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/messages_screen.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/admin_dashboard_screen.dart';
@@ -28,7 +29,7 @@ class _MainShellState extends State<MainShell> {
         ? const [
             DriverHome(),
             VehiclesScreen(),
-            ClaimsScreen(),
+            DeclarationsScreen(),
             MessagesScreen(),
             ProfileScreen(),
           ]
@@ -50,7 +51,7 @@ class _MainShellState extends State<MainShell> {
         ? [
             (t.navHome, Icons.home_rounded),
             (t.navVehicles, Icons.directions_car),
-            (t.navClaims, Icons.folder),
+            (t.navDeclarations, Icons.description_outlined),
             (t.navMessages, Icons.chat),
             (t.navProfile, Icons.person),
           ]

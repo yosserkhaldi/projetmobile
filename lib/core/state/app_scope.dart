@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/network/token_storage.dart';
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
+import 'package:mon_constat_digital/modules/accident/state/accident_store.dart';
 import 'package:mon_constat_digital/modules/claims/state/message_store.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
 import 'package:mon_constat_digital/modules/users/state/admin_store.dart';
@@ -20,7 +21,14 @@ class AppStores {
       biometric ?? DeviceBiometricAuth(),
     );
     admin = AdminStore(this.api);
-    listenable = Listenable.merge([users, admin, vehicles, claims, messages]);
+    listenable = Listenable.merge([
+      accidents,
+      users,
+      admin,
+      vehicles,
+      claims,
+      messages,
+    ]);
   }
 
   final SessionStorage storage;
@@ -29,6 +37,7 @@ class AppStores {
   late final ApiClient api;
   late final UserStore users;
   late final AdminStore admin;
+  final accidents = AccidentStore();
   final vehicles = VehicleStore();
   final claims = ClaimStore();
   final messages = MessageStore();

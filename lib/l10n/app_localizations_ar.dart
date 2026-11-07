@@ -513,4 +513,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get themeDark => 'داكن';
+
+  @override
+  String get navDeclarations => 'التصريحات';
 }

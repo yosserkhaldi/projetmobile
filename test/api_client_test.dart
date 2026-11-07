@@ -9,7 +9,12 @@ void main() {
 
   setUp(() async {
     backend = FakeBackend();
-    api = backend.stores.api;
+    // Seulement le client : pas besoin du reste de l'application.
+    api = ApiClient(
+      storage: backend.storage,
+      httpClient: backend.client,
+      baseUrl: 'http://api',
+    );
     await api.openSession({
       'accessToken': 'access-1',
       'refreshToken': 'refresh-0',

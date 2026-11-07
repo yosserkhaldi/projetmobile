@@ -50,7 +50,7 @@ void main() {
       await signIn(tester);
       expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
       expect(find.text('Véhicules'), findsOneWidget);
-      expect(find.text('Dossiers'), findsOneWidget);
+      expect(find.text('Déclarations'), findsOneWidget);
       expect(find.text('Messages'), findsOneWidget);
       expect(find.text('Profil'), findsOneWidget);
     });
@@ -636,5 +636,60 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Contexte'), findsOneWidget);
     expect(find.text('Continuer'), findsOneWidget);
+  });
+
+  testWidgets('exige deux preuves avant le constat', (tester) async {
+    await pumpApp(tester, FakeBackend());
+    await signIn(tester);
+    await tester.tap(find.text('Commencer une déclaration'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Que s’est-il passé ?'), findsOneWidget);
+
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Photos guidées'), findsOneWidget);
+
+    await tester.tap(find.text('Continuer vers le constat'));
+    await tester.pump();
+    expect(
+      find.text('Ajoutez au moins 2 photos avant de continuer.'),
+      findsOneWidget,
+    );
+
+    expect(find.text('Touchez pour ouvrir la caméra'), findsNWidgets(4));
+  });
+
+  testWidgets('le raccourci Constat ouvre les déclarations', (tester) async {
+    await pumpApp(tester, FakeBackend());
+    await signIn(tester);
+    await tester.ensureVisible(find.text('Constat'));
+    await tester.tap(find.text('Constat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Mes déclarations'), findsOneWidget);
+    expect(find.text('DÉCLARATIONS TRANSMISES'), findsOneWidget);
+    expect(find.text('Conducteur B'), findsNothing);
+  });
+
+  testWidgets('reprend un brouillon à la dernière étape', (tester) async {
+    await pumpApp(tester, FakeBackend());
+    await signIn(tester);
+    await tester.tap(find.text('Commencer une déclaration'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Que s’est-il passé ?'), findsOneWidget);
+    // pageBack() cherche l'infobulle anglaise « Back » ; l'app est en français.
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Constat'));
+    await tester.tap(find.text('Constat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Étape 2 sur 7'), findsOneWidget);
+    await tester.tap(find.text('Reprendre'));
+    await tester.pumpAndSettle();
+    expect(find.text('Que s’est-il passé ?'), findsOneWidget);
   });
 }

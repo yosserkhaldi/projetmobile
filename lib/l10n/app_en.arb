@@ -157,5 +157,6 @@
   "appearanceLabel": "Appearance",
   "themeSystem": "Same as phone",
   "themeLight": "Light",
-  "themeDark": "Dark"
+  "themeDark": "Dark",
+  "navDeclarations": "Reports"
 }

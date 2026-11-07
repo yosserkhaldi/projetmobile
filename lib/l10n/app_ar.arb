@@ -157,5 +157,6 @@
   "appearanceLabel": "المظهر",
   "themeSystem": "مثل الهاتف",
   "themeLight": "فاتح",
-  "themeDark": "داكن"
+  "themeDark": "داكن",
+  "navDeclarations": "التصريحات"
 }

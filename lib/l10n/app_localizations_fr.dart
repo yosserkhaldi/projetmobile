@@ -521,4 +521,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get themeDark => 'Sombre';
+
+  @override
+  String get navDeclarations => 'Déclarations';
 }

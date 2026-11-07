@@ -1,21 +1,31 @@
 import 'package:flutter/material.dart';
 
-import 'package:mon_constat_digital/core/theme/app_palette.dart';
+import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
 
 class SignatureBox extends StatelessWidget {
-  const SignatureBox(this.label, {super.key});
+  const SignatureBox(
+    this.label, {
+    required this.strokes,
+    required this.onChanged,
+    super.key,
+  });
+
   final String label;
+  final List<List<Map<String, double>>> strokes;
+  final VoidCallback onChanged;
+
   @override
-  Widget build(BuildContext context) => Container(
-    height: 130,
-    width: double.infinity,
-    decoration: BoxDecoration(
-      color: context.palette.surface,
-      border: Border.all(color: context.palette.border),
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: Center(
-      child: Text('$label\nSignez ici', textAlign: TextAlign.center),
-    ),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+      const SizedBox(height: 7),
+      DrawingPad(
+        strokes: strokes,
+        height: 150,
+        hint: 'Signez avec votre doigt ou le curseur',
+        onChanged: onChanged,
+      ),
+    ],
   );
 }
