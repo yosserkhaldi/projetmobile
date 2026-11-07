@@ -55,15 +55,18 @@ class ClaimDetail extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
             DropdownButtonFormField<String>(
+              // Le statut peut changer hors de cette liste (Transmis, décision).
+              key: ValueKey(claim.status),
               initialValue: claim.status,
-              items: [
+              items: {
+                claim.status,
                 'En instruction',
                 'Pièce demandée',
                 'Expertise planifiée',
                 'Accepté',
                 'Rejeté',
                 'Clôturé',
-              ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              }.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
               onChanged: (v) {
                 if (v != null) s.updateClaim(claim, v);
               },
