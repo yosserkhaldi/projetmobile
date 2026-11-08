@@ -67,7 +67,7 @@ class SimilarCase {
   final double? indemnity;
 }
 
-/// Lecture d'une pièce par l'IA. Absente sans clé Claude.
+/// Lecture d'une pièce par l'IA. Absente sans modèle de langage.
 class DocumentAnalysis {
   DocumentAnalysis.fromJson(Map<String, dynamic> row)
     : type = row['documentType'] as String? ?? 'Autre',
@@ -80,5 +80,6 @@ class DocumentAnalysis {
   final bool matches;
 }
 
-/// Réponse d'un assistant : Claude ou, à défaut, les règles.
-typedef AiAnswer = ({String text, bool fromClaude});
+/// Réponse d'un assistant. [by] nomme le modèle qui a répondu, par exemple
+/// « Claude (CLI) · claude-sonnet-5-5 » ; null quand les règles ont répondu.
+typedef AiAnswer = ({String text, String? by});

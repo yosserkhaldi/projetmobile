@@ -6,6 +6,9 @@ import { io } from 'socket.io-client';
 
 import { migrate, prisma } from './helpers.js';
 
+// Ces tests ne parlent à aucun modèle, même si une CLI Claude est installée.
+process.env.AI_PROVIDER = 'none';
+
 const { createApp } = await import('../src/app.js');
 const { signAccessToken } = await import('../src/lib/tokens.js');
 const { attachClaimsSocket } = await import(

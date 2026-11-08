@@ -46,7 +46,8 @@ export function analytics(claims, aiCalls = [], now = new Date()) {
       decisionsCompared: compared.length,
       agreement,
       estimateErrorTnd: estimateError,
-      claudeCalls: aiCalls.filter((call) => call.source === 'claude').length,
+      modelCalls: aiCalls.length,
+      byProvider: countBy(aiCalls, 'source'),
       failedCalls: aiCalls.filter((call) => !call.ok).length,
     },
     model: {

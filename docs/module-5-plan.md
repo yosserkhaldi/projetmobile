@@ -4,7 +4,7 @@ Owner: Salma. Branch: `module-5`. Reference: cahier des charges **v3** (3 Oct 20
 
 ## Status
 
-Phases 1 to 4 are done. Phase 4 was tested with a simulated Claude API: it has not yet run against the real one, because no key was available. Still needed from Salma: try the app on an Android or iOS device or emulator.
+Phases 1 to 4 are done. Phase 4 was tested with simulated providers, and on 2026-11-08 against the real Claude through the Claude Code CLI (assistant, summary, replies, Arabic answer, document reading). The paid APIs (Anthropic key, OpenAI, Perplexity) have only run against simulated servers. Still needed from Salma: try the app on an Android or iOS device or emulator.
 
 ## Run the demo
 
@@ -85,24 +85,29 @@ cd backend && npm run ml:train    # adds real closed cases when DATABASE_URL is 
 
 Goal: help the agent decide faster and keep the driver informed. **The AI never decides and never writes**: every action stays a human click, and the assistants only have read-only tools.
 
-Everything works without a Claude key. Claude is a layer on top of the rules and the model, and each answer says where it came from (`claude` or `rules`).
+Everything works without a language model. The model is a layer on top of the rules and the ML, and each answer says where it came from (`source`: `ai` or `rules`, and `by`: which model answered).
 
 | Layer | What it does | Needs a key |
 |---|---|---|
 | Rules | Responsibility, missing documents, deadlines (SLA), vigilance signals, next action | No |
 | ML | Estimated indemnity, estimated duration, rejection risk, similar past cases | No |
 | Orchestrator | Runs rules then ML, computes a priority, filters the result by role | No |
-| Claude | Case summary, reply suggestions, reading documents, assistant with tools | Yes |
+| Language model | Case summary, reply suggestions, reading documents, assistant | CLI login in dev, or a key |
 
 1. **Rules** (`ai/rules.js`): declarative, thresholds in one place, each result has a human-readable reason.
 2. **ML** (`ai/ml.js`, `ai/train.js`): ridge regression and logistic regression written in plain JS, so reasons can be shown per feature, plus nearest neighbours for similar cases. There is no real history yet, so training starts from **synthetic data**; `npm run ml:train` adds real closed cases from the database. Metrics on synthetic data only show the model learned the generator, not that it is accurate on real claims.
 3. **Orchestrator** (`ai/insights.js`): pure functions, computed on read and sent in `/sync`, then cached in SQLite for offline reading.
 4. **Role filter**: the driver receives guidance and an estimated delay. Risk, signals and estimates stay with the agent, and the driver's assistant never receives them.
-5. **Claude** (`ai/claude.js`, `ai/assistant.js`): key on the server only, in `backend/.env`. Rate limited, every call audited in `AiCall`, no names or user ids sent, dossier content treated as data. Any failure falls back to the rules.
+5. **Language model** (`ai/llm.js`, `ai/providers/`, `ai/assistant.js`): one entry point, four providers, chosen by `AI_PROVIDER` (default `auto`):
+   - `claude-cli`: the Claude Code CLI on the developer's machine, with their Claude login and no key. Only in development; it runs with no tools, no settings, no session saved and a minimal environment (no database URL or secrets).
+   - `anthropic`: Claude with `ANTHROPIC_API_KEY`. The only provider that calls the read-only tools itself.
+   - `openai`: any OpenAI-format API (OpenAI, Mistral, Groq, OpenRouter, Ollama…), with `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`.
+   - `perplexity`: Perplexity gateway, with web search turned off so case facts are not sent as search queries.
+   In `auto`: CLI first in development, then the first key set; never the CLI in production. Providers without tool calls get the same role-filtered data up front, in the user message, never in the instructions. Answers follow the profile language (FR, AR, EN); rule answers stay in French. Keys stay on the server, in `backend/.env`. Rate limited, every call audited in `AiCall` (`source` is the provider), no names or user ids sent, dossier content treated as data. Any failure falls back to the rules.
 6. **Learning loop**: the proposal is saved at decision time, so analytics can compare it with what the agent decided.
 7. **App**: analysis card, priority queue, driver guidance, assistant screen, suggested replies, analytics screen, Messages tab badge, real file upload from Chrome.
 
-To enable Claude: put `ANTHROPIC_API_KEY=...` in `backend/.env`, then `docker compose up -d api`.
+To use the Claude CLI in development: run the API on the machine (`cd backend && npm run dev`), since the Docker image has no CLI. `GET /api/claims/ai/status` shows which provider answers. To use a key instead, put it in `backend/.env` (see `.env.example`) and set `AI_PROVIDER` if the CLI is also installed.
 
 ## Depends on other modules
 
@@ -118,7 +123,7 @@ Payments (cahier), Firebase push (teacher rule; notifications are in-app and liv
 
 ## Shared files
 
-Listed here so the team can be warned: `pubspec.yaml`, `backend/package.json`, `backend/Dockerfile`, `backend/src/server.js`, `docker-compose.yml`, `lib/core/state/app_scope.dart`, the notification badge in `lib/app/driver_home.dart`, the claim creation lines in `accident_wizard.dart`, and the debug `AndroidManifest.xml` (allows http to the local API). Phase 4 adds: the Messages badge in `lib/app/main_shell.dart`, `startClaimsSync` in `lib/app/app.dart`, `send`, `timeout`, `baseUrl` and `accessToken` in `lib/core/network/api_client.dart`, `env_file` in `docker-compose.yml`, the module 5 models in `backend/prisma/schema.prisma`, the demo cases in `backend/prisma/seed.js`, and `@anthropic-ai/sdk`, `socket.io` and `ml:train` in `backend/package.json`.
+Listed here so the team can be warned: `pubspec.yaml`, `backend/package.json`, `backend/Dockerfile`, `backend/src/server.js`, `docker-compose.yml`, `lib/core/state/app_scope.dart`, the notification badge in `lib/app/driver_home.dart`, the claim creation lines in `accident_wizard.dart`, and the debug `AndroidManifest.xml` (allows http to the local API). Phase 4 adds: the Messages badge in `lib/app/main_shell.dart`, `startClaimsSync` in `lib/app/app.dart`, `send`, `timeout`, `baseUrl` and `accessToken` in `lib/core/network/api_client.dart`, `env_file` in `docker-compose.yml`, the module 5 models in `backend/prisma/schema.prisma`, the demo cases in `backend/prisma/seed.js`, and `@anthropic-ai/sdk`, `socket.io` and `ml:train` in `backend/package.json`. The AI providers add: the AI section of `backend/.env.example`, and a `by` column on the module 5 `ClaimAiNote` model (migration `20261108120000_claims_ai_providers`).
 
 ## Definition of done
 

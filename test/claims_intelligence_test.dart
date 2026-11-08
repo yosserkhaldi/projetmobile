@@ -134,18 +134,23 @@ void main() {
         MockClient((_) async {
           await Future<void>.delayed(const Duration(milliseconds: 1));
           return http.Response(
-            jsonEncode({'answer': 'ok', 'source': 'claude'}),
+            jsonEncode({
+              'answer': 'ok',
+              'source': 'ai',
+              'by': 'Claude (CLI) · claude-sonnet-5-5',
+            }),
             200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
           );
         }),
       );
       final answer = await api.askAssistant('SIN-1', [
         (role: 'user', content: 'x'),
       ]);
-      expect(answer.fromClaude, isTrue);
+      expect(answer.by, 'Claude (CLI) · claude-sonnet-5-5');
     });
 
-    test('dit si la réponse vient de Claude', () async {
+    test('dit si la réponse vient des règles', () async {
       final api = apiWith(
         MockClient(
           (_) async => http.Response(
@@ -159,7 +164,7 @@ void main() {
         (role: 'user', content: 'Statut ?'),
       ]);
       expect(answer.text, 'Bonjour');
-      expect(answer.fromClaude, isFalse);
+      expect(answer.by, isNull);
     });
 
     test('une erreur du serveur remonte', () async {
@@ -519,7 +524,7 @@ void main() {
             calls.add(messages.length);
             return (
               text: 'Réponse ${calls.length}',
-              fromClaude: calls.length == 1,
+              by: calls.length == 1 ? 'Perplexity · sonar' : null,
             );
           },
         ),
@@ -528,7 +533,7 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(find.text('Réponse 1'), findsOneWidget);
-      expect(find.text('Claude'), findsOneWidget);
+      expect(find.text('Perplexity · sonar'), findsOneWidget);
 
       await tester.enterText(find.byType(TextField), 'Et ensuite ?');
       await tester.tap(find.byTooltip('Envoyer'));

@@ -9,8 +9,14 @@ export { requireRole } from '../../middleware/auth.js';
 // comme dans ses tables et côté Flutter.
 export async function requireUser(req, res, next) {
   await requireAuth(req, res, () => {});
-  const { id, role, firstName, lastName } = req.user;
-  req.user = { id, role: role.toLowerCase(), name: `${firstName} ${lastName}` };
+  const { id, role, firstName, lastName, language } = req.user;
+  req.user = {
+    id,
+    role: role.toLowerCase(),
+    name: `${firstName} ${lastName}`,
+    // Langue du profil : celle des réponses de l'assistant.
+    language,
+  };
   next();
 }
 

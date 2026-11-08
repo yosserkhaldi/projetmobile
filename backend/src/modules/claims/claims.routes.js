@@ -14,7 +14,7 @@ import {
   suggestReplies,
   summarize,
 } from './ai/assistant.js';
-import { claudeEnabled, claudeModel } from './ai/claude.js';
+import { activeProvider, aiStatus } from './ai/llm.js';
 import { driverView, model } from './ai/insights.js';
 import { requireRole, requireUser } from './claims.auth.js';
 import { db } from './claims.db.js';
@@ -84,9 +84,9 @@ function conversation(input) {
   return messages;
 }
 
-// Lit les pièces reçues, après la réponse : l'utilisateur n'attend pas Claude.
+// Lit les pièces reçues, après la réponse : l'utilisateur n'attend pas le modèle.
 async function readDocuments(claimId) {
-  if (!claudeEnabled()) return;
+  if (!activeProvider()) return;
   const claim = await db().claim.findUnique({
     where: { id: claimId },
     include: { documents: true, requests: true },
@@ -142,8 +142,7 @@ router.get('/sync', async (req, res) => {
 
 router.get('/ai/status', (_req, res) => {
   res.json({
-    claude: claudeEnabled(),
-    claudeModel: claudeEnabled() ? claudeModel() : null,
+    ...aiStatus(),
     ml: { version: model.version, trainedOn: model.trainedOn },
   });
 });

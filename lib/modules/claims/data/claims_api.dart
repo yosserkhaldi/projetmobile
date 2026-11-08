@@ -147,19 +147,17 @@ class ClaimsApi {
         for (final m in messages) {'role': m.role, 'content': m.content},
       ],
     });
-    return (
-      text: json['answer'] as String,
-      fromClaude: json['source'] == 'claude',
-    );
+    return (text: json['answer'] as String, by: _author(json));
   }
 
   Future<AiAnswer> summarize(String claimId) async {
     final json = await _ai('/$claimId/ai/summary');
-    return (
-      text: json['summary'] as String,
-      fromClaude: json['source'] == 'claude',
-    );
+    return (text: json['summary'] as String, by: _author(json));
   }
+
+  /// Le modèle qui a répondu, ou null pour une réponse des règles.
+  String? _author(Map<String, dynamic> json) =>
+      json['source'] == 'rules' ? null : json['by'] as String? ?? 'IA';
 
   Future<List<String>> suggestReplies(String claimId) async =>
       _strings((await _ai('/$claimId/ai/replies'))['replies']);

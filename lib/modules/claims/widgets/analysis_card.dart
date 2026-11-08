@@ -151,8 +151,8 @@ class _AnalysisCardState extends State<AnalysisCard> {
               Text(summary!.text),
               const SizedBox(height: 4),
               Text(
-                summary!.fromClaude
-                    ? 'Synthèse rédigée par Claude'
+                summary!.by != null
+                    ? 'Synthèse rédigée par ${summary!.by}'
                     : 'Synthèse automatique, sans IA générative',
                 style: _muted(context),
               ),

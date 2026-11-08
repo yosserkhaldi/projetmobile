@@ -584,13 +584,53 @@
     },
     "/ai/status": {
       "get": {
-        "summary": "État de la couche IA : Claude actif ou non, version du modèle",
+        "summary": "État de la couche IA : fournisseur actif (CLI Claude, Claude, OpenAI compatible, Perplexity) et version du modèle ML",
         "tags": [
           "Intelligence"
         ],
         "responses": {
           "200": {
-            "description": "État"
+            "description": "État",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "active": {
+                      "nullable": true,
+                      "type": "object",
+                      "description": "null : les règles répondent",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "enum": [
+                            "claude-cli",
+                            "anthropic",
+                            "openai",
+                            "perplexity"
+                          ]
+                        },
+                        "label": {
+                          "type": "string"
+                        },
+                        "model": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "configured": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "ml": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -636,7 +676,7 @@
     },
     "/{id}/ai/assistant": {
       "post": {
-        "summary": "Question sur le dossier. Claude avec outils en lecture seule, ou règles sans clé.",
+        "summary": "Question sur le dossier. Modèle de langage (outils en lecture seule ou données jointes), ou règles sans fournisseur. Réponse dans la langue du profil.",
         "tags": [
           "Intelligence"
         ],
@@ -685,7 +725,7 @@
         },
         "responses": {
           "200": {
-            "description": "answer, source (claude ou rules)"
+            "description": "answer, source (ai ou rules), by (modèle qui a répondu, null pour les règles)"
           },
           "400": {
             "description": "Conversation invalide"
@@ -714,7 +754,7 @@
         ],
         "responses": {
           "200": {
-            "description": "summary, source"
+            "description": "summary, source (ai ou rules), by (modèle qui a répondu, null pour les règles)"
           }
         }
       }
@@ -737,7 +777,7 @@
         ],
         "responses": {
           "200": {
-            "description": "replies, source"
+            "description": "replies, source (ai ou rules), by (modèle qui a répondu, null pour les règles)"
           }
         }
       }

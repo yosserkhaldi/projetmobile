@@ -293,12 +293,14 @@ model ClaimAiNote {
   kind      String
   hash      String
   text      String
+  // Modèle qui a rédigé le texte, affiché dans l'application.
+  by        String?
   updatedAt DateTime @updatedAt
 
   @@id([claimId, kind])
 }
 
-// Journal des appels à Claude : coût, échecs, qui a demandé quoi.
+// Journal des appels aux modèles : fournisseur (source), coût, échecs, qui a demandé quoi.
 model AiCall {
   id           Int      @id @default(autoincrement())
   claimId      String?

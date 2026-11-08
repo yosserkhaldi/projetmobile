@@ -243,12 +243,13 @@ describe('statistiques', () => {
       });
     const result = analytics(
       [closed(100, 600), closed(50, 400), claimWith()],
-      [{ source: 'claude', ok: true }, { source: 'claude', ok: false }],
+      [{ source: 'anthropic', ok: true }, { source: 'claude-cli', ok: false }],
       now,
     );
     assert.equal(result.ai.agreement, 0.5);
     assert.equal(result.ai.estimateErrorTnd, 100);
     assert.equal(result.ai.failedCalls, 1);
+    assert.deepEqual(result.ai.byProvider, { anthropic: 1, 'claude-cli': 1 });
     assert.equal(result.totalIndemnity, 1000);
   });
 });
@@ -366,15 +367,15 @@ describe('API intelligence', () => {
   beforeEach(async () => {
     requests = [];
     script = [];
+    process.env.AI_PROVIDER = 'anthropic';
     process.env.ANTHROPIC_API_KEY = 'fake-key';
-    const { resetClaude } = await import('../src/modules/claims/ai/claude.js');
-    resetClaude();
     await prisma.claim.deleteMany({ where: { driverId: driver.id } });
     await prisma.aiCall.deleteMany();
     await prisma.claimAiNote.deleteMany();
   });
 
   after(async () => {
+    delete process.env.AI_PROVIDER;
     delete process.env.ANTHROPIC_API_KEY;
     delete process.env.ANTHROPIC_BASE_URL;
     await prisma.claim.deleteMany({ where: { driverId: driver.id } });
@@ -429,7 +430,11 @@ describe('API intelligence', () => {
       message([text('Proposition : A 100 %.')]),
     ];
     const { body } = await ask(agent, id, 'Que proposes-tu ?');
-    assert.deepEqual(body, { answer: 'Proposition : A 100 %.', source: 'claude' });
+    assert.deepEqual(body, {
+      answer: 'Proposition : A 100 %.',
+      source: 'ai',
+      by: 'Claude · claude-opus-5-5',
+    });
 
     assert.equal(requests.length, 2);
     const [first, second] = requests.map((r) => r.body);
@@ -443,9 +448,12 @@ describe('API intelligence', () => {
     assert.ok(result.content.includes('"proposal"'));
     assert.equal(second.messages.at(-2).content[0].type, 'tool_use');
 
+    // Un appel journalisé par réponse, avec les jetons des deux tours.
     const calls = await prisma.aiCall.findMany({ where: { claimId: id } });
-    assert.equal(calls.length, 2);
-    assert.ok(calls.every((call) => call.ok && call.inputTokens === 10));
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].source, 'anthropic');
+    assert.ok(calls[0].ok);
+    assert.equal(calls[0].inputTokens, 20);
   });
 
   test('les outils du conducteur excluent toute analyse', async () => {
@@ -538,7 +546,11 @@ describe('API intelligence', () => {
     await call(driver, 'POST', `/${id}/messages`, form);
     script = [message([text('{"replies":["a","b","c","d"]}')])];
     const { body } = await call(agent, 'POST', `/${id}/ai/replies`);
-    assert.deepEqual(body, { replies: ['a', 'b', 'c'], source: 'claude' });
+    assert.deepEqual(body, {
+      replies: ['a', 'b', 'c'],
+      source: 'ai',
+      by: 'Claude · claude-opus-5-5',
+    });
     assert.equal(requests[0].body.output_config.format.type, 'json_schema');
   });
 
@@ -596,11 +608,16 @@ describe('API intelligence', () => {
     assert.equal(last.status, 429);
   });
 
-  test('un état indique si Claude est actif', async () => {
-    assert.equal((await call(agent, 'GET', '/ai/status')).body.claude, true);
+  test('un état indique quel modèle répond', async () => {
+    const on = (await call(agent, 'GET', '/ai/status')).body;
+    assert.deepEqual(on.active, {
+      provider: 'anthropic',
+      label: 'Claude',
+      model: 'claude-opus-5-5',
+    });
     delete process.env.ANTHROPIC_API_KEY;
     const { body } = await call(agent, 'GET', '/ai/status');
-    assert.equal(body.claude, false);
+    assert.equal(body.active, null);
     assert.ok(body.ml.version);
   });
 });

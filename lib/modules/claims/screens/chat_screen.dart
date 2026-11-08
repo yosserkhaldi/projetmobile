@@ -35,7 +35,7 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  /// Sur demande seulement : chaque suggestion peut coûter un appel à Claude.
+  /// Sur demande seulement : chaque suggestion peut coûter un appel au modèle.
   Future<void> _suggest() async {
     final sync = AppScope.of(context).claimsSync;
     final messenger = ScaffoldMessenger.of(context);

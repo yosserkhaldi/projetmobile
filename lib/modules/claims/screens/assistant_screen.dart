@@ -25,7 +25,7 @@ class AssistantScreen extends StatefulWidget {
 
 class _AssistantScreenState extends State<AssistantScreen> {
   final input = TextEditingController();
-  final turns = <({String role, String content, bool fromClaude})>[];
+  final turns = <({String role, String content, String? by})>[];
   bool waiting = false;
 
   static const _driverIdeas = [
@@ -51,7 +51,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
     final stores = AppScope.of(context);
     final sync = stores.claimsSync;
     setState(() {
-      turns.add((role: 'user', content: question, fromClaude: false));
+      turns.add((role: 'user', content: question, by: null));
       waiting = true;
     });
     input.clear();
@@ -68,20 +68,17 @@ class _AssistantScreenState extends State<AssistantScreen> {
       } else {
         throw StateError('Application locale');
       }
-      _add(answer.text, answer.fromClaude);
+      _add(answer.text, answer.by);
     } catch (_) {
-      _add(
-        'Assistant indisponible pour le moment. Réessayez plus tard.',
-        false,
-      );
+      _add('Assistant indisponible pour le moment. Réessayez plus tard.', null);
     }
   }
 
-  void _add(String text, bool fromClaude) {
+  void _add(String text, String? by) {
     if (!mounted) return;
     setState(() {
       waiting = false;
-      turns.add((role: 'assistant', content: text, fromClaude: fromClaude));
+      turns.add((role: 'assistant', content: text, by: by));
     });
   }
 
@@ -164,7 +161,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
 
 class _Turn extends StatelessWidget {
   const _Turn(this.turn);
-  final ({String role, String content, bool fromClaude}) turn;
+  final ({String role, String content, String? by}) turn;
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +189,7 @@ class _Turn extends StatelessWidget {
             if (!mine) ...[
               const SizedBox(height: 4),
               Text(
-                turn.fromClaude ? 'Claude' : 'Réponse automatique',
+                turn.by ?? 'Réponse automatique',
                 style: TextStyle(
                   fontSize: 11,
                   color: context.palette.textMuted,
