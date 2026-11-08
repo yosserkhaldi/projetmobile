@@ -22,7 +22,7 @@ void main() {
     source.driverBName = 'Conducteur B';
     source.driverBPlate = '123 TUN 4567';
     source.driverBInsurer = 'Assurance Test';
-    source.circumstances.addAll(['Changeait de file', 'Virait à gauche']);
+    source.circumstancesA.addAll(['Changeait de file', 'Virait à gauche']);
     source.impactZones.add('Avant');
     source.sketchStrokes.add([
       {'x': .1, 'y': .2},
@@ -51,7 +51,7 @@ void main() {
     expect(restored.driverBName, 'Conducteur B');
     expect(restored.driverBPlate, '123 TUN 4567');
     expect(restored.driverBInsurer, 'Assurance Test');
-    expect(restored.circumstances, containsAll(source.circumstances));
+    expect(restored.circumstancesA, containsAll(source.circumstancesA));
     expect(restored.impactZones, contains('Avant'));
     expect(restored.observations, source.observations);
     expect(restored.sketchConfirmed, isTrue);

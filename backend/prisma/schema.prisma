@@ -21,6 +21,13 @@ enum Language {
   EN
 }
 
+enum IdentityStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 enum CodePurpose {
   PHONE_VERIFICATION
   PASSWORD_RESET
@@ -51,6 +58,18 @@ model User {
   // Noms de fichiers dans UPLOAD_DIR/users. Jamais servis publiquement.
   photoFile        String?
   licensePhotoFile String?
+  // Vérification d'identité (CIN) : validée par un administrateur.
+  identityStatus          IdentityStatus @default(UNVERIFIED)
+  cinNumber               String?        @unique
+  cinFrontFile            String?
+  cinBackFile             String?
+  identitySubmittedAt     DateTime?
+  identityReviewedAt      DateTime?
+  identityReviewerId      String?        @db.Uuid
+  identityRejectionReason String?
+  // Loi n° 2004-63 : consentement à l'inscription, compte anonymisé à la suppression.
+  consentAt               DateTime?
+  deletedAt               DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -59,6 +78,9 @@ model User {
   verificationCodes VerificationCode[]
   deviceKeys        DeviceKey[]
   accidents         Accident[]
+  sessions          Session[]
+  loginEvents       LoginEvent[]
+  vehicles          Vehicle[]
 
   @@index([role])
   @@index([companyId])
@@ -94,6 +116,7 @@ model Company {
 
   agencies Agency[]
   agents   User[]
+  vehicles Vehicle[]
 }
 
 model Agency {
@@ -107,17 +130,54 @@ model Agency {
   @@unique([companyId, name])
 }
 
+// Un appareil connecté. Ses jetons de rafraîchissement se succèdent ;
+// révoquer la session déconnecte l'appareil tout de suite.
+model Session {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  deviceId   String?
+  deviceName String?
+  ip         String?
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime  @default(now())
+  revokedAt  DateTime?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+
+  @@index([userId])
+}
+
 model RefreshToken {
   id        String    @id @default(uuid()) @db.Uuid
   tokenHash String    @unique
   userId    String    @db.Uuid
+  sessionId String    @db.Uuid
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([sessionId])
+}
+
+/// Historique des connexions, réussies ou non.
+model LoginEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  success    Boolean
+  method     String
+  reason     String?
+  deviceName String?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 model VerificationCode {
@@ -149,4 +209,57 @@ model DeviceKey {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ── Module 2 : véhicules et contrats d'assurance ──────────────────────────────
+// Stockage côté serveur pour la synchronisation multi-appareils et les rapports
+// d'assurance. Le SQLite local (Drift) reste la source de vérité hors-ligne ;
+// ce modèle est synchronisé quand le réseau est disponible.
+
+enum VehicleType {
+  CAR
+  MOTO
+  TRUCK
+  VAN
+  OTHER
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  ELECTRIC
+  HYBRID
+  OTHER
+}
+
+model Vehicle {
+  id              String      @id @default(uuid()) @db.Uuid
+  userId          String      @db.Uuid
+  plate           String
+  brand           String
+  model           String
+  year            Int
+  policy          String
+  insurerName     String      @default("")
+  companyId       String?     @db.Uuid
+  insuranceExpiry DateTime    @db.Date
+  technicalExpiry DateTime?   @db.Date
+  color           String?
+  mileage         Int?
+  type            VehicleType @default(CAR)
+  fuel            FuelType    @default(PETROL)
+  photoFile       String?
+  claimCount      Int         @default(0)
+  archived        Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, archived])
+  // Unicité de la plaque par utilisateur (un même véhicule ne peut être
+  // enregistré deux fois par le même conducteur).
+  @@unique([userId, plate])
 }

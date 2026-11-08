@@ -367,7 +367,7 @@ abstract class AppLocalizations {
   /// No description provided for @otpInstructions.
   ///
   /// In fr, this message translates to:
-  /// **'Saisissez le code à 6 chiffres envoyé par SMS au {phone}.'**
+  /// **'Saisissez le code à 6 chiffres envoyé sur WhatsApp au {phone}.'**
   String otpInstructions(String phone);
 
   /// No description provided for @otpCodeLabel.
@@ -625,7 +625,7 @@ abstract class AppLocalizations {
   /// No description provided for @phoneChangeNotice.
   ///
   /// In fr, this message translates to:
-  /// **'Un nouveau numéro devra être vérifié par SMS.'**
+  /// **'Un nouveau numéro devra être vérifié par un code WhatsApp.'**
   String get phoneChangeNotice;
 
   /// No description provided for @takePhoto.
@@ -1053,6 +1053,504 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Déclarations'**
   String get navDeclarations;
+
+  /// No description provided for @securityDevicesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Appareils connectés'**
+  String get securityDevicesTitle;
+
+  /// No description provided for @securityDevicesSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Où votre compte est ouvert'**
+  String get securityDevicesSubtitle;
+
+  /// No description provided for @thisDevice.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil'**
+  String get thisDevice;
+
+  /// No description provided for @lastActive.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actif le {when}'**
+  String lastActive(String when);
+
+  /// No description provided for @signOutDevice.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déconnecter'**
+  String get signOutDevice;
+
+  /// No description provided for @signOutDeviceConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déconnecter {name} ?'**
+  String signOutDeviceConfirm(String name);
+
+  /// No description provided for @signOutDeviceBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil devra se reconnecter avec le mot de passe.'**
+  String get signOutDeviceBody;
+
+  /// No description provided for @signOutOthers.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déconnecter les autres appareils'**
+  String get signOutOthers;
+
+  /// No description provided for @signedOutOthers.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun autre appareil connecté} =1{1 appareil déconnecté} other{{count} appareils déconnectés}}'**
+  String signedOutOthers(int count);
+
+  /// No description provided for @unknownDevice.
+  ///
+  /// In fr, this message translates to:
+  /// **'Appareil inconnu'**
+  String get unknownDevice;
+
+  /// No description provided for @securityAlertNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une connexion depuis un nouvel appareil vous est signalée sur WhatsApp et par e-mail.'**
+  String get securityAlertNote;
+
+  /// No description provided for @loginHistoryTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Historique des connexions'**
+  String get loginHistoryTitle;
+
+  /// No description provided for @noHistory.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune connexion enregistrée.'**
+  String get noHistory;
+
+  /// No description provided for @loginSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion réussie'**
+  String get loginSuccess;
+
+  /// No description provided for @loginMethodPassword.
+  ///
+  /// In fr, this message translates to:
+  /// **'mot de passe'**
+  String get loginMethodPassword;
+
+  /// No description provided for @loginMethodBiometric.
+  ///
+  /// In fr, this message translates to:
+  /// **'empreinte'**
+  String get loginMethodBiometric;
+
+  /// No description provided for @loginMethodRegister.
+  ///
+  /// In fr, this message translates to:
+  /// **'création du compte'**
+  String get loginMethodRegister;
+
+  /// No description provided for @loginFailedWrongPassword.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe incorrect'**
+  String get loginFailedWrongPassword;
+
+  /// No description provided for @loginFailedLocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tentative sur compte bloqué'**
+  String get loginFailedLocked;
+
+  /// No description provided for @loginFailedSuspended.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tentative sur compte suspendu'**
+  String get loginFailedSuspended;
+
+  /// No description provided for @identityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification d\'identité'**
+  String get identityTitle;
+
+  /// No description provided for @identityStatusUnverified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité non vérifiée'**
+  String get identityStatusUnverified;
+
+  /// No description provided for @identityStatusPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification en cours'**
+  String get identityStatusPending;
+
+  /// No description provided for @identityStatusVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité vérifiée'**
+  String get identityStatusVerified;
+
+  /// No description provided for @identityStatusRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification refusée'**
+  String get identityStatusRejected;
+
+  /// No description provided for @identityIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un administrateur vérifie votre CIN. Elle est exigée pour signer un constat.'**
+  String get identityIntro;
+
+  /// No description provided for @identityPendingNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un administrateur vérifie vos documents. Vous serez prévenu sur WhatsApp et par e-mail.'**
+  String get identityPendingNote;
+
+  /// No description provided for @identityVerifiedNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous pouvez signer vos constats.'**
+  String get identityVerifiedNote;
+
+  /// No description provided for @identityRejectedReason.
+  ///
+  /// In fr, this message translates to:
+  /// **'Motif : {reason}'**
+  String identityRejectedReason(String reason);
+
+  /// No description provided for @cinNumberLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de CIN'**
+  String get cinNumberLabel;
+
+  /// No description provided for @cinInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le numéro de CIN contient 8 chiffres.'**
+  String get cinInvalid;
+
+  /// No description provided for @cinFront.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recto de la CIN'**
+  String get cinFront;
+
+  /// No description provided for @cinBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Verso de la CIN'**
+  String get cinBack;
+
+  /// No description provided for @addPhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter la photo'**
+  String get addPhoto;
+
+  /// No description provided for @identityPhotosRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez le recto et le verso de votre CIN.'**
+  String get identityPhotosRequired;
+
+  /// No description provided for @submitIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer pour vérification'**
+  String get submitIdentity;
+
+  /// No description provided for @identitySent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demande envoyée. Vous serez prévenu sur WhatsApp.'**
+  String get identitySent;
+
+  /// No description provided for @navIdentities.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identités'**
+  String get navIdentities;
+
+  /// No description provided for @reviewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifications d\'identité'**
+  String get reviewTitle;
+
+  /// No description provided for @reviewSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demandes en attente, les plus anciennes en premier'**
+  String get reviewSubtitle;
+
+  /// No description provided for @noPendingReviews.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune demande en attente.'**
+  String get noPendingReviews;
+
+  /// No description provided for @submittedOn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyée le {date}'**
+  String submittedOn(String date);
+
+  /// No description provided for @approve.
+  ///
+  /// In fr, this message translates to:
+  /// **'Valider'**
+  String get approve;
+
+  /// No description provided for @reject.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refuser'**
+  String get reject;
+
+  /// No description provided for @rejectTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Motif du refus'**
+  String get rejectTitle;
+
+  /// No description provided for @rejectReasonBlurry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo floue'**
+  String get rejectReasonBlurry;
+
+  /// No description provided for @rejectReasonUnreadable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Document illisible'**
+  String get rejectReasonUnreadable;
+
+  /// No description provided for @rejectReasonNameMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom différent du compte'**
+  String get rejectReasonNameMismatch;
+
+  /// No description provided for @rejectReasonNotCin.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce n\'est pas une CIN'**
+  String get rejectReasonNotCin;
+
+  /// No description provided for @otherReason.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre motif'**
+  String get otherReason;
+
+  /// No description provided for @identityApproved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité validée, le titulaire est prévenu'**
+  String get identityApproved;
+
+  /// No description provided for @identityRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demande refusée, le titulaire est prévenu'**
+  String get identityRejected;
+
+  /// No description provided for @errorIdentityLocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre identité est en cours de vérification ou déjà vérifiée.'**
+  String get errorIdentityLocked;
+
+  /// No description provided for @errorCinInUse.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce numéro de CIN est déjà utilisé.'**
+  String get errorCinInUse;
+
+  /// No description provided for @errorIdentityNotVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre identité doit être vérifiée avant cette action.'**
+  String get errorIdentityNotVerified;
+
+  /// No description provided for @errorIdentityNotPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette demande n\'est plus en attente.'**
+  String get errorIdentityNotPending;
+
+  /// No description provided for @consentLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte que mes données soient traitées pour la gestion de mes constats, conformément à la loi n° 2004-63.'**
+  String get consentLabel;
+
+  /// No description provided for @consentRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre accord est nécessaire pour créer un compte.'**
+  String get consentRequired;
+
+  /// No description provided for @sectionPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Données personnelles'**
+  String get sectionPrivacy;
+
+  /// No description provided for @exportData.
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger mes données'**
+  String get exportData;
+
+  /// No description provided for @exportDataSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'PDF de tout ce que Mon Constat garde sur vous'**
+  String get exportDataSubtitle;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer mon compte'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Définitif. Vos constats restent, sans votre nom.'**
+  String get deleteAccountSubtitle;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer votre compte ?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre nom, vos coordonnées, votre permis, votre CIN et vos photos seront effacés. Les accidents et sinistres déjà déclarés restent, anonymes, comme l\'exige l\'assurance. Cette action est définitive.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer définitivement'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre compte a été supprimé.'**
+  String get accountDeleted;
+
+  /// No description provided for @errorAdminCannotDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un administrateur ne peut pas supprimer son compte ici.'**
+  String get errorAdminCannotDelete;
+
+  /// No description provided for @dashUsers.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utilisateurs'**
+  String get dashUsers;
+
+  /// No description provided for @dashActive.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} actifs'**
+  String dashActive(int count);
+
+  /// No description provided for @dashPendingIds.
+  ///
+  /// In fr, this message translates to:
+  /// **'À vérifier'**
+  String get dashPendingIds;
+
+  /// No description provided for @dashVerifiedIds.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} identités vérifiées'**
+  String dashVerifiedIds(int count);
+
+  /// No description provided for @dashPhones.
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléphones vérifiés'**
+  String get dashPhones;
+
+  /// No description provided for @dashSignIns.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexions 7 j'**
+  String get dashSignIns;
+
+  /// No description provided for @dashFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} échecs'**
+  String dashFailed(int count);
+
+  /// No description provided for @dashSignupsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Inscriptions, 30 derniers jours'**
+  String get dashSignupsTitle;
+
+  /// No description provided for @dashRolesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Comptes par rôle'**
+  String get dashRolesTitle;
+
+  /// No description provided for @dashIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification d\'identité des conducteurs'**
+  String get dashIdentityTitle;
+
+  /// No description provided for @dashNetwork.
+  ///
+  /// In fr, this message translates to:
+  /// **'{companies} compagnies · {agencies} agences'**
+  String dashNetwork(int companies, int agencies);
+
+  /// No description provided for @dashAccidentsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accidents et sinistres'**
+  String get dashAccidentsTitle;
+
+  /// No description provided for @dashAccidentsPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indicateurs, répartition et carte des zones à risque : disponibles dès que les modules 3 et 5 envoient leurs données au serveur.'**
+  String get dashAccidentsPending;
+
+  /// No description provided for @agencyLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agence'**
+  String get agencyLabel;
+
+  /// No description provided for @companiesOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors ligne : liste enregistrée le {date}'**
+  String companiesOffline(String date);
 }
 
 class _AppLocalizationsDelegate

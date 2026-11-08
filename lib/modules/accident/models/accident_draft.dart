@@ -34,7 +34,8 @@ class AccidentDraft {
   String driverBPlate = '';
   String driverBInsurer = '';
   String driverBPolicy = '';
-  final Set<String> circumstances = <String>{};
+  final Set<String> circumstancesA = <String>{};
+  final Set<String> circumstancesB = <String>{};
   String observations = '';
   final Set<String> impactZones = <String>{};
   bool sketchConfirmed = false;
@@ -79,7 +80,10 @@ class AccidentDraft {
     'driver_b_plate': driverBPlate,
     'driver_b_insurer': driverBInsurer,
     'driver_b_policy': driverBPolicy,
-    'circumstances_json': jsonEncode(circumstances.toList()),
+    'circumstances_json': jsonEncode({
+      'A': circumstancesA.toList(),
+      'B': circumstancesB.toList(),
+    }),
     'observations': observations,
     'impact_zones_json': jsonEncode(impactZones.toList()),
     'sketch_confirmed': sketchConfirmed ? 1 : 0,
@@ -136,9 +140,20 @@ class AccidentDraft {
     draft.evidencePaths.addAll(
       _decodeNullableStringMap(row['evidence_paths_json'] as String?),
     );
-    draft.circumstances.addAll(
-      _decodeList(row['circumstances_json'] as String?),
-    );
+    final rawCircumstances = row['circumstances_json'];
+    if (rawCircumstances is String && rawCircumstances.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawCircumstances);
+        if (decoded is Map) {
+          draft.circumstancesA.addAll((decoded['A'] as List?)?.map((e) => e.toString()) ?? []);
+          draft.circumstancesB.addAll((decoded['B'] as List?)?.map((e) => e.toString()) ?? []);
+        } else if (decoded is List) {
+          draft.circumstancesA.addAll(decoded.map((e) => e.toString()));
+        }
+      } catch (_) {
+        draft.circumstancesA.addAll(_decodeList(rawCircumstances));
+      }
+    }
     draft.impactZones.addAll(_decodeList(row['impact_zones_json'] as String?));
     draft.sketchStrokes.addAll(
       _decodeStrokes(row['sketch_strokes_json'] as String?),

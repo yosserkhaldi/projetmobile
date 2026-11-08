@@ -128,6 +128,8 @@ router.use(requireRole('ADMIN'));
 router.get('/', async (req, res) => {
   const { q, role, page, pageSize } = listUsersQuery.parse(req.query);
   const where = {
+    // Les comptes supprimés (anonymisés) ne sont plus listés.
+    deletedAt: null,
     ...(role && { role }),
     ...(q && {
       OR: ['firstName', 'lastName', 'email', 'phone'].map((field) => ({

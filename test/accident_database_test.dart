@@ -21,7 +21,7 @@ void main() {
       ..videoAdded = true
       ..driverBName = 'Sami'
       ..driverASigned = true;
-    draft.circumstances.add('stationnement');
+    draft.circumstancesA.add('stationnement');
     draft.sketchStrokes.add([
       {'x': 1.0, 'y': 2.0},
     ]);
@@ -36,7 +36,7 @@ void main() {
     expect(saved.draft.videoAdded, isTrue);
     expect(saved.draft.driverBName, 'Sami');
     expect(saved.draft.driverASigned, isTrue);
-    expect(saved.draft.circumstances, contains('stationnement'));
+    expect(saved.draft.circumstancesA, contains('stationnement'));
     expect(saved.draft.sketchStrokes.single.single['y'], 2.0);
 
     // Deuxième sauvegarde : remplace la ligne id = 1 (pas de doublon).

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { requireAuth } from '../../middleware/auth.js';
+import { deviceFrom, requireAuth } from '../../middleware/auth.js';
 import * as auth from './auth.service.js';
 import {
   biometricLoginSchema,
@@ -17,16 +17,18 @@ import {
 const router = Router();
 
 router.post('/register', async (req, res) => {
-  res.status(201).json(await auth.register(registerSchema.parse(req.body)));
+  res
+    .status(201)
+    .json(await auth.register(registerSchema.parse(req.body), deviceFrom(req)));
 });
 
 router.post('/login', async (req, res) => {
-  res.json(await auth.login(loginSchema.parse(req.body)));
+  res.json(await auth.login(loginSchema.parse(req.body), deviceFrom(req)));
 });
 
 router.post('/refresh', async (req, res) => {
   const { refreshToken } = refreshSchema.parse(req.body);
-  res.json(await auth.refresh(refreshToken));
+  res.json(await auth.refresh(refreshToken, deviceFrom(req)));
 });
 
 router.post('/logout', async (req, res) => {
@@ -63,7 +65,7 @@ router.post('/biometric', requireAuth, async (req, res) => {
 
 router.post('/biometric/login', async (req, res) => {
   const { deviceToken } = biometricLoginSchema.parse(req.body);
-  res.json(await auth.biometricLogin(deviceToken));
+  res.json(await auth.biometricLogin(deviceToken, deviceFrom(req)));
 });
 
 router.delete('/biometric', requireAuth, async (req, res) => {

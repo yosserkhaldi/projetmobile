@@ -11,6 +11,8 @@ import claimsRoutes from './modules/claims/claims.routes.js';
 import constatsRoutes from './modules/constats/constats.routes.js';
 import authRoutes from './modules/users/auth.routes.js';
 import companiesRoutes from './modules/users/companies.routes.js';
+import privacyRoutes from './modules/users/privacy.routes.js';
+import securityRoutes from './modules/users/security.routes.js';
 import usersRoutes from './modules/users/users.routes.js';
 import vehiclesRoutes from './modules/vehicles/vehicles.routes.js';
 
@@ -33,6 +35,8 @@ export function createApp() {
 
   // Chaque module ajoute ses endpoints dans son propre fichier de routes.
   app.use('/api/auth', authRoutes);
+  app.use('/api/users', privacyRoutes);
+  app.use('/api/users', securityRoutes);
   app.use('/api/users', usersRoutes);
   app.use('/api/companies', companiesRoutes);
   app.use('/api/vehicles', vehiclesRoutes);

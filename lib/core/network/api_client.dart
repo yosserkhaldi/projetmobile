@@ -51,6 +51,9 @@ class ApiClient {
   final String _baseUrl;
 
   String? _accessToken;
+
+  /// X-Device-Id et X-Device-Name, ajoutés à chaque requête (device_identity.dart).
+  Map<String, String> deviceHeaders = const {};
   Future<Map<String, dynamic>>? _refreshing;
 
   /// La session ne peut plus être renouvelée : il faut se reconnecter.
@@ -196,6 +199,7 @@ class ApiClient {
     http.BaseRequest request, {
     required bool auth,
   }) async {
+    request.headers.addAll(deviceHeaders);
     if (auth && _accessToken != null) {
       request.headers['Authorization'] = 'Bearer $_accessToken';
     }
