@@ -1,12 +1,13 @@
 /// Analyse d'un dossier, calculée par le serveur et gardée pour le hors ligne.
 ///
-/// Le serveur n'envoie au conducteur que [headline], [todo] et [remainingDays] :
+/// Le serveur n’envoie au conducteur que [headline], [todo], [remainingDays] et [late] :
 /// les autres champs restent alors vides.
 class ClaimInsight {
   ClaimInsight.fromJson(this.raw)
     : headline = (raw['driver'] as Map?)?['headline'] as String?,
       todo = _strings((raw['driver'] as Map?)?['todo']),
       remainingDays = (raw['driver'] as Map?)?['remainingDays'] as int?,
+      late = (raw['driver'] as Map?)?['late'] == true,
       estimateLow = _number(raw['estimate'], 'low'),
       estimateHigh = _number(raw['estimate'], 'high'),
       totalDays = (raw['duration'] as Map?)?['totalDays'] as int?,
@@ -30,6 +31,9 @@ class ClaimInsight {
   final String? headline;
   final List<String> todo;
   final int? remainingDays;
+
+  /// Durée habituelle dépassée : pas de compte à rebours.
+  final bool late;
 
   final double? estimateLow, estimateHigh;
   final int? totalDays;

@@ -172,6 +172,7 @@ const fr = {
     missing: (items) => `Pièces manquantes : ${items}.`,
     noneMissing: 'Aucune pièce manquante d’après les règles.',
     finished: 'Le dossier est terminé.',
+    late: 'Votre dossier prend plus de temps que d’habitude. Vous pouvez écrire à votre agent dans la messagerie du dossier.',
     remaining: (days) => `Il reste environ ${days} jours. C’est une estimation, pas un engagement.`,
     askAgent:
       'Le montant et la responsabilité sont décidés par votre agent. Écrivez-lui dans la messagerie du dossier.',
@@ -279,6 +280,7 @@ const en = {
     missing: (items) => `Missing documents: ${items}.`,
     noneMissing: 'No missing documents according to the rules.',
     finished: 'The claim is finished.',
+    late: 'Your claim is taking longer than usual. You can write to your agent in the claim’s messages.',
     remaining: (days) => `About ${days} days left. This is an estimate, not a commitment.`,
     askAgent:
       'Your agent decides the amount and responsibility. Write to them in the claim’s messages.',
@@ -386,6 +388,7 @@ const ar = {
     missing: (items) => `الوثائق الناقصة: ${items}.`,
     noneMissing: 'لا توجد وثائق ناقصة حسب القواعد.',
     finished: 'الملف منتهٍ.',
+    late: 'ملفك يستغرق وقتًا أطول من المعتاد. يمكنك مراسلة العون في محادثة الملف.',
     remaining: (days) => `بقي حوالي ${days} أيام. هذا تقدير وليس التزامًا.`,
     askAgent: 'المبلغ والمسؤولية يقرّرهما العون. راسله في محادثة الملف.',
     proposal: (share, reason) => `المقترح: A بنسبة ${share} %. ${reason}`,

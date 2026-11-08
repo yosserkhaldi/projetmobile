@@ -137,6 +137,7 @@ function ruleAnswer(question, claim, analysis, role, lang) {
       : t.answers.noneMissing;
   }
   if (has('delay')) {
+    if (view.late) return t.answers.late;
     return view.remainingDays == null
       ? t.answers.finished
       : t.answers.remaining(view.remainingDays);

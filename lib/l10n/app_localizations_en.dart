@@ -783,6 +783,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get claimsEstimateNote => 'An estimate, not a commitment.';
 
   @override
+  String get claimsTakingLonger =>
+      'Your claim is taking longer than usual. You can write to your agent.';
+
+  @override
   String get claimsSummaryTitle => 'Claim summary';
 
   @override

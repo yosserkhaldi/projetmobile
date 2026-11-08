@@ -783,6 +783,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get claimsEstimateNote => 'تقدير وليس التزامًا.';
 
   @override
+  String get claimsTakingLonger =>
+      'ملفك يستغرق وقتًا أطول من المعتاد. يمكنك مراسلة العون.';
+
+  @override
   String get claimsSummaryTitle => 'ملخص الملف';
 
   @override

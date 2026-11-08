@@ -230,6 +230,7 @@
   "claimsYourTodo": "المطلوب منك",
   "claimsRemainingDays": "{days, plural, =1{يبقى حوالي يوم واحد} =2{يبقى حوالي يومين} few{يبقى حوالي {days} أيام} other{يبقى حوالي {days} يومًا}}",
   "claimsEstimateNote": "تقدير وليس التزامًا.",
+  "claimsTakingLonger": "ملفك يستغرق وقتًا أطول من المعتاد. يمكنك مراسلة العون.",
   "claimsSummaryTitle": "ملخص الملف",
   "claimsPriorityScore": "الأولوية {score}",
   "claimsSearchMine": "البحث في ملفاتي",

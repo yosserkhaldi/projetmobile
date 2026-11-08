@@ -91,7 +91,7 @@ flutter run --dart-define=API_URL=http://192.168.1.9:3000/api
    - the server's sentence for the current status;
    - a 4-step progress bar (Reçu, Étude, Expertise, Décision), with the current step pulsing;
    - an "À faire" list;
-   - the estimated days left, which is an estimate and not a commitment.
+   - the estimated days left, which is an estimate and not a commitment. If the usual duration has already passed (SIN-2026-0418 was opened on 13 October), it says the claim is taking longer than usual instead of counting down.
    
    No amount, risk or warning is ever shown to the driver.
 5. **D**, "Déposer une pièce": the file appears under "Pièces du dossier", and A gets a notification.

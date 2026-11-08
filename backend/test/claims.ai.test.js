@@ -234,6 +234,15 @@ describe('rôles', () => {
     const view = driverView(claim, analyze(claim, { now }));
     assert.deepEqual(view.todo, ['Déposer : Facture']);
     assert.ok(view.remainingDays >= 1);
+    assert.equal(view.late, false);
+  });
+
+  test('un dossier en retard ne promet pas « encore 1 jour »', () => {
+    const claim = claimWith({ status: 'En instruction' });
+    const later = new Date(new Date(claim.createdAt).getTime() + 400 * 86_400_000);
+    const view = driverView(claim, analyze(claim, { now: later }));
+    assert.equal(view.remainingDays, null);
+    assert.equal(view.late, true);
   });
 
   test('l’agent reçoit l’analyse complète', () => {

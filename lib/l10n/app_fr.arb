@@ -507,6 +507,7 @@
     }
   },
   "claimsEstimateNote": "Estimation, pas un engagement.",
+  "claimsTakingLonger": "Votre dossier prend plus de temps que d’habitude. Vous pouvez écrire à votre agent.",
   "claimsSummaryTitle": "Résumé du dossier",
   "claimsPriorityScore": "Priorité {score}",
   "@claimsPriorityScore": {

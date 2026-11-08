@@ -439,6 +439,16 @@ class GuidanceCard extends StatelessWidget {
                   ),
                 ),
             ],
+            if (insight.late) ...[
+              const SizedBox(height: 14),
+              Text(
+                t.claimsTakingLonger,
+                style: const TextStyle(
+                  color: white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
             if (insight.remainingDays != null) ...[
               const SizedBox(height: 14),
               Container(

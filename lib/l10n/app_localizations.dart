@@ -1480,6 +1480,12 @@ abstract class AppLocalizations {
   /// **'Estimation, pas un engagement.'**
   String get claimsEstimateNote;
 
+  /// No description provided for @claimsTakingLonger.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre dossier prend plus de temps que d’habitude. Vous pouvez écrire à votre agent.'**
+  String get claimsTakingLonger;
+
   /// No description provided for @claimsSummaryTitle.
   ///
   /// In fr, this message translates to:

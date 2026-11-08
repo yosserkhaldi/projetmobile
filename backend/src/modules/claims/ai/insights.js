@@ -44,6 +44,8 @@ function estimateDuration(row, claim, now) {
   return {
     totalDays: Math.round(total),
     remainingDays: Math.max(1, Math.round(total - spent)),
+    // Durée habituelle déjà dépassée : « encore 1 jour » chaque jour serait faux.
+    late: total - spent < 0.5,
   };
 }
 
@@ -199,9 +201,11 @@ export function driverView(claim, analysis, lang = 'FR') {
   return {
     headline: t.guidance[claim.status] ?? t.guidance.default,
     todo,
-    remainingDays: finished.includes(claim.status)
-      ? null
-      : analysis.duration.remainingDays,
+    remainingDays:
+      finished.includes(claim.status) || analysis.duration.late
+        ? null
+        : analysis.duration.remainingDays,
+    late: !finished.includes(claim.status) && analysis.duration.late,
   };
 }
 
