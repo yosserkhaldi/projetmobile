@@ -15,7 +15,7 @@ void main() {
       ..sketchConfirmed = true
       ..driverASigned = true
       ..driverBSigned = true;
-    draft.circumstances.add('Changeait de file');
+    draft.circumstancesA.add('Changeait de file');
     draft.impactZones.add('Avant gauche');
     draft.sketchStrokes.add([
       {'x': .1, 'y': .2},

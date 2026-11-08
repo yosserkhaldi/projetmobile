@@ -57,7 +57,8 @@ class AccidentReview extends StatelessWidget {
         title: 'Circonstances',
         icon: Icons.fact_check_outlined,
         rows: [
-          ('Sélection', draft.circumstances.join(', ')),
+          ('Conducteur A', draft.circumstancesA.join(', ')),
+          ('Conducteur B', draft.circumstancesB.join(', ')),
           if (draft.observations.isNotEmpty)
             ('Observations', draft.observations),
           ('Zones de choc', draft.impactZones.join(', ')),

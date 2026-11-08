@@ -27,6 +27,8 @@ class Vehicle {
     this.claimCount = 0,
     this.archived = false,
     this.createdAt,
+    this.companyId,
+    this.companyName,
   });
 
   /// Identifiant local (UUID généré à la création).
@@ -46,6 +48,12 @@ class Vehicle {
 
   /// Nom de la compagnie d'assurance.
   String insurerName;
+
+  /// ID de la compagnie d'assurance (Module 1).
+  String? companyId;
+
+  /// Nom de la compagnie d'assurance (Module 1).
+  String? companyName;
 
   /// Date d'expiration du contrat d'assurance (ISO-8601 : "AAAA-MM-JJ").
   String insuranceExpiry;
@@ -82,6 +90,8 @@ class Vehicle {
     'year': year,
     'policy': policy,
     'insurer_name': insurerName,
+    'company_id': companyId,
+    'company_name': companyName,
     'insurance_expiry': insuranceExpiry,
     'technical_expiry': technicalExpiry,
     'color': color,
@@ -102,6 +112,8 @@ class Vehicle {
     year: m['year'] as String,
     policy: m['policy'] as String,
     insurerName: m['insurer_name'] as String? ?? '',
+    companyId: m['company_id'] as String?,
+    companyName: m['company_name'] as String?,
     insuranceExpiry: m['insurance_expiry'] as String,
     technicalExpiry: m['technical_expiry'] as String?,
     color: m['color'] as String?,
@@ -129,6 +141,8 @@ class Vehicle {
     String? year,
     String? policy,
     String? insurerName,
+    String? companyId,
+    String? companyName,
     String? insuranceExpiry,
     String? technicalExpiry,
     String? color,
@@ -146,6 +160,8 @@ class Vehicle {
     year: year ?? this.year,
     policy: policy ?? this.policy,
     insurerName: insurerName ?? this.insurerName,
+    companyId: companyId ?? this.companyId,
+    companyName: companyName ?? this.companyName,
     insuranceExpiry: insuranceExpiry ?? this.insuranceExpiry,
     technicalExpiry: technicalExpiry ?? this.technicalExpiry,
     color: color ?? this.color,
