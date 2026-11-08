@@ -77,3 +77,20 @@ test('OpenWA injoignable : l inscription n échoue pas', async (t) => {
   t.mock.method(console, 'error', () => {});
   await assert.doesNotReject(notifier.sendToPhone('+21620123456', 'code'));
 });
+
+test('numéro invalide : rien n est envoyé à OpenWA', async (t) => {
+  const requests = fakeOpenWa(t);
+  t.mock.method(console, 'log', () => {});
+  t.mock.method(console, 'error', () => {});
+  await notifier.sendToPhone('deleted-../../admin', 'code');
+  assert.equal(requests.length, 0);
+});
+
+test('logs : une valeur saisie ne peut pas créer de fausse ligne', async (t) => {
+  delete process.env.WHATSAPP_API_URL;
+  const logs = [];
+  t.mock.method(console, 'log', (line) => logs.push(line));
+  await notifier.sendToPhone('+21620123456', 'code\n[SMS] faux message');
+  assert.equal(logs.length, 1);
+  assert.doesNotMatch(logs[0], /\n/);
+});

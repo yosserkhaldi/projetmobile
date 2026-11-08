@@ -182,7 +182,7 @@ async function alertIfNewDevice(user, device) {
     when: new Date(),
   });
   // Sans attendre : l'alerte ne doit jamais ralentir ni bloquer la connexion.
-  Promise.allSettled([
+  void Promise.allSettled([
     notifier.sendToPhone(user.phone, message.text),
     notifier.sendMail(user.email, message.subject, message.text, message.html),
   ]).then((results) => {
