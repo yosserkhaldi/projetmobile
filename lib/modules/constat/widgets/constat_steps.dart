@@ -381,20 +381,25 @@ class CircumstancesStep extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Text(
-        'Que faisait votre véhicule ?',
+        'Circonstances de l’accident',
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 4),
       const Text(
-        'Sélectionnez une ou plusieurs circonstances.',
+        'Sélectionnez les circonstances applicables pour chaque conducteur.',
         style: TextStyle(color: AppColors.textMuted),
       ),
       const SizedBox(height: 16),
+      const Text(
+        'Véhicule A (Votre véhicule)',
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primary),
+      ),
+      const SizedBox(height: 8),
       for (final choice in choices)
         Card(
-          margin: const EdgeInsets.only(bottom: 8),
+          margin: const EdgeInsets.only(bottom: 6),
           child: CheckboxListTile(
-            value: draft.circumstances.contains(choice),
+            value: draft.circumstancesA.contains(choice),
             activeColor: AppColors.primary,
             controlAffinity: ListTileControlAffinity.leading,
             title: Text(
@@ -403,8 +408,33 @@ class CircumstancesStep extends StatelessWidget {
             ),
             onChanged: (selected) {
               selected ?? false
-                  ? draft.circumstances.add(choice)
-                  : draft.circumstances.remove(choice);
+                  ? draft.circumstancesA.add(choice)
+                  : draft.circumstancesA.remove(choice);
+              onChanged();
+            },
+          ),
+        ),
+      const SizedBox(height: 16),
+      const Text(
+        'Véhicule B (Autre conducteur)',
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.accent),
+      ),
+      const SizedBox(height: 8),
+      for (final choice in choices)
+        Card(
+          margin: const EdgeInsets.only(bottom: 6),
+          child: CheckboxListTile(
+            value: draft.circumstancesB.contains(choice),
+            activeColor: AppColors.accent,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: Text(
+              choice,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            onChanged: (selected) {
+              selected ?? false
+                  ? draft.circumstancesB.add(choice)
+                  : draft.circumstancesB.remove(choice);
               onChanged();
             },
           ),

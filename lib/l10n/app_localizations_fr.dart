@@ -1603,4 +1603,12 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get dashAccidentsPending =>
       'Indicateurs, répartition et carte des zones à risque : disponibles dès que les modules 3 et 5 envoient leurs données au serveur.';
+
+  @override
+  String get agencyLabel => 'Agence';
+
+  @override
+  String companiesOffline(String date) {
+    return 'Hors ligne : liste enregistrée le $date';
+  }
 }

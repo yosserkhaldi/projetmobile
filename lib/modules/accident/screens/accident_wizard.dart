@@ -211,8 +211,8 @@ class _AccidentWizardState extends State<AccidentWizard> {
       );
       return false;
     }
-    if (step == 4 && draft.circumstances.isEmpty) {
-      _showError('Sélectionnez au moins une circonstance.');
+    if (step == 4 && draft.circumstancesA.isEmpty && draft.circumstancesB.isEmpty) {
+      _showError('Sélectionnez au moins une circonstance pour le véhicule A ou B.');
       return false;
     }
     if (step == 5 && (!draft.sketchConfirmed || draft.impactZones.isEmpty)) {

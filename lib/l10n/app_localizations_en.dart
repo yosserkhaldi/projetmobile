@@ -1593,4 +1593,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get dashAccidentsPending =>
       'Indicators, breakdowns and the hotspot map: available as soon as modules 3 and 5 send their data to the server.';
+
+  @override
+  String get agencyLabel => 'Branch';
+
+  @override
+  String companiesOffline(String date) {
+    return 'Offline: list saved on $date';
+  }
 }

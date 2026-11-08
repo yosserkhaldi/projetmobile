@@ -75,6 +75,28 @@ class $VehiclesTable extends Vehicles
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _companyIdMeta = const VerificationMeta(
+    'companyId',
+  );
+  @override
+  late final GeneratedColumn<String> companyId = GeneratedColumn<String>(
+    'company_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _companyNameMeta = const VerificationMeta(
+    'companyName',
+  );
+  @override
+  late final GeneratedColumn<String> companyName = GeneratedColumn<String>(
+    'company_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _insuranceExpiryMeta = const VerificationMeta(
     'insuranceExpiry',
   );
@@ -195,6 +217,8 @@ class $VehiclesTable extends Vehicles
     year,
     policy,
     insurerName,
+    companyId,
+    companyName,
     insuranceExpiry,
     technicalExpiry,
     color,
@@ -269,6 +293,21 @@ class $VehiclesTable extends Vehicles
         insurerName.isAcceptableOrUnknown(
           data['insurer_name']!,
           _insurerNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('company_id')) {
+      context.handle(
+        _companyIdMeta,
+        companyId.isAcceptableOrUnknown(data['company_id']!, _companyIdMeta),
+      );
+    }
+    if (data.containsKey('company_name')) {
+      context.handle(
+        _companyNameMeta,
+        companyName.isAcceptableOrUnknown(
+          data['company_name']!,
+          _companyNameMeta,
         ),
       );
     }
@@ -379,6 +418,14 @@ class $VehiclesTable extends Vehicles
         DriftSqlType.string,
         data['${effectivePrefix}insurer_name'],
       )!,
+      companyId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}company_id'],
+      ),
+      companyName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}company_name'],
+      ),
       insuranceExpiry: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}insurance_expiry'],
@@ -436,6 +483,8 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
   final String year;
   final String policy;
   final String insurerName;
+  final String? companyId;
+  final String? companyName;
   final String insuranceExpiry;
   final String? technicalExpiry;
   final String? color;
@@ -454,6 +503,8 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
     required this.year,
     required this.policy,
     required this.insurerName,
+    this.companyId,
+    this.companyName,
     required this.insuranceExpiry,
     this.technicalExpiry,
     this.color,
@@ -475,6 +526,12 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
     map['year'] = Variable<String>(year);
     map['policy'] = Variable<String>(policy);
     map['insurer_name'] = Variable<String>(insurerName);
+    if (!nullToAbsent || companyId != null) {
+      map['company_id'] = Variable<String>(companyId);
+    }
+    if (!nullToAbsent || companyName != null) {
+      map['company_name'] = Variable<String>(companyName);
+    }
     map['insurance_expiry'] = Variable<String>(insuranceExpiry);
     if (!nullToAbsent || technicalExpiry != null) {
       map['technical_expiry'] = Variable<String>(technicalExpiry);
@@ -505,6 +562,12 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
       year: Value(year),
       policy: Value(policy),
       insurerName: Value(insurerName),
+      companyId: companyId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(companyId),
+      companyName: companyName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(companyName),
       insuranceExpiry: Value(insuranceExpiry),
       technicalExpiry: technicalExpiry == null && nullToAbsent
           ? const Value.absent()
@@ -539,6 +602,8 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
       year: serializer.fromJson<String>(json['year']),
       policy: serializer.fromJson<String>(json['policy']),
       insurerName: serializer.fromJson<String>(json['insurerName']),
+      companyId: serializer.fromJson<String?>(json['companyId']),
+      companyName: serializer.fromJson<String?>(json['companyName']),
       insuranceExpiry: serializer.fromJson<String>(json['insuranceExpiry']),
       technicalExpiry: serializer.fromJson<String?>(json['technicalExpiry']),
       color: serializer.fromJson<String?>(json['color']),
@@ -562,6 +627,8 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
       'year': serializer.toJson<String>(year),
       'policy': serializer.toJson<String>(policy),
       'insurerName': serializer.toJson<String>(insurerName),
+      'companyId': serializer.toJson<String?>(companyId),
+      'companyName': serializer.toJson<String?>(companyName),
       'insuranceExpiry': serializer.toJson<String>(insuranceExpiry),
       'technicalExpiry': serializer.toJson<String?>(technicalExpiry),
       'color': serializer.toJson<String?>(color),
@@ -583,6 +650,8 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
     String? year,
     String? policy,
     String? insurerName,
+    Value<String?> companyId = const Value.absent(),
+    Value<String?> companyName = const Value.absent(),
     String? insuranceExpiry,
     Value<String?> technicalExpiry = const Value.absent(),
     Value<String?> color = const Value.absent(),
@@ -601,6 +670,8 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
     year: year ?? this.year,
     policy: policy ?? this.policy,
     insurerName: insurerName ?? this.insurerName,
+    companyId: companyId.present ? companyId.value : this.companyId,
+    companyName: companyName.present ? companyName.value : this.companyName,
     insuranceExpiry: insuranceExpiry ?? this.insuranceExpiry,
     technicalExpiry: technicalExpiry.present
         ? technicalExpiry.value
@@ -625,6 +696,10 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
       insurerName: data.insurerName.present
           ? data.insurerName.value
           : this.insurerName,
+      companyId: data.companyId.present ? data.companyId.value : this.companyId,
+      companyName: data.companyName.present
+          ? data.companyName.value
+          : this.companyName,
       insuranceExpiry: data.insuranceExpiry.present
           ? data.insuranceExpiry.value
           : this.insuranceExpiry,
@@ -654,6 +729,8 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
           ..write('year: $year, ')
           ..write('policy: $policy, ')
           ..write('insurerName: $insurerName, ')
+          ..write('companyId: $companyId, ')
+          ..write('companyName: $companyName, ')
           ..write('insuranceExpiry: $insuranceExpiry, ')
           ..write('technicalExpiry: $technicalExpiry, ')
           ..write('color: $color, ')
@@ -677,6 +754,8 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
     year,
     policy,
     insurerName,
+    companyId,
+    companyName,
     insuranceExpiry,
     technicalExpiry,
     color,
@@ -699,6 +778,8 @@ class VehicleRow extends DataClass implements Insertable<VehicleRow> {
           other.year == this.year &&
           other.policy == this.policy &&
           other.insurerName == this.insurerName &&
+          other.companyId == this.companyId &&
+          other.companyName == this.companyName &&
           other.insuranceExpiry == this.insuranceExpiry &&
           other.technicalExpiry == this.technicalExpiry &&
           other.color == this.color &&
@@ -719,6 +800,8 @@ class VehiclesCompanion extends UpdateCompanion<VehicleRow> {
   final Value<String> year;
   final Value<String> policy;
   final Value<String> insurerName;
+  final Value<String?> companyId;
+  final Value<String?> companyName;
   final Value<String> insuranceExpiry;
   final Value<String?> technicalExpiry;
   final Value<String?> color;
@@ -738,6 +821,8 @@ class VehiclesCompanion extends UpdateCompanion<VehicleRow> {
     this.year = const Value.absent(),
     this.policy = const Value.absent(),
     this.insurerName = const Value.absent(),
+    this.companyId = const Value.absent(),
+    this.companyName = const Value.absent(),
     this.insuranceExpiry = const Value.absent(),
     this.technicalExpiry = const Value.absent(),
     this.color = const Value.absent(),
@@ -758,6 +843,8 @@ class VehiclesCompanion extends UpdateCompanion<VehicleRow> {
     required String year,
     required String policy,
     this.insurerName = const Value.absent(),
+    this.companyId = const Value.absent(),
+    this.companyName = const Value.absent(),
     required String insuranceExpiry,
     this.technicalExpiry = const Value.absent(),
     this.color = const Value.absent(),
@@ -785,6 +872,8 @@ class VehiclesCompanion extends UpdateCompanion<VehicleRow> {
     Expression<String>? year,
     Expression<String>? policy,
     Expression<String>? insurerName,
+    Expression<String>? companyId,
+    Expression<String>? companyName,
     Expression<String>? insuranceExpiry,
     Expression<String>? technicalExpiry,
     Expression<String>? color,
@@ -805,6 +894,8 @@ class VehiclesCompanion extends UpdateCompanion<VehicleRow> {
       if (year != null) 'year': year,
       if (policy != null) 'policy': policy,
       if (insurerName != null) 'insurer_name': insurerName,
+      if (companyId != null) 'company_id': companyId,
+      if (companyName != null) 'company_name': companyName,
       if (insuranceExpiry != null) 'insurance_expiry': insuranceExpiry,
       if (technicalExpiry != null) 'technical_expiry': technicalExpiry,
       if (color != null) 'color': color,
@@ -827,6 +918,8 @@ class VehiclesCompanion extends UpdateCompanion<VehicleRow> {
     Value<String>? year,
     Value<String>? policy,
     Value<String>? insurerName,
+    Value<String?>? companyId,
+    Value<String?>? companyName,
     Value<String>? insuranceExpiry,
     Value<String?>? technicalExpiry,
     Value<String?>? color,
@@ -847,6 +940,8 @@ class VehiclesCompanion extends UpdateCompanion<VehicleRow> {
       year: year ?? this.year,
       policy: policy ?? this.policy,
       insurerName: insurerName ?? this.insurerName,
+      companyId: companyId ?? this.companyId,
+      companyName: companyName ?? this.companyName,
       insuranceExpiry: insuranceExpiry ?? this.insuranceExpiry,
       technicalExpiry: technicalExpiry ?? this.technicalExpiry,
       color: color ?? this.color,
@@ -884,6 +979,12 @@ class VehiclesCompanion extends UpdateCompanion<VehicleRow> {
     }
     if (insurerName.present) {
       map['insurer_name'] = Variable<String>(insurerName.value);
+    }
+    if (companyId.present) {
+      map['company_id'] = Variable<String>(companyId.value);
+    }
+    if (companyName.present) {
+      map['company_name'] = Variable<String>(companyName.value);
     }
     if (insuranceExpiry.present) {
       map['insurance_expiry'] = Variable<String>(insuranceExpiry.value);
@@ -931,6 +1032,8 @@ class VehiclesCompanion extends UpdateCompanion<VehicleRow> {
           ..write('year: $year, ')
           ..write('policy: $policy, ')
           ..write('insurerName: $insurerName, ')
+          ..write('companyId: $companyId, ')
+          ..write('companyName: $companyName, ')
           ..write('insuranceExpiry: $insuranceExpiry, ')
           ..write('technicalExpiry: $technicalExpiry, ')
           ..write('color: $color, ')
@@ -967,6 +1070,8 @@ typedef $$VehiclesTableCreateCompanionBuilder =
       required String year,
       required String policy,
       Value<String> insurerName,
+      Value<String?> companyId,
+      Value<String?> companyName,
       required String insuranceExpiry,
       Value<String?> technicalExpiry,
       Value<String?> color,
@@ -988,6 +1093,8 @@ typedef $$VehiclesTableUpdateCompanionBuilder =
       Value<String> year,
       Value<String> policy,
       Value<String> insurerName,
+      Value<String?> companyId,
+      Value<String?> companyName,
       Value<String> insuranceExpiry,
       Value<String?> technicalExpiry,
       Value<String?> color,
@@ -1042,6 +1149,16 @@ class $$VehiclesTableFilterComposer
 
   ColumnFilters<String> get insurerName => $composableBuilder(
     column: $table.insurerName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get companyId => $composableBuilder(
+    column: $table.companyId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get companyName => $composableBuilder(
+    column: $table.companyName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1140,6 +1257,16 @@ class $$VehiclesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get companyId => $composableBuilder(
+    column: $table.companyId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get companyName => $composableBuilder(
+    column: $table.companyName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get insuranceExpiry => $composableBuilder(
     column: $table.insuranceExpiry,
     builder: (column) => ColumnOrderings(column),
@@ -1223,6 +1350,14 @@ class $$VehiclesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get companyId =>
+      $composableBuilder(column: $table.companyId, builder: (column) => column);
+
+  GeneratedColumn<String> get companyName => $composableBuilder(
+    column: $table.companyName,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get insuranceExpiry => $composableBuilder(
     column: $table.insuranceExpiry,
     builder: (column) => column,
@@ -1298,6 +1433,8 @@ class $$VehiclesTableTableManager
                 Value<String> year = const Value.absent(),
                 Value<String> policy = const Value.absent(),
                 Value<String> insurerName = const Value.absent(),
+                Value<String?> companyId = const Value.absent(),
+                Value<String?> companyName = const Value.absent(),
                 Value<String> insuranceExpiry = const Value.absent(),
                 Value<String?> technicalExpiry = const Value.absent(),
                 Value<String?> color = const Value.absent(),
@@ -1317,6 +1454,8 @@ class $$VehiclesTableTableManager
                 year: year,
                 policy: policy,
                 insurerName: insurerName,
+                companyId: companyId,
+                companyName: companyName,
                 insuranceExpiry: insuranceExpiry,
                 technicalExpiry: technicalExpiry,
                 color: color,
@@ -1338,6 +1477,8 @@ class $$VehiclesTableTableManager
                 required String year,
                 required String policy,
                 Value<String> insurerName = const Value.absent(),
+                Value<String?> companyId = const Value.absent(),
+                Value<String?> companyName = const Value.absent(),
                 required String insuranceExpiry,
                 Value<String?> technicalExpiry = const Value.absent(),
                 Value<String?> color = const Value.absent(),
@@ -1357,6 +1498,8 @@ class $$VehiclesTableTableManager
                 year: year,
                 policy: policy,
                 insurerName: insurerName,
+                companyId: companyId,
+                companyName: companyName,
                 insuranceExpiry: insuranceExpiry,
                 technicalExpiry: technicalExpiry,
                 color: color,

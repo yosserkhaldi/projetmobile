@@ -2955,6 +2955,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Indicateurs, répartition et carte des zones à risque : disponibles dès que les modules 3 et 5 envoient leurs données au serveur.'**
   String get dashAccidentsPending;
+
+  /// No description provided for @agencyLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agence'**
+  String get agencyLabel;
+
+  /// No description provided for @companiesOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors ligne : liste enregistrée le {date}'**
+  String companiesOffline(String date);
 }
 
 class _AppLocalizationsDelegate

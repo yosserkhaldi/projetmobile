@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
+import 'package:mon_constat_digital/modules/users/widgets/company_picker.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 
 /// Formulaire d'ajout et de modification d'un véhicule.
@@ -20,6 +21,9 @@ class VehicleFormScreen extends StatefulWidget {
 class _VehicleFormScreenState extends State<VehicleFormScreen> {
   final _form = GlobalKey<FormState>();
   bool _saving = false;
+
+  String? _companyId;
+  String? _companyName;
 
   // Contrôleurs de saisie
   late final TextEditingController _plate;
@@ -42,12 +46,14 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   void initState() {
     super.initState();
     final v = widget.existing;
+    _companyId = v?.companyId;
+    _companyName = v?.companyName;
     _plate = TextEditingController(text: v?.plate ?? '');
     _brand = TextEditingController(text: v?.brand ?? '');
     _model = TextEditingController(text: v?.model ?? '');
     _year = TextEditingController(text: v?.year ?? '');
     _policy = TextEditingController(text: v?.policy ?? '');
-    _insurer = TextEditingController(text: v?.insurerName ?? '');
+    _insurer = TextEditingController(text: v?.insurerName ?? v?.companyName ?? '');
     _insuranceExpiry = TextEditingController(text: v?.insuranceExpiry ?? '');
     _technicalExpiry = TextEditingController(text: v?.technicalExpiry ?? '');
     _color = TextEditingController(text: v?.color ?? '');
@@ -199,11 +205,17 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
 
             // ── Assurance ──────────────────────────────────────────────────
             _Section(label: 'Contrat d\'assurance'),
-            _Field(
-              controller: _insurer,
-              label: 'Compagnie d\'assurance',
-              hint: 'GAT, STAR, COMAR…',
-              icon: Icons.business_outlined,
+            CompanyPicker(
+              companyId: _companyId,
+              withAgency: false,
+              required: true,
+              onChanged: (company, agency) {
+                setState(() {
+                  _companyId = company?.id;
+                  _companyName = company?.name;
+                  _insurer.text = company?.name ?? '';
+                });
+              },
             ),
             const SizedBox(height: 12),
             _Field(
@@ -268,7 +280,9 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         model: _model.text.trim(),
         year: _year.text.trim(),
         policy: _policy.text.trim(),
-        insurerName: _insurer.text.trim(),
+        insurerName: _companyName ?? _insurer.text.trim(),
+        companyId: _companyId,
+        companyName: _companyName ?? _insurer.text.trim(),
         insuranceExpiry: _parseDate(_insuranceExpiry.text.trim()),
         technicalExpiry: _technicalExpiry.text.trim().isEmpty
             ? null

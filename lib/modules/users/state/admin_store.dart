@@ -3,17 +3,21 @@ import 'package:flutter/foundation.dart';
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/models/company.dart';
+import 'package:mon_constat_digital/modules/users/state/company_store.dart';
 
 /// Comptes et compagnies. La lecture des compagnies est ouverte à tous les
 /// comptes connectés, le reste est réservé aux administrateurs.
 class AdminStore extends ChangeNotifier {
-  AdminStore(this._api);
+  AdminStore(this._api, this._companies);
 
   final ApiClient _api;
 
+  /// Référentiel partagé (copie SQLite comprise), voir CompanyStore.
+  final CompanyStore _companies;
+
   List<AppUser> users = const [];
   int usersTotal = 0;
-  List<Company> companies = const [];
+  List<Company> get companies => _companies.companies;
 
   /// Statistiques des comptes pour le tableau de bord.
   Map<String, dynamic>? stats;
@@ -104,13 +108,7 @@ class AdminStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadCompanies() async {
-    final response = await _api.get('/companies') as Map<String, dynamic>;
-    companies = (response['items'] as List)
-        .map((company) => Company.fromJson(company as Map<String, dynamic>))
-        .toList();
-    notifyListeners();
-  }
+  Future<void> loadCompanies() => _companies.load();
 
   Future<void> createCompany(String name) =>
       _thenReload(_api.post('/companies', body: {'name': name}));

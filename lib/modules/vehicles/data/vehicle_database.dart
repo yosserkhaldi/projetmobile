@@ -25,6 +25,8 @@ class Vehicles extends Table {
   TextColumn get year => text()();
   TextColumn get policy => text()();
   TextColumn get insurerName => text().withDefault(const Constant(''))();
+  TextColumn get companyId => text().nullable()();
+  TextColumn get companyName => text().nullable()();
   TextColumn get insuranceExpiry => text()();
   TextColumn get technicalExpiry => text().nullable()();
   TextColumn get color => text().nullable()();
@@ -51,13 +53,17 @@ class VehicleDatabase extends _$VehicleDatabase {
     : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
-    // Migrations futures : if (from < 2) { await m.addColumn(...); }
-    onUpgrade: (m, from, to) async {},
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(vehicles, vehicles.companyId);
+        await m.addColumn(vehicles, vehicles.companyName);
+      }
+    },
   );
 
   // ── Queries ──────────────────────────────────────────────────────────────
@@ -92,6 +98,8 @@ class VehicleDatabase extends _$VehicleDatabase {
     'year': r.year,
     'policy': r.policy,
     'insurer_name': r.insurerName,
+    'company_id': r.companyId,
+    'company_name': r.companyName,
     'insurance_expiry': r.insuranceExpiry,
     'technical_expiry': r.technicalExpiry,
     'color': r.color,
@@ -114,6 +122,8 @@ class VehicleDatabase extends _$VehicleDatabase {
       year: Value(m['year'] as String),
       policy: Value(m['policy'] as String),
       insurerName: Value(m['insurer_name'] as String? ?? ''),
+      companyId: Value(m['company_id'] as String?),
+      companyName: Value(m['company_name'] as String?),
       insuranceExpiry: Value(m['insurance_expiry'] as String),
       technicalExpiry: Value(m['technical_expiry'] as String?),
       color: Value(m['color'] as String?),

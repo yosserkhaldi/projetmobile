@@ -54,7 +54,8 @@ class AccidentPdfService {
           ]),
           _title('Circonstances et observations'),
           _table([
-            ('Circonstances', draft.circumstances.join(', ')),
+            ('Conducteur A', draft.circumstancesA.join(', ')),
+            ('Conducteur B', draft.circumstancesB.join(', ')),
             ('Zones de choc', draft.impactZones.join(', ')),
             ('Observations', draft.observations),
           ]),

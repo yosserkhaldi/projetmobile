@@ -1587,4 +1587,12 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get dashAccidentsPending =>
       'المؤشرات والتوزيع وخريطة المناطق الخطرة: متاحة حين ترسل الوحدتان 3 و5 بياناتهما إلى الخادم.';
+
+  @override
+  String get agencyLabel => 'الوكالة';
+
+  @override
+  String companiesOffline(String date) {
+    return 'دون اتصال: قائمة محفوظة في $date';
+  }
 }
