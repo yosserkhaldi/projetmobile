@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 
 typedef AskAssistant =
     Future<AiAnswer> Function(List<({String role, String content})> messages);
@@ -28,17 +29,6 @@ class _AssistantScreenState extends State<AssistantScreen> {
   final turns = <({String role, String content, String? by})>[];
   bool waiting = false;
 
-  static const _driverIdeas = [
-    'Où en est mon dossier ?',
-    'Quelles pièces dois-je déposer ?',
-    'Combien de temps ça va prendre ?',
-  ];
-  static const _agentIdeas = [
-    'Que dois-je faire ensuite ?',
-    'Quels points vérifier ?',
-    'Quelle responsabilité proposes-tu ?',
-  ];
-
   @override
   void dispose() {
     input.dispose();
@@ -50,6 +40,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
     if (question.isEmpty || waiting) return;
     final stores = AppScope.of(context);
     final sync = stores.claimsSync;
+    final unavailable = context.t.claimsAssistantUnavailable;
     setState(() {
       turns.add((role: 'user', content: question, by: null));
       waiting = true;
@@ -70,7 +61,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
       }
       _add(answer.text, answer.by);
     } catch (_) {
-      _add('Assistant indisponible pour le moment. Réessayez plus tard.', null);
+      _add(unavailable, null);
     }
   }
 
@@ -84,10 +75,13 @@ class _AssistantScreenState extends State<AssistantScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final role = AppScope.of(context).users.role;
-    final ideas = role == UserRole.driver ? _driverIdeas : _agentIdeas;
+    final ideas = role == UserRole.driver
+        ? [t.claimsDriverIdea1, t.claimsDriverIdea2, t.claimsDriverIdea3]
+        : [t.claimsAgentIdea1, t.claimsAgentIdea2, t.claimsAgentIdea3];
     return Scaffold(
-      appBar: AppBar(title: Text('Assistant ${widget.claim.id}')),
+      appBar: AppBar(title: Text(t.claimsAssistantTitle(widget.claim.id))),
       body: SafeArea(
         child: Column(
           children: [
@@ -97,8 +91,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
                 children: [
                   if (turns.isEmpty) ...[
                     Text(
-                      'Posez une question sur ce dossier. L’assistant informe, '
-                      'il ne prend aucune décision.',
+                      t.claimsAssistantIntro,
                       style: TextStyle(color: context.palette.textMuted),
                     ),
                     const SizedBox(height: 12),
@@ -119,7 +112,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
                     Padding(
                       padding: EdgeInsets.all(8),
                       child: Text(
-                        'L’assistant lit le dossier…',
+                        t.claimsAssistantReading,
                         style: TextStyle(color: context.palette.textMuted),
                       ),
                     ),
@@ -134,14 +127,14 @@ class _AssistantScreenState extends State<AssistantScreen> {
                     child: TextField(
                       controller: input,
                       onSubmitted: _send,
-                      decoration: const InputDecoration(
-                        hintText: 'Votre question',
+                      decoration: InputDecoration(
+                        hintText: t.claimsYourQuestion,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(
-                    tooltip: 'Envoyer',
+                    tooltip: t.claimsSend,
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.accent,
                       foregroundColor: context.palette.text,
@@ -166,8 +159,11 @@ class _Turn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mine = turn.role == 'user';
+    // Directionnel : en arabe, mes messages passent à gauche.
     return Align(
-      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: mine
+          ? AlignmentDirectional.centerEnd
+          : AlignmentDirectional.centerStart,
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
@@ -189,7 +185,7 @@ class _Turn extends StatelessWidget {
             if (!mine) ...[
               const SizedBox(height: 4),
               Text(
-                turn.by ?? 'Réponse automatique',
+                turn.by ?? context.t.claimsAutomaticAnswer,
                 style: TextStyle(
                   fontSize: 11,
                   color: context.palette.textMuted,

@@ -6,6 +6,8 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
 const _heading = TextStyle(fontWeight: FontWeight.w800);
 TextStyle _muted(BuildContext context) =>
@@ -29,14 +31,13 @@ class _AnalysisCardState extends State<AnalysisCard> {
     final sync = AppScope.of(context).claimsSync;
     if (sync == null) return;
     final messenger = ScaffoldMessenger.of(context);
+    final unavailable = context.t.claimsSummaryOffline;
     setState(() => loading = true);
     try {
       final answer = await sync.api.summarize(widget.claim.id);
       if (mounted) setState(() => summary = answer);
     } catch (_) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Synthèse indisponible hors connexion.')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(unavailable)));
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -44,6 +45,7 @@ class _AnalysisCardState extends State<AnalysisCard> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final insight = widget.insight;
     final canRequest =
         widget.claim.status == ClaimStatus.inReview ||
@@ -56,15 +58,15 @@ class _AnalysisCardState extends State<AnalysisCard> {
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Aide à la décision',
+                    t.claimsDecisionHelp,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                   ),
                 ),
                 if (insight.overdueDays > 0)
                   _Tag(
-                    'Retard ${insight.overdueDays} j',
+                    t.claimsOverdue('${insight.overdueDays}'),
                     context.palette.errorBg,
                     context.palette.errorText,
                   ),
@@ -78,25 +80,32 @@ class _AnalysisCardState extends State<AnalysisCard> {
             const Divider(height: 24),
             if (insight.estimateLow != null)
               _Fact(
-                'Estimation',
-                '${insight.estimateLow!.round()} à '
-                    '${insight.estimateHigh!.round()} TND',
+                t.claimsEstimate,
+                t.claimsRange(
+                  '${insight.estimateLow!.round()}',
+                  '${insight.estimateHigh!.round()}',
+                ),
               ),
             if (insight.totalDays != null)
-              _Fact('Durée habituelle', '${insight.totalDays} jours'),
+              _Fact(
+                t.claimsUsualDuration,
+                t.claimsDays('${insight.totalDays}'),
+              ),
             if (insight.riskLevel != null)
               _Fact(
-                'Risque de rejet',
+                t.claimsRejectionRisk,
                 insight.riskFactors.isEmpty
-                    ? insight.riskLevel!
-                    : '${insight.riskLevel} : '
-                          '${insight.riskFactors.join(', ')}',
+                    ? t.claimRisk(insight.riskLevel!)
+                    : t.claimsRiskWithFactors(
+                        t.claimRisk(insight.riskLevel!),
+                        insight.riskFactors.join(', '),
+                      ),
               ),
             if (insight.recommendExpert)
-              const _Fact('Expertise', 'Recommandée pour ce dossier'),
+              _Fact(t.claimsExpertiseTitle, t.claimsRecommended),
             if (insight.signals.isNotEmpty) ...[
               const SizedBox(height: 8),
-              const Text('À vérifier', style: _heading),
+              Text(t.claimsToCheck, style: _heading),
               const SizedBox(height: 4),
               for (final signal in insight.signals)
                 Padding(
@@ -117,31 +126,31 @@ class _AnalysisCardState extends State<AnalysisCard> {
             ],
             if (insight.missing.isNotEmpty) ...[
               const SizedBox(height: 8),
-              const Text('Pièces manquantes', style: _heading),
+              Text(t.claimsMissingDocuments, style: _heading),
               for (final document in insight.missing)
                 ListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  title: Text(document.label),
+                  title: Text(t.claimValue(document.label)),
                   subtitle: Text(document.reason),
                   trailing: canRequest
                       ? TextButton(
                           onPressed: () => AppScope.of(context).claims
                               .requestDocument(widget.claim, document.label),
-                          child: const Text('Demander'),
+                          child: Text(t.claimsRequest),
                         )
                       : null,
                 ),
             ],
             if (insight.similar.isNotEmpty) ...[
               const SizedBox(height: 8),
-              const Text('Dossiers similaires', style: _heading),
+              Text(t.claimsSimilar, style: _heading),
               const SizedBox(height: 4),
               for (final past in insight.similar)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 2),
                   child: Text(
-                    '${past.id} (${past.similarity} %) : ${_outcome(past)}',
+                    '${past.id} (${past.similarity} %) : ${_outcome(t, past)}',
                     style: _muted(context),
                   ),
                 ),
@@ -152,33 +161,27 @@ class _AnalysisCardState extends State<AnalysisCard> {
               const SizedBox(height: 4),
               Text(
                 summary!.by != null
-                    ? 'Synthèse rédigée par ${summary!.by}'
-                    : 'Synthèse automatique, sans IA générative',
+                    ? t.claimsSummaryBy(summary!.by!)
+                    : t.claimsSummaryRules,
                 style: _muted(context),
               ),
             ] else
               OutlinedButton.icon(
                 onPressed: loading ? null : _summarize,
                 icon: const Icon(Icons.summarize_outlined),
-                label: Text(
-                  loading ? 'Synthèse en cours' : 'Résumer le dossier',
-                ),
+                label: Text(loading ? t.claimsSummarizing : t.claimsSummarize),
               ),
             const SizedBox(height: 8),
-            Text(
-              'Estimations issues d’un modèle entraîné sur des données '
-              'simulées. La décision appartient à l’agent.',
-              style: _muted(context),
-            ),
+            Text(t.claimsModelDisclaimer, style: _muted(context)),
           ],
         ),
       ),
     );
   }
 
-  String _outcome(SimilarCase past) {
+  String _outcome(AppLocalizations t, SimilarCase past) {
     final parts = [
-      past.outcome,
+      t.claimValue(past.outcome),
       if (past.responsibility != null) 'A ${past.responsibility} %',
       if (past.indemnity != null) '${past.indemnity!.round()} TND',
     ];
@@ -254,8 +257,7 @@ class GuidanceCard extends StatelessWidget {
           if (insight.remainingDays != null) ...[
             const SizedBox(height: 8),
             Text(
-              'Délai restant estimé : environ ${insight.remainingDays} jours. '
-              'Ce n’est pas un engagement.',
+              context.t.claimsRemaining('${insight.remainingDays}'),
               style: _muted(context),
             ),
           ],

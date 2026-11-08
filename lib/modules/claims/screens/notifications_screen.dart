@@ -7,6 +7,8 @@ import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.d
 import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -16,21 +18,22 @@ class NotificationsScreen extends StatelessWidget {
     final store = stores.claims;
     final role = stores.users.role;
     final items = store.notificationsFor(role);
+    final t = context.t;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(t.claimsNotifications),
         actions: [
           if (store.unreadCount(role) > 0)
             TextButton(
               onPressed: () => store.markAllNotificationsRead(role),
-              child: const Text('Tout marquer lu'),
+              child: Text(t.claimsMarkAllRead),
             ),
         ],
       ),
       body: items.isEmpty
           ? Center(
               child: Text(
-                'Aucune notification.',
+                t.claimsNoNotification,
                 style: TextStyle(color: context.palette.textMuted),
               ),
             )
@@ -50,7 +53,7 @@ class NotificationsScreen extends StatelessWidget {
                   },
                   leading: const CircleAvatar(child: Icon(Icons.notifications)),
                   title: Text(
-                    item.body,
+                    t.claimNotification(item.body),
                     style: TextStyle(
                       fontWeight: item.read ? FontWeight.w500 : FontWeight.w800,
                     ),

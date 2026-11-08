@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 
 /// Le navigateur ne donne pas de chemin : il donne le contenu dans [bytes].
 typedef PickedFile = ({String name, String? path, Uint8List? bytes});
@@ -29,12 +30,11 @@ Future<void> saveFromServer(
   final sync = AppScope.of(context).claimsSync;
   if (sync == null) return;
   final messenger = ScaffoldMessenger.of(context);
+  final unavailable = context.t.claimsFileUnavailable;
   try {
     final bytes = await sync.api.download(kind, id);
     await FilePicker.saveFile(fileName: name, bytes: bytes);
   } catch (_) {
-    messenger.showSnackBar(
-      const SnackBar(content: Text('Fichier indisponible pour le moment.')),
-    );
+    messenger.showSnackBar(SnackBar(content: Text(unavailable)));
   }
 }

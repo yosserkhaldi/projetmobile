@@ -9,6 +9,8 @@ import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/models/responsibility.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/document_picker.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
 /// Actions de l'agent : seules celles permises par le statut sont proposées.
 class AgentPanel extends StatelessWidget {
@@ -17,6 +19,7 @@ class AgentPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final stores = AppScope.of(context);
     final store = stores.claims;
     final next = ClaimStatus.nextOf(claim.status);
@@ -24,7 +27,7 @@ class AgentPanel extends StatelessWidget {
       return FilledButton.icon(
         onPressed: () => store.takeCharge(claim, stores.users.userName),
         icon: const Icon(Icons.assignment_ind),
-        label: const Text('Prendre en charge'),
+        label: Text(t.claimsTakeCharge),
       );
     }
     if (next.isEmpty) return const SizedBox.shrink();
@@ -37,7 +40,7 @@ class AgentPanel extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () => _requestDocument(context),
             icon: const Icon(Icons.post_add),
-            label: const Text('Demander une pièce'),
+            label: Text(t.claimsRequestDocument),
           ),
           const SizedBox(height: 8),
         ],
@@ -46,7 +49,7 @@ class AgentPanel extends StatelessWidget {
             onPressed: () => _appointExpert(context),
             icon: const Icon(Icons.event),
             label: Text(
-              inExpertise ? 'Déplacer le rendez-vous' : 'Désigner un expert',
+              inExpertise ? t.claimsMoveAppointment : t.claimsAppointExpert,
             ),
           ),
           const SizedBox(height: 8),
@@ -64,7 +67,7 @@ class AgentPanel extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.upload_file),
-            label: const Text('Joindre le rapport d’expertise'),
+            label: Text(t.claimsAttachReport),
           ),
           const SizedBox(height: 8),
         ],
@@ -80,46 +83,52 @@ class AgentPanel extends StatelessWidget {
             ),
             onPressed: () => _reject(context),
             icon: const Icon(Icons.block),
-            label: const Text('Rejeter le dossier'),
+            label: Text(t.claimsReject),
           ),
       ],
     );
   }
 
   Future<void> _requestDocument(BuildContext context) async {
+    final t = context.t;
     final store = AppScope.of(context).claims;
     var label = DocumentRequest.labels.first;
     final note = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Demander une pièce'),
+        title: Text(t.claimsRequestDocument),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<String>(
               initialValue: label,
               items: DocumentRequest.labels
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .map(
+                    (e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(t.claimValue(e)),
+                    ),
+                  )
                   .toList(),
               onChanged: (value) => label = value ?? label,
-              decoration: const InputDecoration(labelText: 'Pièce'),
+              decoration: InputDecoration(labelText: t.claimsDocument),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: note,
-              decoration: const InputDecoration(labelText: 'Précision'),
+              decoration: InputDecoration(labelText: t.claimsDetail),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Annuler'),
+            child: Text(t.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Envoyer la demande'),
+            child: Text(t.claimsSendRequest),
           ),
         ],
       ),
@@ -131,6 +140,7 @@ class AgentPanel extends StatelessWidget {
   }
 
   Future<void> _appointExpert(BuildContext context) async {
+    final t = context.t;
     final store = AppScope.of(context).claims;
     final expert = TextEditingController(text: claim.expertName);
     var appointment =
@@ -139,13 +149,13 @@ class AgentPanel extends StatelessWidget {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) => AlertDialog(
-          title: const Text('Expertise'),
+          title: Text(t.claimsExpertiseTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: expert,
-                decoration: const InputDecoration(labelText: 'Expert'),
+                decoration: InputDecoration(labelText: t.claimsExpert),
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
@@ -166,11 +176,11 @@ class AgentPanel extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Annuler'),
+              child: Text(t.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Planifier'),
+              child: Text(t.claimsSchedule),
             ),
           ],
         ),
@@ -183,24 +193,25 @@ class AgentPanel extends StatelessWidget {
   }
 
   Future<void> _reject(BuildContext context) async {
+    final t = context.t;
     final store = AppScope.of(context).claims;
     final reason = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Rejeter le dossier'),
+        title: Text(t.claimsReject),
         content: TextField(
           controller: reason,
-          decoration: const InputDecoration(labelText: 'Motif'),
+          decoration: InputDecoration(labelText: t.claimsReasonLabel),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Annuler'),
+            child: Text(t.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Rejeter'),
+            child: Text(t.claimsRejectAction),
           ),
         ],
       ),
@@ -237,7 +248,7 @@ class _DecisionCardState extends State<_DecisionCard> {
   void _close() {
     final value = double.tryParse(amount.text.trim().replaceAll(',', '.'));
     if (value == null || value < 0) {
-      setState(() => error = 'Saisissez un montant valide.');
+      setState(() => error = context.t.claimsInvalidAmount);
       return;
     }
     AppScope.of(context).claims.closeClaim(widget.claim, share, value);
@@ -250,14 +261,17 @@ class _DecisionCardState extends State<_DecisionCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Décision',
+          Text(
+            context.t.claimsDecision,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
           Text(
-            'Proposition : A ${proposal.driverA} %, B ${proposal.driverB} %. '
-            '${proposal.reason}',
+            context.t.claimsProposal(
+              '${proposal.driverA}',
+              '${proposal.driverB}',
+              context.t.claimProposalReason(proposal),
+            ),
             style: TextStyle(color: context.palette.textMuted),
           ),
           const SizedBox(height: 12),
@@ -297,7 +311,7 @@ class _DecisionCardState extends State<_DecisionCard> {
             controller: amount,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
-              labelText: "Montant d'indemnisation (TND)",
+              labelText: context.t.claimsIndemnityAmount,
               errorText: error,
             ),
           ),
@@ -305,7 +319,7 @@ class _DecisionCardState extends State<_DecisionCard> {
           FilledButton.icon(
             onPressed: _close,
             icon: const Icon(Icons.gavel),
-            label: const Text('Clôturer le dossier'),
+            label: Text(context.t.claimsCloseClaim),
           ),
         ],
       ),

@@ -6,6 +6,8 @@ import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
 /// Chronologie du dossier. Style des points : DESIGN.md, section 6.
 class ClaimTimeline extends StatelessWidget {
@@ -20,7 +22,7 @@ class ClaimTimeline extends StatelessWidget {
       children: [
         for (final (index, label) in claim.timeline.indexed)
           _Step(
-            label: label,
+            label: context.t.claimEvent(label),
             date: claim.timelineDates[index],
             current: index == last && !finished,
             showConnector: index != last,

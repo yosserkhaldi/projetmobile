@@ -5,6 +5,8 @@ import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_status_chip.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
 class ClaimCard extends StatelessWidget {
   const ClaimCard(this.claim, {this.insight, super.key});
@@ -34,7 +36,10 @@ class ClaimCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-          Text('${claim.type} • ${claim.severity}'),
+          Text(
+            '${context.t.claimValue(claim.type)} • '
+            '${context.t.claimValue(claim.severity)}',
+          ),
           const SizedBox(height: 4),
           Text(claim.place, style: TextStyle(color: context.palette.textMuted)),
           Text(

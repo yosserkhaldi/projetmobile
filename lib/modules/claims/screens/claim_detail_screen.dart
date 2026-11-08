@@ -14,6 +14,8 @@ import 'package:mon_constat_digital/modules/claims/widgets/claim_timeline.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/document_picker.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
 class ClaimDetail extends StatelessWidget {
   const ClaimDetail(this.claim, {this.agentMode = false, super.key});
@@ -35,6 +37,7 @@ class ClaimDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final stores = AppScope.of(context);
     final online = stores.claimsSync != null;
     final insight = stores.claims.insightFor(claim.id);
@@ -45,12 +48,12 @@ class ClaimDetail extends StatelessWidget {
         actions: [
           if (online)
             IconButton(
-              tooltip: 'Assistant',
+              tooltip: t.claimsAssistant,
               onPressed: () => open(context, AssistantScreen(claim)),
               icon: const Icon(Icons.support_agent),
             ),
           IconButton(
-            tooltip: 'Messagerie',
+            tooltip: t.claimsMessaging,
             onPressed: () => open(context, ChatScreen(claim)),
             icon: const Icon(Icons.chat_outlined),
           ),
@@ -74,7 +77,7 @@ class ClaimDetail extends StatelessWidget {
             _DecisionSummary(claim),
           ],
           if (requests.isNotEmpty) ...[
-            const _Title('Pièces demandées'),
+            _Title(t.claimsRequestedDocuments),
             ...requests.map(
               (request) => Card(
                 color: context.palette.warningBg,
@@ -83,20 +86,20 @@ class ClaimDetail extends StatelessWidget {
                     Icons.priority_high,
                     color: context.palette.warningText,
                   ),
-                  title: Text(request.label),
+                  title: Text(t.claimValue(request.label)),
                   subtitle: request.note.isEmpty ? null : Text(request.note),
                   trailing: agentMode
                       ? null
                       : TextButton(
                           onPressed: () => _upload(context, request: request),
-                          child: const Text('Déposer'),
+                          child: Text(t.claimsUpload),
                         ),
                 ),
               ),
             ),
           ],
           if (claim.expertName != null) ...[
-            const _Title('Expertise'),
+            _Title(t.claimsExpertiseTitle),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.engineering),
@@ -104,24 +107,26 @@ class ClaimDetail extends StatelessWidget {
               subtitle: claim.expertAppointment == null
                   ? null
                   : Text(
-                      'Rendez-vous le ${formatDay(claim.expertAppointment!)}',
+                      t.claimsAppointmentOn(
+                        formatDay(claim.expertAppointment!),
+                      ),
                     ),
             ),
           ],
-          const _Title('Chronologie'),
+          _Title(t.claimsTimeline),
           ClaimTimeline(claim),
-          const _Title('Constat'),
+          _Title(t.claimsConstat),
           _ConstatSummary(claim),
-          const _Title('Pièces du dossier'),
+          _Title(t.claimsDocuments),
           ...claim.documents.map(
             (document) => ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.attach_file),
+              leading: Icon(_iconOf(document.kind)),
               title: Text(document.name),
-              subtitle: Text(_describe(document)),
+              subtitle: Text(_describe(t, document)),
               trailing: online
                   ? IconButton(
-                      tooltip: 'Télécharger',
+                      tooltip: t.claimsDownload,
                       onPressed: () => saveFromServer(
                         context,
                         kind: 'document',
@@ -135,17 +140,17 @@ class ClaimDetail extends StatelessWidget {
           ),
           if (claim.documents.isEmpty && agentMode)
             Text(
-              'Aucune pièce déposée.',
+              t.claimsNoDocument,
               style: TextStyle(color: context.palette.textMuted),
             ),
           if (!ClaimStatus.isFinal(claim.status) && !agentMode)
             OutlinedButton.icon(
               onPressed: () => _upload(context),
               icon: const Icon(Icons.upload_file),
-              label: const Text('Déposer une pièce'),
+              label: Text(t.claimsUploadDocument),
             ),
           if (agentMode && !ClaimStatus.isFinal(claim.status)) ...[
-            const _Title('Instruction'),
+            _Title(t.claimsHandling),
             AgentPanel(claim),
           ],
         ],
@@ -154,14 +159,24 @@ class ClaimDetail extends StatelessWidget {
   }
 }
 
-String _describe(ClaimDocument document) {
+IconData _iconOf(String kind) => switch (kind) {
+  ClaimDocument.photo => Icons.photo_outlined,
+  ClaimDocument.video => Icons.videocam_outlined,
+  ClaimDocument.voiceNote => Icons.mic_none,
+  ClaimDocument.accidentReport => Icons.picture_as_pdf_outlined,
+  _ => Icons.attach_file,
+};
+
+/// Le résumé de la pièce vient du modèle de langage, en français : la pièce
+/// est lue en arrière-plan, sans utilisateur.
+String _describe(AppLocalizations t, ClaimDocument document) {
   final analysis = document.analysis;
-  if (analysis == null) return document.kind;
+  if (analysis == null) return t.claimValue(document.kind);
   final amount = analysis.amount == null
       ? ''
       : ', ${analysis.amount!.round()} TND';
-  final warning = analysis.matches ? '' : ' Ne correspond pas à la demande.';
-  return '${analysis.type}$amount. ${analysis.summary}$warning';
+  final warning = analysis.matches ? '' : ' ${t.claimsDocMismatch}';
+  return '${t.claimValue(analysis.type)}$amount. ${analysis.summary}$warning';
 }
 
 class _Title extends StatelessWidget {
@@ -184,6 +199,7 @@ class _DecisionSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final rejected = claim.status == ClaimStatus.rejected;
     final share = claim.responsibility;
     return Card(
@@ -194,17 +210,15 @@ class _DecisionSummary extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              rejected ? 'Dossier rejeté' : 'Dossier clôturé',
+              rejected ? t.claimsRejectedTitle : t.claimsClosedTitle,
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
             if (claim.decisionReason != null)
-              Text('Motif : ${claim.decisionReason}'),
+              Text(t.claimsReason(claim.decisionReason!)),
             if (share != null)
-              Text('Responsabilité : A $share %, B ${100 - share} %'),
+              Text(t.claimsResponsibilitySplit('$share', '${100 - share}')),
             if (claim.indemnity != null)
-              Text(
-                'Indemnisation : ${claim.indemnity!.toStringAsFixed(3)} TND',
-              ),
+              Text(t.claimsIndemnity(claim.indemnity!.toStringAsFixed(3))),
           ],
         ),
       ),
@@ -218,16 +232,18 @@ class _ConstatSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final rows = [
       if (claim.circumstances.isNotEmpty)
-        ('Circonstances', claim.circumstances.join(', ')),
+        (t.claimsCircumstances, t.claimValues(claim.circumstances)),
       if (claim.impactZones.isNotEmpty)
-        ('Point de choc', claim.impactZones.join(', ')),
-      if (claim.observations.isNotEmpty) ('Observations', claim.observations),
+        (t.claimsImpactPoint, t.claimValues(claim.impactZones)),
+      if (claim.observations.isNotEmpty)
+        (t.claimsObservations, claim.observations),
     ];
     if (rows.isEmpty) {
       return Text(
-        'Aucune information de constat.',
+        t.claimsNoConstat,
         style: TextStyle(color: context.palette.textMuted),
       );
     }
@@ -241,7 +257,7 @@ class _ConstatSummary extends StatelessWidget {
               TextSpan(
                 children: [
                   TextSpan(
-                    text: '$label : ',
+                    text: t.claimsLabelColon(label),
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   TextSpan(text: value),

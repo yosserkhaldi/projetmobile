@@ -4,6 +4,8 @@ import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
 typedef LoadAnalytics = Future<Map<String, dynamic>> Function();
 
@@ -33,14 +35,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Statistiques')),
+    appBar: AppBar(title: Text(context.t.claimsStatistics)),
     body: FutureBuilder(
       future: data,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(
             child: Text(
-              'Statistiques disponibles avec le serveur.',
+              context.t.claimsStatsServerOnly,
               style: TextStyle(color: context.palette.textMuted),
             ),
           );
@@ -61,6 +63,7 @@ class _Report extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final byStatus = (json['byStatus'] as Map).cast<String, int>();
     final ai = (json['ai'] as Map).cast<String, dynamic>();
     final model = (json['model'] as Map).cast<String, dynamic>();
@@ -77,46 +80,50 @@ class _Report extends StatelessWidget {
       children: [
         Row(
           children: [
-            _Tile('Dossiers', '${json['total']}'),
-            _Tile('En retard', '${json['overdue']}'),
+            _Tile(t.claimsTotal, '${json['total']}'),
+            _Tile(t.claimsLate, '${json['overdue']}'),
           ],
         ),
         Row(
           children: [
-            _Tile('Durée moyenne', days == null ? '—' : '${days.round()} j'),
             _Tile(
-              'Indemnisé (TND)',
+              t.claimsAverageDuration,
+              days == null ? '—' : t.claimsDaysShort('${days.round()}'),
+            ),
+            _Tile(
+              t.claimsIndemnified,
               '${(json['totalIndemnity'] as num).round()}',
             ),
           ],
         ),
-        const _Title('Dossiers par statut'),
+        _Title(t.claimsByStatus),
         for (final status in ClaimStatus.all)
           if (byStatus[status] != null)
-            _Bar(status, byStatus[status]!, largest),
-        const _Title('Le système face aux agents'),
+            _Bar(t.claimValue(status), byStatus[status]!, largest),
+        _Title(t.claimsSystemVsAgents),
         Text(
           compared == 0
-              ? 'Pas encore de décision à comparer.'
-              : 'Sur $compared décision(s), la responsabilité proposée a été '
-                    'retenue dans ${((agreement ?? 0) * 100).round()} % des cas.',
+              ? t.claimsNoDecisionYet
+              : t.claimsAgreement(
+                  '$compared',
+                  '${((agreement ?? 0) * 100).round()}',
+                ),
         ),
-        if (gap != null)
-          Text('Écart moyen avec le montant décidé : ${gap.round()} TND.'),
-        const _Title('Modèle'),
-        Text('Version ${model['version']}'),
+        if (gap != null) Text(t.claimsAverageGap('${gap.round()}')),
+        _Title(t.claimsModel),
+        Text(t.claimsModelVersion('${model['version']}')),
         Text(
-          'Entraîné sur ${trained['synthetic']} cas simulés et '
-          '${trained['real']} dossiers réels.',
+          t.claimsTrainedOn('${trained['synthetic']}', '${trained['real']}'),
         ),
         Text(
-          'Test : erreur moyenne ${metrics['indemnityMaeTnd']} TND, '
-          'AUC rejet ${metrics['rejectionAuc']}.',
+          t.claimsModelTest(
+            '${metrics['indemnityMaeTnd']}',
+            '${metrics['rejectionAuc']}',
+          ),
         ),
         const SizedBox(height: 6),
         Text(
-          'Ces mesures portent sur des données simulées : elles ne disent '
-          'pas encore si le modèle est juste sur de vrais sinistres.',
+          t.claimsSimulatedWarning,
           style: TextStyle(color: context.palette.textMuted, fontSize: 13),
         ),
       ],
@@ -182,12 +189,14 @@ class _Bar extends StatelessWidget {
         const SizedBox(height: 4),
         FractionallySizedBox(
           widthFactor: value / largest,
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerStart,
           child: Container(
             height: 10,
             decoration: BoxDecoration(
               color: context.palette.primary,
-              borderRadius: BorderRadius.horizontal(right: Radius.circular(4)),
+              borderRadius: const BorderRadiusDirectional.horizontal(
+                end: Radius.circular(4),
+              ),
             ),
           ),
         ),

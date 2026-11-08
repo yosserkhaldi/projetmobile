@@ -12,11 +12,13 @@ import 'package:mon_constat_digital/modules/claims/widgets/offline_banner.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 
 class AgentDashboard extends StatelessWidget {
   const AgentDashboard({super.key});
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final s = AppScope.of(context).claims;
     final pending = s.byPriority(
       s.claims.where((claim) => ClaimStatus.isOpenForAgent(claim.status)),
@@ -28,16 +30,16 @@ class AgentDashboard extends StatelessWidget {
         children: [
           const OfflineBanner(),
           PageHead(
-            'Espace agent',
-            subtitle: 'Instruction des sinistres',
+            t.claimsAgentSpace,
+            subtitle: t.claimsAgentSubtitle,
             actions: [
               IconButton(
-                tooltip: 'Statistiques',
+                tooltip: t.claimsStatistics,
                 onPressed: () => open(context, const AnalyticsScreen()),
                 icon: const Icon(Icons.bar_chart),
               ),
               IconButton(
-                tooltip: 'Notifications',
+                tooltip: t.claimsNotifications,
                 onPressed: () => open(context, const NotificationsScreen()),
                 icon: Badge(
                   isLabelVisible: unread > 0,
@@ -50,31 +52,31 @@ class AgentDashboard extends StatelessWidget {
           Row(
             children: [
               _metric(
-                'À traiter',
+                t.claimsToHandle,
                 '${pending.length}',
                 context.palette.warningText,
               ),
               _metric(
-                'Expertises',
+                t.claimsExpertises,
                 '${s.countByStatus((e) => e == ClaimStatus.expertise)}',
                 context.palette.primaryText,
               ),
               _metric(
-                'Clôturés',
+                t.claimsClosedCount,
                 '${s.countByStatus((e) => e == ClaimStatus.closed)}',
                 context.palette.successText,
               ),
             ],
           ),
           const SizedBox(height: 22),
-          const Text(
-            'Dossiers prioritaires',
+          Text(
+            t.claimsPriority,
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 10),
           if (pending.isEmpty)
             Text(
-              'Aucun dossier à traiter.',
+              t.claimsNothingToHandle,
               style: TextStyle(color: context.palette.textMuted),
             ),
           ...pending.map(

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
 /// Pastille de statut. Couleurs : DESIGN.md, section 7.
 class ClaimStatusChip extends StatelessWidget {
@@ -41,7 +43,7 @@ class ClaimStatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(99),
       ),
       child: Text(
-        status,
+        context.t.claimValue(status),
         style: TextStyle(
           color: text,
           fontSize: 12,

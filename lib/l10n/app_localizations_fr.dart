@@ -9,6 +9,620 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
+  String get claimsMyClaims => 'Mes dossiers';
+
+  @override
+  String get claimsReceived => 'Sinistres reçus';
+
+  @override
+  String claimsCount(String shown, String total) {
+    return '$shown sur $total dossiers';
+  }
+
+  @override
+  String get claimsFilterHint => 'Filtrer par numéro, statut ou gravité';
+
+  @override
+  String get claimsStatus => 'Statut';
+
+  @override
+  String get claimsSeverity => 'Gravité';
+
+  @override
+  String get claimsDate => 'Date';
+
+  @override
+  String claimsAllOf(String label) {
+    return 'Tous : $label';
+  }
+
+  @override
+  String get claimsNoMatch => 'Aucun dossier ne correspond.';
+
+  @override
+  String get claimsAgentSpace => 'Espace agent';
+
+  @override
+  String get claimsAgentSubtitle => 'Instruction des sinistres';
+
+  @override
+  String get claimsStatistics => 'Statistiques';
+
+  @override
+  String get claimsNotifications => 'Notifications';
+
+  @override
+  String get claimsToHandle => 'À traiter';
+
+  @override
+  String get claimsExpertises => 'Expertises';
+
+  @override
+  String get claimsClosedCount => 'Clôturés';
+
+  @override
+  String get claimsPriority => 'Dossiers prioritaires';
+
+  @override
+  String get claimsNothingToHandle => 'Aucun dossier à traiter.';
+
+  @override
+  String get claimsAssistant => 'Assistant';
+
+  @override
+  String get claimsMessaging => 'Messagerie';
+
+  @override
+  String get claimsRequestedDocuments => 'Pièces demandées';
+
+  @override
+  String get claimsUpload => 'Déposer';
+
+  @override
+  String get claimsExpertiseTitle => 'Expertise';
+
+  @override
+  String claimsAppointmentOn(String date) {
+    return 'Rendez-vous le $date';
+  }
+
+  @override
+  String get claimsTimeline => 'Chronologie';
+
+  @override
+  String get claimsConstat => 'Constat';
+
+  @override
+  String get claimsDocuments => 'Pièces du dossier';
+
+  @override
+  String get claimsDownload => 'Télécharger';
+
+  @override
+  String get claimsNoDocument => 'Aucune pièce déposée.';
+
+  @override
+  String get claimsUploadDocument => 'Déposer une pièce';
+
+  @override
+  String get claimsHandling => 'Instruction';
+
+  @override
+  String get claimsDocMismatch => 'Ne correspond pas à la demande.';
+
+  @override
+  String get claimsRejectedTitle => 'Dossier rejeté';
+
+  @override
+  String get claimsClosedTitle => 'Dossier clôturé';
+
+  @override
+  String claimsReason(String reason) {
+    return 'Motif : $reason';
+  }
+
+  @override
+  String claimsResponsibilitySplit(String a, String b) {
+    return 'Responsabilité : A $a %, B $b %';
+  }
+
+  @override
+  String claimsIndemnity(String amount) {
+    return 'Indemnisation : $amount TND';
+  }
+
+  @override
+  String get claimsCircumstances => 'Circonstances';
+
+  @override
+  String get claimsImpactPoint => 'Point de choc';
+
+  @override
+  String get claimsObservations => 'Observations';
+
+  @override
+  String get claimsNoConstat => 'Aucune information de constat.';
+
+  @override
+  String claimsLabelColon(String label) {
+    return '$label : ';
+  }
+
+  @override
+  String get claimsTakeCharge => 'Prendre en charge';
+
+  @override
+  String get claimsRequestDocument => 'Demander une pièce';
+
+  @override
+  String get claimsMoveAppointment => 'Déplacer le rendez-vous';
+
+  @override
+  String get claimsAppointExpert => 'Désigner un expert';
+
+  @override
+  String get claimsAttachReport => 'Joindre le rapport d’expertise';
+
+  @override
+  String get claimsReject => 'Rejeter le dossier';
+
+  @override
+  String get claimsDocument => 'Pièce';
+
+  @override
+  String get claimsDetail => 'Précision';
+
+  @override
+  String get claimsSendRequest => 'Envoyer la demande';
+
+  @override
+  String get claimsExpert => 'Expert';
+
+  @override
+  String get claimsSchedule => 'Planifier';
+
+  @override
+  String get claimsReasonLabel => 'Motif';
+
+  @override
+  String get claimsRejectAction => 'Rejeter';
+
+  @override
+  String get claimsInvalidAmount => 'Saisissez un montant valide.';
+
+  @override
+  String get claimsDecision => 'Décision';
+
+  @override
+  String claimsProposal(String a, String b, String reason) {
+    return 'Proposition : A $a %, B $b %. $reason';
+  }
+
+  @override
+  String get claimsIndemnityAmount => 'Montant d\'indemnisation (TND)';
+
+  @override
+  String get claimsCloseClaim => 'Clôturer le dossier';
+
+  @override
+  String claimsProposalFault(String box) {
+    return '$box : manœuvre à risque de A.';
+  }
+
+  @override
+  String get claimsProposalParked => 'A était en stationnement.';
+
+  @override
+  String claimsProposalTurn(String box) {
+    return '$box : partage par défaut.';
+  }
+
+  @override
+  String get claimsProposalUnknown =>
+      'Cases insuffisantes : partage par défaut.';
+
+  @override
+  String get claimsSummaryOffline => 'Synthèse indisponible hors connexion.';
+
+  @override
+  String get claimsDecisionHelp => 'Aide à la décision';
+
+  @override
+  String claimsOverdue(String days) {
+    return 'Retard $days j';
+  }
+
+  @override
+  String get claimsEstimate => 'Estimation';
+
+  @override
+  String claimsRange(String low, String high) {
+    return '$low à $high TND';
+  }
+
+  @override
+  String get claimsUsualDuration => 'Durée habituelle';
+
+  @override
+  String claimsDays(String days) {
+    return '$days jours';
+  }
+
+  @override
+  String get claimsRejectionRisk => 'Risque de rejet';
+
+  @override
+  String get claimsRiskLow => 'faible';
+
+  @override
+  String get claimsRiskMedium => 'moyen';
+
+  @override
+  String get claimsRiskHigh => 'élevé';
+
+  @override
+  String claimsRiskWithFactors(String level, String factors) {
+    return '$level : $factors';
+  }
+
+  @override
+  String get claimsRecommended => 'Recommandée pour ce dossier';
+
+  @override
+  String get claimsToCheck => 'À vérifier';
+
+  @override
+  String get claimsMissingDocuments => 'Pièces manquantes';
+
+  @override
+  String get claimsRequest => 'Demander';
+
+  @override
+  String get claimsSimilar => 'Dossiers similaires';
+
+  @override
+  String claimsSummaryBy(String by) {
+    return 'Synthèse rédigée par $by';
+  }
+
+  @override
+  String get claimsSummaryRules => 'Synthèse automatique, sans IA générative';
+
+  @override
+  String get claimsSummarizing => 'Synthèse en cours';
+
+  @override
+  String get claimsSummarize => 'Résumer le dossier';
+
+  @override
+  String get claimsModelDisclaimer =>
+      'Estimations issues d’un modèle entraîné sur des données simulées. La décision appartient à l’agent.';
+
+  @override
+  String claimsRemaining(String days) {
+    return 'Délai restant estimé : environ $days jours. Ce n’est pas un engagement.';
+  }
+
+  @override
+  String get claimsDriverIdea1 => 'Où en est mon dossier ?';
+
+  @override
+  String get claimsDriverIdea2 => 'Quelles pièces dois-je déposer ?';
+
+  @override
+  String get claimsDriverIdea3 => 'Combien de temps ça va prendre ?';
+
+  @override
+  String get claimsAgentIdea1 => 'Que dois-je faire ensuite ?';
+
+  @override
+  String get claimsAgentIdea2 => 'Quels points vérifier ?';
+
+  @override
+  String get claimsAgentIdea3 => 'Quelle responsabilité proposes-tu ?';
+
+  @override
+  String get claimsAssistantUnavailable =>
+      'Assistant indisponible pour le moment. Réessayez plus tard.';
+
+  @override
+  String claimsAssistantTitle(String id) {
+    return 'Assistant $id';
+  }
+
+  @override
+  String get claimsAssistantIntro =>
+      'Posez une question sur ce dossier. L’assistant informe, il ne prend aucune décision.';
+
+  @override
+  String get claimsAssistantReading => 'L’assistant lit le dossier…';
+
+  @override
+  String get claimsYourQuestion => 'Votre question';
+
+  @override
+  String get claimsSend => 'Envoyer';
+
+  @override
+  String get claimsAutomaticAnswer => 'Réponse automatique';
+
+  @override
+  String get claimsStatsServerOnly =>
+      'Statistiques disponibles avec le serveur.';
+
+  @override
+  String get claimsTotal => 'Dossiers';
+
+  @override
+  String get claimsLate => 'En retard';
+
+  @override
+  String get claimsAverageDuration => 'Durée moyenne';
+
+  @override
+  String claimsDaysShort(String days) {
+    return '$days j';
+  }
+
+  @override
+  String get claimsIndemnified => 'Indemnisé (TND)';
+
+  @override
+  String get claimsByStatus => 'Dossiers par statut';
+
+  @override
+  String get claimsSystemVsAgents => 'Le système face aux agents';
+
+  @override
+  String get claimsNoDecisionYet => 'Pas encore de décision à comparer.';
+
+  @override
+  String claimsAgreement(String count, String percent) {
+    return 'Sur $count décision(s), la responsabilité proposée a été retenue dans $percent % des cas.';
+  }
+
+  @override
+  String claimsAverageGap(String gap) {
+    return 'Écart moyen avec le montant décidé : $gap TND.';
+  }
+
+  @override
+  String get claimsModel => 'Modèle';
+
+  @override
+  String claimsModelVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String claimsTrainedOn(String synthetic, String real) {
+    return 'Entraîné sur $synthetic cas simulés et $real dossiers réels.';
+  }
+
+  @override
+  String claimsModelTest(String mae, String auc) {
+    return 'Test : erreur moyenne $mae TND, AUC rejet $auc.';
+  }
+
+  @override
+  String get claimsSimulatedWarning =>
+      'Ces mesures portent sur des données simulées : elles ne disent pas encore si le modèle est juste sur de vrais sinistres.';
+
+  @override
+  String get claimsSuggestionsUnavailable => 'Suggestions indisponibles.';
+
+  @override
+  String get claimsNoMessages => 'Aucun message sur ce dossier.';
+
+  @override
+  String get claimsSuggestReply => 'Suggérer une réponse';
+
+  @override
+  String get claimsAttachFile => 'Joindre un fichier';
+
+  @override
+  String get claimsYourMessage => 'Votre message';
+
+  @override
+  String get claimsOneConversation => 'Une conversation par dossier';
+
+  @override
+  String get claimsNoClaims => 'Aucun dossier.';
+
+  @override
+  String get claimsNoMessage => 'Aucun message';
+
+  @override
+  String get claimsMarkAllRead => 'Tout marquer lu';
+
+  @override
+  String get claimsNoNotification => 'Aucune notification.';
+
+  @override
+  String get claimsOffline =>
+      'Hors ligne : vos changements partiront au retour du réseau';
+
+  @override
+  String get claimsFileUnavailable => 'Fichier indisponible pour le moment.';
+
+  @override
+  String get claimsValueDraft => 'Brouillon';
+
+  @override
+  String get claimsValueDeclared => 'Déclaré';
+
+  @override
+  String get claimsValueSigned => 'Constat signé';
+
+  @override
+  String get claimsValueTransmitted => 'Transmis';
+
+  @override
+  String get claimsValueInReview => 'En instruction';
+
+  @override
+  String get claimsValueDocumentRequested => 'Pièce demandée';
+
+  @override
+  String get claimsValueExpertise => 'Expertise';
+
+  @override
+  String get claimsValueClosed => 'Clôturé';
+
+  @override
+  String get claimsValueRejected => 'Rejeté';
+
+  @override
+  String get claimsValueCollision => 'Collision';
+
+  @override
+  String get claimsValueOffRoad => 'Sortie de route';
+
+  @override
+  String get claimsValuePedestrian => 'Piéton';
+
+  @override
+  String get claimsValueMaterialAccident => 'Accident matériel';
+
+  @override
+  String get claimsValueOther => 'Autre';
+
+  @override
+  String get claimsValueMaterial => 'Matériel';
+
+  @override
+  String get claimsValueLight => 'Léger';
+
+  @override
+  String get claimsValueSerious => 'Grave';
+
+  @override
+  String get claimsValueParked => 'En stationnement';
+
+  @override
+  String get claimsValueLeavingParking => 'Quittait un stationnement';
+
+  @override
+  String get claimsValueChangingLane => 'Changeait de file';
+
+  @override
+  String get claimsValueOvertaking => 'Doublait';
+
+  @override
+  String get claimsValueTurningRight => 'Virait à droite';
+
+  @override
+  String get claimsValueTurningLeft => 'Virait à gauche';
+
+  @override
+  String get claimsValueReversing => 'Reculait';
+
+  @override
+  String get claimsValueFront => 'Avant';
+
+  @override
+  String get claimsValueRear => 'Arrière';
+
+  @override
+  String get claimsValueLeftSide => 'Côté gauche';
+
+  @override
+  String get claimsValueRightSide => 'Côté droit';
+
+  @override
+  String get claimsValueQuote => 'Devis';
+
+  @override
+  String get claimsValueInvoice => 'Facture';
+
+  @override
+  String get claimsValuePoliceReport => 'PV de police';
+
+  @override
+  String get claimsValueExpertReport => 'Rapport d\'expertise';
+
+  @override
+  String get claimsValueSupporting => 'Pièce';
+
+  @override
+  String get claimsValuePhoto => 'Photo';
+
+  @override
+  String get claimsValueVideo => 'Vidéo';
+
+  @override
+  String get claimsValueVoiceNote => 'Note vocale';
+
+  @override
+  String get claimsValueAccidentReport => 'Constat amiable';
+
+  @override
+  String get claimsEventDraftCreated => 'Brouillon créé';
+
+  @override
+  String get claimsEventDeclared => 'Déclaration complétée';
+
+  @override
+  String claimsEventEvidence(String count) {
+    return '$count preuves ajoutées';
+  }
+
+  @override
+  String get claimsEventSigned => 'Double signature';
+
+  @override
+  String get claimsEventPdfLocked => 'PDF verrouillé';
+
+  @override
+  String get claimsEventSent => 'Transmis aux assureurs';
+
+  @override
+  String get claimsEventMoved => 'Rendez-vous déplacé';
+
+  @override
+  String get claimsEventReport => 'Rapport d’expertise joint';
+
+  @override
+  String claimsEventDetail(String status, String detail) {
+    return '$status : $detail';
+  }
+
+  @override
+  String claimsNotifNew(String id) {
+    return 'Nouveau sinistre reçu : $id';
+  }
+
+  @override
+  String claimsNotifRequested(String id, String document) {
+    return '$id : pièce demandée ($document)';
+  }
+
+  @override
+  String claimsNotifUploaded(String id, String name) {
+    return '$id : pièce déposée ($name)';
+  }
+
+  @override
+  String claimsNotifMoved(String id) {
+    return '$id : rendez-vous d’expertise déplacé';
+  }
+
+  @override
+  String claimsNotifEvent(String id, String event) {
+    return '$id : $event';
+  }
+
+  @override
+  String claimsNotifInReview(String id) {
+    return 'Votre dossier $id est en instruction.';
+  }
+
+  @override
+  String claimsNotifContract(String days) {
+    return 'Votre contrat expire dans $days jours.';
+  }
+
+  @override
   String get appTitle => 'Mon Constat Digital';
 
   @override

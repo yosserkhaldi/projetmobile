@@ -100,6 +100,1092 @@ abstract class AppLocalizations {
     Locale('fr'),
   ];
 
+  /// No description provided for @claimsMyClaims.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes dossiers'**
+  String get claimsMyClaims;
+
+  /// No description provided for @claimsReceived.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sinistres reçus'**
+  String get claimsReceived;
+
+  /// No description provided for @claimsCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{shown} sur {total} dossiers'**
+  String claimsCount(String shown, String total);
+
+  /// No description provided for @claimsFilterHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Filtrer par numéro, statut ou gravité'**
+  String get claimsFilterHint;
+
+  /// No description provided for @claimsStatus.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statut'**
+  String get claimsStatus;
+
+  /// No description provided for @claimsSeverity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Gravité'**
+  String get claimsSeverity;
+
+  /// No description provided for @claimsDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date'**
+  String get claimsDate;
+
+  /// No description provided for @claimsAllOf.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous : {label}'**
+  String claimsAllOf(String label);
+
+  /// No description provided for @claimsNoMatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun dossier ne correspond.'**
+  String get claimsNoMatch;
+
+  /// No description provided for @claimsAgentSpace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Espace agent'**
+  String get claimsAgentSpace;
+
+  /// No description provided for @claimsAgentSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Instruction des sinistres'**
+  String get claimsAgentSubtitle;
+
+  /// No description provided for @claimsStatistics.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statistiques'**
+  String get claimsStatistics;
+
+  /// No description provided for @claimsNotifications.
+  ///
+  /// In fr, this message translates to:
+  /// **'Notifications'**
+  String get claimsNotifications;
+
+  /// No description provided for @claimsToHandle.
+  ///
+  /// In fr, this message translates to:
+  /// **'À traiter'**
+  String get claimsToHandle;
+
+  /// No description provided for @claimsExpertises.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertises'**
+  String get claimsExpertises;
+
+  /// No description provided for @claimsClosedCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Clôturés'**
+  String get claimsClosedCount;
+
+  /// No description provided for @claimsPriority.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossiers prioritaires'**
+  String get claimsPriority;
+
+  /// No description provided for @claimsNothingToHandle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun dossier à traiter.'**
+  String get claimsNothingToHandle;
+
+  /// No description provided for @claimsAssistant.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assistant'**
+  String get claimsAssistant;
+
+  /// No description provided for @claimsMessaging.
+  ///
+  /// In fr, this message translates to:
+  /// **'Messagerie'**
+  String get claimsMessaging;
+
+  /// No description provided for @claimsRequestedDocuments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièces demandées'**
+  String get claimsRequestedDocuments;
+
+  /// No description provided for @claimsUpload.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déposer'**
+  String get claimsUpload;
+
+  /// No description provided for @claimsExpertiseTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertise'**
+  String get claimsExpertiseTitle;
+
+  /// No description provided for @claimsAppointmentOn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous le {date}'**
+  String claimsAppointmentOn(String date);
+
+  /// No description provided for @claimsTimeline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chronologie'**
+  String get claimsTimeline;
+
+  /// No description provided for @claimsConstat.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat'**
+  String get claimsConstat;
+
+  /// No description provided for @claimsDocuments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièces du dossier'**
+  String get claimsDocuments;
+
+  /// No description provided for @claimsDownload.
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger'**
+  String get claimsDownload;
+
+  /// No description provided for @claimsNoDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune pièce déposée.'**
+  String get claimsNoDocument;
+
+  /// No description provided for @claimsUploadDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déposer une pièce'**
+  String get claimsUploadDocument;
+
+  /// No description provided for @claimsHandling.
+  ///
+  /// In fr, this message translates to:
+  /// **'Instruction'**
+  String get claimsHandling;
+
+  /// No description provided for @claimsDocMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ne correspond pas à la demande.'**
+  String get claimsDocMismatch;
+
+  /// No description provided for @claimsRejectedTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossier rejeté'**
+  String get claimsRejectedTitle;
+
+  /// No description provided for @claimsClosedTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossier clôturé'**
+  String get claimsClosedTitle;
+
+  /// No description provided for @claimsReason.
+  ///
+  /// In fr, this message translates to:
+  /// **'Motif : {reason}'**
+  String claimsReason(String reason);
+
+  /// No description provided for @claimsResponsibilitySplit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Responsabilité : A {a} %, B {b} %'**
+  String claimsResponsibilitySplit(String a, String b);
+
+  /// No description provided for @claimsIndemnity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indemnisation : {amount} TND'**
+  String claimsIndemnity(String amount);
+
+  /// No description provided for @claimsCircumstances.
+  ///
+  /// In fr, this message translates to:
+  /// **'Circonstances'**
+  String get claimsCircumstances;
+
+  /// No description provided for @claimsImpactPoint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Point de choc'**
+  String get claimsImpactPoint;
+
+  /// No description provided for @claimsObservations.
+  ///
+  /// In fr, this message translates to:
+  /// **'Observations'**
+  String get claimsObservations;
+
+  /// No description provided for @claimsNoConstat.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune information de constat.'**
+  String get claimsNoConstat;
+
+  /// No description provided for @claimsLabelColon.
+  ///
+  /// In fr, this message translates to:
+  /// **'{label} : '**
+  String claimsLabelColon(String label);
+
+  /// No description provided for @claimsTakeCharge.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prendre en charge'**
+  String get claimsTakeCharge;
+
+  /// No description provided for @claimsRequestDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demander une pièce'**
+  String get claimsRequestDocument;
+
+  /// No description provided for @claimsMoveAppointment.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déplacer le rendez-vous'**
+  String get claimsMoveAppointment;
+
+  /// No description provided for @claimsAppointExpert.
+  ///
+  /// In fr, this message translates to:
+  /// **'Désigner un expert'**
+  String get claimsAppointExpert;
+
+  /// No description provided for @claimsAttachReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Joindre le rapport d’expertise'**
+  String get claimsAttachReport;
+
+  /// No description provided for @claimsReject.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejeter le dossier'**
+  String get claimsReject;
+
+  /// No description provided for @claimsDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce'**
+  String get claimsDocument;
+
+  /// No description provided for @claimsDetail.
+  ///
+  /// In fr, this message translates to:
+  /// **'Précision'**
+  String get claimsDetail;
+
+  /// No description provided for @claimsSendRequest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer la demande'**
+  String get claimsSendRequest;
+
+  /// No description provided for @claimsExpert.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expert'**
+  String get claimsExpert;
+
+  /// No description provided for @claimsSchedule.
+  ///
+  /// In fr, this message translates to:
+  /// **'Planifier'**
+  String get claimsSchedule;
+
+  /// No description provided for @claimsReasonLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Motif'**
+  String get claimsReasonLabel;
+
+  /// No description provided for @claimsRejectAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejeter'**
+  String get claimsRejectAction;
+
+  /// No description provided for @claimsInvalidAmount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisissez un montant valide.'**
+  String get claimsInvalidAmount;
+
+  /// No description provided for @claimsDecision.
+  ///
+  /// In fr, this message translates to:
+  /// **'Décision'**
+  String get claimsDecision;
+
+  /// No description provided for @claimsProposal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proposition : A {a} %, B {b} %. {reason}'**
+  String claimsProposal(String a, String b, String reason);
+
+  /// No description provided for @claimsIndemnityAmount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Montant d\'indemnisation (TND)'**
+  String get claimsIndemnityAmount;
+
+  /// No description provided for @claimsCloseClaim.
+  ///
+  /// In fr, this message translates to:
+  /// **'Clôturer le dossier'**
+  String get claimsCloseClaim;
+
+  /// No description provided for @claimsProposalFault.
+  ///
+  /// In fr, this message translates to:
+  /// **'{box} : manœuvre à risque de A.'**
+  String claimsProposalFault(String box);
+
+  /// No description provided for @claimsProposalParked.
+  ///
+  /// In fr, this message translates to:
+  /// **'A était en stationnement.'**
+  String get claimsProposalParked;
+
+  /// No description provided for @claimsProposalTurn.
+  ///
+  /// In fr, this message translates to:
+  /// **'{box} : partage par défaut.'**
+  String claimsProposalTurn(String box);
+
+  /// No description provided for @claimsProposalUnknown.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cases insuffisantes : partage par défaut.'**
+  String get claimsProposalUnknown;
+
+  /// No description provided for @claimsSummaryOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synthèse indisponible hors connexion.'**
+  String get claimsSummaryOffline;
+
+  /// No description provided for @claimsDecisionHelp.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aide à la décision'**
+  String get claimsDecisionHelp;
+
+  /// No description provided for @claimsOverdue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retard {days} j'**
+  String claimsOverdue(String days);
+
+  /// No description provided for @claimsEstimate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Estimation'**
+  String get claimsEstimate;
+
+  /// No description provided for @claimsRange.
+  ///
+  /// In fr, this message translates to:
+  /// **'{low} à {high} TND'**
+  String claimsRange(String low, String high);
+
+  /// No description provided for @claimsUsualDuration.
+  ///
+  /// In fr, this message translates to:
+  /// **'Durée habituelle'**
+  String get claimsUsualDuration;
+
+  /// No description provided for @claimsDays.
+  ///
+  /// In fr, this message translates to:
+  /// **'{days} jours'**
+  String claimsDays(String days);
+
+  /// No description provided for @claimsRejectionRisk.
+  ///
+  /// In fr, this message translates to:
+  /// **'Risque de rejet'**
+  String get claimsRejectionRisk;
+
+  /// No description provided for @claimsRiskLow.
+  ///
+  /// In fr, this message translates to:
+  /// **'faible'**
+  String get claimsRiskLow;
+
+  /// No description provided for @claimsRiskMedium.
+  ///
+  /// In fr, this message translates to:
+  /// **'moyen'**
+  String get claimsRiskMedium;
+
+  /// No description provided for @claimsRiskHigh.
+  ///
+  /// In fr, this message translates to:
+  /// **'élevé'**
+  String get claimsRiskHigh;
+
+  /// No description provided for @claimsRiskWithFactors.
+  ///
+  /// In fr, this message translates to:
+  /// **'{level} : {factors}'**
+  String claimsRiskWithFactors(String level, String factors);
+
+  /// No description provided for @claimsRecommended.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandée pour ce dossier'**
+  String get claimsRecommended;
+
+  /// No description provided for @claimsToCheck.
+  ///
+  /// In fr, this message translates to:
+  /// **'À vérifier'**
+  String get claimsToCheck;
+
+  /// No description provided for @claimsMissingDocuments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièces manquantes'**
+  String get claimsMissingDocuments;
+
+  /// No description provided for @claimsRequest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demander'**
+  String get claimsRequest;
+
+  /// No description provided for @claimsSimilar.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossiers similaires'**
+  String get claimsSimilar;
+
+  /// No description provided for @claimsSummaryBy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synthèse rédigée par {by}'**
+  String claimsSummaryBy(String by);
+
+  /// No description provided for @claimsSummaryRules.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synthèse automatique, sans IA générative'**
+  String get claimsSummaryRules;
+
+  /// No description provided for @claimsSummarizing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synthèse en cours'**
+  String get claimsSummarizing;
+
+  /// No description provided for @claimsSummarize.
+  ///
+  /// In fr, this message translates to:
+  /// **'Résumer le dossier'**
+  String get claimsSummarize;
+
+  /// No description provided for @claimsModelDisclaimer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Estimations issues d’un modèle entraîné sur des données simulées. La décision appartient à l’agent.'**
+  String get claimsModelDisclaimer;
+
+  /// No description provided for @claimsRemaining.
+  ///
+  /// In fr, this message translates to:
+  /// **'Délai restant estimé : environ {days} jours. Ce n’est pas un engagement.'**
+  String claimsRemaining(String days);
+
+  /// No description provided for @claimsDriverIdea1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Où en est mon dossier ?'**
+  String get claimsDriverIdea1;
+
+  /// No description provided for @claimsDriverIdea2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quelles pièces dois-je déposer ?'**
+  String get claimsDriverIdea2;
+
+  /// No description provided for @claimsDriverIdea3.
+  ///
+  /// In fr, this message translates to:
+  /// **'Combien de temps ça va prendre ?'**
+  String get claimsDriverIdea3;
+
+  /// No description provided for @claimsAgentIdea1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Que dois-je faire ensuite ?'**
+  String get claimsAgentIdea1;
+
+  /// No description provided for @claimsAgentIdea2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quels points vérifier ?'**
+  String get claimsAgentIdea2;
+
+  /// No description provided for @claimsAgentIdea3.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quelle responsabilité proposes-tu ?'**
+  String get claimsAgentIdea3;
+
+  /// No description provided for @claimsAssistantUnavailable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assistant indisponible pour le moment. Réessayez plus tard.'**
+  String get claimsAssistantUnavailable;
+
+  /// No description provided for @claimsAssistantTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assistant {id}'**
+  String claimsAssistantTitle(String id);
+
+  /// No description provided for @claimsAssistantIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Posez une question sur ce dossier. L’assistant informe, il ne prend aucune décision.'**
+  String get claimsAssistantIntro;
+
+  /// No description provided for @claimsAssistantReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'L’assistant lit le dossier…'**
+  String get claimsAssistantReading;
+
+  /// No description provided for @claimsYourQuestion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre question'**
+  String get claimsYourQuestion;
+
+  /// No description provided for @claimsSend.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer'**
+  String get claimsSend;
+
+  /// No description provided for @claimsAutomaticAnswer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réponse automatique'**
+  String get claimsAutomaticAnswer;
+
+  /// No description provided for @claimsStatsServerOnly.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statistiques disponibles avec le serveur.'**
+  String get claimsStatsServerOnly;
+
+  /// No description provided for @claimsTotal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossiers'**
+  String get claimsTotal;
+
+  /// No description provided for @claimsLate.
+  ///
+  /// In fr, this message translates to:
+  /// **'En retard'**
+  String get claimsLate;
+
+  /// No description provided for @claimsAverageDuration.
+  ///
+  /// In fr, this message translates to:
+  /// **'Durée moyenne'**
+  String get claimsAverageDuration;
+
+  /// No description provided for @claimsDaysShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'{days} j'**
+  String claimsDaysShort(String days);
+
+  /// No description provided for @claimsIndemnified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indemnisé (TND)'**
+  String get claimsIndemnified;
+
+  /// No description provided for @claimsByStatus.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossiers par statut'**
+  String get claimsByStatus;
+
+  /// No description provided for @claimsSystemVsAgents.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le système face aux agents'**
+  String get claimsSystemVsAgents;
+
+  /// No description provided for @claimsNoDecisionYet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore de décision à comparer.'**
+  String get claimsNoDecisionYet;
+
+  /// No description provided for @claimsAgreement.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sur {count} décision(s), la responsabilité proposée a été retenue dans {percent} % des cas.'**
+  String claimsAgreement(String count, String percent);
+
+  /// No description provided for @claimsAverageGap.
+  ///
+  /// In fr, this message translates to:
+  /// **'Écart moyen avec le montant décidé : {gap} TND.'**
+  String claimsAverageGap(String gap);
+
+  /// No description provided for @claimsModel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modèle'**
+  String get claimsModel;
+
+  /// No description provided for @claimsModelVersion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Version {version}'**
+  String claimsModelVersion(String version);
+
+  /// No description provided for @claimsTrainedOn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Entraîné sur {synthetic} cas simulés et {real} dossiers réels.'**
+  String claimsTrainedOn(String synthetic, String real);
+
+  /// No description provided for @claimsModelTest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Test : erreur moyenne {mae} TND, AUC rejet {auc}.'**
+  String claimsModelTest(String mae, String auc);
+
+  /// No description provided for @claimsSimulatedWarning.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ces mesures portent sur des données simulées : elles ne disent pas encore si le modèle est juste sur de vrais sinistres.'**
+  String get claimsSimulatedWarning;
+
+  /// No description provided for @claimsSuggestionsUnavailable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suggestions indisponibles.'**
+  String get claimsSuggestionsUnavailable;
+
+  /// No description provided for @claimsNoMessages.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun message sur ce dossier.'**
+  String get claimsNoMessages;
+
+  /// No description provided for @claimsSuggestReply.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suggérer une réponse'**
+  String get claimsSuggestReply;
+
+  /// No description provided for @claimsAttachFile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Joindre un fichier'**
+  String get claimsAttachFile;
+
+  /// No description provided for @claimsYourMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre message'**
+  String get claimsYourMessage;
+
+  /// No description provided for @claimsOneConversation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une conversation par dossier'**
+  String get claimsOneConversation;
+
+  /// No description provided for @claimsNoClaims.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun dossier.'**
+  String get claimsNoClaims;
+
+  /// No description provided for @claimsNoMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun message'**
+  String get claimsNoMessage;
+
+  /// No description provided for @claimsMarkAllRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout marquer lu'**
+  String get claimsMarkAllRead;
+
+  /// No description provided for @claimsNoNotification.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune notification.'**
+  String get claimsNoNotification;
+
+  /// No description provided for @claimsOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors ligne : vos changements partiront au retour du réseau'**
+  String get claimsOffline;
+
+  /// No description provided for @claimsFileUnavailable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fichier indisponible pour le moment.'**
+  String get claimsFileUnavailable;
+
+  /// No description provided for @claimsValueDraft.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brouillon'**
+  String get claimsValueDraft;
+
+  /// No description provided for @claimsValueDeclared.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déclaré'**
+  String get claimsValueDeclared;
+
+  /// No description provided for @claimsValueSigned.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat signé'**
+  String get claimsValueSigned;
+
+  /// No description provided for @claimsValueTransmitted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Transmis'**
+  String get claimsValueTransmitted;
+
+  /// No description provided for @claimsValueInReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'En instruction'**
+  String get claimsValueInReview;
+
+  /// No description provided for @claimsValueDocumentRequested.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce demandée'**
+  String get claimsValueDocumentRequested;
+
+  /// No description provided for @claimsValueExpertise.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertise'**
+  String get claimsValueExpertise;
+
+  /// No description provided for @claimsValueClosed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Clôturé'**
+  String get claimsValueClosed;
+
+  /// No description provided for @claimsValueRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejeté'**
+  String get claimsValueRejected;
+
+  /// No description provided for @claimsValueCollision.
+  ///
+  /// In fr, this message translates to:
+  /// **'Collision'**
+  String get claimsValueCollision;
+
+  /// No description provided for @claimsValueOffRoad.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sortie de route'**
+  String get claimsValueOffRoad;
+
+  /// No description provided for @claimsValuePedestrian.
+  ///
+  /// In fr, this message translates to:
+  /// **'Piéton'**
+  String get claimsValuePedestrian;
+
+  /// No description provided for @claimsValueMaterialAccident.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accident matériel'**
+  String get claimsValueMaterialAccident;
+
+  /// No description provided for @claimsValueOther.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre'**
+  String get claimsValueOther;
+
+  /// No description provided for @claimsValueMaterial.
+  ///
+  /// In fr, this message translates to:
+  /// **'Matériel'**
+  String get claimsValueMaterial;
+
+  /// No description provided for @claimsValueLight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Léger'**
+  String get claimsValueLight;
+
+  /// No description provided for @claimsValueSerious.
+  ///
+  /// In fr, this message translates to:
+  /// **'Grave'**
+  String get claimsValueSerious;
+
+  /// No description provided for @claimsValueParked.
+  ///
+  /// In fr, this message translates to:
+  /// **'En stationnement'**
+  String get claimsValueParked;
+
+  /// No description provided for @claimsValueLeavingParking.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quittait un stationnement'**
+  String get claimsValueLeavingParking;
+
+  /// No description provided for @claimsValueChangingLane.
+  ///
+  /// In fr, this message translates to:
+  /// **'Changeait de file'**
+  String get claimsValueChangingLane;
+
+  /// No description provided for @claimsValueOvertaking.
+  ///
+  /// In fr, this message translates to:
+  /// **'Doublait'**
+  String get claimsValueOvertaking;
+
+  /// No description provided for @claimsValueTurningRight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Virait à droite'**
+  String get claimsValueTurningRight;
+
+  /// No description provided for @claimsValueTurningLeft.
+  ///
+  /// In fr, this message translates to:
+  /// **'Virait à gauche'**
+  String get claimsValueTurningLeft;
+
+  /// No description provided for @claimsValueReversing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Reculait'**
+  String get claimsValueReversing;
+
+  /// No description provided for @claimsValueFront.
+  ///
+  /// In fr, this message translates to:
+  /// **'Avant'**
+  String get claimsValueFront;
+
+  /// No description provided for @claimsValueRear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Arrière'**
+  String get claimsValueRear;
+
+  /// No description provided for @claimsValueLeftSide.
+  ///
+  /// In fr, this message translates to:
+  /// **'Côté gauche'**
+  String get claimsValueLeftSide;
+
+  /// No description provided for @claimsValueRightSide.
+  ///
+  /// In fr, this message translates to:
+  /// **'Côté droit'**
+  String get claimsValueRightSide;
+
+  /// No description provided for @claimsValueQuote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Devis'**
+  String get claimsValueQuote;
+
+  /// No description provided for @claimsValueInvoice.
+  ///
+  /// In fr, this message translates to:
+  /// **'Facture'**
+  String get claimsValueInvoice;
+
+  /// No description provided for @claimsValuePoliceReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'PV de police'**
+  String get claimsValuePoliceReport;
+
+  /// No description provided for @claimsValueExpertReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rapport d\'expertise'**
+  String get claimsValueExpertReport;
+
+  /// No description provided for @claimsValueSupporting.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce'**
+  String get claimsValueSupporting;
+
+  /// No description provided for @claimsValuePhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo'**
+  String get claimsValuePhoto;
+
+  /// No description provided for @claimsValueVideo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vidéo'**
+  String get claimsValueVideo;
+
+  /// No description provided for @claimsValueVoiceNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Note vocale'**
+  String get claimsValueVoiceNote;
+
+  /// No description provided for @claimsValueAccidentReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat amiable'**
+  String get claimsValueAccidentReport;
+
+  /// No description provided for @claimsEventDraftCreated.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brouillon créé'**
+  String get claimsEventDraftCreated;
+
+  /// No description provided for @claimsEventDeclared.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déclaration complétée'**
+  String get claimsEventDeclared;
+
+  /// No description provided for @claimsEventEvidence.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} preuves ajoutées'**
+  String claimsEventEvidence(String count);
+
+  /// No description provided for @claimsEventSigned.
+  ///
+  /// In fr, this message translates to:
+  /// **'Double signature'**
+  String get claimsEventSigned;
+
+  /// No description provided for @claimsEventPdfLocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'PDF verrouillé'**
+  String get claimsEventPdfLocked;
+
+  /// No description provided for @claimsEventSent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Transmis aux assureurs'**
+  String get claimsEventSent;
+
+  /// No description provided for @claimsEventMoved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous déplacé'**
+  String get claimsEventMoved;
+
+  /// No description provided for @claimsEventReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rapport d’expertise joint'**
+  String get claimsEventReport;
+
+  /// No description provided for @claimsEventDetail.
+  ///
+  /// In fr, this message translates to:
+  /// **'{status} : {detail}'**
+  String claimsEventDetail(String status, String detail);
+
+  /// No description provided for @claimsNotifNew.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau sinistre reçu : {id}'**
+  String claimsNotifNew(String id);
+
+  /// No description provided for @claimsNotifRequested.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : pièce demandée ({document})'**
+  String claimsNotifRequested(String id, String document);
+
+  /// No description provided for @claimsNotifUploaded.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : pièce déposée ({name})'**
+  String claimsNotifUploaded(String id, String name);
+
+  /// No description provided for @claimsNotifMoved.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : rendez-vous d’expertise déplacé'**
+  String claimsNotifMoved(String id);
+
+  /// No description provided for @claimsNotifEvent.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : {event}'**
+  String claimsNotifEvent(String id, String event);
+
+  /// No description provided for @claimsNotifInReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre dossier {id} est en instruction.'**
+  String claimsNotifInReview(String id);
+
+  /// No description provided for @claimsNotifContract.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre contrat expire dans {days} jours.'**
+  String claimsNotifContract(String days);
+
   /// No description provided for @appTitle.
   ///
   /// In fr, this message translates to:

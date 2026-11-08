@@ -12,6 +12,7 @@ import 'package:mon_constat_digital/modules/claims/widgets/document_picker.dart'
 import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/offline_banner.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen(this.claim, {this.suggest, super.key});
@@ -39,6 +40,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _suggest() async {
     final sync = AppScope.of(context).claimsSync;
     final messenger = ScaffoldMessenger.of(context);
+    final unavailable = context.t.claimsSuggestionsUnavailable;
     setState(() => suggesting = true);
     try {
       final replies =
@@ -46,9 +48,7 @@ class _ChatScreenState extends State<ChatScreen> {
           await sync!.api.suggestReplies(widget.claim.id);
       if (mounted) setState(() => suggestions = replies);
     } catch (_) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Suggestions indisponibles.')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(unavailable)));
     } finally {
       if (mounted) setState(() => suggesting = false);
     }
@@ -85,6 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final stores = AppScope.of(context);
     final role = stores.users.role;
     final messages = stores.messages.messagesFor(widget.claim.id);
@@ -104,7 +105,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: messages.isEmpty
                   ? Center(
                       child: Text(
-                        'Aucun message sur ce dossier.',
+                        t.claimsNoMessages,
                         style: TextStyle(color: context.palette.textMuted),
                       ),
                     )
@@ -126,7 +127,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   children: [
                     for (final reply in suggestions)
                       Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsetsDirectional.only(end: 8),
                         child: ActionChip(
                           label: Text(reply),
                           onPressed: () => input.text = reply,
@@ -143,14 +144,14 @@ class _ChatScreenState extends State<ChatScreen> {
                       (stores.claimsSync != null ||
                           widget.suggest != null)) ...[
                     IconButton.outlined(
-                      tooltip: 'Suggérer une réponse',
+                      tooltip: t.claimsSuggestReply,
                       onPressed: suggesting ? null : _suggest,
                       icon: const Icon(Icons.lightbulb_outline),
                     ),
                     const SizedBox(width: 8),
                   ],
                   IconButton.outlined(
-                    tooltip: 'Joindre un fichier',
+                    tooltip: t.claimsAttachFile,
                     onPressed: _attach,
                     icon: const Icon(Icons.attach_file),
                   ),
@@ -158,14 +159,14 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       controller: input,
-                      decoration: const InputDecoration(
-                        hintText: 'Votre message',
+                      decoration: InputDecoration(
+                        hintText: t.claimsYourMessage,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(
-                    tooltip: 'Envoyer',
+                    tooltip: t.claimsSend,
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.accent,
                       foregroundColor: context.palette.text,
@@ -192,22 +193,26 @@ class _Bubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = mine ? Colors.white : context.palette.text;
     final muted = mine ? AppColors.onPrimaryMuted : context.palette.textMuted;
+    // Directionnel : en arabe, mes messages passent à gauche.
+    final side = mine
+        ? AlignmentDirectional.centerEnd
+        : AlignmentDirectional.centerStart;
     return Align(
-      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: side,
       child: FractionallySizedBox(
         widthFactor: .82,
-        alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+        alignment: side,
         child: Container(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: mine ? AppColors.primary : context.palette.surface,
             border: mine ? null : Border.all(color: context.palette.border),
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(18),
-              topRight: const Radius.circular(18),
-              bottomLeft: Radius.circular(mine ? 18 : 6),
-              bottomRight: Radius.circular(mine ? 6 : 18),
+            borderRadius: BorderRadiusDirectional.only(
+              topStart: const Radius.circular(18),
+              topEnd: const Radius.circular(18),
+              bottomStart: Radius.circular(mine ? 18 : 6),
+              bottomEnd: Radius.circular(mine ? 6 : 18),
             ),
           ),
           child: Column(

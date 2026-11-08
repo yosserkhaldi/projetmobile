@@ -11,6 +11,8 @@ import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/offline_banner.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
 class ClaimsScreen extends StatefulWidget {
   const ClaimsScreen({this.agentMode = false, super.key});
@@ -37,12 +39,14 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     final store = AppScope.of(context).claims;
     final filter = ClaimFilter(
       query: query,
       status: status,
       severity: severity,
       dates: dates,
+      display: t.claimValue,
     );
     final claims = store.claims.where(filter.matches).toList();
     return SafeArea(
@@ -50,16 +54,19 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
         children: [
           const OfflineBanner(),
           PageHead(
-            widget.agentMode ? 'Sinistres reçus' : 'Mes dossiers',
-            subtitle: '${claims.length} sur ${store.claims.length} dossiers',
+            widget.agentMode ? t.claimsReceived : t.claimsMyClaims,
+            subtitle: t.claimsCount(
+              '${claims.length}',
+              '${store.claims.length}',
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
               onChanged: (value) => setState(() => query = value),
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Filtrer par numéro, statut ou gravité',
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search),
+                hintText: t.claimsFilterHint,
               ),
             ),
           ),
@@ -70,14 +77,14 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
             child: Row(
               children: [
                 _Menu(
-                  label: 'Statut',
+                  label: t.claimsStatus,
                   value: status,
                   values: ClaimStatus.all,
                   onChanged: (value) => setState(() => status = value),
                 ),
                 const SizedBox(width: 8),
                 _Menu(
-                  label: 'Gravité',
+                  label: t.claimsSeverity,
                   value: severity,
                   values: ClaimFilter.severities,
                   onChanged: (value) => setState(() => severity = value),
@@ -86,7 +93,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
                 InputChip(
                   label: Text(
                     dates == null
-                        ? 'Date'
+                        ? t.claimsDate
                         : '${formatDay(dates!.start)} – '
                               '${formatDay(dates!.end)}',
                   ),
@@ -103,7 +110,7 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
             child: claims.isEmpty
                 ? Center(
                     child: Text(
-                      'Aucun dossier ne correspond.',
+                      t.claimsNoMatch,
                       style: TextStyle(color: context.palette.textMuted),
                     ),
                   )
@@ -143,11 +150,13 @@ class _Menu extends StatelessWidget {
     tooltip: label,
     onSelected: (selected) => onChanged(selected.isEmpty ? null : selected),
     itemBuilder: (_) => [
-      PopupMenuItem(value: '', child: Text('Tous : $label')),
-      ...values.map((e) => PopupMenuItem(value: e, child: Text(e))),
+      PopupMenuItem(value: '', child: Text(context.t.claimsAllOf(label))),
+      ...values.map(
+        (e) => PopupMenuItem(value: e, child: Text(context.t.claimValue(e))),
+      ),
     ],
     child: Chip(
-      label: Text(value ?? label),
+      label: Text(value == null ? label : context.t.claimValue(value!)),
       avatar: const Icon(Icons.arrow_drop_down, size: 18),
     ),
   );

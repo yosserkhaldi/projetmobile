@@ -6,6 +6,7 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/modules/claims/screens/chat_screen.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 
 /// Une conversation par dossier.
 class MessagesScreen extends StatelessWidget {
@@ -15,18 +16,16 @@ class MessagesScreen extends StatelessWidget {
     final stores = AppScope.of(context);
     final role = stores.users.role;
     final claims = stores.claims.claims;
+    final t = context.t;
     return SafeArea(
       child: Column(
         children: [
-          const PageHead(
-            'Messagerie',
-            subtitle: 'Une conversation par dossier',
-          ),
+          PageHead(t.claimsMessaging, subtitle: t.claimsOneConversation),
           Expanded(
             child: claims.isEmpty
                 ? Center(
                     child: Text(
-                      'Aucun dossier.',
+                      t.claimsNoClaims,
                       style: TextStyle(color: context.palette.textMuted),
                     ),
                   )
@@ -51,7 +50,7 @@ class MessagesScreen extends StatelessWidget {
                         ),
                         subtitle: Text(
                           messages.isEmpty
-                              ? 'Aucun message'
+                              ? t.claimsNoMessage
                               : messages.last.attachmentName ??
                                     messages.last.text,
                           maxLines: 1,

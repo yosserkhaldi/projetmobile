@@ -10,6 +10,7 @@ import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
 import 'package:mon_constat_digital/modules/claims/data/ids.dart';
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
 import 'package:mon_constat_digital/modules/claims/state/message_store.dart';
+import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 
 /// Envoie la file d'attente à l'API, puis recharge l'état du serveur.
@@ -58,6 +59,7 @@ class ClaimsSync extends ChangeNotifier {
   bool _disposed = false;
   Future<void>? _running;
   String? _userId;
+  AppLanguage? _language;
   Timer? _timer;
   io.Socket? _socket;
 
@@ -92,8 +94,18 @@ class ClaimsSync extends ChangeNotifier {
 
   void _onUserChanged() {
     final id = users.currentUser?.id;
-    if (id == _userId) return;
+    final language = users.currentUser?.language;
+    if (id == _userId) {
+      // Le serveur rédige l'analyse dans la langue du profil : on la recharge
+      // dès que le compte a enregistré la nouvelle langue.
+      if (id != null && language != _language) {
+        _language = language;
+        unawaited(synchronize());
+      }
+      return;
+    }
     _userId = id;
+    _language = language;
     _socket?.dispose();
     _socket = null;
     if (id == null) {

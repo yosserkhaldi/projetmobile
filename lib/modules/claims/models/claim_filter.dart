@@ -4,7 +4,13 @@ import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 
 /// Filtres de la liste des sinistres : texte, statut, gravité et date.
 class ClaimFilter {
-  const ClaimFilter({this.query = '', this.status, this.severity, this.dates});
+  const ClaimFilter({
+    this.query = '',
+    this.status,
+    this.severity,
+    this.dates,
+    this.display,
+  });
 
   static const severities = ['Matériel', 'Léger', 'Grave'];
 
@@ -12,15 +18,19 @@ class ClaimFilter {
   final String? status, severity;
   final DateTimeRange? dates;
 
+  /// Traduit une valeur enregistrée : la recherche trouve « Submitted »
+  /// comme « Transmis ».
+  final String Function(String value)? display;
+
   bool matches(Claim claim) {
     final text = query.trim().toLowerCase();
+    final values = [claim.status, claim.severity, claim.type];
     if (text.isNotEmpty &&
         ![
           claim.id,
-          claim.status,
-          claim.severity,
           claim.place,
-          claim.type,
+          ...values,
+          if (display case final translate?) ...values.map(translate),
         ].any((value) => value.toLowerCase().contains(text))) {
       return false;
     }
