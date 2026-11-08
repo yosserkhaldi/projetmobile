@@ -126,6 +126,32 @@ final companies = AppScope.of(context).companies.companies;
 final star = AppScope.of(context).companies.byId(companyId);
 ```
 
+### Compagnie d'assurance : du contrat jusqu'à l'agent
+
+Pour qu'un sinistre arrive aux agents de la bonne compagnie, chaque maillon garde l'**identifiant** de la compagnie (pas son nom en texte libre) :
+
+```text
+Contrat (module 2) --companyId--> Accident (module 3, véhicule déclaré) --> Sinistre (module 5, companyId) --> agents de cette compagnie
+```
+
+- **Module 2 :** choisir l'assureur avec `CompanyPicker` (liste du module 1, disponible hors ligne) et enregistrer `company.id` (et `agency.id`) dans le contrat. Côté API, vérifier avec `assertCompanyExists(companyId)`.
+- **Module 3 :** enregistrer le véhicule concerné dans la déclaration.
+- **Module 5 :** reprendre le `companyId` du contrat sur le sinistre, et filtrer les listes avec `companyScope(req)` : l'agent ne voit que sa compagnie, l'administrateur tout.
+
+```dart
+CompanyPicker(
+  companyId: contract.companyId,
+  onChanged: (company, agency) => setState(() => contract.companyId = company?.id),
+)
+```
+
+```js
+import { assertCompanyExists, companyScope, requireAuth } from '../../middleware/auth.js';
+
+await assertCompanyExists(req.body.companyId);                       // module 2
+prisma.claim.findMany({ where: { ...companyScope(req), status } });   // module 5
+```
+
 ## Travailler en équipe
 
 1. Partir de `main` à jour :

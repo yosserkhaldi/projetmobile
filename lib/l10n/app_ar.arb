@@ -239,5 +239,7 @@
   "dashIdentityTitle": "التحقق من هوية السائقين",
   "dashNetwork": "{companies} شركات · {agencies} وكالات",
   "dashAccidentsTitle": "الحوادث والملفات",
-  "dashAccidentsPending": "المؤشرات والتوزيع وخريطة المناطق الخطرة: متاحة حين ترسل الوحدتان 3 و5 بياناتهما إلى الخادم."
+  "dashAccidentsPending": "المؤشرات والتوزيع وخريطة المناطق الخطرة: متاحة حين ترسل الوحدتان 3 و5 بياناتهما إلى الخادم.",
+  "agencyLabel": "الوكالة",
+  "companiesOffline": "دون اتصال: قائمة محفوظة في {date}"
 }
