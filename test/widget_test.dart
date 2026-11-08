@@ -166,7 +166,10 @@ void main() {
       expect(find.byType(ProfileScreen), findsNothing);
       expect(backend.requests, contains('POST /auth/logout'));
       // Seule la langue choisie reste sur le téléphone.
-      expect(backend.storage.values, isEmpty);
+      // L'identifiant de l'appareil reste : sinon chaque reconnexion
+      // déclencherait une alerte « nouvel appareil ».
+      expect(backend.storage.values.keys, isNot(contains('refresh_token')));
+      expect(backend.storage.values.keys, isNot(contains('current_user')));
     });
   });
 
@@ -196,11 +199,18 @@ void main() {
         find.text('Les mots de passe ne correspondent pas.'),
         findsOneWidget,
       );
+      // Sans la case cochée, pas de compte (loi n° 2004-63).
+      expect(
+        find.text('Votre accord est nécessaire pour créer un compte.'),
+        findsOneWidget,
+      );
 
       await tester.enterText(
         field('Confirmer le mot de passe'),
         'Password123!',
       );
+      await tester.ensureVisible(find.byKey(const Key('consent')));
+      await tester.tap(find.byKey(const Key('consent')));
       await tester.ensureVisible(find.text('Créer mon compte'));
       await tester.tap(find.text('Créer mon compte'));
       await tester.pump();
@@ -216,6 +226,7 @@ void main() {
       expect(backend.bodies['POST /auth/phone/verify'], {'code': '123456'});
       expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
       expect(backend.stores.users.currentUser!.phoneVerified, isTrue);
+      expect(backend.bodies['POST /auth/register']!['consent'], isTrue);
     });
 
     testWidgets('e-mail déjà utilisé : erreur affichée', (tester) async {
@@ -237,6 +248,8 @@ void main() {
         field('Confirmer le mot de passe'),
         'Password123!',
       );
+      await tester.ensureVisible(find.byKey(const Key('consent')));
+      await tester.tap(find.byKey(const Key('consent')));
       await tester.ensureVisible(find.text('Créer mon compte'));
       await tester.tap(find.text('Créer mon compte'));
       await tester.pumpAndSettle();
@@ -285,8 +298,8 @@ void main() {
     testWidgets('sections, complétion et permis vide', (tester) async {
       final backend = FakeBackend();
       await openProfile(tester, backend);
-      // Téléphone vérifié : 1 élément sur 6.
-      expect(find.text('Profil complété à 17 %'), findsOneWidget);
+      // Téléphone vérifié : 1 élément sur 7 (photo, téléphone, permis ×4, identité).
+      expect(find.text('Profil complété à 14 %'), findsOneWidget);
       expect(find.text('IDENTITÉ'), findsOneWidget);
       await scrollProfileTo(tester, find.text('Ajouter mon permis'));
       expect(find.text('PRÉFÉRENCES'), findsOneWidget);
@@ -471,6 +484,258 @@ void main() {
     });
   });
 
+  group('sécurité du compte', () {
+    Future<void> openSecurity(WidgetTester tester, FakeBackend backend) async {
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      await scrollProfileTo(tester, find.text('Appareils connectés'));
+      await tester.tap(find.text('Appareils connectés'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('liste les appareils, puis en déconnecte un', (tester) async {
+      final backend = FakeBackend();
+      await openSecurity(tester, backend);
+      expect(find.text('Pixel de test'), findsWidgets);
+      expect(find.text('Cet appareil'), findsOneWidget);
+      expect(find.text('Chrome (web)'), findsWidgets);
+      // Alerte expliquée à l'utilisateur.
+      expect(find.textContaining('nouvel appareil'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Déconnecter'));
+      await tester.pumpAndSettle();
+      expect(find.text('Déconnecter Chrome (web) ?'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Déconnecter'));
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('DELETE /users/me/sessions/s-pc'));
+      expect(find.widgetWithText(TextButton, 'Déconnecter'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('déconnecte tous les autres appareils', (tester) async {
+      final backend = FakeBackend();
+      await openSecurity(tester, backend);
+      await tester.tap(find.text('Déconnecter les autres appareils'));
+      await tester.pumpAndSettle();
+      expect(
+        backend.requests,
+        contains('POST /users/me/sessions/revoke-others'),
+      );
+      expect(find.text('1 appareil déconnecté'), findsOneWidget);
+    });
+
+    testWidgets('historique : échecs signalés avec leur motif', (tester) async {
+      final backend = FakeBackend();
+      await openSecurity(tester, backend);
+      await tester.scrollUntilVisible(find.text('Mot de passe incorrect'), 200);
+      expect(find.text('Mot de passe incorrect'), findsOneWidget);
+      expect(find.text('Connexion réussie · mot de passe'), findsOneWidget);
+    });
+
+    testWidgets('envoie les en-têtes de l appareil à chaque requête', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      final login = backend.headers['POST /auth/login']!;
+      expect(login['X-Device-Id'], 'device-test');
+      expect(login['X-Device-Name'], 'Pixel de test');
+    });
+  });
+
+  group("vérification d'identité", () {
+    Future<void> openIdentity(WidgetTester tester, FakeBackend backend) async {
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      await scrollProfileTo(tester, find.byKey(const Key('open-identity')));
+      expect(find.text('Identité non vérifiée'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('open-identity')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('sans photos : demande refusée avant tout envoi', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await openIdentity(tester, backend);
+      await tester.enterText(field('N° de CIN'), '12345678');
+      await tester.tap(find.text('Envoyer pour vérification'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Ajoutez le recto et le verso de votre CIN.'),
+        findsOneWidget,
+      );
+      expect(
+        backend.requests,
+        isNot(contains('POST /users/me/identity/submit')),
+      );
+    });
+
+    testWidgets('avec les photos : envoyée, puis en cours de vérification', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: {
+          ...userJson(),
+          'identity': {
+            'status': 'UNVERIFIED',
+            'frontId': 'front.jpg',
+            'backId': 'back.jpg',
+          },
+        },
+      );
+      await openIdentity(tester, backend);
+      await tester.enterText(field('N° de CIN'), '1234');
+      await tester.tap(find.text('Envoyer pour vérification'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Le numéro de CIN contient 8 chiffres.'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(field('N° de CIN'), '12345678');
+      await tester.tap(find.text('Envoyer pour vérification'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['POST /users/me/identity/submit'], {
+        'cinNumber': '12345678',
+      });
+      expect(find.text('Vérification en cours'), findsOneWidget);
+      // Verrouillée pendant la vérification.
+      expect(find.text('Envoyer pour vérification'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('administrateur : valide une demande de la file', (
+      tester,
+    ) async {
+      final backend =
+          FakeBackend(
+              user: userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+            )
+            ..pendingIdentities = [
+              {
+                ...userJson(id: 'u2', firstName: 'Mouna', lastName: 'Trabelsi'),
+                'identity': {
+                  'status': 'PENDING',
+                  'cinNumber': '87654321',
+                  'frontId': 'f.jpg',
+                  'backId': 'b.jpg',
+                  'submittedAt': '2026-11-07T10:00:00.000Z',
+                },
+              },
+            ];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Identités'));
+      await tester.pumpAndSettle();
+      expect(find.text('Mouna Trabelsi'), findsOneWidget);
+
+      await tester.tap(find.text('Mouna Trabelsi'));
+      await tester.pumpAndSettle();
+      expect(find.text('87654321'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Valider'), 200);
+      await tester.tap(find.text('Valider'));
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('POST /users/u2/identity/approve'));
+      expect(find.text('Aucune demande en attente.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('administrateur : refus avec un motif choisi', (tester) async {
+      final backend =
+          FakeBackend(
+              user: userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+            )
+            ..pendingIdentities = [
+              {
+                ...userJson(id: 'u2', firstName: 'Mouna', lastName: 'Trabelsi'),
+                'identity': {'status': 'PENDING', 'cinNumber': '87654321'},
+              },
+            ];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Identités'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mouna Trabelsi'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Refuser'), 200);
+      await tester.tap(find.text('Refuser'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Photo floue'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Refuser'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['POST /users/u2/identity/reject'], {
+        'reason': 'Photo floue',
+      });
+    });
+  });
+
+  group('données personnelles', () {
+    testWidgets('suppression du compte : mot de passe, puis déconnexion', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      await scrollProfileTo(tester, find.byKey(const Key('delete-account')));
+      await tester.tap(find.byKey(const Key('delete-account')));
+      await tester.pumpAndSettle();
+      expect(find.text('Supprimer votre compte ?'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('confirm-delete')));
+      await tester.pumpAndSettle();
+      expect(backend.requests, isNot(contains('DELETE /users/me')));
+
+      await tester.enterText(field('Mot de passe'), 'Password123!');
+      await tester.tap(find.byKey(const Key('confirm-delete')));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['DELETE /users/me'], {'password': 'Password123!'});
+      expect(find.text('Connexion'), findsOneWidget);
+      expect(find.text('Votre compte a été supprimé.'), findsOneWidget);
+    });
+
+    testWidgets("export : récupère les données de l'API", (tester) async {
+      final backend = FakeBackend();
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      final data = await backend.stores.users.exportData();
+      expect(data['account']['email'], 'sami@example.com');
+    });
+
+    testWidgets('administrateur : pas de suppression depuis le profil', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: userJson(role: 'ADMIN'));
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      await scrollProfileTo(tester, find.byKey(const Key('export-data')));
+      expect(find.byKey(const Key('delete-account')), findsNothing);
+    });
+  });
+
+  testWidgets('tableau de bord : chiffres réels des comptes', (tester) async {
+    final backend = FakeBackend(user: userJson(role: 'ADMIN'));
+    await pumpApp(tester, backend);
+    await signIn(tester);
+    expect(find.text('Utilisateurs'), findsOneWidget);
+    expect(find.text('12'), findsOneWidget);
+    expect(find.text('3 identités vérifiées'), findsOneWidget);
+    expect(find.text('75 %'), findsOneWidget);
+    // Plus de chiffres fictifs d'accidents.
+    expect(find.text('248'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   group('administration', () {
     FakeBackend adminBackend() =>
         FakeBackend(
@@ -594,6 +859,27 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Empreinte ou Face ID'), findsOneWidget);
     });
+
+    testWidgets(
+      'empreinte ajoutée dans les réglages : option visible au retour',
+      (tester) async {
+        final backend = FakeBackend()..biometric.available = false;
+        await pumpApp(tester, backend);
+        await signIn(tester);
+        await tester.tap(find.text('Profil'));
+        await tester.pumpAndSettle();
+        expect(find.text('Connexion par empreinte'), findsNothing);
+
+        backend.biometric.available = true;
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pumpAndSettle();
+        await scrollProfileTo(tester, find.text('Connexion par empreinte'));
+        expect(find.text('Connexion par empreinte'), findsOneWidget);
+      },
+    );
 
     testWidgets('sans capteur : pas d option dans le profil', (tester) async {
       final backend = FakeBackend()..biometric.available = false;

@@ -34,7 +34,12 @@ describe('API sinistres', () => {
         role,
       },
     });
-    return { user, authorization: `Bearer ${signAccessToken(user)}` };
+    // Le module 1 lie chaque jeton à une session d'appareil.
+    const session = await prisma.session.create({ data: { userId: user.id } });
+    return {
+      user,
+      authorization: `Bearer ${signAccessToken(user, session.id)}`,
+    };
   }
 
   async function call(headers, method, route, body) {

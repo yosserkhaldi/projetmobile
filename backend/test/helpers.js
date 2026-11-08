@@ -29,17 +29,17 @@ export function migrate() {
 
 export const resetDatabase = () =>
   prisma.$executeRawUnsafe(
-    'TRUNCATE "User", "Company", "Agency", "RefreshToken", "VerificationCode", "DeviceKey" CASCADE',
+    'TRUNCATE "User", "Company", "Agency", "RefreshToken", "VerificationCode", "DeviceKey", "Session", "LoginEvent" CASCADE',
   );
 
 /** Démarre l'API sur un port libre et capture les SMS et e-mails envoyés. */
 export async function startApi(t) {
   const sent = { sms: [], mail: [] };
-  t.mock.method(notifier, 'sendSms', async (to, text) => {
+  t.mock.method(notifier, 'sendToPhone', async (to, text) => {
     sent.sms.push({ to, text });
   });
-  t.mock.method(notifier, 'sendMail', async (to, subject, text) => {
-    sent.mail.push({ to, subject, text });
+  t.mock.method(notifier, 'sendMail', async (to, subject, text, html) => {
+    sent.mail.push({ to, subject, text, html });
   });
   const server = createApp().listen(0);
   await new Promise((resolve) => server.once('listening', resolve));
@@ -77,6 +77,7 @@ export const driver = (overrides = {}) => ({
   email: 'sami@example.com',
   phone: '20 123 456',
   password: 'Password123!',
+  consent: true,
   ...overrides,
 });
 

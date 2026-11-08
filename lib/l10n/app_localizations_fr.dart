@@ -145,7 +145,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String otpInstructions(String phone) {
-    return 'Saisissez le code à 6 chiffres envoyé par SMS au $phone.';
+    return 'Saisissez le code à 6 chiffres envoyé sur WhatsApp au $phone.';
   }
 
   @override
@@ -289,7 +289,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get phoneChangeNotice =>
-      'Un nouveau numéro devra être vérifié par SMS.';
+      'Un nouveau numéro devra être vérifié par un code WhatsApp.';
 
   @override
   String get takePhoto => 'Prendre une photo';
@@ -524,4 +524,288 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get navDeclarations => 'Déclarations';
+
+  @override
+  String get securityDevicesTitle => 'Appareils connectés';
+
+  @override
+  String get securityDevicesSubtitle => 'Où votre compte est ouvert';
+
+  @override
+  String get thisDevice => 'Cet appareil';
+
+  @override
+  String lastActive(String when) {
+    return 'Actif le $when';
+  }
+
+  @override
+  String get signOutDevice => 'Déconnecter';
+
+  @override
+  String signOutDeviceConfirm(String name) {
+    return 'Déconnecter $name ?';
+  }
+
+  @override
+  String get signOutDeviceBody =>
+      'Cet appareil devra se reconnecter avec le mot de passe.';
+
+  @override
+  String get signOutOthers => 'Déconnecter les autres appareils';
+
+  @override
+  String signedOutOthers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count appareils déconnectés',
+      one: '1 appareil déconnecté',
+      zero: 'Aucun autre appareil connecté',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get unknownDevice => 'Appareil inconnu';
+
+  @override
+  String get securityAlertNote =>
+      'Une connexion depuis un nouvel appareil vous est signalée sur WhatsApp et par e-mail.';
+
+  @override
+  String get loginHistoryTitle => 'Historique des connexions';
+
+  @override
+  String get noHistory => 'Aucune connexion enregistrée.';
+
+  @override
+  String get loginSuccess => 'Connexion réussie';
+
+  @override
+  String get loginMethodPassword => 'mot de passe';
+
+  @override
+  String get loginMethodBiometric => 'empreinte';
+
+  @override
+  String get loginMethodRegister => 'création du compte';
+
+  @override
+  String get loginFailedWrongPassword => 'Mot de passe incorrect';
+
+  @override
+  String get loginFailedLocked => 'Tentative sur compte bloqué';
+
+  @override
+  String get loginFailedSuspended => 'Tentative sur compte suspendu';
+
+  @override
+  String get identityTitle => 'Vérification d\'identité';
+
+  @override
+  String get identityStatusUnverified => 'Identité non vérifiée';
+
+  @override
+  String get identityStatusPending => 'Vérification en cours';
+
+  @override
+  String get identityStatusVerified => 'Identité vérifiée';
+
+  @override
+  String get identityStatusRejected => 'Vérification refusée';
+
+  @override
+  String get identityIntro =>
+      'Un administrateur vérifie votre CIN. Elle est exigée pour signer un constat.';
+
+  @override
+  String get identityPendingNote =>
+      'Un administrateur vérifie vos documents. Vous serez prévenu sur WhatsApp et par e-mail.';
+
+  @override
+  String get identityVerifiedNote => 'Vous pouvez signer vos constats.';
+
+  @override
+  String identityRejectedReason(String reason) {
+    return 'Motif : $reason';
+  }
+
+  @override
+  String get cinNumberLabel => 'N° de CIN';
+
+  @override
+  String get cinInvalid => 'Le numéro de CIN contient 8 chiffres.';
+
+  @override
+  String get cinFront => 'Recto de la CIN';
+
+  @override
+  String get cinBack => 'Verso de la CIN';
+
+  @override
+  String get addPhoto => 'Ajouter la photo';
+
+  @override
+  String get identityPhotosRequired =>
+      'Ajoutez le recto et le verso de votre CIN.';
+
+  @override
+  String get submitIdentity => 'Envoyer pour vérification';
+
+  @override
+  String get identitySent =>
+      'Demande envoyée. Vous serez prévenu sur WhatsApp.';
+
+  @override
+  String get navIdentities => 'Identités';
+
+  @override
+  String get reviewTitle => 'Vérifications d\'identité';
+
+  @override
+  String get reviewSubtitle =>
+      'Demandes en attente, les plus anciennes en premier';
+
+  @override
+  String get noPendingReviews => 'Aucune demande en attente.';
+
+  @override
+  String submittedOn(String date) {
+    return 'Envoyée le $date';
+  }
+
+  @override
+  String get approve => 'Valider';
+
+  @override
+  String get reject => 'Refuser';
+
+  @override
+  String get rejectTitle => 'Motif du refus';
+
+  @override
+  String get rejectReasonBlurry => 'Photo floue';
+
+  @override
+  String get rejectReasonUnreadable => 'Document illisible';
+
+  @override
+  String get rejectReasonNameMismatch => 'Nom différent du compte';
+
+  @override
+  String get rejectReasonNotCin => 'Ce n\'est pas une CIN';
+
+  @override
+  String get otherReason => 'Autre motif';
+
+  @override
+  String get identityApproved => 'Identité validée, le titulaire est prévenu';
+
+  @override
+  String get identityRejected => 'Demande refusée, le titulaire est prévenu';
+
+  @override
+  String get errorIdentityLocked =>
+      'Votre identité est en cours de vérification ou déjà vérifiée.';
+
+  @override
+  String get errorCinInUse => 'Ce numéro de CIN est déjà utilisé.';
+
+  @override
+  String get errorIdentityNotVerified =>
+      'Votre identité doit être vérifiée avant cette action.';
+
+  @override
+  String get errorIdentityNotPending => 'Cette demande n\'est plus en attente.';
+
+  @override
+  String get consentLabel =>
+      'J\'accepte que mes données soient traitées pour la gestion de mes constats, conformément à la loi n° 2004-63.';
+
+  @override
+  String get consentRequired =>
+      'Votre accord est nécessaire pour créer un compte.';
+
+  @override
+  String get sectionPrivacy => 'Données personnelles';
+
+  @override
+  String get exportData => 'Télécharger mes données';
+
+  @override
+  String get exportDataSubtitle =>
+      'PDF de tout ce que Mon Constat garde sur vous';
+
+  @override
+  String get deleteAccount => 'Supprimer mon compte';
+
+  @override
+  String get deleteAccountSubtitle =>
+      'Définitif. Vos constats restent, sans votre nom.';
+
+  @override
+  String get deleteAccountTitle => 'Supprimer votre compte ?';
+
+  @override
+  String get deleteAccountBody =>
+      'Votre nom, vos coordonnées, votre permis, votre CIN et vos photos seront effacés. Les accidents et sinistres déjà déclarés restent, anonymes, comme l\'exige l\'assurance. Cette action est définitive.';
+
+  @override
+  String get deleteAccountConfirm => 'Supprimer définitivement';
+
+  @override
+  String get accountDeleted => 'Votre compte a été supprimé.';
+
+  @override
+  String get errorAdminCannotDelete =>
+      'Un administrateur ne peut pas supprimer son compte ici.';
+
+  @override
+  String get dashUsers => 'Utilisateurs';
+
+  @override
+  String dashActive(int count) {
+    return '$count actifs';
+  }
+
+  @override
+  String get dashPendingIds => 'À vérifier';
+
+  @override
+  String dashVerifiedIds(int count) {
+    return '$count identités vérifiées';
+  }
+
+  @override
+  String get dashPhones => 'Téléphones vérifiés';
+
+  @override
+  String get dashSignIns => 'Connexions 7 j';
+
+  @override
+  String dashFailed(int count) {
+    return '$count échecs';
+  }
+
+  @override
+  String get dashSignupsTitle => 'Inscriptions, 30 derniers jours';
+
+  @override
+  String get dashRolesTitle => 'Comptes par rôle';
+
+  @override
+  String get dashIdentityTitle => 'Vérification d\'identité des conducteurs';
+
+  @override
+  String dashNetwork(int companies, int agencies) {
+    return '$companies compagnies · $agencies agences';
+  }
+
+  @override
+  String get dashAccidentsTitle => 'Accidents et sinistres';
+
+  @override
+  String get dashAccidentsPending =>
+      'Indicateurs, répartition et carte des zones à risque : disponibles dès que les modules 3 et 5 envoient leurs données au serveur.';
 }

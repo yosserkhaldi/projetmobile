@@ -17,7 +17,9 @@ services:
 
   api:
     build: ./backend
-    # Facultatif : ANTHROPIC_API_KEY reste dans ce fichier, ignoré par git.
+    # SMTP_* (e-mails), clés d'IA et autres réglages locaux. Facultatif : sans
+    # ce fichier, les e-mails s'affichent dans les logs et le module 5 répond
+    # avec ses règles.
     env_file:
       - path: ./backend/.env
         required: false
@@ -28,6 +30,8 @@ services:
       DATABASE_URL: postgresql://monconstat:monconstat@db:5432/monconstat
       JWT_SECRET: secret-de-developpement
       UPLOAD_DIR: /app/uploads
+      # Service « whatsapp » du même fichier (profil whatsapp).
+      WHATSAPP_API_URL: http://whatsapp:2785/api
     volumes:
       - uploads:/app/uploads
     ports:
@@ -36,6 +40,30 @@ services:
       db:
         condition: service_healthy
 
+  # Codes de vérification sur WhatsApp (facultatif) : docker compose --profile whatsapp up
+  # OpenWA (MIT, non officiel) : lier un numéro de réserve, jamais un numéro principal.
+  # Tableau de bord et QR code : http://localhost:2785 (voir README).
+  whatsapp:
+    image: ghcr.io/rmyndharis/openwa:0.27.1
+    profiles: [whatsapp]
+    restart: unless-stopped
+    stop_grace_period: 75s
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 127.0.0.1:2785:2785
+    environment:
+      - TZ=Africa/Tunis
+      - PORT=2785
+      - ENGINE_TYPE=whatsapp-web.js
+      - AUTO_START_SESSIONS=true
+      - SEND_PACING_ENABLED=true
+      # Tableau de bord servi en HTTP sur localhost : sinon il s affiche vide.
+      - CSP_UPGRADE_INSECURE_REQUESTS=false
+    volumes:
+      - whatsapp-data:/app/data
+
 volumes:
   db-data:
+  whatsapp-data:
   uploads:

@@ -10,6 +10,10 @@ info:
     `POST /auth/refresh` en donne un nouveau. La session expire après 30 minutes
     sans rafraîchissement.
 
+    **Appareil.** L'application envoie `X-Device-Id` (identifiant aléatoire gardé sur le
+    téléphone) et `X-Device-Name` (modèle). Ils servent à la liste des appareils et aux
+    alertes de connexion depuis un nouvel appareil.
+
     **Erreurs.** Toutes les erreurs ont la forme `{ "error": { "code", "message" } }`.
     Le message est en français et peut être affiché tel quel.
 servers:
@@ -23,6 +27,12 @@ tags:
     description: Module 1 — comptes et rôles (administrateur)
   - name: Compagnies
     description: Module 1 — compagnies d'assurance et agences
+  - name: Sécurité
+    description: Module 1 — appareils connectés et historique des connexions
+  - name: Identité
+    description: Module 1 — vérification de la CIN par un administrateur
+  - name: Données personnelles
+    description: Module 1 — loi n° 2004-63 (export, suppression du compte)
 
 paths:
   /health:
@@ -261,6 +271,26 @@ paths:
         '200': { $ref: '#/components/responses/UserResponse' }
         '400': { $ref: '#/components/responses/ValidationError' }
         '409': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [Données personnelles]
+      summary: Supprimer mon compte
+      description: |
+        Le compte est anonymisé (nom, e-mail, téléphone, permis, CIN, photos effacés)
+        pour que les accidents et sinistres des autres modules restent cohérents.
+        Refusé pour un administrateur.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password: { type: string }
+      responses:
+        '204': { description: Compte supprimé }
+        '401': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
 
   /users/me/photo:
     put:
@@ -315,6 +345,180 @@ paths:
         '200': { $ref: '#/components/responses/Image' }
         '403': { $ref: '#/components/responses/Error' }
         '404': { $ref: '#/components/responses/Error' }
+
+  /users/me/export:
+    get:
+      tags: [Données personnelles]
+      summary: Télécharger mes données (JSON)
+      description: Profil, consentement, appareils et connexions. Aucun secret (mot de passe, jetons).
+      responses:
+        '200':
+          description: Export complet
+          content:
+            application/json:
+              schema: { type: object }
+
+  /users/stats:
+    get:
+      tags: [Administration]
+      summary: Statistiques des comptes
+      description: Comptes par rôle, identités par état, connexions sur 7 jours, inscriptions par jour.
+      parameters:
+        - { name: days, in: query, schema: { type: integer, minimum: 7, maximum: 90, default: 30 } }
+      responses:
+        '200':
+          description: Statistiques
+          content:
+            application/json:
+              schema: { type: object }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /users/me/sessions:
+    get:
+      tags: [Sécurité]
+      summary: Appareils connectés
+      description: Sessions encore valables. `current` marque l'appareil qui fait la requête.
+      responses:
+        '200':
+          description: Appareils
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/DeviceSession' }
+
+  /users/me/sessions/{sessionId}:
+    delete:
+      tags: [Sécurité]
+      summary: Déconnecter un appareil
+      description: Son jeton d'accès est refusé tout de suite, même s'il n'a pas expiré.
+      parameters:
+        - { name: sessionId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Déconnecté }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /users/me/sessions/revoke-others:
+    post:
+      tags: [Sécurité]
+      summary: Déconnecter tous les autres appareils
+      responses:
+        '200':
+          description: Nombre d'appareils déconnectés
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  revoked: { type: integer }
+
+  /users/me/login-events:
+    get:
+      tags: [Sécurité]
+      summary: Historique des 30 dernières connexions
+      responses:
+        '200':
+          description: Connexions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/LoginEvent' }
+
+  /users/me/identity/{side}:
+    put:
+      tags: [Identité]
+      summary: Envoyer le recto ou le verso de la CIN
+      description: Refusé (409 IDENTITY_LOCKED) pendant la vérification ou une fois vérifiée.
+      parameters: [{ $ref: '#/components/parameters/Side' }]
+      requestBody: { $ref: '#/components/requestBodies/Image' }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /users/me/identity/submit:
+    post:
+      tags: [Identité]
+      summary: Demander la vérification d'identité
+      description: Recto et verso requis. Le compte passe à PENDING.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cinNumber]
+              properties:
+                cinNumber: { type: string, pattern: '^\d{8}$' }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/identity/{side}:
+    get:
+      tags: [Identité]
+      summary: Photo de la CIN
+      description: Le titulaire et les administrateurs seulement.
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+        - { $ref: '#/components/parameters/Side' }
+      responses:
+        '200': { $ref: '#/components/responses/Image' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /users/identity/pending:
+    get:
+      tags: [Identité]
+      summary: Demandes à vérifier (administrateurs)
+      description: Les plus anciennes d'abord.
+      responses:
+        '200':
+          description: Comptes en attente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/User' }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/identity/approve:
+    post:
+      tags: [Identité]
+      summary: Valider une identité
+      description: Le titulaire est prévenu sur WhatsApp et par e-mail.
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/identity/reject:
+    post:
+      tags: [Identité]
+      summary: Refuser une identité avec un motif
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 3, maxLength: 300 }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '409': { $ref: '#/components/responses/Error' }
 
   /users:
     get:
@@ -500,6 +704,11 @@ components:
       bearerFormat: JWT
 
   parameters:
+    Side:
+      name: side
+      in: path
+      required: true
+      schema: { type: string, enum: [front, back] }
     Id:
       name: id
       in: path
@@ -609,6 +818,36 @@ components:
         licensePhotoId:
           type: [string, 'null']
           description: Image servie par GET /users/{id}/license-photo.
+        identity:
+          type: object
+          properties:
+            status: { type: string, enum: [UNVERIFIED, PENDING, VERIFIED, REJECTED] }
+            cinNumber: { type: [string, 'null'] }
+            frontId: { type: [string, 'null'] }
+            backId: { type: [string, 'null'] }
+            submittedAt: { type: [string, 'null'], format: date-time }
+            rejectionReason: { type: [string, 'null'] }
+    DeviceSession:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        deviceName: { type: [string, 'null'] }
+        ip: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+        lastUsedAt: { type: string, format: date-time }
+        current: { type: boolean }
+    LoginEvent:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        success: { type: boolean }
+        method: { type: string, enum: [password, biometric, register] }
+        reason:
+          type: [string, 'null']
+          description: wrong_password, locked ou suspended pour un échec
+        deviceName: { type: [string, 'null'] }
+        ip: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
     Session:
       type: object
       properties:
@@ -622,7 +861,7 @@ components:
         expiresAt: { type: string, format: date-time }
     RegisterInput:
       type: object
-      required: [firstName, lastName, email, phone, password]
+      required: [firstName, lastName, email, phone, password, consent]
       properties:
         firstName: { type: string }
         lastName: { type: string }
@@ -630,6 +869,10 @@ components:
         phone: { type: string, description: 8 chiffres pour un numéro tunisien }
         password: { type: string, minLength: 8 }
         language: { type: string, enum: [FR, AR, EN], description: Facultatif, FR par défaut }
+        consent:
+          type: boolean
+          const: true
+          description: Consentement au traitement des données (loi n° 2004-63), obligatoire
     ProfileInput:
       type: object
       properties:

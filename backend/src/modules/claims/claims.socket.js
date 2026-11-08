@@ -10,9 +10,9 @@ export function attachClaimsSocket(httpServer) {
     path: '/api/claims/socket',
     cors: { origin: '*' },
   });
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     try {
-      socket.user = identifySocket(socket.handshake.auth ?? {});
+      socket.user = await identifySocket(socket.handshake.auth ?? {});
       next();
     } catch (error) {
       next(error);

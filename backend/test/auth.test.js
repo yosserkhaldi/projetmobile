@@ -360,6 +360,22 @@ test('mot de passe oublié : change le mot de passe, ferme les sessions, lève l
   );
 });
 
+test('e-mail de réinitialisation : dans la langue du compte, nom échappé', async (t) => {
+  const { call, sent } = await startApi(t);
+  await call('POST', '/auth/register', {
+    body: driver({ firstName: '<b>Sami</b>', language: 'AR' }),
+  });
+  await call('POST', '/auth/password/forgot', {
+    body: { email: 'sami@example.com' },
+  });
+  const [mail] = sent.mail;
+  assert.equal(mail.subject, 'رمز إعادة تعيين كلمة المرور');
+  assert.match(mail.html, /dir="rtl"/);
+  assert.match(mail.html, /&#60;b&#62;Sami/);
+  assert.doesNotMatch(mail.html, /<b>Sami/);
+  assert.match(mail.text, /\d{6}/);
+});
+
 test('un code OTP de téléphone ne réinitialise pas le mot de passe', async (t) => {
   const { call, sent } = await startApi(t);
   await call('POST', '/auth/register', { body: driver() });

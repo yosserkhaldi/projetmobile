@@ -1,4 +1,5 @@
 import { HttpError } from '../../lib/errors.js';
+import { prisma } from '../../lib/prisma.js';
 import { verifyAccessToken } from '../../lib/tokens.js';
 import { requireAuth } from '../../middleware/auth.js';
 
@@ -13,12 +14,20 @@ export async function requireUser(req, res, next) {
   next();
 }
 
-// Le canal temps réel ne reçoit qu'un signal : le jeton suffit.
-export function identifySocket({ token }) {
+// Le canal temps réel applique les mêmes contrôles que requireAuth : compte
+// actif et session d'appareil non révoquée depuis « Mes appareils ».
+export async function identifySocket({ token }) {
+  const invalid = new HttpError(401, 'TOKEN_INVALID', 'Jeton invalide ou expiré.');
+  let payload;
   try {
-    const { sub, role } = verifyAccessToken(token);
-    return { id: sub, role: role.toLowerCase() };
+    payload = verifyAccessToken(token);
   } catch {
-    throw new HttpError(401, 'TOKEN_INVALID', 'Jeton invalide ou expiré.');
+    throw invalid;
   }
+  const [user, session] = await Promise.all([
+    prisma.user.findUnique({ where: { id: payload.sub } }),
+    payload.sid ? prisma.session.findUnique({ where: { id: payload.sid } }) : null,
+  ]);
+  if (!user || !user.active || !session || session.revokedAt) throw invalid;
+  return { id: user.id, role: user.role.toLowerCase() };
 }

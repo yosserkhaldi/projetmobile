@@ -47,6 +47,8 @@ class AccidentReview extends StatelessWidget {
         rows: [
           ('Nom', draft.driverBName),
           if (draft.driverBPermit.isNotEmpty) ('Permis', draft.driverBPermit),
+          if (draft.driverBPermitExpiry.isNotEmpty)
+            ('Validité du permis', draft.driverBPermitExpiry),
           ('Immatriculation', draft.driverBPlate),
           ('Assurance', draft.driverBInsurer),
         ],

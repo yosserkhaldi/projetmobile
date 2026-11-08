@@ -4,27 +4,44 @@ import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter/foundation.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
+import 'package:mon_constat_digital/core/network/device_identity.dart';
 import 'package:mon_constat_digital/core/network/token_storage.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/models/security.dart';
 
 enum AuthStatus { unknown, signedOut, signedIn }
 
 /// Les deux photos d'un compte, avec leur route dans l'API.
+/// Photos d'un compte, avec leur route dans l'API.
 enum UserPhoto {
   profile('photo'),
-  license('license-photo');
+  license('license-photo'),
+  cinFront('identity/front'),
+  cinBack('identity/back');
 
   const UserPhoto(this.path);
   final String path;
 
-  String? idOf(AppUser user) =>
-      this == profile ? user.photoId : user.licensePhotoId;
+  String? idOf(AppUser user) => switch (this) {
+    profile => user.photoId,
+    license => user.licensePhotoId,
+    cinFront => user.identity.frontId,
+    cinBack => user.identity.backId,
+  };
+
+  /// Les photos de la CIN ne se suppriment pas : on les remplace.
+  bool get deletable => this == profile || this == license;
 }
 
 /// Session et profil de l'utilisateur connecté.
 class UserStore extends ChangeNotifier {
-  UserStore(this._api, this._storage, this._biometric) {
+  UserStore(
+    this._api,
+    this._storage,
+    this._biometric, {
+    DeviceHeadersLoader deviceHeaders = loadDeviceHeaders,
+  }) : _deviceHeaders = deviceHeaders {
     _api.onSessionExpired = _signOutLocally;
     _api.onSessionRefreshed = _applySession;
   }
@@ -37,6 +54,7 @@ class UserStore extends ChangeNotifier {
   final ApiClient _api;
   final SessionStorage _storage;
   final BiometricAuth _biometric;
+  final DeviceHeadersLoader _deviceHeaders;
 
   AuthStatus status = AuthStatus.unknown;
   AppUser? currentUser;
@@ -69,6 +87,7 @@ class UserStore extends ChangeNotifier {
   /// rester possible hors ligne.
   Future<void> restore() async {
     try {
+      _api.deviceHeaders = await _deviceHeaders(_storage);
       final theme = await _storage.read(_themeKey);
       themeMode = ThemeMode.values.firstWhere(
         (mode) => mode.name == theme,
@@ -137,6 +156,8 @@ class UserStore extends ChangeNotifier {
         'phone': phone,
         'password': password,
         'language': language.apiValue,
+        // Case cochée à l'inscription (loi n° 2004-63).
+        'consent': true,
       },
     );
     await _startSession(session as Map<String, dynamic>);
@@ -181,6 +202,16 @@ class UserStore extends ChangeNotifier {
 
   Future<void> updateProfile(Map<String, Object?> changes) async {
     _setUser(await _api.patch('/users/me', body: changes));
+  }
+
+  /// Revérifie le capteur, par exemple après un passage dans les réglages.
+  Future<void> refreshBiometricAvailability() async {
+    final available = await _biometric.isAvailable();
+    final enabled = available && await _storage.read(_deviceKey) != null;
+    if (available == biometricAvailable && enabled == biometricEnabled) return;
+    biometricAvailable = available;
+    biometricEnabled = enabled;
+    notifyListeners();
   }
 
   /// Active la connexion biométrique après une empreinte réussie.
@@ -282,6 +313,64 @@ class UserStore extends ChangeNotifier {
     if (id == null) return null;
     return _photoCache[id] ??= await _api.getBytes(
       '/users/${user.id}/${photo.path}',
+    );
+  }
+
+  // --- Sécurité du compte -------------------------------------------------
+
+  Future<List<DeviceSession>> loadSessions() async {
+    final body = await _api.get('/users/me/sessions') as Map<String, dynamic>;
+    return [
+      for (final item in body['items'] as List)
+        DeviceSession.fromJson(item as Map<String, dynamic>),
+    ];
+  }
+
+  /// Déconnecter cet appareil-ci revient à se déconnecter.
+  Future<void> revokeSession(DeviceSession session) async {
+    if (session.current) return logout();
+    await _api.delete('/users/me/sessions/${session.id}');
+  }
+
+  Future<int> revokeOtherSessions() async {
+    final body =
+        await _api.post('/users/me/sessions/revoke-others')
+            as Map<String, dynamic>;
+    return body['revoked'] as int;
+  }
+
+  Future<List<LoginEvent>> loadLoginEvents() async {
+    final body =
+        await _api.get('/users/me/login-events') as Map<String, dynamic>;
+    return [
+      for (final item in body['items'] as List)
+        LoginEvent.fromJson(item as Map<String, dynamic>),
+    ];
+  }
+
+  // --- Données personnelles (loi n° 2004-63) ---------------------------------
+
+  /// Tout ce que l'API garde sur le compte.
+  Future<Map<String, dynamic>> exportData() async =>
+      await _api.get('/users/me/export') as Map<String, dynamic>;
+
+  /// Supprime (anonymise) le compte, puis déconnecte ce téléphone.
+  Future<void> deleteAccount(String password) async {
+    await _api.delete('/users/me', body: {'password': password});
+    await _storage.delete(_deviceKey);
+    biometricEnabled = false;
+    await _api.closeSession();
+    _signOutLocally();
+  }
+
+  // --- Vérification d'identité ----------------------------------------------
+
+  Future<void> submitIdentity(String cinNumber) async {
+    _setUser(
+      await _api.post(
+        '/users/me/identity/submit',
+        body: {'cinNumber': cinNumber},
+      ),
     );
   }
 

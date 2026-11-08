@@ -15,6 +15,17 @@ class AdminStore extends ChangeNotifier {
   int usersTotal = 0;
   List<Company> companies = const [];
 
+  /// Statistiques des comptes pour le tableau de bord.
+  Map<String, dynamic>? stats;
+
+  Future<void> loadStats() async {
+    stats = await _api.get('/users/stats') as Map<String, dynamic>;
+    notifyListeners();
+  }
+
+  /// Identités en attente de vérification, les plus anciennes d'abord.
+  List<AppUser> pendingIdentities = const [];
+
   Future<void> loadUsers({String query = ''}) async {
     final response =
         await _api.get(
@@ -64,6 +75,33 @@ class AdminStore extends ChangeNotifier {
       },
     );
     await loadUsers();
+  }
+
+  Future<void> loadPendingIdentities() async {
+    final response =
+        await _api.get('/users/identity/pending') as Map<String, dynamic>;
+    pendingIdentities = [
+      for (final user in response['items'] as List)
+        AppUser.fromJson(user as Map<String, dynamic>),
+    ];
+    notifyListeners();
+  }
+
+  Future<void> approveIdentity(AppUser user) =>
+      _decideIdentity(_api.post('/users/${user.id}/identity/approve'), user);
+
+  Future<void> rejectIdentity(AppUser user, String reason) => _decideIdentity(
+    _api.post('/users/${user.id}/identity/reject', body: {'reason': reason}),
+    user,
+  );
+
+  Future<void> _decideIdentity(Future<dynamic> decision, AppUser user) async {
+    await decision;
+    pendingIdentities = [
+      for (final pending in pendingIdentities)
+        if (pending.id != user.id) pending,
+    ];
+    notifyListeners();
   }
 
   Future<void> loadCompanies() async {

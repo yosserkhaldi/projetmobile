@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 
+import { newLoginEmail, passwordResetEmail } from '../../lib/emails.js';
 import { HttpError, isUniqueViolation } from '../../lib/errors.js';
 import { notifier } from '../../lib/notifier.js';
 import { prisma } from '../../lib/prisma.js';
@@ -52,37 +53,144 @@ export function publicUser(user) {
     // Identifiants opaques : changent à chaque nouvelle photo (cache côté app).
     photoId: user.photoFile ?? null,
     licensePhotoId: user.licensePhotoFile ?? null,
+    identity: {
+      status: user.identityStatus,
+      cinNumber: user.cinNumber,
+      frontId: user.cinFrontFile ?? null,
+      backId: user.cinBackFile ?? null,
+      submittedAt: user.identitySubmittedAt?.toISOString() ?? null,
+      rejectionReason: user.identityRejectionReason,
+    },
   };
 }
 
-async function openSession(user) {
+/**
+ * Ouvre une session pour un appareil, ou la prolonge (`sessionId`).
+ * `device` vient des en-têtes X-Device-Id et X-Device-Name de l'application.
+ */
+async function openSession(user, device = {}, sessionId = null) {
+  const now = new Date();
+  const session = sessionId
+    ? await prisma.session.update({
+        where: { id: sessionId },
+        data: { lastUsedAt: now, ip: device.ip ?? undefined },
+      })
+    : await prisma.session.create({
+        data: {
+          userId: user.id,
+          deviceId: device.deviceId,
+          deviceName: device.deviceName,
+          ip: device.ip,
+        },
+      });
   const refreshToken = newRefreshToken();
   await prisma.refreshToken.create({
     data: {
       userId: user.id,
+      sessionId: session.id,
       tokenHash: hashToken(refreshToken),
-      expiresAt: new Date(Date.now() + SESSION_MS),
+      expiresAt: new Date(now.getTime() + SESSION_MS),
     },
   });
   return {
     user: publicUser(user),
-    accessToken: signAccessToken(user),
+    accessToken: signAccessToken(user, session.id),
     refreshToken,
   };
 }
 
 /** Ferme toutes les sessions et désactive la connexion biométrique. */
-export const revokeSessions = (userId) =>
-  prisma.$transaction([
+export const revokeSessions = (userId) => {
+  const revokedAt = new Date();
+  return prisma.$transaction([
+    prisma.session.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt },
+    }),
     prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },
-      data: { revokedAt: new Date() },
+      data: { revokedAt },
     }),
     prisma.deviceKey.updateMany({
       where: { userId, revokedAt: null },
-      data: { revokedAt: new Date() },
+      data: { revokedAt },
     }),
   ]);
+};
+
+/** Déconnecte un appareil : sa session et ses jetons. */
+export async function revokeSession(userId, sessionId) {
+  const revokedAt = new Date();
+  const { count } = await prisma.session.updateMany({
+    where: { id: sessionId, userId, revokedAt: null },
+    data: { revokedAt },
+  });
+  if (count === 0) {
+    throw new HttpError(404, 'NOT_FOUND', 'Appareil introuvable.');
+  }
+  await prisma.refreshToken.updateMany({
+    where: { sessionId, revokedAt: null },
+    data: { revokedAt },
+  });
+}
+
+export async function revokeOtherSessions(userId, currentSessionId) {
+  const revokedAt = new Date();
+  const others = { userId, revokedAt: null, id: { not: currentSessionId } };
+  const ids = (
+    await prisma.session.findMany({ where: others, select: { id: true } })
+  ).map((s) => s.id);
+  await prisma.$transaction([
+    prisma.session.updateMany({ where: others, data: { revokedAt } }),
+    prisma.refreshToken.updateMany({
+      where: { sessionId: { in: ids }, revokedAt: null },
+      data: { revokedAt },
+    }),
+  ]);
+  return ids.length;
+}
+
+async function recordLogin(userId, method, device, success, reason = null) {
+  await prisma.loginEvent
+    .create({
+      data: {
+        userId,
+        method,
+        success,
+        reason,
+        deviceName: device.deviceName,
+        ip: device.ip,
+      },
+    })
+    .catch((err) => console.error('Historique de connexion', err));
+}
+
+/**
+ * Prévient le titulaire, sur WhatsApp et par e-mail, d'une connexion depuis
+ * un appareil jamais vu sur son compte.
+ */
+async function alertIfNewDevice(user, device) {
+  if (!device.deviceId) return;
+  const known = await prisma.session.count({
+    where: { userId: user.id, deviceId: device.deviceId },
+  });
+  if (known > 0) return;
+  const message = newLoginEmail({
+    firstName: user.firstName,
+    language: user.language,
+    deviceName: device.deviceName,
+    when: new Date(),
+  });
+  // Sans attendre : l'alerte ne doit jamais ralentir ni bloquer la connexion.
+  void Promise.allSettled([
+    notifier.sendToPhone(user.phone, message.text),
+    notifier.sendMail(user.email, message.subject, message.text, message.html),
+  ]).then((results) => {
+    for (const r of results) {
+      if (r.status === 'rejected') console.error('Alerte de connexion', r.reason);
+    }
+  });
+}
 
 /**
  * Enregistre un nouveau code, ce qui invalide les précédents.
@@ -147,18 +255,25 @@ async function consumeCode(userId, purpose, code) {
 async function sendPhoneCode(user) {
   const code = await createCode(user.id, 'PHONE_VERIFICATION');
   if (!code) return false;
-  await notifier.sendSms(
+  await notifier.sendToPhone(
     user.phone,
     `Mon Constat Digital : votre code est ${code}.`,
   );
   return true;
 }
 
-export async function register({ password, ...data }) {
+export async function register(
+  { password, consent: _, ...data },
+  device = {},
+) {
   let user;
   try {
     user = await prisma.user.create({
-      data: { ...data, passwordHash: await hashPassword(password) },
+      data: {
+        ...data,
+        passwordHash: await hashPassword(password),
+        consentAt: new Date(),
+      },
       include: withCompany,
     });
   } catch (err) {
@@ -175,10 +290,11 @@ export async function register({ password, ...data }) {
   await sendPhoneCode(user).catch((err) =>
     console.error('Envoi du SMS impossible', err),
   );
-  return openSession(user);
+  await recordLogin(user.id, 'register', device, true);
+  return openSession(user, device);
 }
 
-export async function login({ identifier, password }) {
+export async function login({ identifier, password }, device = {}) {
   const invalid = new HttpError(
     401,
     'INVALID_CREDENTIALS',
@@ -193,6 +309,7 @@ export async function login({ identifier, password }) {
     throw invalid;
   }
   if (user.lockedUntil && user.lockedUntil > new Date()) {
+    await recordLogin(user.id, 'password', device, false, 'locked');
     throw new HttpError(
       423,
       'ACCOUNT_LOCKED',
@@ -210,20 +327,24 @@ export async function login({ identifier, password }) {
         data: { failedLogins: 0, lockedUntil: new Date(Date.now() + LOCK_MS) },
       });
     }
+    await recordLogin(user.id, 'password', device, false, 'wrong_password');
     throw invalid;
   }
   // Vérifié après le mot de passe : seul le titulaire apprend que le compte est suspendu.
   if (!user.active) {
+    await recordLogin(user.id, 'password', device, false, 'suspended');
     throw new HttpError(403, 'ACCOUNT_SUSPENDED', 'Ce compte est suspendu.');
   }
   await prisma.user.update({
     where: { id: user.id },
     data: { failedLogins: 0, lockedUntil: null },
   });
-  return openSession(user);
+  await recordLogin(user.id, 'password', device, true);
+  await alertIfNewDevice(user, device);
+  return openSession(user, device);
 }
 
-export async function refresh(token) {
+export async function refresh(token, device = {}) {
   const expired = new HttpError(
     401,
     'SESSION_EXPIRED',
@@ -231,9 +352,12 @@ export async function refresh(token) {
   );
   const row = await prisma.refreshToken.findUnique({
     where: { tokenHash: hashToken(token) },
-    include: { user: { include: withCompany } },
+    include: { user: { include: withCompany }, session: true },
   });
   if (!row) throw expired;
+
+  // Appareil déconnecté à distance : seule cette session est concernée.
+  if (row.session.revokedAt) throw expired;
 
   // Un jeton déjà utilisé qui revient peut avoir été volé : toutes les sessions tombent.
   if (row.revokedAt || row.expiresAt <= new Date() || !row.user.active) {
@@ -248,14 +372,25 @@ export async function refresh(token) {
     await revokeSessions(row.userId);
     throw expired;
   }
-  return openSession(row.user);
+  return openSession(row.user, device, row.sessionId);
 }
 
 export async function logout(token) {
-  await prisma.refreshToken.updateMany({
-    where: { tokenHash: hashToken(token), revokedAt: null },
-    data: { revokedAt: new Date() },
+  const row = await prisma.refreshToken.findUnique({
+    where: { tokenHash: hashToken(token) },
   });
+  if (!row) return;
+  const revokedAt = new Date();
+  await prisma.$transaction([
+    prisma.refreshToken.updateMany({
+      where: { sessionId: row.sessionId, revokedAt: null },
+      data: { revokedAt },
+    }),
+    prisma.session.updateMany({
+      where: { id: row.sessionId, revokedAt: null },
+      data: { revokedAt },
+    }),
+  ]);
 }
 
 export async function resendPhoneCode(user) {
@@ -288,12 +423,13 @@ export async function forgotPassword(email) {
   if (!user) return;
   const code = await createCode(user.id, 'PASSWORD_RESET');
   if (!code) return;
+  const message = passwordResetEmail({
+    firstName: user.firstName,
+    language: user.language,
+    code,
+  });
   await notifier
-    .sendMail(
-      user.email,
-      'Réinitialisation de votre mot de passe',
-      `Votre code de réinitialisation est ${code}. Il est valable 15 minutes.`,
-    )
+    .sendMail(user.email, message.subject, message.text, message.html)
     .catch((err) => console.error("Envoi de l'e-mail impossible", err));
 }
 
@@ -329,7 +465,7 @@ export const enableBiometric = (user) => issueDeviceKey(user.id);
  * Connexion après une empreinte ou une reconnaissance faciale réussie sur
  * l'appareil. La clé est remplacée à chaque usage, comme le jeton de session.
  */
-export async function biometricLogin(deviceToken) {
+export async function biometricLogin(deviceToken, device = {}) {
   const invalid = new HttpError(
     401,
     'BIOMETRIC_INVALID',
@@ -355,7 +491,9 @@ export async function biometricLogin(deviceToken) {
   });
   if (rotated.count === 0) throw invalid;
 
-  const session = await openSession(key.user);
+  await recordLogin(key.userId, 'biometric', device, true);
+  await alertIfNewDevice(key.user, device);
+  const session = await openSession(key.user, device);
   return { ...session, ...(await issueDeviceKey(key.userId)) };
 }
 

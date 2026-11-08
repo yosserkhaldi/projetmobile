@@ -56,6 +56,9 @@ class ApiClient {
 
   /// Jeton courant, pour les canaux hors HTTP (Socket.IO).
   String? get accessToken => _accessToken;
+
+  /// X-Device-Id et X-Device-Name, ajoutés à chaque requête (device_identity.dart).
+  Map<String, String> deviceHeaders = const {};
   Future<Map<String, dynamic>>? _refreshing;
 
   /// La session ne peut plus être renouvelée : il faut se reconnecter.
@@ -218,6 +221,7 @@ class ApiClient {
     Duration? timeout,
   }) async {
     final limit = timeout ?? _timeout;
+    request.headers.addAll(deviceHeaders);
     if (auth && _accessToken != null) {
       request.headers['Authorization'] = 'Bearer $_accessToken';
     }

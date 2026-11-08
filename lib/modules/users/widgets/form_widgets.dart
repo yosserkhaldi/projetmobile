@@ -56,6 +56,12 @@ String errorMessage(BuildContext context, Object error) {
     'COMPANY_IN_USE' => t.errorCompanyInUse,
     'SELF_CHANGE' => t.errorSelfChange,
     'VALIDATION_ERROR' => t.errorInvalidData,
+    'IDENTITY_LOCKED' => t.errorIdentityLocked,
+    'ADMIN_CANNOT_DELETE' => t.errorAdminCannotDelete,
+    'IDENTITY_PHOTOS_REQUIRED' => t.identityPhotosRequired,
+    'CIN_IN_USE' => t.errorCinInUse,
+    'IDENTITY_NOT_VERIFIED' => t.errorIdentityNotVerified,
+    'IDENTITY_NOT_PENDING' => t.errorIdentityNotPending,
     _ => t.errorGeneric,
   };
 }

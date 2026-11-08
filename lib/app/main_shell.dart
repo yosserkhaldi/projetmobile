@@ -10,6 +10,7 @@ import 'package:mon_constat_digital/modules/claims/screens/messages_screen.dart'
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/admin_dashboard_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/companies_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/identity_review_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/profile_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/users_screen.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/vehicles_screen.dart';
@@ -45,6 +46,7 @@ class _MainShellState extends State<MainShell> {
         : const [
             AdminDashboard(),
             UsersScreen(),
+            IdentityReviewScreen(),
             CompaniesScreen(),
             ProfileScreen(),
           ];
@@ -67,6 +69,7 @@ class _MainShellState extends State<MainShell> {
         : [
             (t.navDashboard, Icons.dashboard),
             (t.navAccounts, Icons.people),
+            (t.navIdentities, Icons.verified_user_outlined),
             (t.navCompanies, Icons.business),
             (t.navProfile, Icons.person),
           ];

@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
@@ -434,11 +436,31 @@ class DescriptionStep extends StatelessWidget {
   );
 }
 
-class EvidenceStep extends StatelessWidget {
+class EvidenceStep extends StatefulWidget {
   const EvidenceStep({required this.draft, required this.onChanged, super.key});
   final AccidentDraft draft;
   final VoidCallback onChanged;
-  static final _media = AccidentMediaService();
+
+  @override
+  State<EvidenceStep> createState() => _EvidenceStepState();
+}
+
+class _EvidenceStepState extends State<EvidenceStep> {
+  final _media = AccidentMediaService();
+  final _voiceRecorder = AccidentVoiceRecorder();
+  final _audioPlayer = AudioPlayer();
+  bool _recording = false;
+  bool _capturingVideo = false;
+
+  AccidentDraft get draft => widget.draft;
+  VoidCallback get onChanged => widget.onChanged;
+
+  @override
+  void dispose() {
+    _voiceRecorder.dispose();
+    _audioPlayer.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => Column(
@@ -501,29 +523,244 @@ class EvidenceStep extends StatelessWidget {
       _MediaTile(
         icon: Icons.videocam_outlined,
         title: 'Vidéo de la scène',
-        subtitle: draft.videoAdded
-            ? 'Vidéo ajoutée • 18 s'
-            : '30 secondes maximum',
+        subtitle: _capturingVideo
+            ? 'Ouverture de la caméra…'
+            : draft.videoAdded
+            ? 'Vidéo enregistrée • touchez pour la lire'
+            : 'Filmez la scène • 30 secondes maximum',
         selected: draft.videoAdded,
-        onTap: () {
-          draft.videoAdded = !draft.videoAdded;
-          onChanged();
-        },
+        onTap: _capturingVideo
+            ? null
+            : draft.videoAdded
+            ? _showVideoActions
+            : _captureVideo,
       ),
       _MediaTile(
-        icon: Icons.mic_none_outlined,
-        title: 'Note vocale',
-        subtitle: draft.voiceNoteAdded
-            ? 'Note ajoutée • 12 s'
+        icon: _recording ? Icons.stop_circle_outlined : Icons.mic_none_outlined,
+        title: _recording ? 'Arrêter l’enregistrement' : 'Note vocale',
+        subtitle: _recording
+            ? 'Enregistrement en cours… touchez pour arrêter'
+            : draft.voiceNoteAdded
+            ? 'Note enregistrée • touchez pour écouter'
             : 'Décrivez la scène avec votre voix',
         selected: draft.voiceNoteAdded,
-        onTap: () {
-          draft.voiceNoteAdded = !draft.voiceNoteAdded;
-          onChanged();
-        },
+        active: _recording,
+        onTap: _recording
+            ? _stopRecording
+            : draft.voiceNoteAdded
+            ? _showAudioActions
+            : _startRecording,
       ),
       const SizedBox(height: 16),
       AccidentSummary(draft: draft),
+    ],
+  );
+
+  Future<void> _captureVideo() async {
+    setState(() => _capturingVideo = true);
+    try {
+      final savedPath = await _media.captureVideo();
+      if (savedPath == null || !mounted) return;
+      draft
+        ..videoPath = savedPath
+        ..videoAdded = true;
+      onChanged();
+      setState(() {});
+    } catch (_) {
+      if (mounted) _message('Impossible d’enregistrer la vidéo.');
+    } finally {
+      if (mounted) setState(() => _capturingVideo = false);
+    }
+  }
+
+  Future<void> _startRecording() async {
+    try {
+      final destination = await _media.voiceNoteDestination();
+      final allowed = await _voiceRecorder.start(destination);
+      if (!mounted) return;
+      if (!allowed) {
+        _message('Autorisez le microphone pour enregistrer une note vocale.');
+        return;
+      }
+      draft.voiceNotePath = destination;
+      setState(() => _recording = true);
+    } catch (_) {
+      if (mounted) _message('Impossible de démarrer le microphone.');
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    final savedPath = await _voiceRecorder.stop();
+    if (!mounted) return;
+    draft
+      ..voiceNotePath = savedPath ?? draft.voiceNotePath
+      ..voiceNoteAdded = savedPath != null;
+    onChanged();
+    setState(() => _recording = false);
+  }
+
+  Future<void> _showVideoActions() async {
+    final file = File(draft.videoPath);
+    if (draft.videoPath.isEmpty || !await file.exists()) {
+      _clearVideo();
+      _message('La vidéo n’existe plus. Vous pouvez la reprendre.');
+      return;
+    }
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (_) =>
+          _VideoPreviewDialog(path: draft.videoPath, onDelete: _clearVideo),
+    );
+  }
+
+  Future<void> _showAudioActions() async {
+    final file = File(draft.voiceNotePath);
+    if (draft.voiceNotePath.isEmpty || !await file.exists()) {
+      _clearAudio();
+      _message('La note vocale n’existe plus. Vous pouvez la refaire.');
+      return;
+    }
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Note vocale',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 14),
+              ListTile(
+                leading: const Icon(Icons.play_circle_outline),
+                title: const Text('Écouter'),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await _audioPlayer.play(
+                    DeviceFileSource(draft.voiceNotePath),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.refresh),
+                title: const Text('Refaire l’enregistrement'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _clearAudio();
+                  _startRecording();
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.delete_outline,
+                  color: AppColors.errorSolid,
+                ),
+                title: const Text('Supprimer'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _clearAudio();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _clearVideo() {
+    if (draft.videoPath.isNotEmpty) File(draft.videoPath).delete().ignore();
+    draft
+      ..videoPath = ''
+      ..videoAdded = false;
+    onChanged();
+    if (mounted) setState(() {});
+  }
+
+  void _clearAudio() {
+    _audioPlayer.stop();
+    if (draft.voiceNotePath.isNotEmpty) {
+      File(draft.voiceNotePath).delete().ignore();
+    }
+    draft
+      ..voiceNotePath = ''
+      ..voiceNoteAdded = false;
+    onChanged();
+    if (mounted) setState(() {});
+  }
+
+  void _message(String text) => ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(text)));
+}
+
+class _VideoPreviewDialog extends StatefulWidget {
+  const _VideoPreviewDialog({required this.path, required this.onDelete});
+  final String path;
+  final VoidCallback onDelete;
+
+  @override
+  State<_VideoPreviewDialog> createState() => _VideoPreviewDialogState();
+}
+
+class _VideoPreviewDialogState extends State<_VideoPreviewDialog> {
+  late final VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.file(File(widget.path))
+      ..initialize().then((_) {
+        if (mounted) setState(() {});
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Vidéo de la scène'),
+    content: _controller.value.isInitialized
+        ? AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+          )
+        : const SizedBox(
+            height: 180,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+    actions: [
+      TextButton.icon(
+        onPressed: () {
+          widget.onDelete();
+          Navigator.pop(context);
+        },
+        icon: const Icon(Icons.delete_outline),
+        label: const Text('Supprimer'),
+      ),
+      FilledButton.icon(
+        onPressed: _controller.value.isInitialized
+            ? () {
+                setState(() {
+                  _controller.value.isPlaying
+                      ? _controller.pause()
+                      : _controller.play();
+                });
+              }
+            : null,
+        icon: Icon(
+          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+        ),
+        label: Text(_controller.value.isPlaying ? 'Pause' : 'Lire'),
+      ),
     ],
   );
 }
@@ -661,21 +898,33 @@ class _MediaTile extends StatelessWidget {
     required this.subtitle,
     required this.selected,
     required this.onTap,
+    this.active = false,
   });
   final IconData icon;
   final String title, subtitle;
   final bool selected;
-  final VoidCallback onTap;
+  final bool active;
+  final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) => Card(
     child: ListTile(
       leading: Icon(
         icon,
-        color: selected ? AppColors.successText : AppColors.primary,
+        color: active
+            ? AppColors.errorSolid
+            : selected
+            ? AppColors.successText
+            : AppColors.primary,
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
       subtitle: Text(subtitle),
-      trailing: Icon(selected ? Icons.check_circle : Icons.chevron_right),
+      trailing: Icon(
+        active
+            ? Icons.stop_circle
+            : selected
+            ? Icons.check_circle
+            : Icons.chevron_right,
+      ),
       onTap: onTap,
     ),
   );

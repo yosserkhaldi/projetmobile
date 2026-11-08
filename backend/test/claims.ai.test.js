@@ -281,7 +281,11 @@ describe('API intelligence', () => {
         role,
       },
     });
-    return { authorization: `Bearer ${signAccessToken(user)}`, id: user.id };
+    const session = await prisma.session.create({ data: { userId: user.id } });
+    return {
+      authorization: `Bearer ${signAccessToken(user, session.id)}`,
+      id: user.id,
+    };
   }
 
   async function call(headers, method, route, body) {
