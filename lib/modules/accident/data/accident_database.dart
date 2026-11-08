@@ -237,6 +237,11 @@ QueryExecutor _openConnection() {
   return driftDatabase(
     name: 'mon_constat_accidents',
     native: DriftNativeOptions(databasePath: _legacyDatabasePath),
+    // Sur le web (Chrome), drift a besoin de ces deux fichiers de web/.
+    web: DriftWebOptions(
+      sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+      driftWorker: Uri.parse('drift_worker.js'),
+    ),
   );
 }
 

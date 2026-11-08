@@ -133,6 +133,11 @@ class VehicleDatabase extends _$VehicleDatabase {
 QueryExecutor _openConnection() => driftDatabase(
   name: 'mon_constat_vehicles',
   native: DriftNativeOptions(databasePath: _databasePath),
+  // Sur le web (Chrome), drift a besoin de ces deux fichiers de web/.
+  web: DriftWebOptions(
+    sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+    driftWorker: Uri.parse('drift_worker.js'),
+  ),
 );
 
 Future<String> _databasePath() async {
