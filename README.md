@@ -120,7 +120,10 @@ Côté Flutter, passer par le client partagé. Il ajoute le jeton, le renouvelle
 ```dart
 final response = await AppScope.of(context).api.get('/vehicles');
 final user = AppScope.of(context).users.currentUser;
-final companies = AppScope.of(context).admin.companies; // après loadCompanies()
+// Compagnies et agences (module 1), disponibles hors ligne grâce à SQLite :
+await AppScope.of(context).companies.load();
+final companies = AppScope.of(context).companies.companies;
+final star = AppScope.of(context).companies.byId(companyId);
 ```
 
 ## Travailler en équipe

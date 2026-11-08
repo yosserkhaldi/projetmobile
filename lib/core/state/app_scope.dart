@@ -7,7 +7,9 @@ import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
 import 'package:mon_constat_digital/modules/accident/state/accident_store.dart';
 import 'package:mon_constat_digital/modules/claims/state/message_store.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
+import 'package:mon_constat_digital/modules/users/data/users_database.dart';
 import 'package:mon_constat_digital/modules/users/state/admin_store.dart';
+import 'package:mon_constat_digital/modules/users/state/company_store.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/vehicles/data/vehicle_database.dart';
 import 'package:mon_constat_digital/modules/vehicles/state/vehicle_store.dart';
@@ -20,19 +22,24 @@ class AppStores {
     BiometricAuth? biometric,
     DeviceHeadersLoader? deviceHeaders,
     VehicleDatabase? vehicleDb,
+    UsersDatabase? usersDb,
   }) : storage = storage ?? const SecureSessionStorage() {
+    final localDb = usersDb ?? UsersDatabase.tryOpen();
     this.api = api ?? ApiClient(storage: this.storage);
     users = UserStore(
       this.api,
       this.storage,
       biometric ?? DeviceBiometricAuth(),
       deviceHeaders: deviceHeaders ?? loadDeviceHeaders,
+      localDb: localDb,
     );
-    admin = AdminStore(this.api);
+    companies = CompanyStore(this.api, localDb);
+    admin = AdminStore(this.api, companies);
     vehicles = VehicleStore(vehicleDb ?? VehicleDatabase());
     listenable = Listenable.merge([
       accidents,
       users,
+      companies,
       admin,
       vehicles,
       claims,
@@ -46,6 +53,9 @@ class AppStores {
   late final ApiClient api;
   late final UserStore users;
   late final AdminStore admin;
+
+  /// Compagnies et agences, pour tous les modules (copie hors ligne en SQLite).
+  late final CompanyStore companies;
   final accidents = AccidentStore();
   late final VehicleStore vehicles;
   final claims = ClaimStore();
