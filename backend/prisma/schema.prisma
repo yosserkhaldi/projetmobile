@@ -26,6 +26,11 @@ enum CodePurpose {
   PASSWORD_RESET
 }
 
+enum AccidentStatus {
+  DRAFT
+  SUBMITTED
+}
+
 model User {
   id              String    @id @default(uuid()) @db.Uuid
   firstName       String
@@ -53,9 +58,33 @@ model User {
   refreshTokens     RefreshToken[]
   verificationCodes VerificationCode[]
   deviceKeys        DeviceKey[]
+  accidents         Accident[]
 
   @@index([role])
   @@index([companyId])
+}
+
+// Module 3 : copie serveur d'une déclaration créée hors ligne.
+// `clientId` rend les synchronisations répétées idempotentes et `payload`
+// conserve l'ensemble du formulaire sans dépendre des modules 2, 4 ou 5.
+model Accident {
+  id          String         @id @default(uuid()) @db.Uuid
+  clientId    String
+  userId      String         @db.Uuid
+  status      AccidentStatus @default(DRAFT)
+  currentStep Int            @default(0)
+  place       String
+  occurredAt  DateTime
+  payload     Json
+  revision    Int            @default(1)
+  submittedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clientId])
+  @@index([userId, status, updatedAt])
 }
 
 model Company {
