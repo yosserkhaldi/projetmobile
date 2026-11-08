@@ -161,7 +161,8 @@ class _AccidentWizardState extends State<AccidentWizard> {
       status: 'Transmis',
       observations: draft.observations,
     );
-    claim.circumstances.addAll(draft.circumstances);
+    // Module 5 : la proposition de responsabilité lit les cases du déclarant (A).
+    claim.circumstances.addAll(draft.circumstancesA);
     claim.impactZones.addAll(draft.impactZones);
     claim.timeline.addAll([
       'Déclaration complétée',
