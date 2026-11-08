@@ -1,11 +1,13 @@
 import 'dart:convert';
 
+import 'package:drift/native.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/network/token_storage.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
+import 'package:mon_constat_digital/modules/users/data/users_database.dart';
 
 /// Plus petit PNG valide (1 × 1 pixel).
 final tinyPng = base64Decode(
@@ -76,7 +78,12 @@ Map<String, dynamic> userJson({
 
 /// Imite l'API sans réseau. `user` est le compte renvoyé à la connexion.
 class FakeBackend {
-  FakeBackend({Map<String, dynamic>? user}) : user = user ?? userJson();
+  FakeBackend({Map<String, dynamic>? user, UsersDatabase? usersDb})
+    : user = user ?? userJson(),
+      usersDb = usersDb ?? UsersDatabase(NativeDatabase.memory());
+
+  /// SQLite du module 1, en mémoire. Partagée pour simuler un redémarrage.
+  final UsersDatabase usersDb;
 
   Map<String, dynamic> user;
   final storage = MemoryStorage();
@@ -146,6 +153,7 @@ class FakeBackend {
   late final AppStores stores = AppStores(
     storage: storage,
     biometric: biometric,
+    usersDb: usersDb,
     deviceHeaders: (_) async => {
       'X-Device-Id': 'device-test',
       'X-Device-Name': 'Pixel de test',

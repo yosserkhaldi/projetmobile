@@ -239,5 +239,7 @@
   "dashIdentityTitle": "Driver identity checks",
   "dashNetwork": "{companies} companies · {agencies} branches",
   "dashAccidentsTitle": "Accidents and claims",
-  "dashAccidentsPending": "Indicators, breakdowns and the hotspot map: available as soon as modules 3 and 5 send their data to the server."
+  "dashAccidentsPending": "Indicators, breakdowns and the hotspot map: available as soon as modules 3 and 5 send their data to the server.",
+  "agencyLabel": "Branch",
+  "companiesOffline": "Offline: list saved on {date}"
 }

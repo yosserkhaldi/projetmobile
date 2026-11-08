@@ -73,3 +73,41 @@ export const requireRole =
     }
     next();
   };
+
+/**
+ * Filtre Prisma « dossiers visibles par ce compte », à placer dans un `where`
+ * (après `requireAuth`). Pour le module 5 :
+ *
+ *   const claims = await prisma.claim.findMany({ where: { ...companyScope(req) } });
+ *
+ * - administrateur : tous les dossiers ;
+ * - agent : seulement ceux de sa compagnie (`companyId` du compte) ;
+ * - conducteur : refusé, il passe par ses propres dossiers.
+ * `field` change le nom du champ si le modèle ne l'appelle pas `companyId`.
+ */
+export function companyScope(req, field = 'companyId') {
+  const { role, companyId } = req.user;
+  if (role === 'ADMIN') return {};
+  if (role === 'AGENT') {
+    if (!companyId) {
+      throw new HttpError(
+        403,
+        'AGENT_WITHOUT_COMPANY',
+        "Ce compte agent n'est rattaché à aucune compagnie.",
+      );
+    }
+    return { [field]: companyId };
+  }
+  throw new HttpError(403, 'FORBIDDEN', 'Accès refusé pour ce rôle.');
+}
+
+/** Vérifie qu'une compagnie existe, par exemple avant d'enregistrer un contrat. */
+export async function assertCompanyExists(companyId) {
+  const company = companyId
+    ? await prisma.company.findUnique({ where: { id: companyId } })
+    : null;
+  if (!company) {
+    throw new HttpError(400, 'COMPANY_NOT_FOUND', 'Compagnie introuvable.');
+  }
+  return company;
+}

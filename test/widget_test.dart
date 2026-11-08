@@ -140,7 +140,7 @@ void main() {
       await pumpApp(tester, first);
       await signIn(tester);
 
-      final backend = FakeBackend()..offline = true;
+      final backend = FakeBackend(usersDb: first.usersDb)..offline = true;
       backend.storage.values.addAll(first.storage.values);
       await tester.pumpWidget(const SizedBox());
       await pumpApp(tester, backend);
@@ -160,10 +160,13 @@ void main() {
       expect(find.byType(ProfileScreen), findsOneWidget);
 
       await scrollProfileTo(tester, find.text('Se déconnecter'));
+      // Le profil est gardé en SQLite tant que la session est ouverte.
+      expect(await backend.usersDb.loadProfile(), isNotNull);
       await tester.tap(find.text('Se déconnecter'));
       await tester.pumpAndSettle();
       expect(find.text('Connexion'), findsOneWidget);
       expect(find.byType(ProfileScreen), findsNothing);
+      expect(await backend.usersDb.loadProfile(), isNull);
       expect(backend.requests, contains('POST /auth/logout'));
       // Seule la langue choisie reste sur le téléphone.
       // L'identifiant de l'appareil reste : sinon chaque reconnexion

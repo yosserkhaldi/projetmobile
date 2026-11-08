@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/network/device_identity.dart';
 import 'package:mon_constat_digital/core/network/token_storage.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
+import 'package:mon_constat_digital/modules/users/data/users_database.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/models/security.dart';
 
@@ -41,7 +42,9 @@ class UserStore extends ChangeNotifier {
     this._storage,
     this._biometric, {
     DeviceHeadersLoader deviceHeaders = loadDeviceHeaders,
-  }) : _deviceHeaders = deviceHeaders {
+    UsersDatabase? localDb,
+  }) : _deviceHeaders = deviceHeaders,
+       _localDb = localDb {
     _api.onSessionExpired = _signOutLocally;
     _api.onSessionRefreshed = _applySession;
   }
@@ -55,6 +58,10 @@ class UserStore extends ChangeNotifier {
   final SessionStorage _storage;
   final BiometricAuth _biometric;
   final DeviceHeadersLoader _deviceHeaders;
+
+  /// Copie SQLite du profil, pour démarrer et pré-remplir le constat hors
+  /// ligne. `null` sur le web.
+  final UsersDatabase? _localDb;
 
   AuthStatus status = AuthStatus.unknown;
   AppUser? currentUser;
@@ -408,17 +415,26 @@ class UserStore extends ChangeNotifier {
     currentUser = user;
     status = AuthStatus.signedIn;
     notifyListeners();
-    _storage.write(_userKey, jsonEncode(user.toJson()));
+    _localDb?.saveProfile(user).catchError((Object e) {
+      debugPrint('Profil hors ligne non enregistré : $e');
+    });
   }
 
   void _signOutLocally() {
     currentUser = null;
     status = AuthStatus.signedOut;
     notifyListeners();
+    // Ancien emplacement du profil (avant SQLite), effacé au passage.
     _storage.delete(_userKey);
+    _localDb?.clearProfile().catchError((Object e) {
+      debugPrint('Profil hors ligne non effacé : $e');
+    });
   }
 
   Future<AppUser?> _readCachedUser() async {
+    final saved = await _localDb?.loadProfile();
+    if (saved != null) return saved;
+    // Profil enregistré par une version précédente de l'application.
     final text = await _storage.read(_userKey);
     return text == null
         ? null

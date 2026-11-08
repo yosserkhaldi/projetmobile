@@ -361,5 +361,14 @@
     }
   },
   "dashAccidentsTitle": "Accidents et sinistres",
-  "dashAccidentsPending": "Indicateurs, répartition et carte des zones à risque : disponibles dès que les modules 3 et 5 envoient leurs données au serveur."
+  "dashAccidentsPending": "Indicateurs, répartition et carte des zones à risque : disponibles dès que les modules 3 et 5 envoient leurs données au serveur.",
+  "agencyLabel": "Agence",
+  "companiesOffline": "Hors ligne : liste enregistrée le {date}",
+  "@companiesOffline": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
 }
