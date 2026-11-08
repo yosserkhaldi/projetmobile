@@ -35,12 +35,25 @@ async function findLinkedSession() {
 }
 
 /** `+21620123456` devient l'identifiant WhatsApp `21620123456@c.us`. */
-export const chatId = (phone) => `${phone.replace(/\D/g, '')}@c.us`;
+export function chatId(phone) {
+  const digits = String(phone).replace(/\D/g, '');
+  if (!/^\d{8,15}$/.test(digits)) {
+    throw new Error('Numéro de téléphone invalide pour WhatsApp');
+  }
+  return `${digits}@c.us`;
+}
+
+// L'identifiant vient d'OpenWA : on le vérifie avant de le mettre dans l'URL.
+const SESSION_ID = /^[\w-]{1,64}$/;
 
 export async function sendWhatsApp(phone, text) {
+  const to = chatId(phone);
   const session = await findLinkedSession();
-  await call(`/sessions/${session.id}/messages/send-text`, {
+  if (!SESSION_ID.test(String(session.id))) {
+    throw new Error('Identifiant de session WhatsApp inattendu');
+  }
+  await call(`/sessions/${encodeURIComponent(session.id)}/messages/send-text`, {
     method: 'POST',
-    body: JSON.stringify({ chatId: chatId(phone), text }),
+    body: JSON.stringify({ chatId: to, text }),
   });
 }

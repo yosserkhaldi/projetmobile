@@ -182,7 +182,7 @@ function notifyDecision(user) {
       ? t.approved
       : t.rejected(user.identityRejectionReason);
   // Sans attendre : la décision est enregistrée même si l'envoi échoue.
-  Promise.allSettled([
+  void Promise.allSettled([
     notifier.sendToPhone(user.phone, text),
     notifier.sendMail(user.email, 'Mon Constat', text),
   ]).then((results) => {
