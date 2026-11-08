@@ -200,6 +200,7 @@ describe('API sinistres avec chaque fournisseur', () => {
     useEnvironment({ AI_PROVIDER: 'none' });
     await prisma.claim.deleteMany({ where: { driverId: driver.id } });
     await prisma.aiCall.deleteMany();
+    await prisma.claimAiNote.deleteMany();
   });
 
   after(async () => {
@@ -405,6 +406,41 @@ describe('API sinistres avec chaque fournisseur', () => {
     assert.equal(fallback.body.source, 'rules');
     const failed = await prisma.aiCall.findFirst({ where: { ok: false } });
     assert.match(failed.error, /Not logged in/);
+  });
+
+  test('sans modèle, les règles répondent dans la langue du profil', async () => {
+    const id = await newClaim();
+    // Leïla est en anglais, Sami en arabe.
+    const english = await ask(agent, id, [{ role: 'user', content: 'Responsibility?' }]);
+    assert.equal(english.body.source, 'rules');
+    assert.match(english.body.answer, /^Proposal: A 100 %\. Reversing: risky manoeuvre by A\./);
+
+    const arabic = await ask(driver, id, [{ role: 'user', content: 'متى ينتهي ملفي؟' }]);
+    assert.match(arabic.body.answer, /^بقي حوالي \d+ أيام/);
+    const money = await ask(driver, id, [{ role: 'user', content: 'كم مبلغ التعويض؟' }]);
+    assert.match(money.body.answer, /العون/);
+
+    const summary = await call(agent, 'POST', `/${id}/ai/summary`);
+    assert.match(summary.body.summary, /^Collision \(Serious\) in Sousse, status Submitted\./);
+    assert.match(summary.body.summary, /Next action: Take on the claim\./);
+
+    await call(driver, 'POST', `/${id}/messages`, { body: 'Bonjour ?' });
+    const replies = await call(agent, 'POST', `/${id}/ai/replies`);
+    assert.match(replies.body.replies[0], /^Hello, your claim has been received/);
+  });
+
+  test('l’analyse envoyée à chacun est rédigée dans sa langue', async () => {
+    const id = await newClaim();
+    const forAgent = (await call(agent, 'GET', '/sync')).body.insights[id];
+    assert.equal(forAgent.nextAction.label, 'Take on the claim.');
+    // Le niveau reste un code ; seul le libellé est traduit.
+    assert.ok(['faible', 'moyen', 'élevé'].includes(forAgent.risk.level));
+    assert.ok(['low', 'medium', 'high'].includes(forAgent.risk.label));
+    assert.deepEqual(forAgent.missingDocuments.map((d) => d.label), ['Devis', 'PV de police']);
+    assert.equal(forAgent.missingDocuments[1].reason, 'Required for a serious claim.');
+
+    const forDriver = (await call(driver, 'GET', '/sync')).body.insights[id];
+    assert.equal(forDriver.driver.headline, 'تم استلام ملفك. سيتكفّل به أحد الأعوان.');
   });
 
   test('l’état dit quel modèle répond', async () => {

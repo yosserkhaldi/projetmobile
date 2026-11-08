@@ -259,6 +259,37 @@ describe('API sinistres', () => {
     return form;
   }
 
+  test('les médias de la déclaration rejoignent le dossier sans alerte par fichier', async () => {
+    const id = await createClaim();
+    const before = (await call(agent, 'GET', '/notifications')).body.length;
+    for (const [kind, name] of [
+      ['Photo', 'Vue d’ensemble.jpg'],
+      ['Vidéo', 'Vidéo de la scène.mp4'],
+      ['Constat amiable', `Constat ${id}.pdf`],
+    ]) {
+      const form = new FormData();
+      form.set('name', name);
+      form.set('kind', kind);
+      form.set('file', new Blob([Buffer.from('x')]), name);
+      assert.equal((await call(driver, 'POST', `/${id}/documents`, form)).status, 201);
+    }
+    const claim = (await call(agent, 'GET', `/${id}`)).body;
+    assert.deepEqual(
+      claim.documents.map((d) => d.kind).sort(),
+      ['Constat amiable', 'Photo', 'Vidéo'],
+    );
+    assert.equal((await call(agent, 'GET', '/notifications')).body.length, before);
+
+    // Une autre nature reste une pièce ordinaire, et l'agent est prévenu.
+    const form = new FormData();
+    form.set('name', 'rapport.pdf');
+    form.set('kind', "Rapport d'expertise");
+    await call(driver, 'POST', `/${id}/documents`, form);
+    const again = (await call(agent, 'GET', `/${id}`)).body;
+    assert.equal(again.documents.find((d) => d.name === 'rapport.pdf').kind, 'Pièce');
+    assert.equal((await call(agent, 'GET', '/notifications')).body.length, before + 1);
+  });
+
   test('une erreur annule toute la transaction', async () => {
     const id = await inReview();
     const form = new FormData();

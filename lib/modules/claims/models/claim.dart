@@ -15,6 +15,12 @@ class ClaimDocument {
   static const supporting = 'Pièce';
   static const expertReport = "Rapport d'expertise";
 
+  /// Jointes d'office par la déclaration (module 3).
+  static const photo = 'Photo';
+  static const video = 'Vidéo';
+  static const voiceNote = 'Note vocale';
+  static const accidentReport = 'Constat amiable';
+
   final String id, name, kind;
   final String? path, requestId;
 

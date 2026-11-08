@@ -190,15 +190,22 @@ export async function requestDocument(tx, user, id, input) {
   return reply(tx, id, user);
 }
 
+// Pièces jointes d'office par la déclaration (module 3) : photos, vidéo,
+// note vocale et constat PDF.
+export const declarationKinds = ['Photo', 'Vidéo', 'Note vocale', 'Constat amiable'];
+
 export async function addDocument(tx, user, id, input, file) {
   const claim = await load(tx, id, user);
   const documentId = input.id ?? randomUUID();
   const name = required(input.name ?? file?.originalname, 'Fichier requis.');
+  const fromDeclaration =
+    user.role === 'driver' && declarationKinds.includes(input.kind);
   await tx.claimDocument.create({
     data: {
       id: documentId,
       claimId: id,
       name,
+      ...(fromDeclaration ? { kind: input.kind } : {}),
       storedName: file?.filename,
       requestId: input.requestId || null,
     },
@@ -210,7 +217,10 @@ export async function addDocument(tx, user, id, input, file) {
     });
     if (count === 0) throw badRequest('Demande de pièce inconnue.');
   }
-  await notify(tx, claim, 'agent', `${id} : pièce déposée (${name})`);
+  // L'agent est déjà prévenu du nouveau sinistre : pas une alerte par photo.
+  if (!fromDeclaration) {
+    await notify(tx, claim, 'agent', `${id} : pièce déposée (${name})`);
+  }
 
   const open = await tx.documentRequest.count({
     where: { claimId: id, documentId: null },

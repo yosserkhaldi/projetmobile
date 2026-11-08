@@ -1,0 +1,401 @@
+// Textes produits par les règles du module 5, dans la langue du profil
+// (module 1 : FR, AR, EN). Les valeurs enregistrées (statut, type, cases,
+// pièces) restent en français en base : ce sont des données, traduites
+// seulement à l'affichage.
+
+export const languages = ['FR', 'AR', 'EN'];
+
+/** Langue d'un utilisateur, ou d'un code ; français par défaut. */
+export const langOf = (userOrCode) => {
+  const code = typeof userOrCode === 'string' ? userOrCode : userOrCode?.language;
+  return languages.includes(code) ? code : 'FR';
+};
+
+// Valeurs connues. Une valeur inconnue (saisie libre) s'affiche telle quelle.
+const values = {
+  EN: {
+    Brouillon: 'Draft',
+    Déclaré: 'Declared',
+    'Constat signé': 'Report signed',
+    Transmis: 'Submitted',
+    'En instruction': 'Under review',
+    'Pièce demandée': 'Document requested',
+    Expertise: 'Expert assessment',
+    Clôturé: 'Closed',
+    Rejeté: 'Rejected',
+    Collision: 'Collision',
+    'Sortie de route': 'Ran off the road',
+    Piéton: 'Pedestrian',
+    'Accident matériel': 'Property damage',
+    Autre: 'Other',
+    Matériel: 'Damage only',
+    Léger: 'Minor',
+    Grave: 'Serious',
+    'En stationnement': 'Parked',
+    'Quittait un stationnement': 'Leaving a parking space',
+    'Changeait de file': 'Changing lanes',
+    Doublait: 'Overtaking',
+    'Virait à droite': 'Turning right',
+    'Virait à gauche': 'Turning left',
+    Reculait: 'Reversing',
+    Avant: 'Front',
+    Arrière: 'Rear',
+    'Côté gauche': 'Left side',
+    'Côté droit': 'Right side',
+    Devis: 'Repair quote',
+    Facture: 'Invoice',
+    'PV de police': 'Police report',
+    "Rapport d'expertise": 'Expert report',
+    Pièce: 'Document',
+    Photo: 'Photo',
+    Vidéo: 'Video',
+    'Note vocale': 'Voice note',
+    'Constat amiable': 'Accident report',
+  },
+  AR: {
+    Brouillon: 'مسودة',
+    Déclaré: 'مُصرَّح به',
+    'Constat signé': 'محضر موقَّع',
+    Transmis: 'مُرسَل',
+    'En instruction': 'قيد الدراسة',
+    'Pièce demandée': 'وثيقة مطلوبة',
+    Expertise: 'خبرة فنية',
+    Clôturé: 'مُغلَق',
+    Rejeté: 'مرفوض',
+    Collision: 'تصادم',
+    'Sortie de route': 'خروج عن الطريق',
+    Piéton: 'حادث مع مترجّل',
+    'Accident matériel': 'حادث مادي',
+    Autre: 'أخرى',
+    Matériel: 'أضرار مادية',
+    Léger: 'خفيف',
+    Grave: 'خطير',
+    'En stationnement': 'متوقفة',
+    'Quittait un stationnement': 'تغادر مكان التوقف',
+    'Changeait de file': 'تغيّر المسار',
+    Doublait: 'تتجاوز',
+    'Virait à droite': 'تنعطف يمينًا',
+    'Virait à gauche': 'تنعطف يسارًا',
+    Reculait: 'ترجع إلى الخلف',
+    Avant: 'الأمام',
+    Arrière: 'الخلف',
+    'Côté gauche': 'الجانب الأيسر',
+    'Côté droit': 'الجانب الأيمن',
+    Devis: 'تقدير كلفة الإصلاح',
+    Facture: 'فاتورة',
+    'PV de police': 'محضر الشرطة',
+    "Rapport d'expertise": 'تقرير الخبير',
+    Pièce: 'وثيقة',
+    Photo: 'صورة',
+    Vidéo: 'فيديو',
+    'Note vocale': 'تسجيل صوتي',
+    'Constat amiable': 'المحضر الودّي',
+  },
+};
+
+/** Traduit une valeur enregistrée en français ; inconnue, elle reste telle quelle. */
+export const valueIn = (lang, value) => values[lang]?.[value] ?? value;
+
+const fr = {
+  value: (v) => v,
+  proposal: {
+    fault: (box) => `${box} : manœuvre à risque de A.`,
+    parked: 'A était en stationnement.',
+    turn: (box) => `${box} : partage par défaut.`,
+    unknown: 'Cases insuffisantes : partage par défaut.',
+  },
+  signals: {
+    'late-declaration': (days) => `Déclaré plus de ${days} jours après l’accident.`,
+    'repeat-claims': () => 'Plusieurs sinistres de ce conducteur sur 12 mois.',
+    'contradictory-boxes': () => 'Cases contradictoires : à l’arrêt et en manœuvre.',
+    'severe-without-impact': () => 'Sinistre grave sans point de choc renseigné.',
+    'amount-over-estimate': () => 'Montant d’une pièce très supérieur à l’estimation.',
+    'document-mismatch': () => 'Une pièce ne correspond pas à ce qui était demandé.',
+  },
+  documentReasons: {
+    Devis: 'Nécessaire pour chiffrer.',
+    'PV de police': 'Requis pour un sinistre grave.',
+  },
+  features: {
+    severityLight: 'gravité légère',
+    severityGrave: 'gravité élevée',
+    impactZones: 'nombre de points de choc',
+    circumstances: 'peu de circonstances renseignées',
+    driverShare: 'part non responsable',
+    lateDays: 'délai de déclaration',
+    priorClaims: 'sinistres récents du conducteur',
+    collision: 'collision',
+  },
+  risk: { élevé: 'élevé', moyen: 'moyen', faible: 'faible' },
+  priority: {
+    grave: 'Sinistre grave',
+    overdue: (days) => `En retard de ${days} j`,
+    untouched: 'Pas encore pris en charge',
+    signal: 'Signal à vérifier',
+  },
+  next: {
+    'take-charge': () => 'Prendre le dossier en charge.',
+    remind: () => 'Relancer le conducteur : pièce en retard.',
+    wait: (open) => `Attendre ${open} pièce(s) du conducteur.`,
+    decide: () => 'Dossier complet : prendre la décision.',
+    'decide-report': () => 'Rapport reçu : prendre la décision.',
+    report: () => 'Attendre et joindre le rapport d’expertise.',
+    request: (label) => `Demander : ${label}.`,
+    expert: () => 'Désigner un expert.',
+    none: () => 'Dossier terminé.',
+  },
+  guidance: {
+    Transmis: 'Votre dossier est reçu. Un agent va le prendre en charge.',
+    'En instruction': 'Un agent étudie votre dossier.',
+    'Pièce demandée': 'Votre dossier attend des pièces de votre part.',
+    Expertise: 'Un expert va examiner votre véhicule.',
+    Clôturé: 'Votre dossier est clôturé.',
+    Rejeté: 'Votre dossier a été rejeté.',
+    default: 'Votre dossier est en préparation.',
+  },
+  todo: {
+    upload: (label) => `Déposer : ${label}`,
+    expert: 'Présenter le véhicule à l’expert au rendez-vous.',
+  },
+  answers: {
+    todo: (items) => `À faire : ${items}.`,
+    nothingExpected: 'Aucune pièce n’est attendue de votre part pour le moment.',
+    missing: (items) => `Pièces manquantes : ${items}.`,
+    noneMissing: 'Aucune pièce manquante d’après les règles.',
+    finished: 'Le dossier est terminé.',
+    remaining: (days) => `Il reste environ ${days} jours. C’est une estimation, pas un engagement.`,
+    askAgent:
+      'Le montant et la responsabilité sont décidés par votre agent. Écrivez-lui dans la messagerie du dossier.',
+    proposal: (share, reason) => `Proposition : A ${share} %. ${reason}`,
+    estimate: (low, high) =>
+      `Estimation : ${low} à ${high} TND. Elle vient d’un modèle entraîné sur des données synthétiques.`,
+    check: (items) => `À vérifier : ${items}`,
+    noSignal: (level) => `Aucun signal. Risque de rejet ${level}.`,
+    next: (label) => `Prochaine action : ${label}`,
+  },
+  summary: {
+    facts: (type, severity, place, status) => `${type} (${severity}) à ${place}, statut ${status}.`,
+    proposal: (share) => `Responsabilité proposée : A ${share} %.`,
+    estimate: (low, high) => `Estimation : ${low} à ${high} TND.`,
+  },
+  templates: {
+    Transmis: [
+      'Bonjour, votre dossier est bien reçu. Je le prends en charge.',
+      'Bonjour, pouvez-vous me confirmer le lieu exact de l’accident ?',
+    ],
+    'Pièce demandée': [
+      'Bonjour, pouvez-vous déposer la pièce demandée dans votre dossier ?',
+      'Avez-vous besoin d’aide pour obtenir cette pièce ?',
+    ],
+    Expertise: [
+      'Le rendez-vous avec l’expert vous convient-il ?',
+      'L’expert vous contactera pour la suite.',
+    ],
+    default: [
+      'Bonjour, votre dossier est en cours d’étude.',
+      'Merci, je reviens vers vous dès que possible.',
+    ],
+  },
+};
+
+const en = {
+  value: (v) => valueIn('EN', v),
+  proposal: {
+    fault: (box) => `${box}: risky manoeuvre by A.`,
+    parked: 'A was parked.',
+    turn: (box) => `${box}: shared by default.`,
+    unknown: 'Not enough boxes ticked: shared by default.',
+  },
+  signals: {
+    'late-declaration': (days) => `Declared more than ${days} days after the accident.`,
+    'repeat-claims': () => 'Several claims by this driver within 12 months.',
+    'contradictory-boxes': () => 'Contradictory boxes: parked and manoeuvring.',
+    'severe-without-impact': () => 'Serious claim with no impact point given.',
+    'amount-over-estimate': () => 'A document amount is far above the estimate.',
+    'document-mismatch': () => 'A document does not match what was requested.',
+  },
+  documentReasons: {
+    Devis: 'Needed to price the repair.',
+    'PV de police': 'Required for a serious claim.',
+  },
+  features: {
+    severityLight: 'minor severity',
+    severityGrave: 'high severity',
+    impactZones: 'number of impact points',
+    circumstances: 'few circumstances given',
+    driverShare: 'share not at fault',
+    lateDays: 'time before declaring',
+    priorClaims: 'driver’s recent claims',
+    collision: 'collision',
+  },
+  risk: { élevé: 'high', moyen: 'medium', faible: 'low' },
+  priority: {
+    grave: 'Serious claim',
+    overdue: (days) => `${days} d overdue`,
+    untouched: 'Not taken on yet',
+    signal: 'Signal to check',
+  },
+  next: {
+    'take-charge': () => 'Take on the claim.',
+    remind: () => 'Remind the driver: document overdue.',
+    wait: (open) => `Wait for ${open} document(s) from the driver.`,
+    decide: () => 'Claim complete: make the decision.',
+    'decide-report': () => 'Report received: make the decision.',
+    report: () => 'Wait for and attach the expert report.',
+    request: (label) => `Request: ${label}.`,
+    expert: () => 'Appoint an expert.',
+    none: () => 'Claim finished.',
+  },
+  guidance: {
+    Transmis: 'Your claim has been received. An agent will take it on.',
+    'En instruction': 'An agent is reviewing your claim.',
+    'Pièce demandée': 'Your claim is waiting for documents from you.',
+    Expertise: 'An expert will examine your vehicle.',
+    Clôturé: 'Your claim is closed.',
+    Rejeté: 'Your claim was rejected.',
+    default: 'Your claim is being prepared.',
+  },
+  todo: {
+    upload: (label) => `Upload: ${label}`,
+    expert: 'Bring the vehicle to the expert appointment.',
+  },
+  answers: {
+    todo: (items) => `To do: ${items}.`,
+    nothingExpected: 'No document is expected from you for now.',
+    missing: (items) => `Missing documents: ${items}.`,
+    noneMissing: 'No missing documents according to the rules.',
+    finished: 'The claim is finished.',
+    remaining: (days) => `About ${days} days left. This is an estimate, not a commitment.`,
+    askAgent:
+      'Your agent decides the amount and responsibility. Write to them in the claim’s messages.',
+    proposal: (share, reason) => `Proposal: A ${share} %. ${reason}`,
+    estimate: (low, high) =>
+      `Estimate: ${low} to ${high} TND. It comes from a model trained on synthetic data.`,
+    check: (items) => `To check: ${items}`,
+    noSignal: (level) => `No signal. Rejection risk ${level}.`,
+    next: (label) => `Next action: ${label}`,
+  },
+  summary: {
+    facts: (type, severity, place, status) => `${type} (${severity}) in ${place}, status ${status}.`,
+    proposal: (share) => `Proposed responsibility: A ${share} %.`,
+    estimate: (low, high) => `Estimate: ${low} to ${high} TND.`,
+  },
+  templates: {
+    Transmis: [
+      'Hello, your claim has been received. I am taking it on.',
+      'Hello, could you confirm the exact place of the accident?',
+    ],
+    'Pièce demandée': [
+      'Hello, could you upload the requested document to your claim?',
+      'Do you need help getting this document?',
+    ],
+    Expertise: [
+      'Does the expert appointment suit you?',
+      'The expert will contact you for the next steps.',
+    ],
+    default: [
+      'Hello, your claim is being reviewed.',
+      'Thank you, I will get back to you as soon as possible.',
+    ],
+  },
+};
+
+const ar = {
+  value: (v) => valueIn('AR', v),
+  proposal: {
+    fault: (box) => `${box}: مناورة خطرة من السائق A.`,
+    parked: 'كانت سيارة A متوقفة.',
+    turn: (box) => `${box}: مسؤولية مشتركة افتراضيًا.`,
+    unknown: 'الخانات غير كافية: مسؤولية مشتركة افتراضيًا.',
+  },
+  signals: {
+    'late-declaration': (days) => `تم التصريح بعد أكثر من ${days} أيام من الحادث.`,
+    'repeat-claims': () => 'عدة حوادث لهذا السائق خلال 12 شهرًا.',
+    'contradictory-boxes': () => 'خانات متناقضة: متوقفة وفي حالة مناورة.',
+    'severe-without-impact': () => 'حادث خطير دون تحديد نقطة الاصطدام.',
+    'amount-over-estimate': () => 'مبلغ إحدى الوثائق أعلى بكثير من التقدير.',
+    'document-mismatch': () => 'إحدى الوثائق لا تطابق ما طُلب.',
+  },
+  documentReasons: {
+    Devis: 'ضروري لتقدير الكلفة.',
+    'PV de police': 'مطلوب في حادث خطير.',
+  },
+  features: {
+    severityLight: 'خطورة خفيفة',
+    severityGrave: 'خطورة عالية',
+    impactZones: 'عدد نقاط الاصطدام',
+    circumstances: 'ظروف قليلة مذكورة',
+    driverShare: 'نسبة عدم المسؤولية',
+    lateDays: 'مدة التأخر في التصريح',
+    priorClaims: 'حوادث السائق الأخيرة',
+    collision: 'تصادم',
+  },
+  risk: { élevé: 'مرتفع', moyen: 'متوسط', faible: 'منخفض' },
+  priority: {
+    grave: 'حادث خطير',
+    overdue: (days) => `متأخر ${days} يوم`,
+    untouched: 'لم يُتكفَّل به بعد',
+    signal: 'إشارة للتحقق',
+  },
+  next: {
+    'take-charge': () => 'التكفّل بالملف.',
+    remind: () => 'تذكير السائق: وثيقة متأخرة.',
+    wait: (open) => `انتظار ${open} وثيقة من السائق.`,
+    decide: () => 'الملف مكتمل: اتخاذ القرار.',
+    'decide-report': () => 'وصل التقرير: اتخاذ القرار.',
+    report: () => 'انتظار تقرير الخبير وإرفاقه.',
+    request: (label) => `طلب: ${label}.`,
+    expert: () => 'تعيين خبير.',
+    none: () => 'الملف منتهٍ.',
+  },
+  guidance: {
+    Transmis: 'تم استلام ملفك. سيتكفّل به أحد الأعوان.',
+    'En instruction': 'أحد الأعوان يدرس ملفك.',
+    'Pièce demandée': 'ملفك ينتظر وثائق منك.',
+    Expertise: 'سيفحص خبير سيارتك.',
+    Clôturé: 'تم إغلاق ملفك.',
+    Rejeté: 'تم رفض ملفك.',
+    default: 'ملفك قيد الإعداد.',
+  },
+  todo: {
+    upload: (label) => `إيداع: ${label}`,
+    expert: 'إحضار السيارة إلى موعد الخبير.',
+  },
+  answers: {
+    todo: (items) => `المطلوب: ${items}.`,
+    nothingExpected: 'لا توجد وثيقة مطلوبة منك حاليًا.',
+    missing: (items) => `الوثائق الناقصة: ${items}.`,
+    noneMissing: 'لا توجد وثائق ناقصة حسب القواعد.',
+    finished: 'الملف منتهٍ.',
+    remaining: (days) => `بقي حوالي ${days} أيام. هذا تقدير وليس التزامًا.`,
+    askAgent: 'المبلغ والمسؤولية يقرّرهما العون. راسله في محادثة الملف.',
+    proposal: (share, reason) => `المقترح: A بنسبة ${share} %. ${reason}`,
+    estimate: (low, high) =>
+      `التقدير: من ${low} إلى ${high} دينار. مصدره نموذج مدرَّب على بيانات اصطناعية.`,
+    check: (items) => `للتحقق: ${items}`,
+    noSignal: (level) => `لا توجد إشارات. خطر الرفض ${level}.`,
+    next: (label) => `الإجراء التالي: ${label}`,
+  },
+  summary: {
+    facts: (type, severity, place, status) => `${type} (${severity}) في ${place}، الحالة: ${status}.`,
+    proposal: (share) => `المسؤولية المقترحة: A بنسبة ${share} %.`,
+    estimate: (low, high) => `التقدير: من ${low} إلى ${high} دينار.`,
+  },
+  templates: {
+    Transmis: [
+      'مرحبًا، تم استلام ملفك وسأتكفّل به.',
+      'مرحبًا، هل يمكنك تأكيد المكان الدقيق للحادث؟',
+    ],
+    'Pièce demandée': [
+      'مرحبًا، هل يمكنك إيداع الوثيقة المطلوبة في ملفك؟',
+      'هل تحتاج إلى مساعدة للحصول على هذه الوثيقة؟',
+    ],
+    Expertise: ['هل يناسبك موعد الخبير؟', 'سيتصل بك الخبير بخصوص الخطوات التالية.'],
+    default: ['مرحبًا، ملفك قيد الدراسة.', 'شكرًا، سأعود إليك في أقرب وقت.'],
+  },
+};
+
+const texts = { FR: fr, EN: en, AR: ar };
+
+/** Textes des règles dans une langue (FR, AR, EN). */
+export const textsIn = (lang) => texts[langOf(lang)];

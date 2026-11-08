@@ -4,6 +4,7 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_steps.dart';
+import 'package:mon_constat_digital/modules/claims/data/declaration_files.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/constat_steps.dart';
 
@@ -25,6 +26,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
   final witnessPhone = TextEditingController();
   final observations = TextEditingController();
   int step = 0;
+  bool _sending = false;
 
   static const steps = [
     ('Contexte', 'Lieu, heure et conditions'),
@@ -135,7 +137,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
     );
   }
 
-  void _next() {
+  Future<void> _next() async {
     FocusScope.of(context).unfocus();
     if (!_isCurrentStepValid()) return;
     draft.touch();
@@ -144,7 +146,12 @@ class _AccidentWizardState extends State<AccidentWizard> {
       _persistDraft();
       return;
     }
-    final claims = AppScope.of(context).claims;
+    // Le constat PDF prend un instant : un second appui ne crée pas un doublon.
+    if (_sending) return;
+    _sending = true;
+    final scope = AppScope.of(context);
+    final navigator = Navigator.of(context);
+    final claims = scope.claims;
     final claim = Claim(
       id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
       type: draft.type,
@@ -164,8 +171,11 @@ class _AccidentWizardState extends State<AccidentWizard> {
       'Transmis aux assureurs',
     ]);
     claims.addClaim(claim);
-    AppScope.of(context).accidents.clearDraft();
-    Navigator.pop(context);
+    // Module 5 : photos, vidéo, note vocale et constat PDF rejoignent le
+    // dossier. Lus avant d'effacer le brouillon.
+    claims.attachDeclaration(claim, await declarationFiles(draft));
+    scope.accidents.clearDraft();
+    if (mounted) navigator.pop();
   }
 
   void _goBack() {

@@ -12,17 +12,6 @@ export const featureNames = [
   'collision',
 ];
 
-export const featureLabels = {
-  severityLight: 'gravité légère',
-  severityGrave: 'gravité élevée',
-  impactZones: 'nombre de points de choc',
-  circumstances: 'peu de circonstances renseignées',
-  driverShare: 'part non responsable',
-  lateDays: 'délai de déclaration',
-  priorClaims: 'sinistres récents du conducteur',
-  collision: 'collision',
-};
-
 const lateDays = (claim) => {
   const accident = occurredAt(claim.date);
   if (!accident) return 0;

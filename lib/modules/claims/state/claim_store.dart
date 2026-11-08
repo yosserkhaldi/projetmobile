@@ -291,6 +291,34 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     _saveEvent(claim, 'Rapport d’expertise joint');
   }
 
+  /// Photos, vidéo, note vocale et constat PDF de la déclaration (module 3).
+  /// Envoyés après le dossier, par la même file : ils partent dès que le
+  /// réseau revient. L'agent est prévenu une fois, par le nouveau sinistre.
+  void attachDeclaration(
+    Claim claim,
+    List<({String name, String kind, String? path, Uint8List? bytes})> files,
+  ) {
+    for (final file in files) {
+      final document = ClaimDocument(
+        id: newId(),
+        name: file.name,
+        path: file.path,
+        kind: file.kind,
+      );
+      claim.documents.add(document);
+      persist(() => _dao.insertDocument(claim.id, document));
+      _send(
+        '/${claim.id}/documents',
+        multipart: true,
+        filePath: file.path,
+        fileBytes: file.bytes,
+        fileName: file.name,
+        body: {'id': document.id, 'name': file.name, 'kind': file.kind},
+      );
+    }
+    if (files.isNotEmpty) notifyListeners();
+  }
+
   /// Clôture avec responsabilité et montant.
   void closeClaim(Claim claim, int responsibility, double indemnity) {
     if (!ClaimStatus.canMove(claim.status, ClaimStatus.closed)) return;

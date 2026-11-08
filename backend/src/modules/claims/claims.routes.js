@@ -15,6 +15,7 @@ import {
   summarize,
 } from './ai/assistant.js';
 import { activeProvider, aiStatus } from './ai/llm.js';
+import { langOf } from './ai/i18n.js';
 import { driverView, model } from './ai/insights.js';
 import { requireRole, requireUser } from './claims.auth.js';
 import { db } from './claims.db.js';
@@ -36,7 +37,8 @@ const upload = multer({
     filename: (_req, file, done) =>
       done(null, randomUUID() + path.extname(file.originalname)),
   }),
-  limits: { fileSize: 20 * 1024 * 1024 },
+  // Une vidéo de 30 s de la déclaration (module 3) peut dépasser 20 Mo.
+  limits: { fileSize: 50 * 1024 * 1024 },
 });
 
 const openapi = JSON.parse(
@@ -237,10 +239,10 @@ router.post(
 
 router.get('/:id/insights', async (req, res) => {
   const claim = await claims.claimForAi(req.user, req.params.id);
-  const analysis = await loadContext(claim, req.user.role);
+  const analysis = await loadContext(claim, req.user);
   res.json(
     req.user.role === 'driver'
-      ? { driver: driverView(claim, analysis) }
+      ? { driver: driverView(claim, analysis, langOf(req.user)) }
       : analysis,
   );
 });
@@ -260,7 +262,7 @@ router.post('/:id/ai/replies', agent, aiLimit, async (req, res) => {
 // Le gestionnaire commun parle d'images de 5 Mo : ici la limite est autre.
 router.use((error, _req, _res, next) => {
   if (error?.code === 'LIMIT_FILE_SIZE') {
-    next(new HttpError(413, 'FILE_TOO_LARGE', 'Fichier trop lourd : 20 Mo maximum.'));
+    next(new HttpError(413, 'FILE_TOO_LARGE', 'Fichier trop lourd : 50 Mo maximum.'));
     return;
   }
   next(error);

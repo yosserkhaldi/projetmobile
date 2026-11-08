@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -8,7 +9,9 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_api.dart';
+import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_database.dart';
+import 'package:mon_constat_digital/modules/claims/data/declaration_files.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
@@ -266,5 +269,54 @@ void main() {
     phone.users.currentUser = null;
     await phone.sync.synchronize();
     expect(server.requests, isEmpty);
+  });
+
+  test('les médias de la déclaration partent après le dossier', () async {
+    final phone = await device();
+    final photo = File('${dir.path}/vue.jpg')..writeAsBytesSync([1, 2, 3]);
+    final video = File('${dir.path}/scene.mp4')..writeAsBytesSync([4, 5]);
+    final draft = AccidentDraft()
+      ..evidencePaths['Vue d’ensemble'] = photo.path
+      ..evidencePaths['Plaques'] = null
+      ..videoPath = video.path;
+    final files = await declarationFiles(
+      draft,
+      buildPdf: (_) async => Uint8List.fromList([9]),
+    );
+    expect(files.map((f) => f.kind), ['Photo', 'Vidéo', 'Constat amiable']);
+    expect(files.first.name, 'Vue d’ensemble.jpg');
+
+    final claim = newClaim();
+    phone.claims
+      ..addClaim(claim)
+      ..attachDeclaration(claim, files);
+    expect(claim.documents.map((d) => d.kind), [
+      'Photo',
+      'Vidéo',
+      'Constat amiable',
+    ]);
+    await phone.settle();
+
+    expect(server.paths, [
+      '',
+      '/SIN-1/documents',
+      '/SIN-1/documents',
+      '/SIN-1/documents',
+    ]);
+    final bodies = server.requests.skip(1).map((r) => utf8.decode(r.bodyBytes));
+    expect(bodies.first, contains('Photo'));
+    expect(bodies.last, contains('Constat amiable'));
+    expect(await phone.pending(), 0);
+  });
+
+  test('un constat PDF impossible n’empêche pas le reste', () async {
+    final draft = AccidentDraft()..voiceNotePath = '/tmp/note.m4a';
+    final files = await declarationFiles(
+      draft,
+      buildPdf: (_) async => throw UnsupportedError('web'),
+    );
+    expect(files.map((f) => (f.name, f.kind)), [
+      ('Note vocale.m4a', 'Note vocale'),
+    ]);
   });
 }

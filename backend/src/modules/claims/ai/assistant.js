@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { db } from '../claims.db.js';
 import { Status } from '../claims.workflow.js';
+import { langOf, textsIn } from './i18n.js';
 import { analyze, driverView, historyOf, priorClaimsOf } from './insights.js';
 import { AiUnavailable, generate } from './llm.js';
 import { Limits } from './rules.js';
@@ -62,7 +63,7 @@ export const caseFacts = (claim, role = 'agent') => ({
 // Outils en lecture seule et sans paramètre : ils portent sur le dossier
 // ouvert, le modèle ne peut ni écrire ni demander un autre dossier.
 // Le conducteur n'a ni l'analyse de risque ni les dossiers des autres.
-function toolsFor(role, claim, analysis) {
+function toolsFor(role, claim, analysis, lang) {
   const shared = {
     dossier: {
       description: 'Faits du dossier ouvert : statut, constat, chronologie, pièces.',
@@ -74,7 +75,7 @@ function toolsFor(role, claim, analysis) {
       ...shared,
       suivi: {
         description: 'Ce que le conducteur doit faire et le délai restant estimé.',
-        run: () => driverView(claim, analysis),
+        run: () => driverView(claim, analysis, lang),
       },
     };
   }
@@ -96,7 +97,9 @@ function toolsFor(role, claim, analysis) {
   };
 }
 
-export async function loadContext(claim, role) {
+// Analyse du dossier, rédigée dans la langue de `user`.
+export async function loadContext(claim, user) {
+  const { role } = user;
   const claims = await db().claim.findMany({
     where: role === 'driver' ? { driverId: claim.driverId } : {},
     include: { events: true, documents: true, requests: true },
@@ -104,46 +107,56 @@ export async function loadContext(claim, role) {
   return analyze(claim, {
     priorClaims: priorClaimsOf(claim, claims),
     history: role === 'driver' ? [] : historyOf(claims),
+    lang: langOf(user),
   });
 }
 
-// Réponses sans Claude : mots-clés, puis données de l'analyse.
-function ruleAnswer(question, claim, analysis, role) {
+// Réponses sans modèle : mots-clés (FR, AR, EN), puis données de l'analyse,
+// rédigées dans la langue du profil.
+const keywords = {
+  documents: /pi[eè]ce|document|d[eé]poser|manque|upload|missing|وثيق|مستند|ناقص/,
+  delay: /d[eé]lai|quand|combien de temps|long|when|how long|time|متى|مدة|وقت/,
+  money: /montant|indemni|rembours|combien|amount|refund|how much|pay|مبلغ|تعويض|كم/,
+  fault: /responsab|responsib|faute|fault|liab|مسؤول|خطأ/,
+  estimate: /montant|indemni|estim|combien|amount|estimate|how much|مبلغ|تقدير|كم/,
+  risk: /risque|fraude|vigilance|signal|risk|fraud|خطر|احتيال|إشار/,
+};
+
+function ruleAnswer(question, claim, analysis, role, lang) {
+  const t = textsIn(lang);
   const text = question.toLowerCase();
-  const view = driverView(claim, analysis);
-  const has = (pattern) => pattern.test(text);
-  if (has(/pi[eè]ce|document|d[eé]poser|manque/)) {
+  const view = driverView(claim, analysis, lang);
+  const has = (name) => keywords[name].test(text);
+  const list = (items) => items.join(', ');
+  if (has('documents')) {
     if (role === 'driver') {
-      return view.todo.length > 0
-        ? `À faire : ${view.todo.join(', ')}.`
-        : 'Aucune pièce n’est attendue de votre part pour le moment.';
+      return view.todo.length > 0 ? t.answers.todo(list(view.todo)) : t.answers.nothingExpected;
     }
     return analysis.missingDocuments.length > 0
-      ? `Pièces manquantes : ${analysis.missingDocuments.map((d) => d.label).join(', ')}.`
-      : 'Aucune pièce manquante d’après les règles.';
+      ? t.answers.missing(list(analysis.missingDocuments.map((d) => t.value(d.label))))
+      : t.answers.noneMissing;
   }
-  if (has(/d[eé]lai|quand|combien de temps|long/)) {
+  if (has('delay')) {
     return view.remainingDays == null
-      ? 'Le dossier est terminé.'
-      : `Il reste environ ${view.remainingDays} jours. C’est une estimation, pas un engagement.`;
+      ? t.answers.finished
+      : t.answers.remaining(view.remainingDays);
   }
-  if (role === 'driver' && has(/montant|indemni|rembours|responsab|faute|combien/)) {
-    return 'Le montant et la responsabilité sont décidés par votre agent. Écrivez-lui dans la messagerie du dossier.';
+  if (role === 'driver' && (has('money') || has('fault'))) return t.answers.askAgent;
+  if (role === 'agent' && has('fault')) {
+    return t.answers.proposal(analysis.proposal.driverA, analysis.proposal.reason);
   }
-  if (role === 'agent' && has(/responsab|faute/)) {
-    return `Proposition : A ${analysis.proposal.driverA} %. ${analysis.proposal.reason}`;
+  if (role === 'agent' && has('estimate')) {
+    return t.answers.estimate(analysis.estimate.low, analysis.estimate.high);
   }
-  if (role === 'agent' && has(/montant|indemni|estim|combien/)) {
-    const { low, high } = analysis.estimate;
-    return `Estimation : ${low} à ${high} TND. Elle vient d’un modèle entraîné sur des données synthétiques.`;
-  }
-  if (role === 'agent' && has(/risque|fraude|vigilance|signal/)) {
+  if (role === 'agent' && has('risk')) {
     return analysis.signals.length > 0
-      ? `À vérifier : ${analysis.signals.map((s) => s.label).join(' ')}`
-      : `Aucun signal. Risque de rejet ${analysis.risk.level}.`;
+      ? t.answers.check(analysis.signals.map((s) => s.label).join(' '))
+      : t.answers.noSignal(analysis.risk.label);
   }
-  if (role === 'agent') return `Prochaine action : ${analysis.nextAction.label}`;
-  return `${view.headline}${view.todo.length > 0 ? ` À faire : ${view.todo.join(', ')}.` : ''}`;
+  if (role === 'agent') return t.answers.next(analysis.nextAction.label);
+  return view.todo.length > 0
+    ? `${view.headline} ${t.answers.todo(list(view.todo))}`
+    : view.headline;
 }
 
 const lastQuestion = (messages) =>
@@ -151,7 +164,8 @@ const lastQuestion = (messages) =>
 
 // Le modèle répond à partir des outils ; sans modèle, les règles répondent.
 export async function askAssistant(claim, user, messages) {
-  const analysis = await loadContext(claim, user.role);
+  const lang = langOf(user);
+  const analysis = await loadContext(claim, user);
   try {
     const { text, by } = await generate({
       feature: 'assistant',
@@ -159,29 +173,30 @@ export async function askAssistant(claim, user, messages) {
       claimId: claim.id,
       system: user.role === 'driver' ? driverPrompt(user) : agentPrompt(user),
       messages: messages.map(({ role, content }) => ({ role, content })),
-      tools: toolsFor(user.role, claim, analysis),
+      tools: toolsFor(user.role, claim, analysis, lang),
     });
     return { answer: text, source: 'ai', by };
   } catch (error) {
     if (!(error instanceof AiUnavailable)) throw error;
     return {
-      answer: ruleAnswer(lastQuestion(messages), claim, analysis, user.role),
+      answer: ruleAnswer(lastQuestion(messages), claim, analysis, user.role, lang),
       source: 'rules',
       by: null,
     };
   }
 }
 
-function ruleSummary(claim, analysis) {
+function ruleSummary(claim, analysis, lang) {
+  const t = textsIn(lang);
   const parts = [
-    `${claim.type} (${claim.severity}) à ${claim.place}, statut ${claim.status}.`,
-    `Responsabilité proposée : A ${analysis.proposal.driverA} %.`,
-    `Estimation : ${analysis.estimate.low} à ${analysis.estimate.high} TND.`,
+    t.summary.facts(t.value(claim.type), t.value(claim.severity), claim.place, t.value(claim.status)),
+    t.summary.proposal(analysis.proposal.driverA),
+    t.summary.estimate(analysis.estimate.low, analysis.estimate.high),
   ];
   if (analysis.signals.length > 0) {
-    parts.push(`À vérifier : ${analysis.signals.map((s) => s.label).join(' ')}`);
+    parts.push(t.answers.check(analysis.signals.map((s) => s.label).join(' ')));
   }
-  parts.push(`Prochaine action : ${analysis.nextAction.label}`);
+  parts.push(t.answers.next(analysis.nextAction.label));
   return parts.join(' ');
 }
 
@@ -190,7 +205,7 @@ const hashOf = (value) =>
 
 // La synthèse n'est régénérée que si le dossier a changé.
 export async function summarize(claim, user) {
-  const analysis = await loadContext(claim, user.role);
+  const analysis = await loadContext(claim, user);
   const facts = { facts: caseFacts(claim), signals: analysis.signals };
   const hash = hashOf({ ...facts, language: languageOf(user) });
   const saved = await db().claimAiNote.findUnique({
@@ -218,28 +233,9 @@ export async function summarize(claim, user) {
     return { summary: text, source: 'ai', by };
   } catch (error) {
     if (!(error instanceof AiUnavailable)) throw error;
-    return { summary: ruleSummary(claim, analysis), source: 'rules', by: null };
+    return { summary: ruleSummary(claim, analysis, langOf(user)), source: 'rules', by: null };
   }
 }
-
-const templates = {
-  [Status.transmitted]: [
-    'Bonjour, votre dossier est bien reçu. Je le prends en charge.',
-    'Bonjour, pouvez-vous me confirmer le lieu exact de l’accident ?',
-  ],
-  [Status.documentRequested]: [
-    'Bonjour, pouvez-vous déposer la pièce demandée dans votre dossier ?',
-    'Avez-vous besoin d’aide pour obtenir cette pièce ?',
-  ],
-  [Status.expertise]: [
-    'Le rendez-vous avec l’expert vous convient-il ?',
-    'L’expert vous contactera pour la suite.',
-  ],
-};
-const defaultTemplates = [
-  'Bonjour, votre dossier est en cours d’étude.',
-  'Merci, je reviens vers vous dès que possible.',
-];
 
 const repliesSchema = {
   type: 'object',
@@ -250,7 +246,7 @@ const repliesSchema = {
 
 export async function suggestReplies(claim, user) {
   const fallback = {
-    replies: templates[claim.status] ?? defaultTemplates,
+    replies: textsIn(user).templates[claim.status] ?? textsIn(user).templates.default,
     source: 'rules',
     by: null,
   };

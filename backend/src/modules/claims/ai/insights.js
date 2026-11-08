@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 
 import { Status } from '../claims.workflow.js';
-import { featureLabels, featuresOf } from './features.js';
+import { featuresOf } from './features.js';
+import { langOf, textsIn } from './i18n.js';
 import {
   contributions,
   nearest,
@@ -46,55 +47,56 @@ function estimateDuration(row, claim, now) {
   };
 }
 
-function estimateRisk(row) {
+// `level` reste un code (faible, moyen, élevé) ; `label` est traduit.
+function estimateRisk(row, t) {
   const probability = predictProbability(model.rejection, row);
   const factors = contributions(model.rejection, row)
     .map((value, j) => ({ value, name: model.features[j] }))
     .filter(({ value }) => value > 0.15)
     .sort((a, b) => b.value - a.value)
     .slice(0, 3)
-    .map(({ name }) => featureLabels[name]);
+    .map(({ name }) => t.features[name]);
   const level = probability >= 0.4 ? 'élevé' : probability >= 0.15 ? 'moyen' : 'faible';
-  return { probability: Number(probability.toFixed(3)), level, factors };
+  return {
+    probability: Number(probability.toFixed(3)),
+    level,
+    label: t.risk[level],
+    factors,
+  };
 }
 
-function nextAction(claim, { missing, expert, overdue }) {
+function nextAction(claim, { missing, expert, overdue }, t) {
   const open = claim.requests.filter((request) => !request.documentId).length;
-  if (claim.status === Status.transmitted) {
-    return { code: 'take-charge', label: 'Prendre le dossier en charge.' };
-  }
+  const action = (code, ...args) => ({ code, label: t.next[code](...args) });
+  if (claim.status === Status.transmitted) return action('take-charge');
   if (claim.status === Status.documentRequested) {
-    return overdue
-      ? { code: 'remind', label: 'Relancer le conducteur : pièce en retard.' }
-      : { code: 'wait', label: `Attendre ${open} pièce(s) du conducteur.` };
+    return overdue ? action('remind') : action('wait', open);
   }
   if (claim.status === Status.expertise) {
     const report = claim.documents.some((d) => d.kind === "Rapport d'expertise");
     return report
-      ? { code: 'decide', label: 'Rapport reçu : prendre la décision.' }
-      : { code: 'report', label: 'Attendre et joindre le rapport d’expertise.' };
+      ? { code: 'decide', label: t.next['decide-report']() }
+      : action('report');
   }
-  if (missing.length > 0) {
-    return { code: 'request', label: `Demander : ${missing[0].label}.` };
-  }
-  if (expert) return { code: 'expert', label: 'Désigner un expert.' };
-  return { code: 'decide', label: 'Dossier complet : prendre la décision.' };
+  if (missing.length > 0) return action('request', t.value(missing[0].label));
+  if (expert) return action('expert');
+  return action('decide');
 }
 
-function priority(claim, { service, signals, risk }) {
+function priority(claim, { service, signals, risk }, t) {
   const reasons = [];
   let score = 10;
   const add = (points, reason) => {
     score += points;
     if (reason) reasons.push(reason);
   };
-  if (claim.severity === 'Grave') add(35, 'Sinistre grave');
+  if (claim.severity === 'Grave') add(35, t.priority.grave);
   else if (claim.severity === 'Léger') add(10);
   if (service?.overdueDays > 0) {
-    add(Math.min(30, 10 + service.overdueDays * 2), `En retard de ${service.overdueDays} j`);
+    add(Math.min(30, 10 + service.overdueDays * 2), t.priority.overdue(service.overdueDays));
   }
-  if (claim.status === Status.transmitted) add(10, 'Pas encore pris en charge');
-  if (signals.length > 0) add(Math.min(15, signals.length * 8), 'Signal à vérifier');
+  if (claim.status === Status.transmitted) add(10, t.priority.untouched);
+  if (signals.length > 0) add(Math.min(15, signals.length * 8), t.priority.signal);
   if (risk.level === 'élevé') add(10);
   return { score: Math.min(100, score), reasons };
 }
@@ -137,16 +139,21 @@ export function priorClaimsOf(claim, claims) {
 }
 
 // Orchestration : règles, puis modèles, puis synthèse. Aucune écriture.
-export function analyze(claim, { priorClaims = 0, history = [], now = new Date() } = {}) {
-  const proposal = responsibilityProposal(claim.circumstances);
+// Les textes sont rédigés dans `lang` (FR, AR, EN) ; les codes ne changent pas.
+export function analyze(
+  claim,
+  { priorClaims = 0, history = [], now = new Date(), lang = 'FR' } = {},
+) {
+  const t = textsIn(lang);
+  const proposal = responsibilityProposal(claim.circumstances, lang);
   const features = featuresOf(claim, {
     responsibility: claim.responsibility ?? proposal.driverA,
     priorClaims,
   });
   const row = scale(features, model.scaler);
   const estimate = estimateAmount(row);
-  const risk = estimateRisk(row);
-  const context = { claim, priorClaims, estimate };
+  const risk = estimateRisk(row, t);
+  const context = { claim, priorClaims, estimate, lang };
   const signals = vigilanceSignals(context);
   const active = !finished.includes(claim.status);
   const missing = active ? missingDocuments(context) : [];
@@ -164,35 +171,28 @@ export function analyze(claim, { priorClaims = 0, history = [], now = new Date()
     recommendExpert: expert,
     service,
     priority: active
-      ? priority(claim, { service, signals, risk })
+      ? priority(claim, { service, signals, risk }, t)
       : { score: 0, reasons: [] },
     nextAction: active
-      ? nextAction(claim, { missing, expert, overdue: service?.overdueDays > 0 })
-      : { code: 'none', label: 'Dossier terminé.' },
+      ? nextAction(claim, { missing, expert, overdue: service?.overdueDays > 0 }, t)
+      : { code: 'none', label: t.next.none() },
     similar: similarCases(claim, row, history),
   };
 }
 
-const guidance = {
-  [Status.transmitted]: 'Votre dossier est reçu. Un agent va le prendre en charge.',
-  [Status.inReview]: 'Un agent étudie votre dossier.',
-  [Status.documentRequested]: 'Votre dossier attend des pièces de votre part.',
-  [Status.expertise]: 'Un expert va examiner votre véhicule.',
-  [Status.closed]: 'Votre dossier est clôturé.',
-  [Status.rejected]: 'Votre dossier a été rejeté.',
-};
 
 // Ce que le conducteur a le droit de voir. Liste blanche : un champ ajouté à
 // l'analyse reste réservé à l'agent tant qu'il n'est pas ajouté ici.
-export function driverView(claim, analysis) {
+export function driverView(claim, analysis, lang = 'FR') {
+  const t = textsIn(lang);
   const todo = claim.requests
     .filter((request) => !request.documentId)
-    .map((request) => `Déposer : ${request.label}`);
+    .map((request) => t.todo.upload(t.value(request.label)));
   if (claim.expertAppointment && claim.status === Status.expertise) {
-    todo.push('Présenter le véhicule à l’expert au rendez-vous.');
+    todo.push(t.todo.expert);
   }
   return {
-    headline: guidance[claim.status] ?? 'Votre dossier est en préparation.',
+    headline: t.guidance[claim.status] ?? t.guidance.default,
     todo,
     remainingDays: finished.includes(claim.status)
       ? null
@@ -202,6 +202,7 @@ export function driverView(claim, analysis) {
 
 // Analyses de tous les dossiers visibles, selon le rôle.
 export function insightsFor(user, claims, now = new Date()) {
+  const lang = langOf(user);
   const history = user.role === 'driver' ? [] : historyOf(claims);
   return Object.fromEntries(
     claims.map((claim) => {
@@ -209,10 +210,11 @@ export function insightsFor(user, claims, now = new Date()) {
         priorClaims: priorClaimsOf(claim, claims),
         history,
         now,
+        lang,
       });
       return [
         claim.id,
-        user.role === 'driver' ? { driver: driverView(claim, analysis) } : analysis,
+        user.role === 'driver' ? { driver: driverView(claim, analysis, lang) } : analysis,
       ];
     }),
   );

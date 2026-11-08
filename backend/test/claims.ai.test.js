@@ -89,11 +89,21 @@ describe('règles', () => {
 
   test('un montant lu par Claude alimente les règles', () => {
     const documents = [
-      { name: 'x.pdf', kind: 'Pièce', analysis: { amount: 900000, matchesRequest: false } },
+      {
+        name: 'x.pdf',
+        kind: 'Pièce',
+        requestId: 'r1',
+        analysis: { amount: 900000, matchesRequest: false },
+      },
     ];
     const ids = analyze(claimWith({ documents }), { now }).signals.map((s) => s.id);
     assert.ok(ids.includes('amount-over-estimate'));
     assert.ok(ids.includes('document-mismatch'));
+
+    // Une photo de la déclaration ne répond à aucune demande.
+    const photo = [{ name: 'choc.jpg', kind: 'Photo', analysis: { matchesRequest: false } }];
+    const none = analyze(claimWith({ documents: photo }), { now }).signals.map((s) => s.id);
+    assert.ok(!none.includes('document-mismatch'));
   });
 
   test('compte le retard dans le statut courant', () => {

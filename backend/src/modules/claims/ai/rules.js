@@ -1,3 +1,5 @@
+import { textsIn } from './i18n.js';
+
 // Règles métier explicables. Chaque résultat porte sa raison : l'agent doit
 // pouvoir vérifier ce que le système lui propose.
 
@@ -23,18 +25,18 @@ const atFault = [
 const shared = ['Virait à droite', 'Virait à gauche'];
 const moving = [...atFault, ...shared];
 
-// Même barème que ResponsibilityProposal côté Flutter.
-export function responsibilityProposal(boxes = []) {
+// Même barème que ResponsibilityProposal côté Flutter. La raison est
+// rédigée dans la langue demandée (FR, AR, EN).
+export function responsibilityProposal(boxes = [], lang = 'FR') {
+  const t = textsIn(lang);
   const fault = atFault.find((box) => boxes.includes(box));
-  if (fault) {
-    return { driverA: 100, reason: `${fault} : manœuvre à risque de A.` };
-  }
+  if (fault) return { driverA: 100, reason: t.proposal.fault(t.value(fault)) };
   if (boxes.includes('En stationnement')) {
-    return { driverA: 0, reason: 'A était en stationnement.' };
+    return { driverA: 0, reason: t.proposal.parked };
   }
   const turn = shared.find((box) => boxes.includes(box));
-  if (turn) return { driverA: 50, reason: `${turn} : partage par défaut.` };
-  return { driverA: 50, reason: 'Cases insuffisantes : partage par défaut.' };
+  if (turn) return { driverA: 50, reason: t.proposal.turn(t.value(turn)) };
+  return { driverA: 50, reason: t.proposal.unknown };
 }
 
 const days = (from, to) => (to - from) / 86_400_000;
@@ -66,25 +68,21 @@ const vigilanceRules = [
         days(accident, new Date(claim.createdAt)) > Limits.declarationDays
       );
     },
-    label: `Déclaré plus de ${Limits.declarationDays} jours après l’accident.`,
   },
   {
     id: 'repeat-claims',
     when: ({ priorClaims }) => priorClaims >= Limits.priorClaimsPerYear,
-    label: 'Plusieurs sinistres de ce conducteur sur 12 mois.',
   },
   {
     id: 'contradictory-boxes',
     when: ({ claim }) =>
       claim.circumstances.includes('En stationnement') &&
       claim.circumstances.some((box) => moving.includes(box)),
-    label: 'Cases contradictoires : à l’arrêt et en manœuvre.',
   },
   {
     id: 'severe-without-impact',
     when: ({ claim }) =>
       claim.severity === 'Grave' && claim.impactZones.length === 0,
-    label: 'Sinistre grave sans point de choc renseigné.',
   },
   {
     id: 'amount-over-estimate',
@@ -92,23 +90,22 @@ const vigilanceRules = [
       amounts(claim).some(
         (amount) => amount > estimate.high * Limits.amountOverEstimate,
       ),
-    label: 'Montant d’une pièce très supérieur à l’estimation.',
   },
   {
     id: 'document-mismatch',
     when: ({ claim }) =>
-      claim.documents.some((document) => document.analysis?.matchesRequest === false),
-    label: 'Une pièce ne correspond pas à ce qui était demandé.',
+      // Seulement une pièce envoyée en réponse à une demande : une photo de
+      // la déclaration ne répond à aucune demande.
+      claim.documents.some(
+        (document) => document.requestId && document.analysis?.matchesRequest === false,
+      ),
   },
 ];
 
+// `label` est la pièce enregistrée (en français, c'est une donnée).
 const documentRules = [
-  { label: 'Devis', when: () => true, reason: 'Nécessaire pour chiffrer.' },
-  {
-    label: 'PV de police',
-    when: ({ claim }) => claim.severity === 'Grave',
-    reason: 'Requis pour un sinistre grave.',
-  },
+  { label: 'Devis', when: () => true },
+  { label: 'PV de police', when: ({ claim }) => claim.severity === 'Grave' },
 ];
 
 const normalize = (text) =>
@@ -127,9 +124,10 @@ function hasDocument(claim, label) {
 }
 
 export function missingDocuments(context) {
+  const t = textsIn(context.lang);
   return documentRules
     .filter((rule) => rule.when(context) && !hasDocument(context.claim, rule.label))
-    .map(({ label, reason }) => ({ label, reason }));
+    .map(({ label }) => ({ label, reason: t.documentReasons[label] }));
 }
 
 // Temps passé dans le statut courant, depuis le dernier événement.
@@ -144,7 +142,10 @@ export function serviceLevel(claim, now) {
 export const vigilanceSignals = (context) =>
   vigilanceRules
     .filter((rule) => rule.when(context))
-    .map(({ id, label }) => ({ id, label }));
+    .map(({ id }) => ({
+      id,
+      label: textsIn(context.lang).signals[id](Limits.declarationDays),
+    }));
 
 export const needsExpert = ({ claim, estimate }) =>
   !claim.expertName &&
