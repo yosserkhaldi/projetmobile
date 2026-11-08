@@ -82,6 +82,7 @@ class FakeBackend {
   final storage = MemoryStorage();
   final requests = <String>[];
   final bodies = <String, Map<String, dynamic>>{};
+  final headers = <String, Map<String, String>>{};
   final uploads = <String, http.Request>{};
   final biometric = FakeBiometric();
   int deviceKeys = 0;
@@ -96,6 +97,47 @@ class FakeBackend {
   List<Map<String, dynamic>> users = [];
   List<Map<String, dynamic>> companies = [];
 
+  /// Appareils connectés : le premier est celui qui fait la requête.
+  List<Map<String, dynamic>> sessions = [
+    {
+      'id': 's-current',
+      'deviceName': 'Pixel de test',
+      'ip': '127.0.0.1',
+      'createdAt': '2026-11-07T08:00:00.000Z',
+      'lastUsedAt': '2026-11-07T09:00:00.000Z',
+      'current': true,
+    },
+    {
+      'id': 's-pc',
+      'deviceName': 'Chrome (web)',
+      'ip': '10.0.0.2',
+      'createdAt': '2026-11-06T08:00:00.000Z',
+      'lastUsedAt': '2026-11-06T18:00:00.000Z',
+      'current': false,
+    },
+  ];
+  List<Map<String, dynamic>> loginEvents = [
+    {
+      'id': 'e2',
+      'success': false,
+      'method': 'password',
+      'reason': 'wrong_password',
+      'deviceName': 'Chrome (web)',
+      'ip': '10.0.0.2',
+      'createdAt': '2026-11-06T17:59:00.000Z',
+    },
+    {
+      'id': 'e1',
+      'success': true,
+      'method': 'password',
+      'reason': null,
+      'deviceName': 'Pixel de test',
+      'ip': '127.0.0.1',
+      'createdAt': '2026-11-07T08:00:00.000Z',
+    },
+  ];
+  List<Map<String, dynamic>> pendingIdentities = [];
+
   /// Réponses d'erreur forcées : `'POST /auth/login'` vers (status, code, message).
   final failures = <String, (int, String, String)>{};
 
@@ -104,6 +146,10 @@ class FakeBackend {
   late final AppStores stores = AppStores(
     storage: storage,
     biometric: biometric,
+    deviceHeaders: (_) async => {
+      'X-Device-Id': 'device-test',
+      'X-Device-Name': 'Pixel de test',
+    },
     api: ApiClient(storage: storage, httpClient: client, baseUrl: 'http://api'),
   );
 
@@ -117,6 +163,7 @@ class FakeBackend {
     if (offline) throw http.ClientException('offline');
     final route = '${request.method} ${request.url.path}';
     requests.add(route);
+    headers[route] = request.headers;
     final type = request.headers['Content-Type'] ?? '';
     if (type.startsWith('application/json')) {
       bodies[route] = jsonDecode(request.body) as Map<String, dynamic>;
@@ -202,6 +249,98 @@ class FakeBackend {
       final index = users.indexWhere((u) => u['id'] == status[1]);
       users[index] = {...users[index], ...bodies[route]!};
       return _json(200, {'user': users[index]});
+    }
+    if (route == 'GET /users/stats') {
+      return _json(200, {
+        'users': {
+          'total': 12,
+          'active': 11,
+          'suspended': 1,
+          'phoneVerified': 9,
+          'byRole': {'DRIVER': 9, 'AGENT': 2, 'ADMIN': 1},
+        },
+        'identity': {
+          'UNVERIFIED': 4,
+          'PENDING': 2,
+          'VERIFIED': 3,
+          'REJECTED': 0,
+        },
+        'signIns7Days': {'success': 25, 'failed': 3},
+        'companies': 3,
+        'agencies': 5,
+        'signups': [
+          for (var i = 0; i < 30; i += 1)
+            {
+              'date': '2026-10-${(i % 28 + 1).toString().padLeft(2, '0')}',
+              'count': i % 3,
+            },
+        ],
+      });
+    }
+    if (route == 'GET /users/me/export') {
+      return _json(200, {
+        'exportedAt': '2026-11-08T10:00:00.000Z',
+        'legalBasis': 'Loi organique n° 2004-63',
+        'account': user,
+        'devices': sessions,
+        'signIns': loginEvents,
+      });
+    }
+    if (route == 'DELETE /users/me') return http.Response('', 204);
+    if (route == 'GET /users/me/sessions') {
+      return _json(200, {'items': sessions});
+    }
+    final revoke = RegExp(r'^/users/me/sessions/([^/]+)$').firstMatch(path);
+    if (revoke != null && request.method == 'DELETE') {
+      sessions = [
+        for (final s in sessions)
+          if (s['id'] != revoke[1]) s,
+      ];
+      return http.Response('', 204);
+    }
+    if (route == 'POST /users/me/sessions/revoke-others') {
+      final others = sessions.where((s) => s['current'] != true).length;
+      sessions = [
+        for (final s in sessions)
+          if (s['current'] == true) s,
+      ];
+      return _json(200, {'revoked': others});
+    }
+    if (route == 'GET /users/me/login-events') {
+      return _json(200, {'items': loginEvents});
+    }
+    if (route == 'POST /users/me/identity/submit') {
+      final identity = Map<String, dynamic>.from(
+        user['identity'] as Map? ?? {},
+      );
+      user = {
+        ...user,
+        'identity': {
+          ...identity,
+          'status': 'PENDING',
+          'cinNumber': bodies[route]!['cinNumber'],
+          'submittedAt': '2026-11-07T10:00:00.000Z',
+          'rejectionReason': null,
+        },
+      };
+      return _json(200, {'user': user});
+    }
+    if (route == 'GET /users/identity/pending') {
+      return _json(200, {'items': pendingIdentities});
+    }
+    final decision = RegExp(
+      r'^/users/([^/]+)/identity/(approve|reject)$',
+    ).firstMatch(path);
+    if (decision != null) {
+      final index = pendingIdentities.indexWhere((u) => u['id'] == decision[1]);
+      final decided = {
+        ...pendingIdentities.removeAt(index),
+        'identity': {
+          'status': decision[2] == 'approve' ? 'VERIFIED' : 'REJECTED',
+          'rejectionReason': bodies[route]?['reason'],
+        },
+      };
+      return _json(200, {'user': decided});
     }
     if (route == 'GET /companies') return _json(200, {'items': companies});
     if (route == 'POST /companies') {

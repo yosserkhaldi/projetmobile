@@ -116,6 +116,37 @@ class _RegisterScreenState extends State<RegisterScreen> with FormActions {
                     validator: (value) =>
                         value == _password.text ? null : t.passwordsDontMatch,
                   ),
+                  const SizedBox(height: 14),
+                  // Loi n° 2004-63 : consentement explicite, non coché par défaut.
+                  FormField<bool>(
+                    initialValue: false,
+                    validator: (value) =>
+                        value == true ? null : t.consentRequired,
+                    builder: (state) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CheckboxListTile(
+                          key: const Key('consent'),
+                          value: state.value,
+                          onChanged: state.didChange,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          title: Text(
+                            t.consentLabel,
+                            style: const TextStyle(fontSize: 13, height: 1.4),
+                          ),
+                        ),
+                        if (state.hasError)
+                          Text(
+                            state.errorText!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 12,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 22),
                   BusyButton(
                     label: t.createMyAccount,

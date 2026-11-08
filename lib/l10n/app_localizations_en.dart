@@ -144,7 +144,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String otpInstructions(String phone) {
-    return 'Enter the 6-digit code sent by SMS to $phone.';
+    return 'Enter the 6-digit code sent on WhatsApp to $phone.';
   }
 
   @override
@@ -287,7 +287,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get phoneChangeNotice =>
-      'A new number will need to be verified by SMS.';
+      'A new number will need to be verified with a WhatsApp code.';
 
   @override
   String get takePhoto => 'Take a photo';
@@ -517,4 +517,286 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get navDeclarations => 'Reports';
+
+  @override
+  String get securityDevicesTitle => 'Connected devices';
+
+  @override
+  String get securityDevicesSubtitle => 'Where your account is signed in';
+
+  @override
+  String get thisDevice => 'This device';
+
+  @override
+  String lastActive(String when) {
+    return 'Active on $when';
+  }
+
+  @override
+  String get signOutDevice => 'Sign out';
+
+  @override
+  String signOutDeviceConfirm(String name) {
+    return 'Sign out $name?';
+  }
+
+  @override
+  String get signOutDeviceBody =>
+      'This device will need the password to sign in again.';
+
+  @override
+  String get signOutOthers => 'Sign out all other devices';
+
+  @override
+  String signedOutOthers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count devices signed out',
+      one: '1 device signed out',
+      zero: 'No other device signed in',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get unknownDevice => 'Unknown device';
+
+  @override
+  String get securityAlertNote =>
+      'A sign-in from a new device is reported to you on WhatsApp and by email.';
+
+  @override
+  String get loginHistoryTitle => 'Sign-in history';
+
+  @override
+  String get noHistory => 'No sign-ins yet.';
+
+  @override
+  String get loginSuccess => 'Signed in';
+
+  @override
+  String get loginMethodPassword => 'password';
+
+  @override
+  String get loginMethodBiometric => 'fingerprint';
+
+  @override
+  String get loginMethodRegister => 'account created';
+
+  @override
+  String get loginFailedWrongPassword => 'Wrong password';
+
+  @override
+  String get loginFailedLocked => 'Attempt on locked account';
+
+  @override
+  String get loginFailedSuspended => 'Attempt on suspended account';
+
+  @override
+  String get identityTitle => 'Identity check';
+
+  @override
+  String get identityStatusUnverified => 'Identity not verified';
+
+  @override
+  String get identityStatusPending => 'Under review';
+
+  @override
+  String get identityStatusVerified => 'Identity verified';
+
+  @override
+  String get identityStatusRejected => 'Check declined';
+
+  @override
+  String get identityIntro =>
+      'An administrator checks your ID card. It is required to sign an accident report.';
+
+  @override
+  String get identityPendingNote =>
+      'An administrator is checking your documents. You will be told on WhatsApp and by email.';
+
+  @override
+  String get identityVerifiedNote => 'You can sign your accident reports.';
+
+  @override
+  String identityRejectedReason(String reason) {
+    return 'Reason: $reason';
+  }
+
+  @override
+  String get cinNumberLabel => 'ID card number';
+
+  @override
+  String get cinInvalid => 'The ID card number has 8 digits.';
+
+  @override
+  String get cinFront => 'Front of ID card';
+
+  @override
+  String get cinBack => 'Back of ID card';
+
+  @override
+  String get addPhoto => 'Add photo';
+
+  @override
+  String get identityPhotosRequired =>
+      'Add the front and back of your ID card.';
+
+  @override
+  String get submitIdentity => 'Send for review';
+
+  @override
+  String get identitySent => 'Request sent. You will be told on WhatsApp.';
+
+  @override
+  String get navIdentities => 'Identities';
+
+  @override
+  String get reviewTitle => 'Identity checks';
+
+  @override
+  String get reviewSubtitle => 'Pending requests, oldest first';
+
+  @override
+  String get noPendingReviews => 'No pending requests.';
+
+  @override
+  String submittedOn(String date) {
+    return 'Sent on $date';
+  }
+
+  @override
+  String get approve => 'Approve';
+
+  @override
+  String get reject => 'Decline';
+
+  @override
+  String get rejectTitle => 'Reason for declining';
+
+  @override
+  String get rejectReasonBlurry => 'Blurry photo';
+
+  @override
+  String get rejectReasonUnreadable => 'Unreadable document';
+
+  @override
+  String get rejectReasonNameMismatch => 'Name doesn\'t match the account';
+
+  @override
+  String get rejectReasonNotCin => 'Not an ID card';
+
+  @override
+  String get otherReason => 'Other reason';
+
+  @override
+  String get identityApproved => 'Identity approved, the holder is notified';
+
+  @override
+  String get identityRejected => 'Request declined, the holder is notified';
+
+  @override
+  String get errorIdentityLocked =>
+      'Your identity is under review or already verified.';
+
+  @override
+  String get errorCinInUse => 'This ID card number is already used.';
+
+  @override
+  String get errorIdentityNotVerified =>
+      'Your identity must be verified first.';
+
+  @override
+  String get errorIdentityNotPending => 'This request is no longer pending.';
+
+  @override
+  String get consentLabel =>
+      'I agree that my data is processed to manage my accident reports, under Tunisian law no. 2004-63.';
+
+  @override
+  String get consentRequired =>
+      'Your consent is required to create an account.';
+
+  @override
+  String get sectionPrivacy => 'Personal data';
+
+  @override
+  String get exportData => 'Download my data';
+
+  @override
+  String get exportDataSubtitle =>
+      'A PDF of everything Mon Constat keeps about you';
+
+  @override
+  String get deleteAccount => 'Delete my account';
+
+  @override
+  String get deleteAccountSubtitle =>
+      'Permanent. Your reports stay, without your name.';
+
+  @override
+  String get deleteAccountTitle => 'Delete your account?';
+
+  @override
+  String get deleteAccountBody =>
+      'Your name, contact details, licence, ID card and photos will be erased. Accidents and claims already filed stay, anonymised, as insurance requires. This cannot be undone.';
+
+  @override
+  String get deleteAccountConfirm => 'Delete permanently';
+
+  @override
+  String get accountDeleted => 'Your account has been deleted.';
+
+  @override
+  String get errorAdminCannotDelete =>
+      'An administrator cannot delete their account here.';
+
+  @override
+  String get dashUsers => 'Users';
+
+  @override
+  String dashActive(int count) {
+    return '$count active';
+  }
+
+  @override
+  String get dashPendingIds => 'To review';
+
+  @override
+  String dashVerifiedIds(int count) {
+    return '$count verified';
+  }
+
+  @override
+  String get dashPhones => 'Phones verified';
+
+  @override
+  String get dashSignIns => 'Sign-ins 7 days';
+
+  @override
+  String dashFailed(int count) {
+    return '$count failed';
+  }
+
+  @override
+  String get dashSignupsTitle => 'Sign-ups, last 30 days';
+
+  @override
+  String get dashRolesTitle => 'Accounts by role';
+
+  @override
+  String get dashIdentityTitle => 'Driver identity checks';
+
+  @override
+  String dashNetwork(int companies, int agencies) {
+    return '$companies companies · $agencies branches';
+  }
+
+  @override
+  String get dashAccidentsTitle => 'Accidents and claims';
+
+  @override
+  String get dashAccidentsPending =>
+      'Indicators, breakdowns and the hotspot map: available as soon as modules 3 and 5 send their data to the server.';
 }

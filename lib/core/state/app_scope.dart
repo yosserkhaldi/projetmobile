@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
+import 'package:mon_constat_digital/core/network/device_identity.dart';
 import 'package:mon_constat_digital/core/network/token_storage.dart';
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
 import 'package:mon_constat_digital/modules/accident/state/accident_store.dart';
@@ -17,6 +18,7 @@ class AppStores {
     SessionStorage? storage,
     ApiClient? api,
     BiometricAuth? biometric,
+    DeviceHeadersLoader? deviceHeaders,
     VehicleDatabase? vehicleDb,
   }) : storage = storage ?? const SecureSessionStorage() {
     this.api = api ?? ApiClient(storage: this.storage);
@@ -24,6 +26,7 @@ class AppStores {
       this.api,
       this.storage,
       biometric ?? DeviceBiometricAuth(),
+      deviceHeaders: deviceHeaders ?? loadDeviceHeaders,
     );
     admin = AdminStore(this.api);
     vehicles = VehicleStore(vehicleDb ?? VehicleDatabase());

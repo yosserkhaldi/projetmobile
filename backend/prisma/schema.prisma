@@ -21,6 +21,13 @@ enum Language {
   EN
 }
 
+enum IdentityStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 enum CodePurpose {
   PHONE_VERIFICATION
   PASSWORD_RESET
@@ -46,6 +53,18 @@ model User {
   // Noms de fichiers dans UPLOAD_DIR/users. Jamais servis publiquement.
   photoFile        String?
   licensePhotoFile String?
+  // Vérification d'identité (CIN) : validée par un administrateur.
+  identityStatus          IdentityStatus @default(UNVERIFIED)
+  cinNumber               String?        @unique
+  cinFrontFile            String?
+  cinBackFile             String?
+  identitySubmittedAt     DateTime?
+  identityReviewedAt      DateTime?
+  identityReviewerId      String?        @db.Uuid
+  identityRejectionReason String?
+  // Loi n° 2004-63 : consentement à l'inscription, compte anonymisé à la suppression.
+  consentAt               DateTime?
+  deletedAt               DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -53,6 +72,8 @@ model User {
   refreshTokens     RefreshToken[]
   verificationCodes VerificationCode[]
   deviceKeys        DeviceKey[]
+  sessions          Session[]
+  loginEvents       LoginEvent[]
   vehicles          Vehicle[]
 
   @@index([role])
@@ -79,17 +100,54 @@ model Agency {
   @@unique([companyId, name])
 }
 
+// Un appareil connecté. Ses jetons de rafraîchissement se succèdent ;
+// révoquer la session déconnecte l'appareil tout de suite.
+model Session {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  deviceId   String?
+  deviceName String?
+  ip         String?
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime  @default(now())
+  revokedAt  DateTime?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+
+  @@index([userId])
+}
+
 model RefreshToken {
   id        String    @id @default(uuid()) @db.Uuid
   tokenHash String    @unique
   userId    String    @db.Uuid
+  sessionId String    @db.Uuid
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([sessionId])
+}
+
+/// Historique des connexions, réussies ou non.
+model LoginEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  success    Boolean
+  method     String
+  reason     String?
+  deviceName String?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 model VerificationCode {
