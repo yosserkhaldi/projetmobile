@@ -71,7 +71,15 @@ void main() {
         path: '/tmp/devis.pdf',
         request: claim.openRequests.first,
       );
-      store.scheduleExpertise(claim, 'M. Trabelsi', appointment);
+      store.scheduleExpertise(
+        claim,
+        expert: 'M. Trabelsi',
+        appointment: appointment,
+        kind: 'Véhicule',
+        phone: '+216 71 000 000',
+        place: 'Garage Ennour, Ariana',
+      );
+      store.acceptAppointment(claim, UserRole.driver);
       store.addExpertReport(claim, 'rapport.pdf');
       store.closeClaim(claim, 100, 1250.5);
       await store.saved;
@@ -90,6 +98,10 @@ void main() {
       expect(claim.observations, 'Pluie');
       expect(claim.expertName, 'M. Trabelsi');
       expect(claim.expertAppointment, appointment);
+      expect(claim.expertPlace, 'Garage Ennour, Ariana');
+      expect(claim.expertPhone, '+216 71 000 000');
+      expect(claim.expertKind, 'Véhicule');
+      expect(claim.appointmentState, 'accepted');
       expect(claim.responsibility, 100);
       expect(claim.indemnity, 1250.5);
       expect(claim.timeline, [
@@ -98,10 +110,11 @@ void main() {
         'Pièce demandée : Devis',
         ClaimStatus.inReview,
         ClaimStatus.expertise,
+        'Rendez-vous confirmé',
         'Rapport d’expertise joint',
         ClaimStatus.closed,
       ]);
-      expect(claim.timelineDates, hasLength(7));
+      expect(claim.timelineDates, hasLength(8));
       expect(claim.documents.map((d) => d.name), ['devis.pdf', 'rapport.pdf']);
       expect(claim.documents.first.path, '/tmp/devis.pdf');
       expect(claim.documents.last.kind, ClaimDocument.expertReport);

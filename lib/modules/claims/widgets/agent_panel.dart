@@ -8,7 +8,7 @@ import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/models/responsibility.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/document_picker.dart';
-import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/expertise_card.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
@@ -28,6 +28,23 @@ class AgentPanel extends StatelessWidget {
         onPressed: () => store.takeCharge(claim, stores.users.userName),
         icon: const Icon(Icons.assignment_ind),
         label: Text(t.claimsTakeCharge),
+      );
+    }
+    if (ClaimStatus.isFinal(claim.status)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            t.claimsReopenHelp,
+            style: TextStyle(color: context.palette.textMuted),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () => _reopen(context),
+            icon: const Icon(Icons.restart_alt),
+            label: Text(t.claimsReopen),
+          ),
+        ],
       );
     }
     if (next.isEmpty) return const SizedBox.shrink();
@@ -143,33 +160,127 @@ class AgentPanel extends StatelessWidget {
     final t = context.t;
     final store = AppScope.of(context).claims;
     final expert = TextEditingController(text: claim.expertName);
-    var appointment =
-        claim.expertAppointment ?? DateTime.now().add(const Duration(days: 2));
+    final phone = TextEditingController(text: claim.expertPhone);
+    final place = TextEditingController(text: claim.expertPlace);
+    final note = TextEditingController();
+    var kind = claim.expertKind ?? defaultExpertKind(claim);
+    final suggestions = suggestedSlots(avoid: claim.expertAppointment);
+    var appointment = claim.expertAppointment ?? suggestions.first;
+    String? error;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) => AlertDialog(
-          title: Text(t.claimsExpertiseTitle),
+          title: Text(
+            claim.status == ClaimStatus.expertise
+                ? t.claimsMoveAppointment
+                : t.claimsAppointExpert,
+          ),
+          scrollable: true,
           content: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextField(
-                controller: expert,
-                decoration: InputDecoration(labelText: t.claimsExpert),
+              SegmentedButton<String>(
+                segments: [
+                  for (final (value, icon) in [
+                    (vehicleExpertise, Icons.directions_car),
+                    (bodilyExpertise, Icons.healing_outlined),
+                  ])
+                    ButtonSegment(
+                      value: value,
+                      icon: Icon(icon),
+                      label: Text(t.claimValue(value)),
+                    ),
+                ],
+                selected: {kind},
+                onSelectionChanged: (value) =>
+                    setState(() => kind = value.first),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                t.claimsKindHelp,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: dialogContext.palette.textMuted,
+                ),
               ),
               const SizedBox(height: 12),
+              TextField(
+                controller: expert,
+                decoration: InputDecoration(
+                  labelText: t.claimsExpert,
+                  errorText: error,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: phone,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(labelText: t.claimsExpertPhone),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: place,
+                decoration: InputDecoration(
+                  labelText: t.claimsExpertPlace,
+                  hintText: kind == bodilyExpertise
+                      ? t.claimsPlaceHintBody
+                      : t.claimsPlaceHintVehicle,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                t.claimsSuggestedSlots,
+                style: TextStyle(color: dialogContext.palette.textMuted),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final slot in suggestions)
+                    ChoiceChip(
+                      label: Text(formatSlot(dialogContext, slot)),
+                      selected: appointment == slot,
+                      onSelected: (_) => setState(() => appointment = slot),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: () async {
                   final day = await showDatePicker(
                     context: dialogContext,
-                    initialDate: appointment,
+                    initialDate: appointment.isBefore(DateTime.now())
+                        ? DateTime.now()
+                        : appointment,
                     firstDate: DateTime.now(),
                     lastDate: DateTime.now().add(const Duration(days: 365)),
                   );
-                  if (day != null) setState(() => appointment = day);
+                  if (day == null || !dialogContext.mounted) return;
+                  final time = await showTimePicker(
+                    context: dialogContext,
+                    initialTime: TimeOfDay.fromDateTime(appointment),
+                  );
+                  if (time == null) return;
+                  setState(
+                    () => appointment = DateTime(
+                      day.year,
+                      day.month,
+                      day.day,
+                      time.hour,
+                      time.minute,
+                    ),
+                  );
                 },
-                icon: const Icon(Icons.calendar_month),
-                label: Text(formatDay(appointment)),
+                icon: const Icon(Icons.edit_calendar),
+                label: Text(formatSlot(dialogContext, appointment)),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: note,
+                decoration: InputDecoration(labelText: t.claimsNoteOptional),
               ),
             ],
           ),
@@ -179,17 +290,60 @@ class AgentPanel extends StatelessWidget {
               child: Text(t.cancel),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
+              onPressed: () {
+                if (expert.text.trim().isEmpty) {
+                  setState(() => error = t.claimsExpertRequired);
+                  return;
+                }
+                Navigator.pop(dialogContext, true);
+              },
               child: Text(t.claimsSchedule),
             ),
           ],
         ),
       ),
     );
-    if ((confirmed ?? false) && expert.text.trim().isNotEmpty) {
-      store.scheduleExpertise(claim, expert.text, appointment);
+    if (confirmed ?? false) {
+      store.scheduleExpertise(
+        claim,
+        expert: expert.text,
+        appointment: appointment,
+        kind: kind,
+        phone: phone.text,
+        place: place.text,
+        note: note.text,
+      );
     }
-    expert.dispose();
+  }
+
+  Future<void> _reopen(BuildContext context) async {
+    final t = context.t;
+    final store = AppScope.of(context).claims;
+    final reason = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(t.claimsReopen),
+        content: TextField(
+          controller: reason,
+          autofocus: true,
+          decoration: InputDecoration(labelText: t.claimsReasonLabel),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(t.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(t.claimsReopenAction),
+          ),
+        ],
+      ),
+    );
+    if ((confirmed ?? false) && reason.text.trim().isNotEmpty) {
+      store.reopenClaim(claim, reason.text);
+    }
   }
 
   Future<void> _reject(BuildContext context) async {

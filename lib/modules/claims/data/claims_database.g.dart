@@ -134,6 +134,72 @@ class $ClaimsTable extends Claims with TableInfo<$ClaimsTable, ClaimRow> {
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _expertPhoneMeta = const VerificationMeta(
+    'expertPhone',
+  );
+  @override
+  late final GeneratedColumn<String> expertPhone = GeneratedColumn<String>(
+    'expert_phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _expertPlaceMeta = const VerificationMeta(
+    'expertPlace',
+  );
+  @override
+  late final GeneratedColumn<String> expertPlace = GeneratedColumn<String>(
+    'expert_place',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _expertKindMeta = const VerificationMeta(
+    'expertKind',
+  );
+  @override
+  late final GeneratedColumn<String> expertKind = GeneratedColumn<String>(
+    'expert_kind',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _appointmentStateMeta = const VerificationMeta(
+    'appointmentState',
+  );
+  @override
+  late final GeneratedColumn<String> appointmentState = GeneratedColumn<String>(
+    'appointment_state',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _appointmentByMeta = const VerificationMeta(
+    'appointmentBy',
+  );
+  @override
+  late final GeneratedColumn<String> appointmentBy = GeneratedColumn<String>(
+    'appointment_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _appointmentNoteMeta = const VerificationMeta(
+    'appointmentNote',
+  );
+  @override
+  late final GeneratedColumn<String> appointmentNote = GeneratedColumn<String>(
+    'appointment_note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _responsibilityMeta = const VerificationMeta(
     'responsibility',
   );
@@ -181,6 +247,12 @@ class $ClaimsTable extends Claims with TableInfo<$ClaimsTable, ClaimRow> {
     agentName,
     expertName,
     expertAppointment,
+    expertPhone,
+    expertPlace,
+    expertKind,
+    appointmentState,
+    appointmentBy,
+    appointmentNote,
     responsibility,
     indemnity,
     decisionReason,
@@ -290,6 +362,57 @@ class $ClaimsTable extends Claims with TableInfo<$ClaimsTable, ClaimRow> {
         ),
       );
     }
+    if (data.containsKey('expert_phone')) {
+      context.handle(
+        _expertPhoneMeta,
+        expertPhone.isAcceptableOrUnknown(
+          data['expert_phone']!,
+          _expertPhoneMeta,
+        ),
+      );
+    }
+    if (data.containsKey('expert_place')) {
+      context.handle(
+        _expertPlaceMeta,
+        expertPlace.isAcceptableOrUnknown(
+          data['expert_place']!,
+          _expertPlaceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('expert_kind')) {
+      context.handle(
+        _expertKindMeta,
+        expertKind.isAcceptableOrUnknown(data['expert_kind']!, _expertKindMeta),
+      );
+    }
+    if (data.containsKey('appointment_state')) {
+      context.handle(
+        _appointmentStateMeta,
+        appointmentState.isAcceptableOrUnknown(
+          data['appointment_state']!,
+          _appointmentStateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('appointment_by')) {
+      context.handle(
+        _appointmentByMeta,
+        appointmentBy.isAcceptableOrUnknown(
+          data['appointment_by']!,
+          _appointmentByMeta,
+        ),
+      );
+    }
+    if (data.containsKey('appointment_note')) {
+      context.handle(
+        _appointmentNoteMeta,
+        appointmentNote.isAcceptableOrUnknown(
+          data['appointment_note']!,
+          _appointmentNoteMeta,
+        ),
+      );
+    }
     if (data.containsKey('responsibility')) {
       context.handle(
         _responsibilityMeta,
@@ -371,6 +494,30 @@ class $ClaimsTable extends Claims with TableInfo<$ClaimsTable, ClaimRow> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}expert_appointment'],
       ),
+      expertPhone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}expert_phone'],
+      ),
+      expertPlace: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}expert_place'],
+      ),
+      expertKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}expert_kind'],
+      ),
+      appointmentState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}appointment_state'],
+      ),
+      appointmentBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}appointment_by'],
+      ),
+      appointmentNote: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}appointment_note'],
+      ),
       responsibility: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}responsibility'],
@@ -407,6 +554,12 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
   final String? agentName;
   final String? expertName;
   final DateTime? expertAppointment;
+  final String? expertPhone;
+  final String? expertPlace;
+  final String? expertKind;
+  final String? appointmentState;
+  final String? appointmentBy;
+  final String? appointmentNote;
   final int? responsibility;
   final double? indemnity;
   final String? decisionReason;
@@ -423,6 +576,12 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
     this.agentName,
     this.expertName,
     this.expertAppointment,
+    this.expertPhone,
+    this.expertPlace,
+    this.expertKind,
+    this.appointmentState,
+    this.appointmentBy,
+    this.appointmentNote,
     this.responsibility,
     this.indemnity,
     this.decisionReason,
@@ -447,6 +606,24 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
     }
     if (!nullToAbsent || expertAppointment != null) {
       map['expert_appointment'] = Variable<DateTime>(expertAppointment);
+    }
+    if (!nullToAbsent || expertPhone != null) {
+      map['expert_phone'] = Variable<String>(expertPhone);
+    }
+    if (!nullToAbsent || expertPlace != null) {
+      map['expert_place'] = Variable<String>(expertPlace);
+    }
+    if (!nullToAbsent || expertKind != null) {
+      map['expert_kind'] = Variable<String>(expertKind);
+    }
+    if (!nullToAbsent || appointmentState != null) {
+      map['appointment_state'] = Variable<String>(appointmentState);
+    }
+    if (!nullToAbsent || appointmentBy != null) {
+      map['appointment_by'] = Variable<String>(appointmentBy);
+    }
+    if (!nullToAbsent || appointmentNote != null) {
+      map['appointment_note'] = Variable<String>(appointmentNote);
     }
     if (!nullToAbsent || responsibility != null) {
       map['responsibility'] = Variable<int>(responsibility);
@@ -480,6 +657,24 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
       expertAppointment: expertAppointment == null && nullToAbsent
           ? const Value.absent()
           : Value(expertAppointment),
+      expertPhone: expertPhone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expertPhone),
+      expertPlace: expertPlace == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expertPlace),
+      expertKind: expertKind == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expertKind),
+      appointmentState: appointmentState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(appointmentState),
+      appointmentBy: appointmentBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(appointmentBy),
+      appointmentNote: appointmentNote == null && nullToAbsent
+          ? const Value.absent()
+          : Value(appointmentNote),
       responsibility: responsibility == null && nullToAbsent
           ? const Value.absent()
           : Value(responsibility),
@@ -512,6 +707,12 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
       expertAppointment: serializer.fromJson<DateTime?>(
         json['expertAppointment'],
       ),
+      expertPhone: serializer.fromJson<String?>(json['expertPhone']),
+      expertPlace: serializer.fromJson<String?>(json['expertPlace']),
+      expertKind: serializer.fromJson<String?>(json['expertKind']),
+      appointmentState: serializer.fromJson<String?>(json['appointmentState']),
+      appointmentBy: serializer.fromJson<String?>(json['appointmentBy']),
+      appointmentNote: serializer.fromJson<String?>(json['appointmentNote']),
       responsibility: serializer.fromJson<int?>(json['responsibility']),
       indemnity: serializer.fromJson<double?>(json['indemnity']),
       decisionReason: serializer.fromJson<String?>(json['decisionReason']),
@@ -533,6 +734,12 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
       'agentName': serializer.toJson<String?>(agentName),
       'expertName': serializer.toJson<String?>(expertName),
       'expertAppointment': serializer.toJson<DateTime?>(expertAppointment),
+      'expertPhone': serializer.toJson<String?>(expertPhone),
+      'expertPlace': serializer.toJson<String?>(expertPlace),
+      'expertKind': serializer.toJson<String?>(expertKind),
+      'appointmentState': serializer.toJson<String?>(appointmentState),
+      'appointmentBy': serializer.toJson<String?>(appointmentBy),
+      'appointmentNote': serializer.toJson<String?>(appointmentNote),
       'responsibility': serializer.toJson<int?>(responsibility),
       'indemnity': serializer.toJson<double?>(indemnity),
       'decisionReason': serializer.toJson<String?>(decisionReason),
@@ -552,6 +759,12 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
     Value<String?> agentName = const Value.absent(),
     Value<String?> expertName = const Value.absent(),
     Value<DateTime?> expertAppointment = const Value.absent(),
+    Value<String?> expertPhone = const Value.absent(),
+    Value<String?> expertPlace = const Value.absent(),
+    Value<String?> expertKind = const Value.absent(),
+    Value<String?> appointmentState = const Value.absent(),
+    Value<String?> appointmentBy = const Value.absent(),
+    Value<String?> appointmentNote = const Value.absent(),
     Value<int?> responsibility = const Value.absent(),
     Value<double?> indemnity = const Value.absent(),
     Value<String?> decisionReason = const Value.absent(),
@@ -570,6 +783,18 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
     expertAppointment: expertAppointment.present
         ? expertAppointment.value
         : this.expertAppointment,
+    expertPhone: expertPhone.present ? expertPhone.value : this.expertPhone,
+    expertPlace: expertPlace.present ? expertPlace.value : this.expertPlace,
+    expertKind: expertKind.present ? expertKind.value : this.expertKind,
+    appointmentState: appointmentState.present
+        ? appointmentState.value
+        : this.appointmentState,
+    appointmentBy: appointmentBy.present
+        ? appointmentBy.value
+        : this.appointmentBy,
+    appointmentNote: appointmentNote.present
+        ? appointmentNote.value
+        : this.appointmentNote,
     responsibility: responsibility.present
         ? responsibility.value
         : this.responsibility,
@@ -602,6 +827,24 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
       expertAppointment: data.expertAppointment.present
           ? data.expertAppointment.value
           : this.expertAppointment,
+      expertPhone: data.expertPhone.present
+          ? data.expertPhone.value
+          : this.expertPhone,
+      expertPlace: data.expertPlace.present
+          ? data.expertPlace.value
+          : this.expertPlace,
+      expertKind: data.expertKind.present
+          ? data.expertKind.value
+          : this.expertKind,
+      appointmentState: data.appointmentState.present
+          ? data.appointmentState.value
+          : this.appointmentState,
+      appointmentBy: data.appointmentBy.present
+          ? data.appointmentBy.value
+          : this.appointmentBy,
+      appointmentNote: data.appointmentNote.present
+          ? data.appointmentNote.value
+          : this.appointmentNote,
       responsibility: data.responsibility.present
           ? data.responsibility.value
           : this.responsibility,
@@ -627,6 +870,12 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
           ..write('agentName: $agentName, ')
           ..write('expertName: $expertName, ')
           ..write('expertAppointment: $expertAppointment, ')
+          ..write('expertPhone: $expertPhone, ')
+          ..write('expertPlace: $expertPlace, ')
+          ..write('expertKind: $expertKind, ')
+          ..write('appointmentState: $appointmentState, ')
+          ..write('appointmentBy: $appointmentBy, ')
+          ..write('appointmentNote: $appointmentNote, ')
           ..write('responsibility: $responsibility, ')
           ..write('indemnity: $indemnity, ')
           ..write('decisionReason: $decisionReason')
@@ -635,7 +884,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     type,
     place,
@@ -648,10 +897,16 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
     agentName,
     expertName,
     expertAppointment,
+    expertPhone,
+    expertPlace,
+    expertKind,
+    appointmentState,
+    appointmentBy,
+    appointmentNote,
     responsibility,
     indemnity,
     decisionReason,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -668,6 +923,12 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
           other.agentName == this.agentName &&
           other.expertName == this.expertName &&
           other.expertAppointment == this.expertAppointment &&
+          other.expertPhone == this.expertPhone &&
+          other.expertPlace == this.expertPlace &&
+          other.expertKind == this.expertKind &&
+          other.appointmentState == this.appointmentState &&
+          other.appointmentBy == this.appointmentBy &&
+          other.appointmentNote == this.appointmentNote &&
           other.responsibility == this.responsibility &&
           other.indemnity == this.indemnity &&
           other.decisionReason == this.decisionReason);
@@ -686,6 +947,12 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
   final Value<String?> agentName;
   final Value<String?> expertName;
   final Value<DateTime?> expertAppointment;
+  final Value<String?> expertPhone;
+  final Value<String?> expertPlace;
+  final Value<String?> expertKind;
+  final Value<String?> appointmentState;
+  final Value<String?> appointmentBy;
+  final Value<String?> appointmentNote;
   final Value<int?> responsibility;
   final Value<double?> indemnity;
   final Value<String?> decisionReason;
@@ -703,6 +970,12 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
     this.agentName = const Value.absent(),
     this.expertName = const Value.absent(),
     this.expertAppointment = const Value.absent(),
+    this.expertPhone = const Value.absent(),
+    this.expertPlace = const Value.absent(),
+    this.expertKind = const Value.absent(),
+    this.appointmentState = const Value.absent(),
+    this.appointmentBy = const Value.absent(),
+    this.appointmentNote = const Value.absent(),
     this.responsibility = const Value.absent(),
     this.indemnity = const Value.absent(),
     this.decisionReason = const Value.absent(),
@@ -721,6 +994,12 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
     this.agentName = const Value.absent(),
     this.expertName = const Value.absent(),
     this.expertAppointment = const Value.absent(),
+    this.expertPhone = const Value.absent(),
+    this.expertPlace = const Value.absent(),
+    this.expertKind = const Value.absent(),
+    this.appointmentState = const Value.absent(),
+    this.appointmentBy = const Value.absent(),
+    this.appointmentNote = const Value.absent(),
     this.responsibility = const Value.absent(),
     this.indemnity = const Value.absent(),
     this.decisionReason = const Value.absent(),
@@ -744,6 +1023,12 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
     Expression<String>? agentName,
     Expression<String>? expertName,
     Expression<DateTime>? expertAppointment,
+    Expression<String>? expertPhone,
+    Expression<String>? expertPlace,
+    Expression<String>? expertKind,
+    Expression<String>? appointmentState,
+    Expression<String>? appointmentBy,
+    Expression<String>? appointmentNote,
     Expression<int>? responsibility,
     Expression<double>? indemnity,
     Expression<String>? decisionReason,
@@ -762,6 +1047,12 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
       if (agentName != null) 'agent_name': agentName,
       if (expertName != null) 'expert_name': expertName,
       if (expertAppointment != null) 'expert_appointment': expertAppointment,
+      if (expertPhone != null) 'expert_phone': expertPhone,
+      if (expertPlace != null) 'expert_place': expertPlace,
+      if (expertKind != null) 'expert_kind': expertKind,
+      if (appointmentState != null) 'appointment_state': appointmentState,
+      if (appointmentBy != null) 'appointment_by': appointmentBy,
+      if (appointmentNote != null) 'appointment_note': appointmentNote,
       if (responsibility != null) 'responsibility': responsibility,
       if (indemnity != null) 'indemnity': indemnity,
       if (decisionReason != null) 'decision_reason': decisionReason,
@@ -782,6 +1073,12 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
     Value<String?>? agentName,
     Value<String?>? expertName,
     Value<DateTime?>? expertAppointment,
+    Value<String?>? expertPhone,
+    Value<String?>? expertPlace,
+    Value<String?>? expertKind,
+    Value<String?>? appointmentState,
+    Value<String?>? appointmentBy,
+    Value<String?>? appointmentNote,
     Value<int?>? responsibility,
     Value<double?>? indemnity,
     Value<String?>? decisionReason,
@@ -800,6 +1097,12 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
       agentName: agentName ?? this.agentName,
       expertName: expertName ?? this.expertName,
       expertAppointment: expertAppointment ?? this.expertAppointment,
+      expertPhone: expertPhone ?? this.expertPhone,
+      expertPlace: expertPlace ?? this.expertPlace,
+      expertKind: expertKind ?? this.expertKind,
+      appointmentState: appointmentState ?? this.appointmentState,
+      appointmentBy: appointmentBy ?? this.appointmentBy,
+      appointmentNote: appointmentNote ?? this.appointmentNote,
       responsibility: responsibility ?? this.responsibility,
       indemnity: indemnity ?? this.indemnity,
       decisionReason: decisionReason ?? this.decisionReason,
@@ -846,6 +1149,24 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
     if (expertAppointment.present) {
       map['expert_appointment'] = Variable<DateTime>(expertAppointment.value);
     }
+    if (expertPhone.present) {
+      map['expert_phone'] = Variable<String>(expertPhone.value);
+    }
+    if (expertPlace.present) {
+      map['expert_place'] = Variable<String>(expertPlace.value);
+    }
+    if (expertKind.present) {
+      map['expert_kind'] = Variable<String>(expertKind.value);
+    }
+    if (appointmentState.present) {
+      map['appointment_state'] = Variable<String>(appointmentState.value);
+    }
+    if (appointmentBy.present) {
+      map['appointment_by'] = Variable<String>(appointmentBy.value);
+    }
+    if (appointmentNote.present) {
+      map['appointment_note'] = Variable<String>(appointmentNote.value);
+    }
     if (responsibility.present) {
       map['responsibility'] = Variable<int>(responsibility.value);
     }
@@ -876,6 +1197,12 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
           ..write('agentName: $agentName, ')
           ..write('expertName: $expertName, ')
           ..write('expertAppointment: $expertAppointment, ')
+          ..write('expertPhone: $expertPhone, ')
+          ..write('expertPlace: $expertPlace, ')
+          ..write('expertKind: $expertKind, ')
+          ..write('appointmentState: $appointmentState, ')
+          ..write('appointmentBy: $appointmentBy, ')
+          ..write('appointmentNote: $appointmentNote, ')
           ..write('responsibility: $responsibility, ')
           ..write('indemnity: $indemnity, ')
           ..write('decisionReason: $decisionReason, ')
@@ -4165,6 +4492,12 @@ typedef $$ClaimsTableCreateCompanionBuilder =
       Value<String?> agentName,
       Value<String?> expertName,
       Value<DateTime?> expertAppointment,
+      Value<String?> expertPhone,
+      Value<String?> expertPlace,
+      Value<String?> expertKind,
+      Value<String?> appointmentState,
+      Value<String?> appointmentBy,
+      Value<String?> appointmentNote,
       Value<int?> responsibility,
       Value<double?> indemnity,
       Value<String?> decisionReason,
@@ -4184,6 +4517,12 @@ typedef $$ClaimsTableUpdateCompanionBuilder =
       Value<String?> agentName,
       Value<String?> expertName,
       Value<DateTime?> expertAppointment,
+      Value<String?> expertPhone,
+      Value<String?> expertPlace,
+      Value<String?> expertKind,
+      Value<String?> appointmentState,
+      Value<String?> appointmentBy,
+      Value<String?> appointmentNote,
       Value<int?> responsibility,
       Value<double?> indemnity,
       Value<String?> decisionReason,
@@ -4322,6 +4661,36 @@ class $$ClaimsTableFilterComposer
 
   ColumnFilters<DateTime> get expertAppointment => $composableBuilder(
     column: $table.expertAppointment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get expertPhone => $composableBuilder(
+    column: $table.expertPhone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get expertPlace => $composableBuilder(
+    column: $table.expertPlace,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get expertKind => $composableBuilder(
+    column: $table.expertKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get appointmentState => $composableBuilder(
+    column: $table.appointmentState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get appointmentBy => $composableBuilder(
+    column: $table.appointmentBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get appointmentNote => $composableBuilder(
+    column: $table.appointmentNote,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4485,6 +4854,36 @@ class $$ClaimsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get expertPhone => $composableBuilder(
+    column: $table.expertPhone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get expertPlace => $composableBuilder(
+    column: $table.expertPlace,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get expertKind => $composableBuilder(
+    column: $table.expertKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get appointmentState => $composableBuilder(
+    column: $table.appointmentState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get appointmentBy => $composableBuilder(
+    column: $table.appointmentBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get appointmentNote => $composableBuilder(
+    column: $table.appointmentNote,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get responsibility => $composableBuilder(
     column: $table.responsibility,
     builder: (column) => ColumnOrderings(column),
@@ -4553,6 +4952,36 @@ class $$ClaimsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get expertAppointment => $composableBuilder(
     column: $table.expertAppointment,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get expertPhone => $composableBuilder(
+    column: $table.expertPhone,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get expertPlace => $composableBuilder(
+    column: $table.expertPlace,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get expertKind => $composableBuilder(
+    column: $table.expertKind,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get appointmentState => $composableBuilder(
+    column: $table.appointmentState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get appointmentBy => $composableBuilder(
+    column: $table.appointmentBy,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get appointmentNote => $composableBuilder(
+    column: $table.appointmentNote,
     builder: (column) => column,
   );
 
@@ -4690,6 +5119,12 @@ class $$ClaimsTableTableManager
                 Value<String?> agentName = const Value.absent(),
                 Value<String?> expertName = const Value.absent(),
                 Value<DateTime?> expertAppointment = const Value.absent(),
+                Value<String?> expertPhone = const Value.absent(),
+                Value<String?> expertPlace = const Value.absent(),
+                Value<String?> expertKind = const Value.absent(),
+                Value<String?> appointmentState = const Value.absent(),
+                Value<String?> appointmentBy = const Value.absent(),
+                Value<String?> appointmentNote = const Value.absent(),
                 Value<int?> responsibility = const Value.absent(),
                 Value<double?> indemnity = const Value.absent(),
                 Value<String?> decisionReason = const Value.absent(),
@@ -4707,6 +5142,12 @@ class $$ClaimsTableTableManager
                 agentName: agentName,
                 expertName: expertName,
                 expertAppointment: expertAppointment,
+                expertPhone: expertPhone,
+                expertPlace: expertPlace,
+                expertKind: expertKind,
+                appointmentState: appointmentState,
+                appointmentBy: appointmentBy,
+                appointmentNote: appointmentNote,
                 responsibility: responsibility,
                 indemnity: indemnity,
                 decisionReason: decisionReason,
@@ -4726,6 +5167,12 @@ class $$ClaimsTableTableManager
                 Value<String?> agentName = const Value.absent(),
                 Value<String?> expertName = const Value.absent(),
                 Value<DateTime?> expertAppointment = const Value.absent(),
+                Value<String?> expertPhone = const Value.absent(),
+                Value<String?> expertPlace = const Value.absent(),
+                Value<String?> expertKind = const Value.absent(),
+                Value<String?> appointmentState = const Value.absent(),
+                Value<String?> appointmentBy = const Value.absent(),
+                Value<String?> appointmentNote = const Value.absent(),
                 Value<int?> responsibility = const Value.absent(),
                 Value<double?> indemnity = const Value.absent(),
                 Value<String?> decisionReason = const Value.absent(),
@@ -4743,6 +5190,12 @@ class $$ClaimsTableTableManager
                 agentName: agentName,
                 expertName: expertName,
                 expertAppointment: expertAppointment,
+                expertPhone: expertPhone,
+                expertPlace: expertPlace,
+                expertKind: expertKind,
+                appointmentState: appointmentState,
+                appointmentBy: appointmentBy,
+                appointmentNote: appointmentNote,
                 responsibility: responsibility,
                 indemnity: indemnity,
                 decisionReason: decisionReason,

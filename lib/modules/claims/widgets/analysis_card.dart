@@ -6,6 +6,7 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/motion.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
@@ -24,8 +25,12 @@ class AnalysisCard extends StatefulWidget {
 }
 
 class _AnalysisCardState extends State<AnalysisCard> {
-  AiAnswer? summary;
   bool loading = false;
+
+  /// Gardé dans le store : le résumé survit au défilement et au retour
+  /// sur le dossier.
+  AiAnswer? get summary =>
+      AppScope.of(context).claims.summaries[widget.claim.id];
 
   Future<void> _summarize() async {
     final sync = AppScope.of(context).claimsSync;
@@ -34,8 +39,10 @@ class _AnalysisCardState extends State<AnalysisCard> {
     final unavailable = context.t.claimsSummaryOffline;
     setState(() => loading = true);
     try {
+      final store = AppScope.of(context).claims;
       final answer = await sync.api.summarize(widget.claim.id);
-      if (mounted) setState(() => summary = answer);
+      store.summaries[widget.claim.id] = answer;
+      if (mounted) setState(() {});
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(unavailable)));
     } finally {
@@ -58,6 +65,8 @@ class _AnalysisCardState extends State<AnalysisCard> {
           children: [
             Row(
               children: [
+                const Icon(Icons.insights, color: ClaimsColors.violet),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     t.claimsDecisionHelp,
@@ -74,7 +83,26 @@ class _AnalysisCardState extends State<AnalysisCard> {
             ),
             const SizedBox(height: 8),
             if (insight.nextAction != null)
-              Text(insight.nextAction!, style: _heading),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: ClaimsColors.indigo.withValues(alpha: .14),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.arrow_circle_right,
+                      color: ClaimsColors.indigo,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(insight.nextAction!, style: _heading)),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 6),
             if (insight.reasons.isNotEmpty)
               Text(insight.reasons.join(' • '), style: _muted(context)),
             const Divider(height: 24),
@@ -134,10 +162,16 @@ class _AnalysisCardState extends State<AnalysisCard> {
                   title: Text(t.claimValue(document.label)),
                   subtitle: Text(document.reason),
                   trailing: canRequest
-                      ? TextButton(
+                      ? FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: ClaimsColors.amber,
+                            foregroundColor: Colors.black,
+                            visualDensity: VisualDensity.compact,
+                          ),
                           onPressed: () => AppScope.of(context).claims
                               .requestDocument(widget.claim, document.label),
-                          child: Text(t.claimsRequest),
+                          icon: const Icon(Icons.send, size: 16),
+                          label: Text(t.claimsRequest),
                         )
                       : null,
                 ),
@@ -156,19 +190,17 @@ class _AnalysisCardState extends State<AnalysisCard> {
                 ),
             ],
             const SizedBox(height: 12),
-            if (summary != null) ...[
-              Text(summary!.text),
-              const SizedBox(height: 4),
-              Text(
-                summary!.by != null
-                    ? t.claimsSummaryBy(summary!.by!)
-                    : t.claimsSummaryRules,
-                style: _muted(context),
-              ),
-            ] else
-              OutlinedButton.icon(
+            if (summary case final answer?)
+              _SummaryBox(answer, onRefresh: loading ? null : _summarize)
+            else
+              FilledButton.tonalIcon(
                 onPressed: loading ? null : _summarize,
-                icon: const Icon(Icons.summarize_outlined),
+                icon: loading
+                    ? const SizedBox.square(
+                        dimension: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.auto_awesome),
                 label: Text(loading ? t.claimsSummarizing : t.claimsSummarize),
               ),
             const SizedBox(height: 8),
@@ -186,6 +218,77 @@ class _AnalysisCardState extends State<AnalysisCard> {
       if (past.indemnity != null) '${past.indemnity!.round()} TND',
     ];
     return parts.join(', ');
+  }
+}
+
+/// Le résumé écrit par le modèle, à part du reste : bordure dégradée violet
+/// vers rose, icône étincelle et nom du modèle qui l'a écrit.
+class _SummaryBox extends StatelessWidget {
+  const _SummaryBox(this.answer, {this.onRefresh});
+  final AiAnswer answer;
+  final VoidCallback? onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    return Appear(
+      child: Container(
+        padding: const EdgeInsets.all(1.5),
+        decoration: BoxDecoration(
+          gradient: ClaimsColors.ai,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Color.alphaBlend(
+              ClaimsColors.violet.withValues(alpha: .10),
+              context.palette.surface,
+            ),
+            borderRadius: BorderRadius.circular(12.5),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.auto_awesome,
+                    size: 18,
+                    color: ClaimsColors.violet,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      t.claimsSummaryTitle,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: ClaimsColors.violet,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: t.claimsSummarize,
+                    visualDensity: VisualDensity.compact,
+                    onPressed: onRefresh,
+                    icon: const Icon(Icons.refresh, size: 18),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(answer.text, style: const TextStyle(height: 1.4)),
+              const SizedBox(height: 8),
+              Text(
+                answer.by != null
+                    ? t.claimsSummaryBy(answer.by!)
+                    : t.claimsSummaryRules,
+                style: _muted(context).copyWith(fontStyle: FontStyle.italic),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -230,39 +333,226 @@ class _Tag extends StatelessWidget {
 }
 
 /// Suivi du conducteur : où en est le dossier et ce qu'il doit faire.
+///
+/// Le texte vient du serveur, dans la langue du profil : une phrase par
+/// statut, la liste des pièces demandées et le délai restant estimé.
 class GuidanceCard extends StatelessWidget {
-  const GuidanceCard(this.insight, {super.key});
+  const GuidanceCard(this.insight, {required this.status, super.key});
   final ClaimInsight insight;
+  final String status;
+
+  /// Étape atteinte : reçu, étude, expertise, décision.
+  int get _step => switch (status) {
+    ClaimStatus.transmitted => 0,
+    ClaimStatus.inReview || ClaimStatus.documentRequested => 1,
+    ClaimStatus.expertise => 2,
+    ClaimStatus.closed || ClaimStatus.rejected => 3,
+    _ => -1,
+  };
 
   @override
-  Widget build(BuildContext context) => Card(
-    color: context.palette.primaryTint,
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(insight.headline ?? '', style: _heading),
-          for (final task in insight.todo)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.chevron_right, size: 20),
-                  Expanded(child: Text(task)),
-                ],
-              ),
-            ),
-          if (insight.remainingDays != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              context.t.claimsRemaining('${insight.remainingDays}'),
-              style: _muted(context),
+  Widget build(BuildContext context) {
+    final t = context.t;
+    const white = Colors.white;
+    final soft = Colors.white.withValues(alpha: .82);
+    final steps = [
+      t.claimsStepReceived,
+      t.claimsStepReview,
+      t.claimsStepExpertise,
+      t.claimsStepDecision,
+    ];
+    return Appear(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: ClaimsColors.guidance,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: ClaimsColors.violet.withValues(alpha: .35),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
           ],
-        ],
+        ),
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Floating(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.route, color: white, size: 22),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    insight.headline ?? '',
+                    style: const TextStyle(
+                      color: white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _Progress(steps: steps, reached: _step),
+            if (insight.todo.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(
+                t.claimsYourTodo,
+                style: const TextStyle(
+                  color: white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              for (final (i, task) in insight.todo.indexed)
+                Appear(
+                  index: i + 1,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.radio_button_unchecked,
+                          size: 18,
+                          color: ClaimsColors.amber,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            task,
+                            style: const TextStyle(color: white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+            if (insight.remainingDays != null) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: .18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.hourglass_bottom, size: 16, color: white),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        t.claimsRemainingDays(insight.remainingDays!),
+                        style: const TextStyle(
+                          color: white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                t.claimsEstimateNote,
+                style: TextStyle(color: soft, fontSize: 12),
+              ),
+            ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+/// Quatre pastilles reliées ; le trait se remplit jusqu'à l'étape atteinte.
+class _Progress extends StatelessWidget {
+  const _Progress({required this.steps, required this.reached});
+  final List<String> steps;
+  final int reached;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget dot(int i) {
+      final done = i <= reached;
+      final current = i == reached;
+      final circle = Container(
+        width: current ? 26 : 22,
+        height: current ? 26 : 22,
+        decoration: BoxDecoration(
+          color: done ? Colors.white : Colors.white.withValues(alpha: .2),
+          shape: BoxShape.circle,
+          border: current
+              ? Border.all(color: ClaimsColors.amber, width: 3)
+              : null,
+        ),
+        child: done && !current
+            ? const Icon(Icons.check, size: 14, color: ClaimsColors.violet)
+            : null,
+      );
+      return current ? Breathing(child: circle) : circle;
+    }
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            for (var i = 0; i < steps.length; i++) ...[
+              dot(i),
+              if (i < steps.length - 1)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: GrowingBar(
+                      value: i < reached ? 1 : 0,
+                      color: Colors.white,
+                      track: Colors.white.withValues(alpha: .2),
+                      height: 4,
+                    ),
+                  ),
+                ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            for (final (i, label) in steps.indexed)
+              Expanded(
+                child: Text(
+                  label,
+                  textAlign: i == 0
+                      ? TextAlign.start
+                      : i == steps.length - 1
+                      ? TextAlign.end
+                      : TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(
+                      alpha: i <= reached ? 1 : .6,
+                    ),
+                    fontSize: 11,
+                    fontWeight: i == reached ? FontWeight.w800 : null,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
 }

@@ -6,6 +6,7 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/motion.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 
@@ -80,6 +81,10 @@ class _AssistantScreenState extends State<AssistantScreen> {
     final ideas = role == UserRole.driver
         ? [t.claimsDriverIdea1, t.claimsDriverIdea2, t.claimsDriverIdea3]
         : [t.claimsAgentIdea1, t.claimsAgentIdea2, t.claimsAgentIdea3];
+    final asked = {
+      for (final turn in turns)
+        if (turn.role == 'user') turn.content,
+    };
     return Scaffold(
       appBar: AppBar(title: Text(t.claimsAssistantTitle(widget.claim.id))),
       body: SafeArea(
@@ -90,30 +95,68 @@ class _AssistantScreenState extends State<AssistantScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (turns.isEmpty) ...[
+                    Floating(
+                      child: Icon(
+                        Icons.support_agent,
+                        size: 44,
+                        color: ClaimsColors.violet.withValues(alpha: .8),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     Text(
                       t.claimsAssistantIntro,
                       style: TextStyle(color: context.palette.textMuted),
                     ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final idea in ideas)
-                          ActionChip(
-                            label: Text(idea),
-                            onPressed: () => _send(idea),
-                          ),
-                      ],
-                    ),
                   ],
-                  for (final turn in turns) _Turn(turn),
+                  for (final (i, turn) in turns.indexed)
+                    Appear(key: ValueKey(i), child: _Turn(turn)),
                   if (waiting)
                     Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Text(
-                        t.claimsAssistantReading,
-                        style: TextStyle(color: context.palette.textMuted),
+                      padding: const EdgeInsets.all(8),
+                      child: Breathing(
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.auto_awesome,
+                              size: 16,
+                              color: ClaimsColors.violet,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              t.claimsAssistantReading,
+                              style: TextStyle(
+                                color: context.palette.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            // Les questions suggérées restent là : celles déjà posées
+            // passent à la fin.
+            SizedBox(
+              height: 44,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  for (final (i, idea) in [
+                    ...ideas.where((idea) => !asked.contains(idea)),
+                    ...ideas.where(asked.contains),
+                  ].indexed)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(end: 8),
+                      child: ActionChip(
+                        avatar: Icon(
+                          Icons.lightbulb_outline,
+                          size: 16,
+                          color: ClaimsColors.series[i % 4],
+                        ),
+                        label: Text(idea),
+                        onPressed: waiting ? null : () => _send(idea),
                       ),
                     ),
                 ],

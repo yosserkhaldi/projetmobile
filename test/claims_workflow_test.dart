@@ -244,7 +244,8 @@ void main() {
       await pump(tester, const AgentDashboard());
       stores.claims.addClaim(claimWith(ClaimStatus.expertise));
       stores.claims.addClaim(claimWith(ClaimStatus.closed, id: 'SIN-4'));
-      await tester.pump();
+      // Les compteurs montent de 0 à leur valeur.
+      await tester.pumpAndSettle();
       final count = find.descendant(
         of: find.ancestor(
           of: find.text('À traiter'),

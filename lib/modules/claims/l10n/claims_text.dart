@@ -49,6 +49,9 @@ extension ClaimsText on AppLocalizations {
     'Vidéo' => claimsValueVideo,
     'Note vocale' => claimsValueVoiceNote,
     'Constat amiable' => claimsValueAccidentReport,
+    'Véhicule' => claimsValueVehicle,
+    'Corporelle' => claimsValueBodily,
+    'Rouvert' => claimsValueReopened,
     _ => value,
   };
 
@@ -73,6 +76,8 @@ extension ClaimsText on AppLocalizations {
       'Transmis aux assureurs' => claimsEventSent,
       'Rendez-vous déplacé' => claimsEventMoved,
       'Rapport d’expertise joint' => claimsEventReport,
+      'Rendez-vous confirmé' => claimsEventConfirmed,
+      'Autre créneau proposé' => claimsEventOtherSlot,
       _ => null,
     };
     if (known != null) return known;
@@ -106,6 +111,13 @@ extension ClaimsText on AppLocalizations {
     }
     if (match(r'^(\S+) : rendez-vous d’expertise déplacé$') case final m?) {
       return claimsNotifMoved(ltr(m[1]!));
+    }
+    if (match(r'^(\S+) : rendez-vous d’expertise confirmé$') case final m?) {
+      return claimsNotifConfirmed(ltr(m[1]!));
+    }
+    if (match(r'^(\S+) : autre créneau proposé pour l’expertise$')
+        case final m?) {
+      return claimsNotifOtherSlot(ltr(m[1]!));
     }
     if (match(r'^(SIN-\S+) : (.+)$') case final m?) {
       return claimsNotifEvent(ltr(m[1]!), claimEvent(m[2]!));

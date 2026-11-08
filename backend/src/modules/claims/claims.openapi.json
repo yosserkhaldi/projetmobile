@@ -364,7 +364,7 @@
     },
     "/{id}/expertise": {
       "post": {
-        "summary": "Désigner un expert (agent)",
+        "summary": "Proposer un rendez-vous d'expertise (agent)",
         "responses": {
           "200": {
             "description": "OK"
@@ -384,17 +384,131 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "expertName",
+                  "appointment"
+                ],
                 "properties": {
                   "expertName": {
                     "type": "string"
                   },
+                  "expertPhone": {
+                    "type": "string"
+                  },
+                  "expertPlace": {
+                    "type": "string"
+                  },
+                  "expertKind": {
+                    "type": "string",
+                    "enum": [
+                      "Véhicule",
+                      "Corporelle"
+                    ],
+                    "description": "Par défaut : Corporelle pour un piéton, Véhicule sinon."
+                  },
                   "appointment": {
                     "type": "string",
                     "format": "date-time"
+                  },
+                  "note": {
+                    "type": "string"
                   }
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/{id}/appointment": {
+      "post": {
+        "summary": "Accepter le créneau de l'autre partie, ou en proposer un autre (conducteur ou agent)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action"
+                ],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "accept",
+                      "propose"
+                    ]
+                  },
+                  "appointment": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Requis pour propose."
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Date invalide ou passée"
+          },
+          "409": {
+            "description": "Pas de créneau à confirmer, ou c'est le sien"
+          }
+        }
+      }
+    },
+    "/{id}/reopen": {
+      "post": {
+        "summary": "Rouvrir un dossier clôturé ou rejeté (agent)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dossier revenu en instruction"
+          },
+          "409": {
+            "description": "Dossier pas terminé"
           }
         }
       }

@@ -209,14 +209,6 @@
   "claimsSummarizing": "Synthèse en cours",
   "claimsSummarize": "Résumer le dossier",
   "claimsModelDisclaimer": "Estimations issues d’un modèle entraîné sur des données simulées. La décision appartient à l’agent.",
-  "claimsRemaining": "Délai restant estimé : environ {days} jours. Ce n’est pas un engagement.",
-  "@claimsRemaining": {
-    "placeholders": {
-      "days": {
-        "type": "String"
-      }
-    }
-  },
   "claimsDriverIdea1": "Où en est mon dossier ?",
   "claimsDriverIdea2": "Quelles pièces dois-je déposer ?",
   "claimsDriverIdea3": "Combien de temps ça va prendre ?",
@@ -444,6 +436,90 @@
       }
     }
   },
+  "claimsValueVehicle": "Véhicule",
+  "claimsValueBodily": "Corporelle",
+  "claimsValueReopened": "Rouvert",
+  "claimsEventConfirmed": "Rendez-vous confirmé",
+  "claimsEventOtherSlot": "Autre créneau proposé",
+  "claimsNotifConfirmed": "{id} : rendez-vous d’expertise confirmé",
+  "@claimsNotifConfirmed": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsNotifOtherSlot": "{id} : autre créneau proposé pour l’expertise",
+  "@claimsNotifOtherSlot": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsQuestionOnDecision": "Une question sur la décision ? Écrire à l’agent",
+  "claimsReportPending": "L’expert envoie son rapport à l’assureur après le rendez-vous. Il apparaîtra ici.",
+  "claimsReportReceived": "Rapport de l’expert, joint par l’agent",
+  "claimsReopen": "Rouvrir le dossier",
+  "claimsReopenHelp": "En cas d’erreur, rouvrez le dossier : il revient en instruction et la décision précédente reste dans la chronologie.",
+  "claimsReopenAction": "Rouvrir",
+  "claimsKindHelp": "Corporelle : examen médical d’une personne blessée, un piéton par exemple. Aucun véhicule à présenter.",
+  "claimsExpertPhone": "Téléphone de l’expert",
+  "claimsExpertPlace": "Lieu du rendez-vous",
+  "claimsPlaceHintBody": "Cabinet médical, clinique…",
+  "claimsPlaceHintVehicle": "Garage, agence, domicile…",
+  "claimsSuggestedSlots": "Créneaux suggérés",
+  "claimsNoteOptional": "Message (facultatif)",
+  "claimsExpertRequired": "Indiquez le nom de l’expert.",
+  "claimsSlotConfirmed": "Confirmé",
+  "claimsSlotYourTurn": "À confirmer",
+  "claimsSlotWaitingAgent": "En attente de l’agent",
+  "claimsSlotWaitingDriver": "En attente du conducteur",
+  "claimsExpertiseBody": "Expertise médicale",
+  "claimsExpertiseVehicle": "Expertise du véhicule",
+  "claimsPlaceFromExpert": "Lieu communiqué par l’expert",
+  "claimsFromDriver": "Du conducteur",
+  "claimsFromAgent": "De l’agent",
+  "claimsToBring": "À apporter",
+  "claimsBringId": "Votre pièce d’identité",
+  "claimsBringCertificates": "Les certificats médicaux",
+  "claimsBringPrescriptions": "Les ordonnances et factures de soins",
+  "claimsBringVehicle": "Le véhicule, non réparé",
+  "claimsBringRegistration": "La carte grise",
+  "claimsBringLicence": "Le permis de conduire",
+  "claimsBringInsurance": "L’attestation d’assurance",
+  "claimsAccept": "Accepter",
+  "claimsProposeOther": "Proposer un autre créneau",
+  "claimsCannotCome": "Je ne peux plus venir",
+  "claimsOtherDateTime": "Autre date et heure",
+  "claimsSendProposal": "Envoyer la proposition",
+  "claimsStepReceived": "Reçu",
+  "claimsStepReview": "Étude",
+  "claimsStepExpertise": "Expertise",
+  "claimsStepDecision": "Décision",
+  "claimsYourTodo": "À faire",
+  "claimsRemainingDays": "{days, plural, =1{Encore environ 1 jour} other{Encore environ {days} jours}}",
+  "@claimsRemainingDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "claimsEstimateNote": "Estimation, pas un engagement.",
+  "claimsSummaryTitle": "Résumé du dossier",
+  "claimsPriorityScore": "Priorité {score}",
+  "@claimsPriorityScore": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsSearchMine": "Rechercher dans mes dossiers",
+  "claimsBySeverity": "Par gravité",
+  "claimsByType": "Par type d’accident",
+  "claimsAnswersBySource": "Réponses par source",
   "appTitle": "Mon Constat Digital",
   "brand": "Mon Constat",
   "save": "Enregistrer",

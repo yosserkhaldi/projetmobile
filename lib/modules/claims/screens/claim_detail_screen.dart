@@ -12,7 +12,9 @@ import 'package:mon_constat_digital/modules/claims/widgets/analysis_card.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_timeline.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/document_picker.dart';
-import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/expertise_card.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/motion.dart';
+import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
@@ -42,6 +44,12 @@ class ClaimDetail extends StatelessWidget {
     final online = stores.claimsSync != null;
     final insight = stores.claims.insightFor(claim.id);
     final requests = claim.openRequests.toList();
+    final reports = claim.documents
+        .where((d) => d.kind == ClaimDocument.expertReport)
+        .toList();
+    final files = claim.documents
+        .where((d) => d.kind != ClaimDocument.expertReport)
+        .toList();
     return Scaffold(
       appBar: AppBar(
         title: Text(claim.id),
@@ -69,12 +77,21 @@ class ClaimDetail extends StatelessWidget {
           ],
           if (insight?.headline != null && !agentMode) ...[
             const SizedBox(height: 12),
-            GuidanceCard(insight!),
+            GuidanceCard(insight!, status: claim.status),
           ],
           if (claim.status == ClaimStatus.closed ||
               claim.status == ClaimStatus.rejected) ...[
             const SizedBox(height: 12),
             _DecisionSummary(claim),
+            if (!agentMode)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  onPressed: () => open(context, ChatScreen(claim)),
+                  icon: const Icon(Icons.forum_outlined),
+                  label: Text(t.claimsQuestionOnDecision),
+                ),
+              ),
           ],
           if (requests.isNotEmpty) ...[
             _Title(t.claimsRequestedDocuments),
@@ -100,25 +117,22 @@ class ClaimDetail extends StatelessWidget {
           ],
           if (claim.expertName != null) ...[
             _Title(t.claimsExpertiseTitle),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.engineering),
-              title: Text(claim.expertName!),
-              subtitle: claim.expertAppointment == null
-                  ? null
-                  : Text(
-                      t.claimsAppointmentOn(
-                        formatDay(claim.expertAppointment!),
-                      ),
-                    ),
+            ExpertiseCard(
+              claim,
+              role: agentMode ? UserRole.agent : UserRole.driver,
             ),
+          ],
+          if (reports.isNotEmpty ||
+              (claim.status == ClaimStatus.expertise && !agentMode)) ...[
+            _Title(t.claimValue(ClaimDocument.expertReport)),
+            _ReportSection(reports, online: online),
           ],
           _Title(t.claimsTimeline),
           ClaimTimeline(claim),
           _Title(t.claimsConstat),
           _ConstatSummary(claim),
           _Title(t.claimsDocuments),
-          ...claim.documents.map(
+          ...files.map(
             (document) => ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(_iconOf(document.kind)),
@@ -138,7 +152,7 @@ class ClaimDetail extends StatelessWidget {
                   : null,
             ),
           ),
-          if (claim.documents.isEmpty && agentMode)
+          if (files.isEmpty && agentMode)
             Text(
               t.claimsNoDocument,
               style: TextStyle(color: context.palette.textMuted),
@@ -149,10 +163,7 @@ class ClaimDetail extends StatelessWidget {
               icon: const Icon(Icons.upload_file),
               label: Text(t.claimsUploadDocument),
             ),
-          if (agentMode && !ClaimStatus.isFinal(claim.status)) ...[
-            _Title(t.claimsHandling),
-            AgentPanel(claim),
-          ],
+          if (agentMode) ...[_Title(t.claimsHandling), AgentPanel(claim)],
         ],
       ),
     );
@@ -177,6 +188,74 @@ String _describe(AppLocalizations t, ClaimDocument document) {
       : ', ${analysis.amount!.round()} TND';
   final warning = analysis.matches ? '' : ' ${t.claimsDocMismatch}';
   return '${t.claimValue(analysis.type)}$amount. ${analysis.summary}$warning';
+}
+
+/// Le rapport de l'expert, à part : c'est la pièce qui décide du dossier.
+/// L'expert n'utilise pas l'application ; il envoie son rapport à
+/// l'assureur, et l'agent le joint au dossier.
+class _ReportSection extends StatelessWidget {
+  const _ReportSection(this.reports, {required this.online});
+  final List<ClaimDocument> reports;
+  final bool online;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    if (reports.isEmpty) {
+      return Text(
+        t.claimsReportPending,
+        style: TextStyle(color: context.palette.textMuted),
+      );
+    }
+    return Appear(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              ClaimsColors.teal.withValues(alpha: .22),
+              ClaimsColors.sky.withValues(alpha: .12),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: ClaimsColors.teal.withValues(alpha: .55)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Column(
+          children: [
+            for (final report in reports)
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: ClaimsColors.teal,
+                  foregroundColor: Colors.white,
+                  child: Icon(Icons.verified_outlined),
+                ),
+                title: Text(
+                  report.name,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text(
+                  report.analysis == null
+                      ? t.claimsReportReceived
+                      : _describe(t, report),
+                ),
+                trailing: online
+                    ? IconButton(
+                        tooltip: t.claimsDownload,
+                        onPressed: () => saveFromServer(
+                          context,
+                          kind: 'document',
+                          id: report.id,
+                          name: report.name,
+                        ),
+                        icon: const Icon(Icons.download),
+                      )
+                    : null,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _Title extends StatelessWidget {

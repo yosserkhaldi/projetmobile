@@ -21,6 +21,12 @@ class Claims extends Table {
   TextColumn get agentName => text().nullable()();
   TextColumn get expertName => text().nullable()();
   DateTimeColumn get expertAppointment => dateTime().nullable()();
+  TextColumn get expertPhone => text().nullable()();
+  TextColumn get expertPlace => text().nullable()();
+  TextColumn get expertKind => text().nullable()();
+  TextColumn get appointmentState => text().nullable()();
+  TextColumn get appointmentBy => text().nullable()();
+  TextColumn get appointmentNote => text().nullable()();
   IntColumn get responsibility => integer().nullable()();
   RealColumn get indemnity => real().nullable()();
   TextColumn get decisionReason => text().nullable()();

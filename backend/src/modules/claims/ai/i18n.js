@@ -51,6 +51,8 @@ const values = {
     Vidéo: 'Video',
     'Note vocale': 'Voice note',
     'Constat amiable': 'Accident report',
+    Véhicule: 'Vehicle',
+    Corporelle: 'Bodily injury',
   },
   AR: {
     Brouillon: 'مسودة',
@@ -90,6 +92,8 @@ const values = {
     Vidéo: 'فيديو',
     'Note vocale': 'تسجيل صوتي',
     'Constat amiable': 'المحضر الودّي',
+    Véhicule: 'المركبة',
+    Corporelle: 'أضرار جسدية',
   },
 };
 
@@ -142,13 +146,15 @@ const fr = {
     report: () => 'Attendre et joindre le rapport d’expertise.',
     request: (label) => `Demander : ${label}.`,
     expert: () => 'Désigner un expert.',
+    'answer-slot': () => 'Le conducteur propose un autre créneau : répondre.',
+    'wait-slot': () => 'Attendre que le conducteur confirme le rendez-vous.',
     none: () => 'Dossier terminé.',
   },
   guidance: {
     Transmis: 'Votre dossier est reçu. Un agent va le prendre en charge.',
     'En instruction': 'Un agent étudie votre dossier.',
     'Pièce demandée': 'Votre dossier attend des pièces de votre part.',
-    Expertise: 'Un expert va examiner votre véhicule.',
+    Expertise: 'Un expert va évaluer les dommages.',
     Clôturé: 'Votre dossier est clôturé.',
     Rejeté: 'Votre dossier a été rejeté.',
     default: 'Votre dossier est en préparation.',
@@ -156,6 +162,9 @@ const fr = {
   todo: {
     upload: (label) => `Déposer : ${label}`,
     expert: 'Présenter le véhicule à l’expert au rendez-vous.',
+    expertBody: 'Vous présenter à l’examen médical avec vos certificats.',
+    confirm: 'Confirmer le rendez-vous ou proposer un autre créneau.',
+    waitAgent: 'Attendre la réponse de l’agent à votre créneau.',
   },
   answers: {
     todo: (items) => `À faire : ${items}.`,
@@ -244,13 +253,15 @@ const en = {
     report: () => 'Wait for and attach the expert report.',
     request: (label) => `Request: ${label}.`,
     expert: () => 'Appoint an expert.',
+    'answer-slot': () => 'The driver proposed another time: reply.',
+    'wait-slot': () => 'Wait for the driver to confirm the appointment.',
     none: () => 'Claim finished.',
   },
   guidance: {
     Transmis: 'Your claim has been received. An agent will take it on.',
     'En instruction': 'An agent is reviewing your claim.',
     'Pièce demandée': 'Your claim is waiting for documents from you.',
-    Expertise: 'An expert will examine your vehicle.',
+    Expertise: 'An expert will assess the damage.',
     Clôturé: 'Your claim is closed.',
     Rejeté: 'Your claim was rejected.',
     default: 'Your claim is being prepared.',
@@ -258,6 +269,9 @@ const en = {
   todo: {
     upload: (label) => `Upload: ${label}`,
     expert: 'Bring the vehicle to the expert appointment.',
+    expertBody: 'Attend the medical examination with your certificates.',
+    confirm: 'Confirm the appointment or propose another time.',
+    waitAgent: 'Wait for the agent to answer your proposed time.',
   },
   answers: {
     todo: (items) => `To do: ${items}.`,
@@ -346,13 +360,15 @@ const ar = {
     report: () => 'انتظار تقرير الخبير وإرفاقه.',
     request: (label) => `طلب: ${label}.`,
     expert: () => 'تعيين خبير.',
+    'answer-slot': () => 'اقترح السائق موعدًا آخر: الرد عليه.',
+    'wait-slot': () => 'انتظار تأكيد السائق للموعد.',
     none: () => 'الملف منتهٍ.',
   },
   guidance: {
     Transmis: 'تم استلام ملفك. سيتكفّل به أحد الأعوان.',
     'En instruction': 'أحد الأعوان يدرس ملفك.',
     'Pièce demandée': 'ملفك ينتظر وثائق منك.',
-    Expertise: 'سيفحص خبير سيارتك.',
+    Expertise: 'سيقيّم خبير الأضرار.',
     Clôturé: 'تم إغلاق ملفك.',
     Rejeté: 'تم رفض ملفك.',
     default: 'ملفك قيد الإعداد.',
@@ -360,6 +376,9 @@ const ar = {
   todo: {
     upload: (label) => `إيداع: ${label}`,
     expert: 'إحضار السيارة إلى موعد الخبير.',
+    expertBody: 'الحضور إلى الفحص الطبي مع الشهادات الطبية.',
+    confirm: 'تأكيد الموعد أو اقتراح موعد آخر.',
+    waitAgent: 'انتظار رد العون على موعدك.',
   },
   answers: {
     todo: (items) => `المطلوب: ${items}.`,

@@ -80,16 +80,40 @@ class ClaimsSync extends ChangeNotifier {
   }
 
   /// Ouvre le canal temps réel : le serveur prévient à chaque changement.
+  ///
+  /// `enableForceNew` : sans lui, la bibliothèque réutilise la connexion en
+  /// cache, avec l'ancien jeton, et le canal ne se rouvre jamais ; les
+  /// messages n'arrivaient alors qu'au passage du minuteur de 30 s.
   void connect() {
     _socket?.dispose();
-    _socket = io.io(
-      api.socketUrl,
-      io.OptionBuilder()
-          .setPath('/api/claims/socket')
-          .setTransports(['websocket'])
-          .setAuth({'token': api.accessToken})
-          .build(),
-    )..on('claims:changed', (_) => synchronize());
+    _socket =
+        io.io(
+            api.socketUrl,
+            io.OptionBuilder()
+                .setPath('/api/claims/socket')
+                .setTransports(['websocket'])
+                .enableForceNew()
+                .disableReconnection()
+                .setAuth({'token': api.accessToken})
+                .build(),
+          )
+          ..on('claims:changed', (_) => synchronize())
+          // Rattrape ce qui a changé pendant la coupure.
+          ..onConnect((_) => synchronize())
+          ..onConnectError((_) => _reconnectSoon())
+          ..onDisconnect((_) => _reconnectSoon());
+  }
+
+  Timer? _retry;
+
+  /// Renouvelle le jeton par un passage de synchronisation, puis rouvre.
+  void _reconnectSoon() {
+    if (_retry?.isActive ?? false) return;
+    _retry = Timer(const Duration(seconds: 3), () async {
+      if (_disposed || _userId == null || _socket?.connected == true) return;
+      await synchronize();
+      if (!_disposed && _userId != null) connect();
+    });
   }
 
   void _onUserChanged() {
@@ -106,6 +130,7 @@ class ClaimsSync extends ChangeNotifier {
     }
     _userId = id;
     _language = language;
+    _retry?.cancel();
     _socket?.dispose();
     _socket = null;
     if (id == null) {
@@ -206,6 +231,7 @@ class ClaimsSync extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _timer?.cancel();
+    _retry?.cancel();
     _socket?.dispose();
     users.removeListener(_onUserChanged);
     super.dispose();

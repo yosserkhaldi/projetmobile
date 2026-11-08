@@ -299,11 +299,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Estimates come from a model trained on simulated data. The agent makes the decision.';
 
   @override
-  String claimsRemaining(String days) {
-    return 'Estimated time left: about $days days. This is not a commitment.';
-  }
-
-  @override
   String get claimsDriverIdea1 => 'Where is my claim at?';
 
   @override
@@ -620,6 +615,192 @@ class AppLocalizationsEn extends AppLocalizations {
   String claimsNotifContract(String days) {
     return 'Your contract expires in $days days.';
   }
+
+  @override
+  String get claimsValueVehicle => 'Vehicle';
+
+  @override
+  String get claimsValueBodily => 'Bodily injury';
+
+  @override
+  String get claimsValueReopened => 'Reopened';
+
+  @override
+  String get claimsEventConfirmed => 'Appointment confirmed';
+
+  @override
+  String get claimsEventOtherSlot => 'Another time proposed';
+
+  @override
+  String claimsNotifConfirmed(String id) {
+    return '$id: expert appointment confirmed';
+  }
+
+  @override
+  String claimsNotifOtherSlot(String id) {
+    return '$id: another time proposed for the expert assessment';
+  }
+
+  @override
+  String get claimsQuestionOnDecision =>
+      'A question about the decision? Write to the agent';
+
+  @override
+  String get claimsReportPending =>
+      'The expert sends the report to the insurer after the appointment. It will appear here.';
+
+  @override
+  String get claimsReportReceived => 'Expert’s report, attached by the agent';
+
+  @override
+  String get claimsReopen => 'Reopen the claim';
+
+  @override
+  String get claimsReopenHelp =>
+      'If there was a mistake, reopen the claim: it goes back under review and the previous decision stays in the timeline.';
+
+  @override
+  String get claimsReopenAction => 'Reopen';
+
+  @override
+  String get claimsKindHelp =>
+      'Bodily injury: medical examination of an injured person, a pedestrian for example. No vehicle to show.';
+
+  @override
+  String get claimsExpertPhone => 'Expert’s phone';
+
+  @override
+  String get claimsExpertPlace => 'Appointment place';
+
+  @override
+  String get claimsPlaceHintBody => 'Medical practice, clinic…';
+
+  @override
+  String get claimsPlaceHintVehicle => 'Garage, branch, home…';
+
+  @override
+  String get claimsSuggestedSlots => 'Suggested times';
+
+  @override
+  String get claimsNoteOptional => 'Message (optional)';
+
+  @override
+  String get claimsExpertRequired => 'Enter the expert’s name.';
+
+  @override
+  String get claimsSlotConfirmed => 'Confirmed';
+
+  @override
+  String get claimsSlotYourTurn => 'To confirm';
+
+  @override
+  String get claimsSlotWaitingAgent => 'Waiting for the agent';
+
+  @override
+  String get claimsSlotWaitingDriver => 'Waiting for the driver';
+
+  @override
+  String get claimsExpertiseBody => 'Medical assessment';
+
+  @override
+  String get claimsExpertiseVehicle => 'Vehicle assessment';
+
+  @override
+  String get claimsPlaceFromExpert => 'Place given by the expert';
+
+  @override
+  String get claimsFromDriver => 'From the driver';
+
+  @override
+  String get claimsFromAgent => 'From the agent';
+
+  @override
+  String get claimsToBring => 'To bring';
+
+  @override
+  String get claimsBringId => 'Your ID card';
+
+  @override
+  String get claimsBringCertificates => 'Medical certificates';
+
+  @override
+  String get claimsBringPrescriptions => 'Prescriptions and medical bills';
+
+  @override
+  String get claimsBringVehicle => 'The vehicle, not yet repaired';
+
+  @override
+  String get claimsBringRegistration => 'The registration certificate';
+
+  @override
+  String get claimsBringLicence => 'Your driving licence';
+
+  @override
+  String get claimsBringInsurance => 'Proof of insurance';
+
+  @override
+  String get claimsAccept => 'Accept';
+
+  @override
+  String get claimsProposeOther => 'Propose another time';
+
+  @override
+  String get claimsCannotCome => 'I can no longer come';
+
+  @override
+  String get claimsOtherDateTime => 'Another date and time';
+
+  @override
+  String get claimsSendProposal => 'Send the proposal';
+
+  @override
+  String get claimsStepReceived => 'Received';
+
+  @override
+  String get claimsStepReview => 'Review';
+
+  @override
+  String get claimsStepExpertise => 'Expertise';
+
+  @override
+  String get claimsStepDecision => 'Decision';
+
+  @override
+  String get claimsYourTodo => 'To do';
+
+  @override
+  String claimsRemainingDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'About $days days left',
+      one: 'About 1 day left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get claimsEstimateNote => 'An estimate, not a commitment.';
+
+  @override
+  String get claimsSummaryTitle => 'Claim summary';
+
+  @override
+  String claimsPriorityScore(String score) {
+    return 'Priority $score';
+  }
+
+  @override
+  String get claimsSearchMine => 'Search my claims';
+
+  @override
+  String get claimsBySeverity => 'By severity';
+
+  @override
+  String get claimsByType => 'By accident type';
+
+  @override
+  String get claimsAnswersBySource => 'Answers by source';
 
   @override
   String get appTitle => 'Mon Constat Digital';

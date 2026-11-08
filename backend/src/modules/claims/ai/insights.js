@@ -74,9 +74,11 @@ function nextAction(claim, { missing, expert, overdue }, t) {
   }
   if (claim.status === Status.expertise) {
     const report = claim.documents.some((d) => d.kind === "Rapport d'expertise");
-    return report
-      ? { code: 'decide', label: t.next['decide-report']() }
-      : action('report');
+    if (report) return { code: 'decide', label: t.next['decide-report']() };
+    if (claim.appointmentState === 'proposed') {
+      return action(claim.appointmentBy === 'driver' ? 'answer-slot' : 'wait-slot');
+    }
+    return action('report');
   }
   if (missing.length > 0) return action('request', t.value(missing[0].label));
   if (expert) return action('expert');
@@ -189,7 +191,10 @@ export function driverView(claim, analysis, lang = 'FR') {
     .filter((request) => !request.documentId)
     .map((request) => t.todo.upload(t.value(request.label)));
   if (claim.expertAppointment && claim.status === Status.expertise) {
-    todo.push(t.todo.expert);
+    if (claim.appointmentState === 'proposed') {
+      todo.push(claim.appointmentBy === 'driver' ? t.todo.waitAgent : t.todo.confirm);
+    }
+    todo.push(claim.expertKind === 'Corporelle' ? t.todo.expertBody : t.todo.expert);
   }
   return {
     headline: t.guidance[claim.status] ?? t.guidance.default,

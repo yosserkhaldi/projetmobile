@@ -616,12 +616,6 @@ abstract class AppLocalizations {
   /// **'Estimations issues d’un modèle entraîné sur des données simulées. La décision appartient à l’agent.'**
   String get claimsModelDisclaimer;
 
-  /// No description provided for @claimsRemaining.
-  ///
-  /// In fr, this message translates to:
-  /// **'Délai restant estimé : environ {days} jours. Ce n’est pas un engagement.'**
-  String claimsRemaining(String days);
-
   /// No description provided for @claimsDriverIdea1.
   ///
   /// In fr, this message translates to:
@@ -1185,6 +1179,342 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Votre contrat expire dans {days} jours.'**
   String claimsNotifContract(String days);
+
+  /// No description provided for @claimsValueVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicule'**
+  String get claimsValueVehicle;
+
+  /// No description provided for @claimsValueBodily.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corporelle'**
+  String get claimsValueBodily;
+
+  /// No description provided for @claimsValueReopened.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rouvert'**
+  String get claimsValueReopened;
+
+  /// No description provided for @claimsEventConfirmed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous confirmé'**
+  String get claimsEventConfirmed;
+
+  /// No description provided for @claimsEventOtherSlot.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre créneau proposé'**
+  String get claimsEventOtherSlot;
+
+  /// No description provided for @claimsNotifConfirmed.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : rendez-vous d’expertise confirmé'**
+  String claimsNotifConfirmed(String id);
+
+  /// No description provided for @claimsNotifOtherSlot.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : autre créneau proposé pour l’expertise'**
+  String claimsNotifOtherSlot(String id);
+
+  /// No description provided for @claimsQuestionOnDecision.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une question sur la décision ? Écrire à l’agent'**
+  String get claimsQuestionOnDecision;
+
+  /// No description provided for @claimsReportPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'L’expert envoie son rapport à l’assureur après le rendez-vous. Il apparaîtra ici.'**
+  String get claimsReportPending;
+
+  /// No description provided for @claimsReportReceived.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rapport de l’expert, joint par l’agent'**
+  String get claimsReportReceived;
+
+  /// No description provided for @claimsReopen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rouvrir le dossier'**
+  String get claimsReopen;
+
+  /// No description provided for @claimsReopenHelp.
+  ///
+  /// In fr, this message translates to:
+  /// **'En cas d’erreur, rouvrez le dossier : il revient en instruction et la décision précédente reste dans la chronologie.'**
+  String get claimsReopenHelp;
+
+  /// No description provided for @claimsReopenAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rouvrir'**
+  String get claimsReopenAction;
+
+  /// No description provided for @claimsKindHelp.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corporelle : examen médical d’une personne blessée, un piéton par exemple. Aucun véhicule à présenter.'**
+  String get claimsKindHelp;
+
+  /// No description provided for @claimsExpertPhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléphone de l’expert'**
+  String get claimsExpertPhone;
+
+  /// No description provided for @claimsExpertPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu du rendez-vous'**
+  String get claimsExpertPlace;
+
+  /// No description provided for @claimsPlaceHintBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cabinet médical, clinique…'**
+  String get claimsPlaceHintBody;
+
+  /// No description provided for @claimsPlaceHintVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Garage, agence, domicile…'**
+  String get claimsPlaceHintVehicle;
+
+  /// No description provided for @claimsSuggestedSlots.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créneaux suggérés'**
+  String get claimsSuggestedSlots;
+
+  /// No description provided for @claimsNoteOptional.
+  ///
+  /// In fr, this message translates to:
+  /// **'Message (facultatif)'**
+  String get claimsNoteOptional;
+
+  /// No description provided for @claimsExpertRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indiquez le nom de l’expert.'**
+  String get claimsExpertRequired;
+
+  /// No description provided for @claimsSlotConfirmed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmé'**
+  String get claimsSlotConfirmed;
+
+  /// No description provided for @claimsSlotYourTurn.
+  ///
+  /// In fr, this message translates to:
+  /// **'À confirmer'**
+  String get claimsSlotYourTurn;
+
+  /// No description provided for @claimsSlotWaitingAgent.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente de l’agent'**
+  String get claimsSlotWaitingAgent;
+
+  /// No description provided for @claimsSlotWaitingDriver.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente du conducteur'**
+  String get claimsSlotWaitingDriver;
+
+  /// No description provided for @claimsExpertiseBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertise médicale'**
+  String get claimsExpertiseBody;
+
+  /// No description provided for @claimsExpertiseVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertise du véhicule'**
+  String get claimsExpertiseVehicle;
+
+  /// No description provided for @claimsPlaceFromExpert.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu communiqué par l’expert'**
+  String get claimsPlaceFromExpert;
+
+  /// No description provided for @claimsFromDriver.
+  ///
+  /// In fr, this message translates to:
+  /// **'Du conducteur'**
+  String get claimsFromDriver;
+
+  /// No description provided for @claimsFromAgent.
+  ///
+  /// In fr, this message translates to:
+  /// **'De l’agent'**
+  String get claimsFromAgent;
+
+  /// No description provided for @claimsToBring.
+  ///
+  /// In fr, this message translates to:
+  /// **'À apporter'**
+  String get claimsToBring;
+
+  /// No description provided for @claimsBringId.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre pièce d’identité'**
+  String get claimsBringId;
+
+  /// No description provided for @claimsBringCertificates.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les certificats médicaux'**
+  String get claimsBringCertificates;
+
+  /// No description provided for @claimsBringPrescriptions.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les ordonnances et factures de soins'**
+  String get claimsBringPrescriptions;
+
+  /// No description provided for @claimsBringVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le véhicule, non réparé'**
+  String get claimsBringVehicle;
+
+  /// No description provided for @claimsBringRegistration.
+  ///
+  /// In fr, this message translates to:
+  /// **'La carte grise'**
+  String get claimsBringRegistration;
+
+  /// No description provided for @claimsBringLicence.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le permis de conduire'**
+  String get claimsBringLicence;
+
+  /// No description provided for @claimsBringInsurance.
+  ///
+  /// In fr, this message translates to:
+  /// **'L’attestation d’assurance'**
+  String get claimsBringInsurance;
+
+  /// No description provided for @claimsAccept.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accepter'**
+  String get claimsAccept;
+
+  /// No description provided for @claimsProposeOther.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proposer un autre créneau'**
+  String get claimsProposeOther;
+
+  /// No description provided for @claimsCannotCome.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je ne peux plus venir'**
+  String get claimsCannotCome;
+
+  /// No description provided for @claimsOtherDateTime.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre date et heure'**
+  String get claimsOtherDateTime;
+
+  /// No description provided for @claimsSendProposal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer la proposition'**
+  String get claimsSendProposal;
+
+  /// No description provided for @claimsStepReceived.
+  ///
+  /// In fr, this message translates to:
+  /// **'Reçu'**
+  String get claimsStepReceived;
+
+  /// No description provided for @claimsStepReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étude'**
+  String get claimsStepReview;
+
+  /// No description provided for @claimsStepExpertise.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertise'**
+  String get claimsStepExpertise;
+
+  /// No description provided for @claimsStepDecision.
+  ///
+  /// In fr, this message translates to:
+  /// **'Décision'**
+  String get claimsStepDecision;
+
+  /// No description provided for @claimsYourTodo.
+  ///
+  /// In fr, this message translates to:
+  /// **'À faire'**
+  String get claimsYourTodo;
+
+  /// No description provided for @claimsRemainingDays.
+  ///
+  /// In fr, this message translates to:
+  /// **'{days, plural, =1{Encore environ 1 jour} other{Encore environ {days} jours}}'**
+  String claimsRemainingDays(int days);
+
+  /// No description provided for @claimsEstimateNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Estimation, pas un engagement.'**
+  String get claimsEstimateNote;
+
+  /// No description provided for @claimsSummaryTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Résumé du dossier'**
+  String get claimsSummaryTitle;
+
+  /// No description provided for @claimsPriorityScore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Priorité {score}'**
+  String claimsPriorityScore(String score);
+
+  /// No description provided for @claimsSearchMine.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher dans mes dossiers'**
+  String get claimsSearchMine;
+
+  /// No description provided for @claimsBySeverity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Par gravité'**
+  String get claimsBySeverity;
+
+  /// No description provided for @claimsByType.
+  ///
+  /// In fr, this message translates to:
+  /// **'Par type d’accident'**
+  String get claimsByType;
+
+  /// No description provided for @claimsAnswersBySource.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réponses par source'**
+  String get claimsAnswersBySource;
 
   /// No description provided for @appTitle.
   ///

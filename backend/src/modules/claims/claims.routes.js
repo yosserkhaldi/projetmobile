@@ -203,6 +203,18 @@ router.post(
   ),
 );
 router.post(
+  '/:id/appointment',
+  requireRole('driver', 'agent'),
+  write((tx, req) =>
+    claims.respondAppointment(tx, req.user, req.params.id, req.body),
+  ),
+);
+router.post(
+  '/:id/reopen',
+  agent,
+  write((tx, req) => claims.reopenClaim(tx, req.user, req.params.id, req.body)),
+);
+router.post(
   '/:id/expert-report',
   agent,
   thenRead,

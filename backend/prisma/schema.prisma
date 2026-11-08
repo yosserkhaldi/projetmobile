@@ -201,6 +201,15 @@ model Claim {
   impactZones       String[]
   expertName        String?
   expertAppointment DateTime?
+  expertPhone       String?
+  // Lieu du rendez-vous : garage, agence, cabinet médical.
+  expertPlace       String?
+  // « Véhicule » ou « Corporelle » (blessé, piéton).
+  expertKind        String?
+  // Créneau : « proposed » puis « accepted » ; appointmentBy : driver ou agent.
+  appointmentState  String?
+  appointmentBy     String?
+  appointmentNote   String?
   responsibility    Int?
   indemnity         Float?
   decisionReason    String?

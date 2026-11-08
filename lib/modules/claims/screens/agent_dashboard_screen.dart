@@ -8,6 +8,7 @@ import 'package:mon_constat_digital/modules/claims/screens/analytics_screen.dart
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/notifications_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/motion.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/offline_banner.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
@@ -53,18 +54,21 @@ class AgentDashboard extends StatelessWidget {
             children: [
               _metric(
                 t.claimsToHandle,
-                '${pending.length}',
-                context.palette.warningText,
+                pending.length,
+                ClaimsColors.amber,
+                Icons.inbox_outlined,
               ),
               _metric(
                 t.claimsExpertises,
-                '${s.countByStatus((e) => e == ClaimStatus.expertise)}',
-                context.palette.primaryText,
+                s.countByStatus((e) => e == ClaimStatus.expertise),
+                ClaimsColors.violet,
+                Icons.engineering_outlined,
               ),
               _metric(
                 t.claimsClosedCount,
-                '${s.countByStatus((e) => e == ClaimStatus.closed)}',
-                context.palette.successText,
+                s.countByStatus((e) => e == ClaimStatus.closed),
+                ClaimsColors.teal,
+                Icons.task_alt,
               ),
             ],
           ),
@@ -79,38 +83,54 @@ class AgentDashboard extends StatelessWidget {
               t.claimsNothingToHandle,
               style: TextStyle(color: context.palette.textMuted),
             ),
-          ...pending.map(
-            (c) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: InkWell(
-                onTap: () => open(context, ClaimDetail(c, agentMode: true)),
-                child: ClaimCard(c, insight: s.insightFor(c.id)),
+          for (final (i, c) in pending.indexed)
+            Appear(
+              index: i,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: InkWell(
+                  onTap: () => open(context, ClaimDetail(c, agentMode: true)),
+                  child: ClaimCard(c, insight: s.insightFor(c.id)),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _metric(String t, String v, Color c) => Expanded(
-    child: Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          children: [
-            Text(
-              v,
-              style: TextStyle(
-                fontSize: 28,
-                color: c,
-                fontWeight: FontWeight.w900,
+  Widget _metric(String label, int value, Color color, IconData icon) =>
+      Expanded(
+        child: Card(
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  color.withValues(alpha: .20),
+                  color.withValues(alpha: .04),
+                ],
               ),
             ),
-            Text(t, textAlign: TextAlign.center),
-          ],
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(height: 4),
+                CountUp(
+                  value,
+                  style: TextStyle(
+                    fontSize: 28,
+                    color: color,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                Text(label, textAlign: TextAlign.center),
+              ],
+            ),
+          ),
         ),
-      ),
-    ),
-  );
+      );
 }

@@ -231,14 +231,44 @@ export async function addDocument(tx, user, id, input, file) {
   return reply(tx, id, user, 201);
 }
 
-export async function scheduleExpertise(tx, user, id, input) {
-  const claim = await load(tx, id, user);
-  const expertName = required(input.expertName, 'Expert requis.');
-  const expertAppointment = new Date(input.appointment);
-  if (Number.isNaN(expertAppointment.getTime())) {
+export const expertKinds = ['Véhicule', 'Corporelle'];
+
+// Un piéton blessé n'a pas de véhicule à montrer : l'expertise est médicale.
+export const defaultExpertKind = (claim) =>
+  claim.type === 'Piéton' ? 'Corporelle' : 'Véhicule';
+
+function appointmentDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
     throw badRequest('Date de rendez-vous invalide.');
   }
-  const data = { expertName, expertAppointment };
+  if (date.getTime() < Date.now() - 60 * 60_000) {
+    throw badRequest('Le rendez-vous doit être dans le futur.');
+  }
+  return date;
+}
+
+const optional = (value) =>
+  typeof value === 'string' && value.trim() ? value.trim() : null;
+
+// L'agent propose un rendez-vous complet ; le conducteur l'accepte ou en
+// propose un autre (respondAppointment).
+export async function scheduleExpertise(tx, user, id, input) {
+  const claim = await load(tx, id, user);
+  const expertKind = input.expertKind ?? defaultExpertKind(claim);
+  if (!expertKinds.includes(expertKind)) {
+    throw badRequest('Type d’expertise : Véhicule ou Corporelle.');
+  }
+  const data = {
+    expertName: required(input.expertName, 'Expert requis.'),
+    expertPhone: optional(input.expertPhone),
+    expertPlace: optional(input.expertPlace),
+    expertKind,
+    expertAppointment: appointmentDate(input.appointment),
+    appointmentState: 'proposed',
+    appointmentBy: 'agent',
+    appointmentNote: optional(input.note),
+  };
   if (claim.status === Status.expertise) {
     await tx.claim.update({ where: { id }, data });
     await tx.claimEvent.create({
@@ -248,6 +278,71 @@ export async function scheduleExpertise(tx, user, id, input) {
   } else {
     await move(tx, claim, Status.expertise, data);
   }
+  return reply(tx, id, user);
+}
+
+// Réponse au dernier créneau proposé par l'autre partie.
+export async function respondAppointment(tx, user, id, input) {
+  const claim = await load(tx, id, user);
+  if (claim.status !== Status.expertise || !claim.expertAppointment) {
+    throw conflict('Aucun rendez-vous d’expertise à confirmer.');
+  }
+  const role = user.role === 'driver' ? 'driver' : 'agent';
+  const other = role === 'driver' ? 'agent' : 'driver';
+  if (input.action === 'accept') {
+    if (claim.appointmentState !== 'proposed' || claim.appointmentBy === role) {
+      throw conflict('Ce créneau attend la réponse de l’autre partie.');
+    }
+    await tx.claim.update({
+      where: { id },
+      data: { appointmentState: 'accepted' },
+    });
+    await tx.claimEvent.create({
+      data: { claimId: id, label: 'Rendez-vous confirmé' },
+    });
+    await notify(tx, claim, other, `${id} : rendez-vous d’expertise confirmé`);
+    return reply(tx, id, user);
+  }
+  if (input.action !== 'propose') {
+    throw badRequest('Action : accept ou propose.');
+  }
+  await tx.claim.update({
+    where: { id },
+    data: {
+      expertAppointment: appointmentDate(input.appointment),
+      appointmentState: 'proposed',
+      appointmentBy: role,
+      appointmentNote: optional(input.note),
+    },
+  });
+  await tx.claimEvent.create({
+    data: { claimId: id, label: 'Autre créneau proposé' },
+  });
+  await notify(tx, claim, other, `${id} : autre créneau proposé pour l’expertise`);
+  return reply(tx, id, user);
+}
+
+// Corrige une erreur après la décision : le dossier revient en instruction,
+// la décision précédente reste dans la chronologie.
+export async function reopenClaim(tx, user, id, input) {
+  const claim = await load(tx, id, user);
+  const reason = required(input.reason, 'Motif requis.');
+  if (claim.status !== Status.closed && claim.status !== Status.rejected) {
+    throw conflict('Seul un dossier clôturé ou rejeté peut être rouvert.');
+  }
+  await tx.claim.update({
+    where: { id },
+    data: {
+      status: Status.inReview,
+      responsibility: null,
+      indemnity: null,
+      decisionReason: null,
+      aiProposal: null,
+    },
+  });
+  const label = `Rouvert : ${reason}`;
+  await tx.claimEvent.create({ data: { claimId: id, label } });
+  await notify(tx, claim, 'driver', `${id} : ${label}`);
   return reply(tx, id, user);
 }
 

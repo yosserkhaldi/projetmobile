@@ -243,14 +243,34 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
     }
   }
 
-  void scheduleExpertise(Claim claim, String expert, DateTime appointment) {
+  /// L'agent propose un rendez-vous complet ; le conducteur répond ensuite.
+  void scheduleExpertise(
+    Claim claim, {
+    required String expert,
+    required DateTime appointment,
+    required String kind,
+    String phone = '',
+    String place = '',
+    String note = '',
+  }) {
+    String? text(String value) => value.trim().isEmpty ? null : value.trim();
     claim
       ..expertName = expert.trim()
-      ..expertAppointment = appointment;
+      ..expertAppointment = appointment
+      ..expertKind = kind
+      ..expertPhone = text(phone)
+      ..expertPlace = text(place)
+      ..appointmentNote = text(note)
+      ..appointmentState = 'proposed'
+      ..appointmentBy = UserRole.agent.name;
     _send(
       '/${claim.id}/expertise',
       body: {
         'expertName': claim.expertName,
+        'expertPhone': claim.expertPhone,
+        'expertPlace': claim.expertPlace,
+        'expertKind': kind,
+        'note': claim.appointmentNote,
         'appointment': appointment.toUtc().toIso8601String(),
       },
     );
@@ -265,6 +285,66 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
       _applyStatus(claim, ClaimStatus.expertise);
     }
   }
+
+  /// Le conducteur ou l'agent accepte le créneau de l'autre partie.
+  void acceptAppointment(Claim claim, UserRole role) {
+    if (!claim.awaitsAnswerFrom(role.name)) return;
+    claim.appointmentState = 'accepted';
+    _send('/${claim.id}/appointment', body: {'action': 'accept'});
+    _saveEvent(claim, 'Rendez-vous confirmé');
+    _sendNotification(
+      role == UserRole.driver ? UserRole.agent : UserRole.driver,
+      '${claim.id} : rendez-vous d’expertise confirmé',
+      claim.id,
+    );
+  }
+
+  /// Propose un autre créneau, avec un mot pour l'autre partie.
+  void proposeAppointment(
+    Claim claim,
+    UserRole role,
+    DateTime appointment, {
+    String note = '',
+  }) {
+    if (claim.status != ClaimStatus.expertise) return;
+    claim
+      ..expertAppointment = appointment
+      ..appointmentState = 'proposed'
+      ..appointmentBy = role.name
+      ..appointmentNote = note.trim().isEmpty ? null : note.trim();
+    _send(
+      '/${claim.id}/appointment',
+      body: {
+        'action': 'propose',
+        'appointment': appointment.toUtc().toIso8601String(),
+        'note': claim.appointmentNote,
+      },
+    );
+    _saveEvent(claim, 'Autre créneau proposé');
+    _sendNotification(
+      role == UserRole.driver ? UserRole.agent : UserRole.driver,
+      '${claim.id} : autre créneau proposé pour l’expertise',
+      claim.id,
+    );
+  }
+
+  /// Corrige une décision : le dossier revient en instruction.
+  void reopenClaim(Claim claim, String reason) {
+    if (!ClaimStatus.isFinal(claim.status) || reason.trim().isEmpty) return;
+    claim
+      ..status = ClaimStatus.inReview
+      ..responsibility = null
+      ..indemnity = null
+      ..decisionReason = null;
+    final label = 'Rouvert : ${reason.trim()}';
+    _send('/${claim.id}/reopen', body: {'reason': reason.trim()});
+    _saveEvent(claim, label);
+    _sendNotification(UserRole.driver, '${claim.id} : $label', claim.id);
+  }
+
+  /// Résumés déjà demandés, gardés tant que l'application tourne : la carte
+  /// peut sortir de l'écran au défilement sans perdre son résumé.
+  final summaries = <String, AiAnswer>{};
 
   void addExpertReport(
     Claim claim,

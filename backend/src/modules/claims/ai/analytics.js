@@ -39,6 +39,7 @@ export function analytics(claims, aiCalls = [], now = new Date()) {
     total: claims.length,
     byStatus: countBy(claims, 'status'),
     bySeverity: countBy(claims, 'severity'),
+    byType: countBy(claims, 'type'),
     overdue: claims.filter((claim) => serviceLevel(claim, now)?.overdueDays > 0).length,
     averageDays: average(done.map(durationDays)),
     totalIndemnity: closed.reduce((sum, claim) => sum + (claim.indemnity ?? 0), 0),

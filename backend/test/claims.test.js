@@ -213,6 +213,81 @@ describe('API sinistres', () => {
     assert.equal(ok.body.decisionReason, 'Hors garantie');
   });
 
+  test('rendez-vous d’expertise : proposé, contre-proposé, confirmé', async () => {
+    const id = await inReview();
+    const soon = (days) => new Date(Date.now() + days * 86_400_000).toISOString();
+    const slot = (who, body) => call(who, 'POST', `/${id}/appointment`, body);
+
+    let claim = (
+      await call(agent, 'POST', `/${id}/expertise`, {
+        expertName: 'M. Trabelsi',
+        expertPhone: '+216 71 000 000',
+        expertPlace: 'Garage Ennour, Ariana',
+        appointment: soon(2),
+      })
+    ).body;
+    assert.equal(claim.status, 'Expertise');
+    assert.equal(claim.expertKind, 'Véhicule');
+    assert.equal(claim.appointmentState, 'proposed');
+    assert.equal(claim.appointmentBy, 'agent');
+
+    // On ne confirme pas son propre créneau.
+    assert.equal((await slot(agent, { action: 'accept' })).status, 409);
+    assert.equal((await slot(other, { action: 'accept' })).status, 404);
+    assert.equal(
+      (await slot(driver, { action: 'propose', appointment: '2020-01-01T09:00:00Z' })).status,
+      400,
+    );
+
+    claim = (
+      await slot(driver, { action: 'propose', appointment: soon(4), note: 'Je travaille le matin.' })
+    ).body;
+    assert.equal(claim.appointmentBy, 'driver');
+    assert.equal(claim.appointmentNote, 'Je travaille le matin.');
+    let agentNotes = (await call(agent, 'GET', '/notifications')).body;
+    assert.match(agentNotes[0].body, /autre créneau proposé/);
+    const insights = (await call(agent, 'GET', `/${id}/insights`)).body;
+    assert.equal(insights.nextAction.code, 'answer-slot');
+
+    claim = (await slot(agent, { action: 'accept' })).body;
+    assert.equal(claim.appointmentState, 'accepted');
+    assert.equal(claim.events.at(-1).label, 'Rendez-vous confirmé');
+    const driverNotes = (await call(driver, 'GET', '/notifications')).body;
+    assert.match(driverNotes[0].body, /rendez-vous d’expertise confirmé/);
+    agentNotes = (await call(agent, 'GET', '/notifications')).body;
+    assert.equal(agentNotes.filter((n) => /confirmé/.test(n.body)).length, 0);
+  });
+
+  test('un piéton a une expertise médicale', async () => {
+    const id = await createClaim({ type: 'Piéton' });
+    await call(agent, 'POST', `/${id}/take-charge`);
+    const claim = (
+      await call(agent, 'POST', `/${id}/expertise`, {
+        expertName: 'Dr Gharbi',
+        appointment: new Date(Date.now() + 86_400_000).toISOString(),
+      })
+    ).body;
+    assert.equal(claim.expertKind, 'Corporelle');
+    const view = (await call(driver, 'GET', `/${id}/insights`)).body.driver;
+    assert.ok(view.todo.some((task) => /examen médical/.test(task)));
+  });
+
+  test('l’agent rouvre un dossier clôturé par erreur', async () => {
+    const id = await inReview();
+    await call(agent, 'POST', `/${id}/close`, { responsibility: 100, indemnity: 900 });
+    assert.equal((await call(driver, 'POST', `/${id}/reopen`, { reason: 'x' })).status, 403);
+    assert.equal((await call(agent, 'POST', `/${id}/reopen`, { reason: ' ' })).status, 400);
+    const claim = (
+      await call(agent, 'POST', `/${id}/reopen`, { reason: 'Montant erroné' })
+    ).body;
+    assert.equal(claim.status, 'En instruction');
+    assert.equal(claim.indemnity, null);
+    assert.equal(claim.responsibility, null);
+    assert.equal(claim.events.at(-1).label, 'Rouvert : Montant erroné');
+    // Un dossier en cours ne se rouvre pas.
+    assert.equal((await call(agent, 'POST', `/${id}/reopen`, { reason: 'x' })).status, 409);
+  });
+
   test('applique les rôles et isole les conducteurs', async () => {
     const id = await createClaim();
     assert.equal((await call(driver, 'POST', `/${id}/take-charge`)).status, 403);

@@ -39,16 +39,31 @@ class ClaimsDatabase extends _$ClaimsDatabase {
   );
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
       if (from < 2) await _upgradeToV2(m);
       if (from < 3) await _upgradeToV3(m, outboxExisted: from == 2);
+      if (from < 4) await _upgradeToV4(m);
     },
     beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
   );
+
+  /// Rendez-vous d'expertise négocié entre l'agent et le conducteur.
+  Future<void> _upgradeToV4(Migrator m) async {
+    for (final column in [
+      claims.expertPhone,
+      claims.expertPlace,
+      claims.expertKind,
+      claims.appointmentState,
+      claims.appointmentBy,
+      claims.appointmentNote,
+    ]) {
+      await m.addColumn(claims, column);
+    }
+  }
 
   /// Depuis la v1, la file d'envoi vient d'être créée avec toutes ses colonnes.
   Future<void> _upgradeToV3(Migrator m, {required bool outboxExisted}) async {

@@ -5,6 +5,7 @@ import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_insight.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_status_chip.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/motion.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
@@ -50,30 +51,101 @@ class ClaimCard extends StatelessWidget {
               fontSize: 12,
             ),
           ),
-          if (insight?.reasons.isNotEmpty ?? false) ...[
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Icon(
-                  Icons.priority_high,
-                  size: 16,
-                  color: context.palette.warningText,
-                ),
-                Expanded(
-                  child: Text(
-                    insight!.reasons.join(' • '),
-                    style: TextStyle(
-                      color: context.palette.warningText,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+          if (insight case final insight? when insight.isForAgent) ...[
+            const SizedBox(height: 10),
+            _PriorityBar(insight.priority),
+            if (insight.reasons.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final reason in insight.reasons) _ReasonChip(reason),
+                ],
+              ),
+            ],
+            if (insight.nextAction != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.arrow_circle_right,
+                    size: 18,
+                    color: ClaimsColors.indigo,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      insight.nextAction!,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ],
         ],
       ),
+    ),
+  );
+}
+
+/// Score de priorité de 0 à 100 : vert, ambre, puis corail.
+class _PriorityBar extends StatelessWidget {
+  const _PriorityBar(this.score);
+  final int score;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = score >= 60
+        ? ClaimsColors.coral
+        : score >= 30
+        ? ClaimsColors.amber
+        : ClaimsColors.teal;
+    return Row(
+      children: [
+        Text(
+          context.t.claimsPriorityScore('$score'),
+          style: TextStyle(
+            color: color,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: GrowingBar(value: score / 100, color: color, height: 8),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReasonChip extends StatelessWidget {
+  const _ReasonChip(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: ClaimsColors.coral.withValues(alpha: .15),
+      borderRadius: BorderRadius.circular(99),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.flag, size: 13, color: ClaimsColors.coral),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          style: const TextStyle(
+            color: ClaimsColors.coral,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     ),
   );
 }

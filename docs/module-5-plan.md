@@ -6,6 +6,8 @@ Owner: Salma. Branch: `module-5`. Reference: cahier des charges **v3** (3 Oct 20
 
 Phases 1 to 4 are done. Phase 4 was tested with simulated providers, and on 2026-11-08 against the real Claude through the Claude Code CLI (assistant, summary, replies, Arabic answer, document reading). The paid APIs (Anthropic key, OpenAI, Perplexity) have only run against simulated servers. Still needed from Salma: try the app on an Android or iOS device or emulator.
 
+Step-by-step test guide, with the Claude CLI setup and every scenario: [module-5-test-guide.md](module-5-test-guide.md).
+
 ## Run the demo
 
 ```bash

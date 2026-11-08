@@ -8,6 +8,7 @@ import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/format.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/motion.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/offline_banner.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
@@ -123,7 +124,12 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
                         context,
                         ClaimDetail(claims[i], agentMode: widget.agentMode),
                       ),
-                      child: ClaimCard(claims[i]),
+                      child: ClaimCard(
+                        claims[i],
+                        insight: widget.agentMode
+                            ? store.insightFor(claims[i].id)
+                            : null,
+                      ),
                     ),
                   ),
           ),
@@ -156,8 +162,26 @@ class _Menu extends StatelessWidget {
       ),
     ],
     child: Chip(
-      label: Text(value == null ? label : context.t.claimValue(value!)),
-      avatar: const Icon(Icons.arrow_drop_down, size: 18),
+      label: Text(
+        value == null ? label : '$label: ${context.t.claimValue(value!)}',
+        style: value == null
+            ? null
+            : const TextStyle(
+                color: ClaimsColors.violet,
+                fontWeight: FontWeight.w800,
+              ),
+      ),
+      avatar: Icon(
+        value == null ? Icons.filter_list : Icons.filter_alt,
+        size: 18,
+        color: value == null ? null : ClaimsColors.violet,
+      ),
+      side: value == null
+          ? null
+          : const BorderSide(color: ClaimsColors.violet, width: 1.5),
+      backgroundColor: value == null
+          ? null
+          : ClaimsColors.violet.withValues(alpha: .12),
     ),
   );
 }

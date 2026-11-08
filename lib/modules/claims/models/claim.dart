@@ -60,6 +60,12 @@ class Claim {
     this.agentName,
     this.expertName,
     this.expertAppointment,
+    this.expertPhone,
+    this.expertPlace,
+    this.expertKind,
+    this.appointmentState,
+    this.appointmentBy,
+    this.appointmentNote,
     this.responsibility,
     this.indemnity,
     this.decisionReason,
@@ -68,6 +74,23 @@ class Claim {
   String type, place, date, status, severity, observations;
   String? agentName, expertName, decisionReason;
   DateTime? expertAppointment;
+
+  /// Rendez-vous d'expertise : lieu, téléphone de l'expert, et nature,
+  /// « Véhicule » ou « Corporelle » (examen médical d'un blessé).
+  String? expertPhone, expertPlace, expertKind;
+
+  /// « proposed » ou « accepted ». [appointmentBy] : `agent` ou `driver`,
+  /// l'auteur du dernier créneau proposé. [appointmentNote] l'accompagne.
+  String? appointmentState, appointmentBy, appointmentNote;
+
+  bool get appointmentConfirmed => appointmentState == 'accepted';
+
+  /// Vrai quand [role] doit répondre au créneau proposé par l'autre partie.
+  bool awaitsAnswerFrom(String role) =>
+      status == ClaimStatus.expertise &&
+      expertAppointment != null &&
+      appointmentState == 'proposed' &&
+      appointmentBy != role;
 
   /// Part de responsabilité du conducteur A, en pourcentage.
   int? responsibility;
@@ -109,6 +132,12 @@ class Claim {
     agentName = other.agentName;
     expertName = other.expertName;
     expertAppointment = other.expertAppointment;
+    expertPhone = other.expertPhone;
+    expertPlace = other.expertPlace;
+    expertKind = other.expertKind;
+    appointmentState = other.appointmentState;
+    appointmentBy = other.appointmentBy;
+    appointmentNote = other.appointmentNote;
     responsibility = other.responsibility;
     indemnity = other.indemnity;
     decisionReason = other.decisionReason;
@@ -145,6 +174,12 @@ class Claim {
           agentName: agentName,
           expertName: expertName,
           expertAppointment: expertAppointment,
+          expertPhone: expertPhone,
+          expertPlace: expertPlace,
+          expertKind: expertKind,
+          appointmentState: appointmentState,
+          appointmentBy: appointmentBy,
+          appointmentNote: appointmentNote,
           responsibility: responsibility,
           indemnity: indemnity,
           decisionReason: decisionReason,

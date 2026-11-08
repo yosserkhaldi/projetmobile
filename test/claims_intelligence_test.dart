@@ -272,7 +272,7 @@ void main() {
       expect(request.fileName, 'a.png');
     });
 
-    test('la migration v2 vers v3 garde les données', () async {
+    test('la migration de la v2 à la v4 garde les données', () async {
       final v2 = ClaimsDatabase(NativeDatabase(file));
       await v2.claimsDao.insertClaim(
         claimNamed('SIN-1')
@@ -286,6 +286,17 @@ void main() {
         'ALTER TABLE sync_outbox DROP COLUMN file_bytes',
       );
       await v2.customStatement('ALTER TABLE sync_outbox DROP COLUMN file_name');
+      // Colonnes de la v4 : rendez-vous d'expertise.
+      for (final column in [
+        'expert_phone',
+        'expert_place',
+        'expert_kind',
+        'appointment_state',
+        'appointment_by',
+        'appointment_note',
+      ]) {
+        await v2.customStatement('ALTER TABLE claims DROP COLUMN $column');
+      }
       await v2.customStatement('PRAGMA user_version = 2');
       await v2.close();
 
@@ -293,6 +304,7 @@ void main() {
       addTearDown(v3.close);
       final claim = (await v3.claimsDao.loadClaims()).single;
       expect(claim.documents.single.name, 'x.pdf');
+      expect(claim.expertPlace, isNull);
       expect(await v3.claimsDao.loadInsights(), isEmpty);
     });
   });
