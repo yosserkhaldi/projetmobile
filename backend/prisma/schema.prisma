@@ -81,6 +81,7 @@ model User {
   sessions          Session[]
   loginEvents       LoginEvent[]
   vehicles          Vehicle[]
+  constats          Constat[]
 
   @@index([role])
   @@index([companyId])
@@ -104,6 +105,7 @@ model Accident {
   updatedAt   DateTime       @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  constat Constat?
 
   @@unique([userId, clientId])
   @@index([userId, status, updatedAt])
@@ -117,6 +119,8 @@ model Company {
   agencies Agency[]
   agents   User[]
   vehicles Vehicle[]
+  constatsA Constat[] @relation("CompanyAConstats")
+  constatsB Constat[] @relation("CompanyBConstats")
 }
 
 model Agency {
@@ -262,4 +266,68 @@ model Vehicle {
   // Unicité de la plaque par utilisateur (un même véhicule ne peut être
   // enregistré deux fois par le même conducteur).
   @@unique([userId, plate])
+}
+
+// ── Module 4 : constat amiable numérique scellé ─────────────────────────────
+// Créé après double signature (Conducteur A et Conducteur B).
+// Inaltérable (0 modification après signature). Le hash SHA-256 certifie l'intégrité
+// du document PDF original stocké côté serveur.
+
+enum ConstatStatus {
+  SIGNED
+  TRANSMITTED
+  ARCHIVED
+}
+
+model Constat {
+  id              String        @id @default(uuid()) @db.Uuid
+  accidentId      String?       @unique @db.Uuid
+  userId          String        @db.Uuid
+  status          ConstatStatus @default(SIGNED)
+
+  // Empreinte cryptographique certifiée et fichier PDF scellé
+  sha256Hash      String        @unique
+  pdfFile         String
+
+  // Informations conducteur A (assuré utilisateur)
+  driverAName     String
+  driverAPlate    String
+  driverAInsurer  String
+  driverAPolicy   String?
+  companyAId      String?       @db.Uuid
+
+  // Informations conducteur B (tiers / invité)
+  driverBName     String
+  driverBEmail    String?
+  driverBPhone    String?
+  driverBPlate    String
+  driverBInsurer  String
+  driverBPolicy   String?
+  companyBId      String?       @db.Uuid
+
+  // Données de l'accident & du constat
+  place           String
+  occurredAt      DateTime
+  circumstancesA  String[]      @default([])
+  circumstancesB  String[]      @default([])
+  impactZones     String[]      @default([])
+  observations    String?
+  sketchData      Json?
+
+  // Horodatage des signatures
+  driverASignedAt DateTime      @default(now())
+  driverBSignedAt DateTime      @default(now())
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accident        Accident?     @relation(fields: [accidentId], references: [id], onDelete: SetNull)
+  companyA        Company?      @relation("CompanyAConstats", fields: [companyAId], references: [id], onDelete: SetNull)
+  companyB        Company?      @relation("CompanyBConstats", fields: [companyBId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([companyAId])
+  @@index([companyBId])
+  @@index([sha256Hash])
 }

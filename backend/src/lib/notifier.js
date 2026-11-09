@@ -50,7 +50,7 @@ export const notifier = {
     }
   },
 
-  async sendMail(to, subject, text, html) {
+  async sendMail(to, subject, text, html, attachments = []) {
     if (!process.env.SMTP_HOST) {
       logForDevelopment('E-MAIL', to, text);
       return;
@@ -61,6 +61,7 @@ export const notifier = {
       subject,
       text,
       html,
+      attachments,
     });
   },
 };

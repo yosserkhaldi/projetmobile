@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
+import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_steps.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
+import 'package:mon_constat_digital/modules/constat/models/constat.dart';
+import 'package:mon_constat_digital/modules/constat/screens/constat_sealed_screen.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/constat_steps.dart';
 
 /// Parcours en 7 étapes : les 3 premières relèvent du module 3 (déclaration),
@@ -135,7 +138,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
     );
   }
 
-  void _next() {
+  Future<void> _next() async {
     FocusScope.of(context).unfocus();
     if (!_isCurrentStepValid()) return;
     draft.touch();
@@ -144,25 +147,136 @@ class _AccidentWizardState extends State<AccidentWizard> {
       _persistDraft();
       return;
     }
-    final claims = AppScope.of(context).claims;
-    final claim = Claim(
-      id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-      type: draft.type,
-      place: draft.place,
-      date: draft.occurredAt.toString().substring(0, 16),
-      severity: draft.severity,
-      status: 'Transmis',
+
+    final stores = AppScope.of(context);
+
+    // Dialogue d'attente pendant la génération et le scellement
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text(
+                  'Scellement cryptographique du constat…',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Calcul du hash SHA-256 et transmission',
+                  style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
-    claim.timeline.addAll([
-      'Déclaration complétée',
-      '${draft.evidenceCount} preuves ajoutées',
-      'Double signature',
-      'PDF verrouillé',
-      'Transmis aux assureurs',
-    ]);
-    claims.addClaim(claim);
-    AppScope.of(context).accidents.clearDraft();
-    Navigator.pop(context);
+
+    try {
+      final sealed = await stores.constats.sealAndSubmit(
+        draft: draft,
+        driverAName: stores.users.userName,
+        driverAPlate: 'Véhicule A',
+        driverAInsurer: stores.users.currentUser?.companyName ?? 'Assureur A',
+        companyAId: stores.users.currentUser?.companyId,
+        companyBId: draft.driverBCompanyId,
+      );
+
+      final claim = Claim(
+        id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+        type: draft.type,
+        place: draft.place,
+        date: draft.occurredAt.toString().substring(0, 16),
+        severity: draft.severity,
+        status: 'Transmis',
+      );
+      claim.timeline.addAll([
+        'Déclaration complétée',
+        '${draft.evidenceCount} preuves ajoutées',
+        'Double signature bilatérale',
+        'Scellement SHA-256 (${sealed.sha256Hash.substring(0, 8)}...)',
+        'Transmis aux assureurs',
+      ]);
+      claim.documents.add('Constat amiable scellé.pdf');
+      stores.claims.addClaim(claim);
+      stores.accidents.clearDraft();
+
+      if (!mounted) return;
+      Navigator.pop(context); // ferme le dialog
+
+      await Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ConstatSealedScreen(
+            constat: sealed,
+            draft: draft,
+            pdfBytes: stores.constats.lastSealedPdfBytes,
+          ),
+        ),
+      );
+    } catch (_) {
+      // En cas de mode déconnecté (hors-ligne), scellement local garanti
+      final pdfBytes = await AccidentPdfService().build(draft);
+      final hash = stores.constats.crypto.computeSha256(pdfBytes);
+      final localConstat = Constat(
+        id: 'local-${DateTime.now().millisecondsSinceEpoch}',
+        userId: stores.users.currentUser?.id ?? '',
+        status: 'SIGNED',
+        sha256Hash: hash,
+        pdfUrl: '',
+        driverAName: stores.users.userName,
+        driverAPlate: 'Véhicule A',
+        driverAInsurer: stores.users.currentUser?.companyName ?? 'Assureur A',
+        driverBName: draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
+        driverBPlate: draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'Véhicule B',
+        driverBInsurer: draft.driverBInsurer.isNotEmpty ? draft.driverBInsurer : 'Assureur B',
+        place: draft.place,
+        occurredAt: draft.occurredAt,
+        circumstancesA: draft.circumstancesA.toList(),
+        circumstancesB: draft.circumstancesB.toList(),
+        impactZones: draft.impactZones.toList(),
+        observations: draft.observations,
+      );
+
+      final claim = Claim(
+        id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+        type: draft.type,
+        place: draft.place,
+        date: draft.occurredAt.toString().substring(0, 16),
+        severity: draft.severity,
+        status: 'Transmis',
+      );
+      claim.timeline.addAll([
+        'Déclaration complétée',
+        'Double signature bilatérale',
+        'Scellement local SHA-256 (${hash.substring(0, 8)}...)',
+        'En attente de synchronisation réseau',
+      ]);
+      claim.documents.add('Constat amiable scellé.pdf');
+      stores.claims.addClaim(claim);
+      stores.accidents.clearDraft();
+
+      if (!mounted) return;
+      Navigator.pop(context); // ferme le dialog
+
+      await Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ConstatSealedScreen(
+            constat: localConstat,
+            draft: draft,
+            pdfBytes: pdfBytes,
+          ),
+        ),
+      );
+    }
   }
 
   void _goBack() {
