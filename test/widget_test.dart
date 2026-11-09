@@ -662,6 +662,12 @@ void main() {
         scrollable: identityList,
       );
       await tester.pumpAndSettle();
+      // Sans accord, le bouton reste inactif.
+      await tester.tap(find.byKey(const Key('start-face-check')));
+      await tester.pumpAndSettle();
+      expect(find.byType(LivenessScreen), findsNothing);
+      await tester.tap(find.byKey(const Key('biometric-consent')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('start-face-check')));
       await tester.pumpAndSettle();
     }
@@ -695,6 +701,11 @@ void main() {
       await openIdentity(tester, backend);
       await tester.enterText(field('N° de CIN'), '12345678');
       await tapSubmit(tester);
+      await tester.scrollUntilVisible(
+        find.text('Ajoutez les photos de la pièce.'),
+        -200,
+        scrollable: identityList,
+      );
       expect(find.text('Ajoutez les photos de la pièce.'), findsOneWidget);
       expect(
         backend.requests,

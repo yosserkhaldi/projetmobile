@@ -562,9 +562,11 @@ class UserStore extends ChangeNotifier {
   }
 
   /// Défi de la vérification du visage : consignes dans l'ordre tiré par l'API.
+  /// Appelé après l'accord explicite de l'utilisateur, que l'API enregistre.
   Future<LivenessChallenge> startLiveness() async {
     final body =
-        await _api.post('/users/me/identity/liveness') as Map<String, dynamic>;
+        await _api.post('/users/me/identity/liveness', body: {'consent': true})
+            as Map<String, dynamic>;
     return LivenessChallenge(
       token: body['token'] as String,
       steps: [

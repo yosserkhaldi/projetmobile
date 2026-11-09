@@ -116,6 +116,7 @@ router.delete('/me', requireAuth, async (req, res) => {
         identityRefusals: 0,
         identityRetryAt: null,
         identityBlocked: false,
+        identityBiometricConsentAt: null,
         deletedAt: new Date(),
       },
     }),

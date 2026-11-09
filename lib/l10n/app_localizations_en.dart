@@ -1220,4 +1220,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get outcomePending => 'Pending';
+
+  @override
+  String get biometricConsentLabel =>
+      'I agree to have my face analysed to verify my identity. Analysis on Mon Constat servers, photo deleted as soon as a decision is made (law no. 2004-63).';
+
+  @override
+  String get errorAiQuota =>
+      'Too many analyses in a short time. Try again in a while.';
 }

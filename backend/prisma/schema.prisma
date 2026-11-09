@@ -87,6 +87,8 @@ model User {
   identityRefusals        Int            @default(0)
   identityRetryAt         DateTime?
   identityBlocked         Boolean        @default(false)
+  // Accord explicite pour l'analyse du visage (donnée sensible, loi 2004-63).
+  identityBiometricConsentAt DateTime?
   identitySubmittedAt     DateTime?
   identityReviewedAt      DateTime?
   identityReviewerId      String?        @db.Uuid

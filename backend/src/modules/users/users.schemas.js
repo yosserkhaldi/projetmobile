@@ -191,6 +191,13 @@ export const identitySubmitSchema = z
     if (!pattern.test(number)) ctx.addIssue({ code: 'custom', path: ['number'], message });
   });
 
+// Loi n° 2004-63 : accord explicite avant l'analyse du visage.
+export const biometricConsentSchema = z.object({
+  consent: z.literal(true, {
+    error: "Votre accord est nécessaire pour l'analyse de votre visage.",
+  }),
+});
+
 export const livenessFramesSchema = z.object({
   token: z.string({ error: 'Défi manquant.' }).min(1),
 });

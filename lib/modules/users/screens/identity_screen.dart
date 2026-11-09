@@ -60,6 +60,9 @@ class _IdentityScreenState extends State<IdentityScreen> with FormActions {
   /// Dernier numéro lu par l'IA et recopié dans le champ.
   String? _prefilled;
 
+  /// Accord explicite pour l'analyse du visage, demandé à chaque vérification.
+  bool _biometricConsent = false;
+
   @override
   void dispose() {
     _number.dispose();
@@ -249,6 +252,8 @@ class _IdentityScreenState extends State<IdentityScreen> with FormActions {
                 const SizedBox(height: 10),
                 _FaceCheckCard(
                   done: identity.livenessValid,
+                  consent: _biometricConsent,
+                  onConsent: (on) => setState(() => _biometricConsent = on),
                   onStart: _faceCheck,
                 ),
                 const SizedBox(height: 22),
@@ -307,8 +312,14 @@ class _StepTitle extends StatelessWidget {
 
 /// Étape « visage » : à faire, ou faite et encore valable.
 class _FaceCheckCard extends StatelessWidget {
-  const _FaceCheckCard({required this.done, required this.onStart});
-  final bool done;
+  const _FaceCheckCard({
+    required this.done,
+    required this.consent,
+    required this.onConsent,
+    required this.onStart,
+  });
+  final bool done, consent;
+  final ValueChanged<bool> onConsent;
   final VoidCallback onStart;
 
   @override
@@ -351,18 +362,41 @@ class _FaceCheckCard extends StatelessWidget {
                     color: done ? p.successText : p.textMuted,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
+                // Loi n° 2004-63 : le visage est une donnée sensible.
+                // Material transparent : l'effet du toucher reste visible
+                // sur le fond coloré de la carte.
+                Material(
+                  type: MaterialType.transparency,
+                  child: CheckboxListTile(
+                    key: const Key('biometric-consent'),
+                    value: consent,
+                    onChanged: (on) => onConsent(on ?? false),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    dense: true,
+                    title: Text(
+                      t.biometricConsentLabel,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        height: 1.35,
+                        color: done ? p.successText : p.text,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
                 if (done)
                   TextButton.icon(
                     key: const Key('start-face-check'),
-                    onPressed: onStart,
+                    onPressed: consent ? onStart : null,
                     icon: const Icon(Icons.refresh_rounded, size: 18),
                     label: Text(t.faceCheckRedo),
                   )
                 else
                   FilledButton.tonalIcon(
                     key: const Key('start-face-check'),
-                    onPressed: onStart,
+                    onPressed: consent ? onStart : null,
                     icon: const Icon(Icons.photo_camera_front_outlined),
                     label: Text(t.faceCheckStart),
                   ),

@@ -66,6 +66,7 @@ String errorMessage(BuildContext context, Object error) {
     'BACK_HAS_FACE' => t.errorBackHasFace,
     'BACK_NOT_RECOGNIZED' => t.errorBackNotRecognized,
     'IDENTITY_BLOCKED' => t.errorIdentityBlocked,
+    'AI_QUOTA_EXCEEDED' => t.errorAiQuota,
     'IDENTITY_RETRY_LATER' => t.errorIdentityRetryLater,
     'LICENSE_PHOTO_MISSING' => t.errorLicensePhotoMissing,
     'SELFIE_REQUIRED' => t.faceCheckRequired,

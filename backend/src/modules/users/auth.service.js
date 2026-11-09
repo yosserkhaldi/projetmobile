@@ -70,6 +70,7 @@ export function publicUser(user) {
       refusals: user.identityRefusals ?? 0,
       retryAt: user.identityRetryAt?.toISOString() ?? null,
       blocked: user.identityBlocked ?? false,
+      biometricConsentAt: user.identityBiometricConsentAt?.toISOString() ?? null,
       submittedAt: user.identitySubmittedAt?.toISOString() ?? null,
       rejectionReason: user.identityRejectionReason,
     },

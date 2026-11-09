@@ -1211,4 +1211,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get outcomePending => 'قيد الانتظار';
+
+  @override
+  String get biometricConsentLabel =>
+      'أوافق على تحليل وجهي للتحقق من هويتي. يتم التحليل على خوادم Mon Constat وتُحذف الصورة فور اتخاذ القرار (القانون عدد 63 لسنة 2004).';
+
+  @override
+  String get errorAiQuota =>
+      'عدد كبير من التحاليل في وقت قصير. أعد المحاولة بعد قليل.';
 }

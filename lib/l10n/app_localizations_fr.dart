@@ -1237,4 +1237,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get outcomePending => 'En attente';
+
+  @override
+  String get biometricConsentLabel =>
+      'J\'accepte que mon visage soit analysé pour vérifier mon identité. Analyse faite sur les serveurs de Mon Constat, photo effacée dès la décision (loi n° 2004-63).';
+
+  @override
+  String get errorAiQuota =>
+      'Trop d\'analyses en peu de temps. Réessayez dans un moment.';
 }

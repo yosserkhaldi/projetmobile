@@ -14,6 +14,7 @@ import {
   singleImage,
 } from '../../lib/uploads.js';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { aiQuota } from '../../middleware/quota.js';
 import {
   hashPassword,
   publicUser,
@@ -84,6 +85,8 @@ const PHOTOS = {
   'license-photo': 'licensePhotoFile',
 };
 const PHOTO_FOLDER = 'users';
+// La photo du permis passe par l'OCR : même quota que la vérification d'identité.
+const ocrQuota = aiQuota({ max: 30 });
 
 /** Lecture du permis par l'OCR. En panne : null, le formulaire reste à remplir. */
 async function readLicense(buffer) {
@@ -98,7 +101,7 @@ async function readLicense(buffer) {
 }
 
 for (const [route, column] of Object.entries(PHOTOS)) {
-  router.put(`/me/${route}`, singleImage('photo'), async (req, res) => {
+  router.put(`/me/${route}`, ocrQuota, singleImage('photo'), async (req, res) => {
     const name = await saveImage(req.file, PHOTO_FOLDER);
     const user = await prisma.user.update({
       where: { id: req.user.id },

@@ -29,6 +29,7 @@ import {
   singleImage,
 } from '../../lib/uploads.js';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { aiQuota } from '../../middleware/quota.js';
 import {
   publicUser,
   revokeOtherSessions,
@@ -36,6 +37,7 @@ import {
   withCompany,
 } from './auth.service.js';
 import {
+  biometricConsentSchema,
   documentTypeSchema,
   idParams,
   identityFileParams,
@@ -108,6 +110,8 @@ const FILES = {
   selfie: 'identitySelfieFile',
 };
 const LOCKED = ['PENDING', 'VERIFIED'];
+/** Analyses par l'IA : 30 par heure et par compte. */
+const ai = aiQuota({ max: 30 });
 /** La vérification du visage reste valable le temps de finir la demande. */
 const LIVENESS_VALIDITY_MS = 30 * 60 * 1000;
 const TURNS = ['left', 'right'];
@@ -226,7 +230,7 @@ async function saveFront(req, file, documentType, extracted) {
   return user;
 }
 
-router.put('/me/identity/:side', requireAuth, singleImage('photo'), async (req, res) => {
+router.put('/me/identity/:side', requireAuth, ai, singleImage('photo'), async (req, res) => {
   const { side } = identitySideParams.parse(req.params);
   const { documentType } = documentTypeSchema.parse(req.body ?? {});
   refuseIfLocked(req.user);
@@ -249,7 +253,7 @@ router.put('/me/identity/:side', requireAuth, singleImage('photo'), async (req, 
 
 // Permis déjà enregistré dans le profil : sa photo sert de recto, sans
 // nouvelle prise de vue.
-router.post('/me/identity/front/from-license', requireAuth, async (req, res) => {
+router.post('/me/identity/front/from-license', requireAuth, ai, async (req, res) => {
   refuseIfLocked(req.user);
   if (!req.user.licensePhotoFile) {
     throw new HttpError(
@@ -289,8 +293,15 @@ router.get('/:id/identity/:side', requireAuth, async (req, res, next) => {
 // Vérification du visage (« liveness ») : le serveur tire l'ordre des
 // consignes au hasard, l'application prend une photo par consigne. Une photo
 // imprimée ou un écran ne tourne pas la tête dans l'ordre demandé.
-router.post('/me/identity/liveness', requireAuth, (req, res) => {
+router.post('/me/identity/liveness', requireAuth, ai, async (req, res) => {
   refuseIfLocked(req.user);
+  // Loi n° 2004-63 : le visage est une donnée sensible, accord explicite à
+  // chaque vérification, daté.
+  biometricConsentSchema.parse(req.body ?? {});
+  await prisma.user.update({
+    where: { id: req.user.id },
+    data: { identityBiometricConsentAt: new Date() },
+  });
   const turns = randomInt(2) === 0 ? TURNS : [...TURNS].reverse();
   const steps = ['center', ...turns];
   res.json({ token: signLivenessChallenge(req.user.id, steps), steps });
@@ -347,6 +358,7 @@ function checkLiveness(steps, results) {
 router.post(
   '/me/identity/selfie',
   requireAuth,
+  ai,
   imageArray('frames', 3),
   async (req, res) => {
     refuseIfLocked(req.user);
@@ -438,7 +450,7 @@ function documentChecks(user, number, extracted) {
   };
 }
 
-router.post('/me/identity/submit', requireAuth, async (req, res) => {
+router.post('/me/identity/submit', requireAuth, ai, async (req, res) => {
   const { documentType, number } = identitySubmitSchema.parse(req.body);
   refuseIfLocked(req.user);
   const needsBack = documentType !== 'PASSPORT';

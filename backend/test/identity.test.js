@@ -60,7 +60,7 @@ async function uploadDocument(
 /** Défi demandé au serveur, puis une photo par consigne, dans son ordre. */
 async function liveness(call, token, frames = {}) {
   const tags = { center: 'me', left: 'me-left', right: 'me-right', ...frames };
-  const challenge = await call('POST', '/users/me/identity/liveness', { token });
+  const challenge = await call('POST', '/users/me/identity/liveness', { token, body: { consent: true } });
   const data = new FormData();
   data.append('token', frames.token ?? challenge.body.token);
   for (const step of challenge.body.steps) {
@@ -166,6 +166,7 @@ test('vérification du visage : le défi appartient à un seul compte', async (t
   });
   const challenge = await call('POST', '/users/me/identity/liveness', {
     token: sami.token,
+    body: { consent: true },
   });
   const { res } = await liveness(call, other.token, {
     token: challenge.body.token,
@@ -572,4 +573,40 @@ test('verso revérifié à l envoi : une ancienne photo ne passe plus', async (t
   const res = await submit(call, sami.token);
   assert.equal(res.status, 422);
   assert.equal(res.body.error.code, 'BACK_HAS_FACE');
+});
+
+test('visage : accord explicite exigé et daté (loi 2004-63)', async (t) => {
+  const { call } = await startApi(t);
+  const { token, id } = await register(call);
+  const refused = await call('POST', '/users/me/identity/liveness', { token });
+  assert.equal(refused.status, 400);
+  assert.equal(refused.body.error.code, 'VALIDATION_ERROR');
+  const ok = await call('POST', '/users/me/identity/liveness', {
+    token,
+    body: { consent: true },
+  });
+  assert.equal(ok.status, 200);
+  const row = await prisma.user.findUnique({ where: { id } });
+  assert.ok(row.identityBiometricConsentAt);
+});
+
+test('quota : 30 analyses par heure et par compte', async (t) => {
+  const { call } = await startApi(t);
+  const { token } = await register(call);
+  const challenge = () =>
+    call('POST', '/users/me/identity/liveness', {
+      token,
+      body: { consent: true },
+    });
+  for (let i = 0; i < 30; i++) assert.equal((await challenge()).status, 200);
+  const over = await challenge();
+  assert.equal(over.status, 429);
+  assert.equal(over.body.error.code, 'AI_QUOTA_EXCEEDED');
+  // Un autre compte n'est pas touché.
+  const other = await register(call, { email: 'b@example.com', phone: '20555111' });
+  const res = await call('POST', '/users/me/identity/liveness', {
+    token: other.token,
+    body: { consent: true },
+  });
+  assert.equal(res.status, 200);
 });

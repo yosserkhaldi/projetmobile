@@ -2259,6 +2259,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'En attente'**
   String get outcomePending;
+
+  /// No description provided for @biometricConsentLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte que mon visage soit analysé pour vérifier mon identité. Analyse faite sur les serveurs de Mon Constat, photo effacée dès la décision (loi n° 2004-63).'**
+  String get biometricConsentLabel;
+
+  /// No description provided for @errorAiQuota.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop d\'analyses en peu de temps. Réessayez dans un moment.'**
+  String get errorAiQuota;
 }
 
 class _AppLocalizationsDelegate
