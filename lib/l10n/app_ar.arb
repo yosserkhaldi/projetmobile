@@ -241,5 +241,13 @@
   "dashAccidentsTitle": "الحوادث والملفات",
   "dashAccidentsPending": "المؤشرات والتوزيع وخريطة المناطق الخطرة: متاحة حين ترسل الوحدتان 3 و5 بياناتهما إلى الخادم.",
   "agencyLabel": "الوكالة",
-  "companiesOffline": "دون اتصال: قائمة محفوظة في {date}"
+  "companiesOffline": "دون اتصال: قائمة محفوظة في {date}",
+  "pendingSyncTitle": "تعديلات في الانتظار",
+  "pendingSyncBody": "محفوظة على الهاتف. ستُرسل فور عودة الشبكة.",
+  "syncFailed": "رفض الخادم التعديل: {reason}",
+  "syncNow": "مزامنة",
+  "retrySync": "إعادة المحاولة",
+  "discardChanges": "إلغاء التعديلات",
+  "savedOffline": "حُفظ على الهاتف. سيُرسل عند عودة الشبكة.",
+  "syncing": "جارٍ المزامنة…"
 }

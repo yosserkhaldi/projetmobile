@@ -1551,6 +1551,54 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Hors ligne : liste enregistrée le {date}'**
   String companiesOffline(String date);
+
+  /// No description provided for @pendingSyncTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifications en attente'**
+  String get pendingSyncTitle;
+
+  /// No description provided for @pendingSyncBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrées sur le téléphone. Elles seront envoyées dès le retour du réseau.'**
+  String get pendingSyncBody;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur a refusé la modification : {reason}'**
+  String syncFailed(String reason);
+
+  /// No description provided for @syncNow.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchroniser'**
+  String get syncNow;
+
+  /// No description provided for @retrySync.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réessayer'**
+  String get retrySync;
+
+  /// No description provided for @discardChanges.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler les modifications'**
+  String get discardChanges;
+
+  /// No description provided for @savedOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistré sur le téléphone. Envoi dès le retour du réseau.'**
+  String get savedOffline;
+
+  /// No description provided for @syncing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisation…'**
+  String get syncing;
 }
 
 class _AppLocalizationsDelegate

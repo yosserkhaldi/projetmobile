@@ -816,4 +816,32 @@ class AppLocalizationsFr extends AppLocalizations {
   String companiesOffline(String date) {
     return 'Hors ligne : liste enregistrée le $date';
   }
+
+  @override
+  String get pendingSyncTitle => 'Modifications en attente';
+
+  @override
+  String get pendingSyncBody =>
+      'Enregistrées sur le téléphone. Elles seront envoyées dès le retour du réseau.';
+
+  @override
+  String syncFailed(String reason) {
+    return 'Le serveur a refusé la modification : $reason';
+  }
+
+  @override
+  String get syncNow => 'Synchroniser';
+
+  @override
+  String get retrySync => 'Réessayer';
+
+  @override
+  String get discardChanges => 'Annuler les modifications';
+
+  @override
+  String get savedOffline =>
+      'Enregistré sur le téléphone. Envoi dès le retour du réseau.';
+
+  @override
+  String get syncing => 'Synchronisation…';
 }

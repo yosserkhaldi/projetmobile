@@ -807,4 +807,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String companiesOffline(String date) {
     return 'Offline: list saved on $date';
   }
+
+  @override
+  String get pendingSyncTitle => 'Changes waiting to sync';
+
+  @override
+  String get pendingSyncBody =>
+      'Saved on this phone. They will be sent as soon as the network is back.';
+
+  @override
+  String syncFailed(String reason) {
+    return 'The server declined the change: $reason';
+  }
+
+  @override
+  String get syncNow => 'Sync now';
+
+  @override
+  String get retrySync => 'Retry';
+
+  @override
+  String get discardChanges => 'Discard changes';
+
+  @override
+  String get savedOffline =>
+      'Saved on this phone. Sent when the network is back.';
+
+  @override
+  String get syncing => 'Syncing…';
 }

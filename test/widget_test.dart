@@ -679,6 +679,78 @@ void main() {
     });
   });
 
+  group("modifications hors ligne (file SQLite)", () {
+    Future<void> editNameOffline(
+      WidgetTester tester,
+      FakeBackend backend,
+    ) async {
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      backend.offline = true;
+      await tester.tap(find.byKey(const Key('edit-identity')));
+      await tester.pumpAndSettle();
+      await tester.enterText(field('Prénom'), 'Samir');
+      await tester.tap(find.text('Enregistrer'));
+      await tester.pumpAndSettle();
+      // Le nouvel essai toutes les 20 s ne doit pas survivre au test.
+      addTearDown(backend.stores.users.stopAutoSync);
+    }
+
+    testWidgets('sans réseau : affichée tout de suite, gardée en attente', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await editNameOffline(tester, backend);
+      expect(
+        find.textContaining('Enregistré sur le téléphone'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('pending-sync')), findsOneWidget);
+      expect(backend.stores.users.userName, 'Samir Ben Ali');
+      expect(await backend.usersDb.pending(), hasLength(1));
+      expect(backend.requests, isNot(contains('PATCH /users/me')));
+    });
+
+    testWidgets('retour du réseau : envoyée puis retirée de la file', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await editNameOffline(tester, backend);
+      backend.offline = false;
+      await tester.tap(find.text('Synchroniser'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['PATCH /users/me']!['firstName'], 'Samir');
+      expect(await backend.usersDb.pending(), isEmpty);
+      expect(find.byKey(const Key('pending-sync')), findsNothing);
+    });
+
+    testWidgets('refus du serveur : motif affiché, modification annulable', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await editNameOffline(tester, backend);
+      backend
+        ..offline = false
+        ..failures['PATCH /users/me'] = (
+          409,
+          'ALREADY_EXISTS',
+          'E-mail ou téléphone déjà utilisé.',
+        );
+      await tester.tap(find.text('Synchroniser'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('déjà utilisé'), findsOneWidget);
+      expect(find.text('Annuler les modifications'), findsOneWidget);
+
+      backend.failures.remove('PATCH /users/me');
+      await tester.tap(find.text('Annuler les modifications'));
+      await tester.pumpAndSettle();
+      expect(await backend.usersDb.pending(), isEmpty);
+      expect(backend.stores.users.userName, 'Sami Ben Ali');
+    });
+  });
+
   group('données personnelles', () {
     testWidgets('suppression du compte : mot de passe, puis déconnexion', (
       tester,

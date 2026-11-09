@@ -370,5 +370,20 @@
         "type": "String"
       }
     }
+  },
+  "pendingSyncTitle": "Modifications en attente",
+  "pendingSyncBody": "Enregistrées sur le téléphone. Elles seront envoyées dès le retour du réseau.",
+  "syncFailed": "Le serveur a refusé la modification : {reason}",
+  "syncNow": "Synchroniser",
+  "retrySync": "Réessayer",
+  "discardChanges": "Annuler les modifications",
+  "savedOffline": "Enregistré sur le téléphone. Envoi dès le retour du réseau.",
+  "syncing": "Synchronisation…",
+  "@syncFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -801,4 +801,30 @@ class AppLocalizationsAr extends AppLocalizations {
   String companiesOffline(String date) {
     return 'دون اتصال: قائمة محفوظة في $date';
   }
+
+  @override
+  String get pendingSyncTitle => 'تعديلات في الانتظار';
+
+  @override
+  String get pendingSyncBody => 'محفوظة على الهاتف. ستُرسل فور عودة الشبكة.';
+
+  @override
+  String syncFailed(String reason) {
+    return 'رفض الخادم التعديل: $reason';
+  }
+
+  @override
+  String get syncNow => 'مزامنة';
+
+  @override
+  String get retrySync => 'إعادة المحاولة';
+
+  @override
+  String get discardChanges => 'إلغاء التعديلات';
+
+  @override
+  String get savedOffline => 'حُفظ على الهاتف. سيُرسل عند عودة الشبكة.';
+
+  @override
+  String get syncing => 'جارٍ المزامنة…';
 }

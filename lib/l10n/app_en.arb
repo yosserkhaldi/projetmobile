@@ -241,5 +241,13 @@
   "dashAccidentsTitle": "Accidents and claims",
   "dashAccidentsPending": "Indicators, breakdowns and the hotspot map: available as soon as modules 3 and 5 send their data to the server.",
   "agencyLabel": "Branch",
-  "companiesOffline": "Offline: list saved on {date}"
+  "companiesOffline": "Offline: list saved on {date}",
+  "pendingSyncTitle": "Changes waiting to sync",
+  "pendingSyncBody": "Saved on this phone. They will be sent as soon as the network is back.",
+  "syncFailed": "The server declined the change: {reason}",
+  "syncNow": "Sync now",
+  "retrySync": "Retry",
+  "discardChanges": "Discard changes",
+  "savedOffline": "Saved on this phone. Sent when the network is back.",
+  "syncing": "Syncing…"
 }

@@ -70,7 +70,31 @@ class Agencies extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [CachedProfiles, Companies, Agencies])
+/// File d'attente des modifications faites hors ligne, envoyées à l'API dans
+/// l'ordre dès que le réseau revient.
+@DataClassName('PendingChangeRow')
+class PendingChanges extends Table {
+  @override
+  String get tableName => 'pending_changes';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Type de modification : `profile` (PATCH /users/me).
+  TextColumn get kind => text()();
+
+  /// Champs modifiés, en JSON. Plusieurs modifications hors ligne du même
+  /// type sont fusionnées dans une seule ligne.
+  TextColumn get payload => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  IntColumn get attempts => integer().withDefault(const Constant(0))();
+
+  /// Motif du dernier refus du serveur. La ligne n'est plus renvoyée
+  /// automatiquement tant que l'utilisateur ne réessaie pas.
+  TextColumn get lastError => text().nullable()();
+}
+
+@DriftDatabase(tables: [CachedProfiles, Companies, Agencies, PendingChanges])
 class UsersDatabase extends _$UsersDatabase {
   /// Les tests passent une base en mémoire (`NativeDatabase.memory()`).
   UsersDatabase([QueryExecutor? executor])
@@ -88,10 +112,15 @@ class UsersDatabase extends _$UsersDatabase {
   }
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      // Version 2 : file d'attente hors ligne.
+      if (from < 2) await m.createTable(pendingChanges);
+    },
     beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
   );
 
@@ -176,4 +205,70 @@ class UsersDatabase extends _$UsersDatabase {
     final row = await (select(companies)..limit(1)).getSingleOrNull();
     return row?.syncedAt;
   }
+
+  // --- File d'attente hors ligne ----------------------------------------------
+
+  /// Ajoute une modification, ou la fusionne avec celle du même type déjà en
+  /// attente : les champs les plus récents l'emportent.
+  Future<void> enqueue(String kind, Map<String, Object?> changes) =>
+      transaction(() async {
+        final now = DateTime.now();
+        final existing = await (select(
+          pendingChanges,
+        )..where((c) => c.kind.equals(kind))).getSingleOrNull();
+        if (existing == null) {
+          await into(pendingChanges).insert(
+            PendingChangesCompanion.insert(
+              kind: kind,
+              payload: jsonEncode(changes),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+          return;
+        }
+        final merged = {
+          ...jsonDecode(existing.payload) as Map<String, dynamic>,
+          ...changes,
+        };
+        await (update(
+          pendingChanges,
+        )..where((c) => c.id.equals(existing.id))).write(
+          PendingChangesCompanion(
+            payload: Value(jsonEncode(merged)),
+            updatedAt: Value(now),
+            // Nouvelle modification : on retente même après un refus.
+            lastError: const Value(null),
+          ),
+        );
+      });
+
+  /// Modifications en attente, les plus anciennes d'abord.
+  Future<List<PendingChangeRow>> pending() =>
+      (select(pendingChanges)..orderBy([(c) => OrderingTerm.asc(c.id)])).get();
+
+  Future<void> removePending(int id) =>
+      (delete(pendingChanges)..where((c) => c.id.equals(id))).go();
+
+  Future<void> markFailed(int id, String error) =>
+      (update(pendingChanges)..where((c) => c.id.equals(id))).write(
+        PendingChangesCompanion.custom(
+          attempts: pendingChanges.attempts + const Constant(1),
+          lastError: Variable(error),
+        ),
+      );
+
+  Future<void> markAttempted(int id) =>
+      (update(pendingChanges)..where((c) => c.id.equals(id))).write(
+        PendingChangesCompanion.custom(
+          attempts: pendingChanges.attempts + const Constant(1),
+        ),
+      );
+
+  Future<void> clearPending() => delete(pendingChanges).go();
+
+  /// L'utilisateur demande de réessayer après un refus du serveur.
+  Future<void> clearPendingErrors() => update(
+    pendingChanges,
+  ).write(const PendingChangesCompanion(lastError: Value(null)));
 }
