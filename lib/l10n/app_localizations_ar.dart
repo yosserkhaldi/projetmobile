@@ -9,6 +9,839 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get claimsMyClaims => 'ملفاتي';
+
+  @override
+  String get claimsReceived => 'الحوادث الواردة';
+
+  @override
+  String claimsCount(String shown, String total) {
+    return '$shown من أصل $total ملفات';
+  }
+
+  @override
+  String get claimsFilterHint => 'تصفية حسب الرقم أو الحالة أو الخطورة';
+
+  @override
+  String get claimsStatus => 'الحالة';
+
+  @override
+  String get claimsSeverity => 'الخطورة';
+
+  @override
+  String get claimsDate => 'التاريخ';
+
+  @override
+  String claimsAllOf(String label) {
+    return 'الكل: $label';
+  }
+
+  @override
+  String get claimsNoMatch => 'لا يوجد ملف مطابق.';
+
+  @override
+  String get claimsAgentSpace => 'فضاء العون';
+
+  @override
+  String get claimsAgentSubtitle => 'دراسة ملفات الحوادث';
+
+  @override
+  String get claimsStatistics => 'الإحصائيات';
+
+  @override
+  String get claimsNotifications => 'الإشعارات';
+
+  @override
+  String get claimsToHandle => 'للمعالجة';
+
+  @override
+  String get claimsExpertises => 'الخبرات';
+
+  @override
+  String get claimsClosedCount => 'مغلقة';
+
+  @override
+  String get claimsPriority => 'الملفات ذات الأولوية';
+
+  @override
+  String get claimsNothingToHandle => 'لا يوجد ملف للمعالجة.';
+
+  @override
+  String get claimsAssistant => 'المساعد';
+
+  @override
+  String get claimsMessaging => 'المحادثات';
+
+  @override
+  String get claimsRequestedDocuments => 'الوثائق المطلوبة';
+
+  @override
+  String get claimsUpload => 'إيداع';
+
+  @override
+  String get claimsExpertiseTitle => 'الخبرة الفنية';
+
+  @override
+  String claimsAppointmentOn(String date) {
+    return 'الموعد يوم $date';
+  }
+
+  @override
+  String get claimsTimeline => 'التسلسل الزمني';
+
+  @override
+  String get claimsConstat => 'المحضر';
+
+  @override
+  String get claimsDocuments => 'وثائق الملف';
+
+  @override
+  String get claimsDownload => 'تنزيل';
+
+  @override
+  String get claimsNoDocument => 'لم تودَع أي وثيقة.';
+
+  @override
+  String get claimsUploadDocument => 'إيداع وثيقة';
+
+  @override
+  String get claimsHandling => 'الدراسة';
+
+  @override
+  String get claimsDocMismatch => 'لا تطابق الطلب.';
+
+  @override
+  String get claimsRejectedTitle => 'ملف مرفوض';
+
+  @override
+  String get claimsClosedTitle => 'ملف مغلق';
+
+  @override
+  String claimsReason(String reason) {
+    return 'السبب: $reason';
+  }
+
+  @override
+  String claimsResponsibilitySplit(String a, String b) {
+    return 'المسؤولية: A $a %، B $b %';
+  }
+
+  @override
+  String claimsIndemnity(String amount) {
+    return 'التعويض: $amount دينار';
+  }
+
+  @override
+  String get claimsCircumstances => 'الظروف';
+
+  @override
+  String get claimsImpactPoint => 'نقطة الاصطدام';
+
+  @override
+  String get claimsObservations => 'الملاحظات';
+
+  @override
+  String get claimsNoConstat => 'لا توجد معلومات عن المحضر.';
+
+  @override
+  String claimsLabelColon(String label) {
+    return '$label: ';
+  }
+
+  @override
+  String get claimsTakeCharge => 'التكفّل بالملف';
+
+  @override
+  String get claimsRequestDocument => 'طلب وثيقة';
+
+  @override
+  String get claimsMoveAppointment => 'تغيير الموعد';
+
+  @override
+  String get claimsAppointExpert => 'تعيين خبير';
+
+  @override
+  String get claimsAttachReport => 'إرفاق تقرير الخبير';
+
+  @override
+  String get claimsReject => 'رفض الملف';
+
+  @override
+  String get claimsDocument => 'الوثيقة';
+
+  @override
+  String get claimsDetail => 'توضيح';
+
+  @override
+  String get claimsSendRequest => 'إرسال الطلب';
+
+  @override
+  String get claimsExpert => 'الخبير';
+
+  @override
+  String get claimsSchedule => 'تحديد الموعد';
+
+  @override
+  String get claimsReasonLabel => 'السبب';
+
+  @override
+  String get claimsRejectAction => 'رفض';
+
+  @override
+  String get claimsInvalidAmount => 'أدخل مبلغًا صحيحًا.';
+
+  @override
+  String get claimsDecision => 'القرار';
+
+  @override
+  String claimsProposal(String a, String b, String reason) {
+    return 'المقترح: A $a %، B $b %. $reason';
+  }
+
+  @override
+  String get claimsIndemnityAmount => 'مبلغ التعويض (دينار)';
+
+  @override
+  String get claimsCloseClaim => 'إغلاق الملف';
+
+  @override
+  String claimsProposalFault(String box) {
+    return '$box: مناورة خطرة من السائق A.';
+  }
+
+  @override
+  String get claimsProposalParked => 'كانت سيارة A متوقفة.';
+
+  @override
+  String claimsProposalTurn(String box) {
+    return '$box: مسؤولية مشتركة افتراضيًا.';
+  }
+
+  @override
+  String get claimsProposalUnknown =>
+      'الخانات غير كافية: مسؤولية مشتركة افتراضيًا.';
+
+  @override
+  String get claimsSummaryOffline => 'الملخص غير متاح دون اتصال.';
+
+  @override
+  String get claimsDecisionHelp => 'المساعدة على القرار';
+
+  @override
+  String claimsOverdue(String days) {
+    return 'تأخير $days يوم';
+  }
+
+  @override
+  String get claimsEstimate => 'التقدير';
+
+  @override
+  String claimsRange(String low, String high) {
+    return 'من $low إلى $high دينار';
+  }
+
+  @override
+  String get claimsUsualDuration => 'المدة المعتادة';
+
+  @override
+  String claimsDays(String days) {
+    return '$days يوم';
+  }
+
+  @override
+  String get claimsRejectionRisk => 'خطر الرفض';
+
+  @override
+  String get claimsRiskLow => 'منخفض';
+
+  @override
+  String get claimsRiskMedium => 'متوسط';
+
+  @override
+  String get claimsRiskHigh => 'مرتفع';
+
+  @override
+  String claimsRiskWithFactors(String level, String factors) {
+    return '$level: $factors';
+  }
+
+  @override
+  String get claimsRecommended => 'موصى بها لهذا الملف';
+
+  @override
+  String get claimsToCheck => 'للتحقق';
+
+  @override
+  String get claimsMissingDocuments => 'الوثائق الناقصة';
+
+  @override
+  String get claimsRequest => 'طلب';
+
+  @override
+  String get claimsSimilar => 'ملفات مشابهة';
+
+  @override
+  String claimsSummaryBy(String by) {
+    return 'ملخص كتبه $by';
+  }
+
+  @override
+  String get claimsSummaryRules => 'ملخص آلي دون ذكاء اصطناعي توليدي';
+
+  @override
+  String get claimsSummarizing => 'جارٍ التلخيص';
+
+  @override
+  String get claimsSummarize => 'تلخيص الملف';
+
+  @override
+  String get claimsModelDisclaimer =>
+      'التقديرات صادرة عن نموذج مدرَّب على بيانات محاكاة. القرار يعود إلى العون.';
+
+  @override
+  String get claimsDriverIdea1 => 'أين وصل ملفي؟';
+
+  @override
+  String get claimsDriverIdea2 => 'ما الوثائق التي عليّ إيداعها؟';
+
+  @override
+  String get claimsDriverIdea3 => 'كم من الوقت سيستغرق ذلك؟';
+
+  @override
+  String get claimsAgentIdea1 => 'ماذا عليّ أن أفعل بعد ذلك؟';
+
+  @override
+  String get claimsAgentIdea2 => 'ما النقاط التي يجب التحقق منها؟';
+
+  @override
+  String get claimsAgentIdea3 => 'ما المسؤولية التي تقترحها؟';
+
+  @override
+  String get claimsAssistantUnavailable =>
+      'المساعد غير متاح حاليًا. أعد المحاولة لاحقًا.';
+
+  @override
+  String claimsAssistantTitle(String id) {
+    return 'المساعد $id';
+  }
+
+  @override
+  String get claimsAssistantIntro =>
+      'اطرح سؤالًا عن هذا الملف. المساعد يُعلِم ولا يتخذ أي قرار.';
+
+  @override
+  String get claimsAssistantReading => 'المساعد يقرأ الملف…';
+
+  @override
+  String get claimsYourQuestion => 'سؤالك';
+
+  @override
+  String get claimsSend => 'إرسال';
+
+  @override
+  String get claimsAutomaticAnswer => 'إجابة آلية';
+
+  @override
+  String get claimsStatsServerOnly => 'الإحصائيات متاحة مع الخادم.';
+
+  @override
+  String get claimsTotal => 'الملفات';
+
+  @override
+  String get claimsLate => 'متأخرة';
+
+  @override
+  String get claimsAverageDuration => 'متوسط المدة';
+
+  @override
+  String claimsDaysShort(String days) {
+    return '$days يوم';
+  }
+
+  @override
+  String get claimsIndemnified => 'التعويضات (دينار)';
+
+  @override
+  String get claimsByStatus => 'الملفات حسب الحالة';
+
+  @override
+  String get claimsSystemVsAgents => 'النظام مقارنة بالأعوان';
+
+  @override
+  String get claimsNoDecisionYet => 'لا توجد قرارات للمقارنة بعد.';
+
+  @override
+  String claimsAgreement(String count, String percent) {
+    return 'من أصل $count قرار، اعتُمدت المسؤولية المقترحة في $percent % من الحالات.';
+  }
+
+  @override
+  String claimsAverageGap(String gap) {
+    return 'متوسط الفارق مع المبلغ المقرَّر: $gap دينار.';
+  }
+
+  @override
+  String get claimsModel => 'النموذج';
+
+  @override
+  String claimsModelVersion(String version) {
+    return 'الإصدار $version';
+  }
+
+  @override
+  String claimsTrainedOn(String synthetic, String real) {
+    return 'مدرَّب على $synthetic حالة محاكاة و$real ملف حقيقي.';
+  }
+
+  @override
+  String claimsModelTest(String mae, String auc) {
+    return 'الاختبار: متوسط الخطأ $mae دينار، AUC الرفض $auc.';
+  }
+
+  @override
+  String get claimsSimulatedWarning =>
+      'هذه القياسات مبنية على بيانات محاكاة: لا تبيّن بعد إن كان النموذج دقيقًا في الحوادث الحقيقية.';
+
+  @override
+  String get claimsSuggestionsUnavailable => 'الاقتراحات غير متاحة.';
+
+  @override
+  String get claimsNoMessages => 'لا توجد رسائل في هذا الملف.';
+
+  @override
+  String get claimsSuggestReply => 'اقتراح ردّ';
+
+  @override
+  String get claimsAttachFile => 'إرفاق ملف';
+
+  @override
+  String get claimsYourMessage => 'رسالتك';
+
+  @override
+  String get claimsOneConversation => 'محادثة لكل ملف';
+
+  @override
+  String get claimsNoClaims => 'لا توجد ملفات.';
+
+  @override
+  String get claimsNoMessage => 'لا توجد رسائل';
+
+  @override
+  String get claimsMarkAllRead => 'تعليم الكل كمقروء';
+
+  @override
+  String get claimsNoNotification => 'لا توجد إشعارات.';
+
+  @override
+  String get claimsOffline => 'دون اتصال: ستُرسَل تغييراتك عند عودة الشبكة';
+
+  @override
+  String get claimsFileUnavailable => 'الملف غير متاح حاليًا.';
+
+  @override
+  String get claimsValueDraft => 'مسودة';
+
+  @override
+  String get claimsValueDeclared => 'مُصرَّح به';
+
+  @override
+  String get claimsValueSigned => 'محضر موقَّع';
+
+  @override
+  String get claimsValueTransmitted => 'مُرسَل';
+
+  @override
+  String get claimsValueInReview => 'قيد الدراسة';
+
+  @override
+  String get claimsValueDocumentRequested => 'وثيقة مطلوبة';
+
+  @override
+  String get claimsValueExpertise => 'خبرة فنية';
+
+  @override
+  String get claimsValueClosed => 'مُغلَق';
+
+  @override
+  String get claimsValueRejected => 'مرفوض';
+
+  @override
+  String get claimsValueCollision => 'تصادم';
+
+  @override
+  String get claimsValueOffRoad => 'خروج عن الطريق';
+
+  @override
+  String get claimsValuePedestrian => 'حادث مع مترجّل';
+
+  @override
+  String get claimsValueMaterialAccident => 'حادث مادي';
+
+  @override
+  String get claimsValueOther => 'أخرى';
+
+  @override
+  String get claimsValueMaterial => 'أضرار مادية';
+
+  @override
+  String get claimsValueLight => 'خفيف';
+
+  @override
+  String get claimsValueSerious => 'خطير';
+
+  @override
+  String get claimsValueParked => 'متوقفة';
+
+  @override
+  String get claimsValueLeavingParking => 'تغادر مكان التوقف';
+
+  @override
+  String get claimsValueChangingLane => 'تغيّر المسار';
+
+  @override
+  String get claimsValueOvertaking => 'تتجاوز';
+
+  @override
+  String get claimsValueTurningRight => 'تنعطف يمينًا';
+
+  @override
+  String get claimsValueTurningLeft => 'تنعطف يسارًا';
+
+  @override
+  String get claimsValueReversing => 'ترجع إلى الخلف';
+
+  @override
+  String get claimsValueFront => 'الأمام';
+
+  @override
+  String get claimsValueRear => 'الخلف';
+
+  @override
+  String get claimsValueLeftSide => 'الجانب الأيسر';
+
+  @override
+  String get claimsValueRightSide => 'الجانب الأيمن';
+
+  @override
+  String get claimsValueQuote => 'تقدير كلفة الإصلاح';
+
+  @override
+  String get claimsValueInvoice => 'فاتورة';
+
+  @override
+  String get claimsValuePoliceReport => 'محضر الشرطة';
+
+  @override
+  String get claimsValueExpertReport => 'تقرير الخبير';
+
+  @override
+  String get claimsValueSupporting => 'وثيقة';
+
+  @override
+  String get claimsValuePhoto => 'صورة';
+
+  @override
+  String get claimsValueVideo => 'فيديو';
+
+  @override
+  String get claimsValueVoiceNote => 'تسجيل صوتي';
+
+  @override
+  String get claimsValueAccidentReport => 'المحضر الودّي';
+
+  @override
+  String get claimsEventDraftCreated => 'تم إنشاء المسودة';
+
+  @override
+  String get claimsEventDeclared => 'اكتمل التصريح';
+
+  @override
+  String claimsEventEvidence(String count) {
+    return 'أضيفت $count أدلة';
+  }
+
+  @override
+  String get claimsEventSigned => 'توقيع الطرفين';
+
+  @override
+  String get claimsEventPdfLocked => 'تم قفل ملف PDF';
+
+  @override
+  String get claimsEventSent => 'أُرسل إلى شركات التأمين';
+
+  @override
+  String get claimsEventMoved => 'تم تغيير الموعد';
+
+  @override
+  String get claimsEventReport => 'أُرفق تقرير الخبير';
+
+  @override
+  String claimsEventDetail(String status, String detail) {
+    return '$status: $detail';
+  }
+
+  @override
+  String claimsNotifNew(String id) {
+    return 'حادث جديد وارد: $id';
+  }
+
+  @override
+  String claimsNotifRequested(String id, String document) {
+    return '$id: وثيقة مطلوبة ($document)';
+  }
+
+  @override
+  String claimsNotifUploaded(String id, String name) {
+    return '$id: أُودعت وثيقة ($name)';
+  }
+
+  @override
+  String claimsNotifMoved(String id) {
+    return '$id: تم تغيير موعد الخبرة';
+  }
+
+  @override
+  String claimsNotifEvent(String id, String event) {
+    return '$id: $event';
+  }
+
+  @override
+  String claimsNotifInReview(String id) {
+    return 'ملفك $id قيد الدراسة.';
+  }
+
+  @override
+  String claimsNotifContract(String days) {
+    return 'ينتهي عقدك خلال $days أيام.';
+  }
+
+  @override
+  String get claimsValueVehicle => 'المركبة';
+
+  @override
+  String get claimsValueBodily => 'أضرار جسدية';
+
+  @override
+  String get claimsValueReopened => 'أُعيد فتحه';
+
+  @override
+  String get claimsEventConfirmed => 'تم تأكيد الموعد';
+
+  @override
+  String get claimsEventOtherSlot => 'اقتُرح موعد آخر';
+
+  @override
+  String claimsNotifConfirmed(String id) {
+    return '$id: تم تأكيد موعد الخبرة';
+  }
+
+  @override
+  String claimsNotifOtherSlot(String id) {
+    return '$id: اقتُرح موعد آخر للخبرة';
+  }
+
+  @override
+  String get claimsQuestionOnDecision => 'سؤال حول القرار؟ راسل العون';
+
+  @override
+  String get claimsReportPending =>
+      'يرسل الخبير تقريره إلى شركة التأمين بعد الموعد. سيظهر هنا.';
+
+  @override
+  String get claimsReportReceived => 'تقرير الخبير، أرفقه العون';
+
+  @override
+  String get claimsReopen => 'إعادة فتح الملف';
+
+  @override
+  String get claimsReopenHelp =>
+      'في حال وجود خطأ، أعد فتح الملف: يعود إلى الدراسة ويبقى القرار السابق في التسلسل الزمني.';
+
+  @override
+  String get claimsReopenAction => 'إعادة الفتح';
+
+  @override
+  String get claimsKindHelp =>
+      'أضرار جسدية: فحص طبي لشخص مصاب، مترجّل مثلًا. لا توجد مركبة لعرضها.';
+
+  @override
+  String get claimsExpertPhone => 'هاتف الخبير';
+
+  @override
+  String get claimsExpertPlace => 'مكان الموعد';
+
+  @override
+  String get claimsPlaceHintBody => 'عيادة، مصحة…';
+
+  @override
+  String get claimsPlaceHintVehicle => 'مستودع، وكالة، المنزل…';
+
+  @override
+  String get claimsSuggestedSlots => 'مواعيد مقترحة';
+
+  @override
+  String get claimsNoteOptional => 'رسالة (اختياري)';
+
+  @override
+  String get claimsExpertRequired => 'أدخل اسم الخبير.';
+
+  @override
+  String get claimsSlotConfirmed => 'مؤكَّد';
+
+  @override
+  String get claimsSlotYourTurn => 'بانتظار تأكيدك';
+
+  @override
+  String get claimsSlotWaitingAgent => 'بانتظار العون';
+
+  @override
+  String get claimsSlotWaitingDriver => 'بانتظار السائق';
+
+  @override
+  String get claimsExpertiseBody => 'خبرة طبية';
+
+  @override
+  String get claimsExpertiseVehicle => 'خبرة المركبة';
+
+  @override
+  String get claimsPlaceFromExpert => 'يحدّد الخبير المكان';
+
+  @override
+  String get claimsFromDriver => 'من السائق';
+
+  @override
+  String get claimsFromAgent => 'من العون';
+
+  @override
+  String get claimsToBring => 'ما يجب إحضاره';
+
+  @override
+  String get claimsBringId => 'بطاقة هويتك';
+
+  @override
+  String get claimsBringCertificates => 'الشهادات الطبية';
+
+  @override
+  String get claimsBringPrescriptions => 'الوصفات وفواتير العلاج';
+
+  @override
+  String get claimsBringVehicle => 'المركبة قبل إصلاحها';
+
+  @override
+  String get claimsBringRegistration => 'البطاقة الرمادية';
+
+  @override
+  String get claimsBringLicence => 'رخصة السياقة';
+
+  @override
+  String get claimsBringInsurance => 'شهادة التأمين';
+
+  @override
+  String get claimsAccept => 'قبول';
+
+  @override
+  String get claimsProposeOther => 'اقتراح موعد آخر';
+
+  @override
+  String get claimsCannotCome => 'لم يعد بإمكاني الحضور';
+
+  @override
+  String get claimsOtherDateTime => 'تاريخ وساعة أخرى';
+
+  @override
+  String get claimsSendProposal => 'إرسال الاقتراح';
+
+  @override
+  String get claimsStepReceived => 'استُلم';
+
+  @override
+  String get claimsStepReview => 'دراسة';
+
+  @override
+  String get claimsStepExpertise => 'خبرة';
+
+  @override
+  String get claimsStepDecision => 'قرار';
+
+  @override
+  String get claimsYourTodo => 'المطلوب منك';
+
+  @override
+  String claimsRemainingDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'يبقى حوالي $days يومًا',
+      few: 'يبقى حوالي $days أيام',
+      two: 'يبقى حوالي يومين',
+      one: 'يبقى حوالي يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get claimsEstimateNote => 'تقدير وليس التزامًا.';
+
+  @override
+  String get claimsTakingLonger =>
+      'ملفك يستغرق وقتًا أطول من المعتاد. يمكنك مراسلة العون.';
+
+  @override
+  String get claimsCircumstancesA => 'ظروف السائق A';
+
+  @override
+  String get claimsCircumstancesB => 'ظروف السائق B';
+
+  @override
+  String claimsProposalFaultB(String box) {
+    return '$box: مناورة خطرة من السائق B.';
+  }
+
+  @override
+  String claimsProposalBoth(String a, String b) {
+    return 'A: $a، B: $b. مناورات خطرة من الطرفين: مسؤولية مشتركة.';
+  }
+
+  @override
+  String get claimsProposalParkedB => 'كانت سيارة B متوقفة.';
+
+  @override
+  String get claimsNoCompany => 'شركة التأمين غير محدّدة';
+
+  @override
+  String claimsEventSealed(String hash) {
+    return 'تم ختم المحضر (SHA-256 $hash)';
+  }
+
+  @override
+  String claimsEventSealedLocal(String hash) {
+    return 'تم ختم المحضر على الهاتف (SHA-256 $hash)';
+  }
+
+  @override
+  String get claimsEventWaitingSync => 'في انتظار الاتصال للإرسال';
+
+  @override
+  String get claimsSummaryTitle => 'ملخص الملف';
+
+  @override
+  String claimsPriorityScore(String score) {
+    return 'الأولوية $score';
+  }
+
+  @override
+  String get claimsSearchMine => 'البحث في ملفاتي';
+
+  @override
+  String get claimsBySeverity => 'حسب الخطورة';
+
+  @override
+  String get claimsByType => 'حسب نوع الحادث';
+
+  @override
+  String get claimsAnswersBySource => 'الإجابات حسب المصدر';
+
+  @override
   String get appTitle => 'Mon Constat Digital';
 
   @override

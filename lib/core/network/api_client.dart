@@ -50,7 +50,12 @@ class ApiClient {
   final http.Client _http;
   final String _baseUrl;
 
+  String get baseUrl => _baseUrl;
+
   String? _accessToken;
+
+  /// Jeton courant, pour les canaux hors HTTP (Socket.IO).
+  String? get accessToken => _accessToken;
 
   /// X-Device-Id et X-Device-Name, ajoutés à chaque requête (device_identity.dart).
   Map<String, String> deviceHeaders = const {};
@@ -65,8 +70,21 @@ class ApiClient {
   Future<dynamic> get(String path, {Map<String, String>? query}) =>
       _request('GET', path, query: query);
 
-  Future<dynamic> post(String path, {Object? body, bool auth = true}) =>
-      _request('POST', path, body: body, auth: auth);
+  /// [timeout] : pour les appels longs, comme un assistant qui lit un dossier.
+  Future<dynamic> post(
+    String path, {
+    Object? body,
+    bool auth = true,
+    Duration? timeout,
+  }) => _request('POST', path, body: body, auth: auth, timeout: timeout);
+
+  /// Requête sur mesure (en-têtes, multipart). Renvoie la réponse sans la
+  /// décoder : le code HTTP reste à l'appelant.
+  Future<http.Response> send(
+    String path,
+    http.BaseRequest Function(Uri uri) build, {
+    Duration? timeout,
+  }) => _execute(() => build(_uri(path)), timeout: timeout);
 
   Future<dynamic> patch(String path, {Object? body}) =>
       _request('PATCH', path, body: body);
@@ -170,6 +188,7 @@ class ApiClient {
     Object? body,
     Map<String, String>? query,
     bool auth = true,
+    Duration? timeout,
   }) async {
     http.BaseRequest build() {
       final request = http.Request(method, _uri(path, query));
@@ -180,7 +199,7 @@ class ApiClient {
       return request;
     }
 
-    return _decode(await _execute(build, auth: auth));
+    return _decode(await _execute(build, auth: auth, timeout: timeout));
   }
 
   /// Envoie la requête. En cas de 401, renouvelle la session puis la rejoue
@@ -188,11 +207,12 @@ class ApiClient {
   Future<http.Response> _execute(
     http.BaseRequest Function() build, {
     bool auth = true,
+    Duration? timeout,
   }) async {
-    var response = await _send(build(), auth: auth);
+    var response = await _send(build(), auth: auth, timeout: timeout);
     if (auth && response.statusCode == 401) {
       await refreshSession();
-      response = await _send(build(), auth: auth);
+      response = await _send(build(), auth: auth, timeout: timeout);
     }
     return response;
   }
@@ -200,14 +220,16 @@ class ApiClient {
   Future<http.Response> _send(
     http.BaseRequest request, {
     required bool auth,
+    Duration? timeout,
   }) async {
+    final limit = timeout ?? _timeout;
     request.headers.addAll(deviceHeaders);
     if (auth && _accessToken != null) {
       request.headers['Authorization'] = 'Bearer $_accessToken';
     }
     try {
-      final streamed = await _http.send(request).timeout(_timeout);
-      return await http.Response.fromStream(streamed).timeout(_timeout);
+      final streamed = await _http.send(request).timeout(limit);
+      return await http.Response.fromStream(streamed).timeout(limit);
     } on http.ClientException {
       throw const ApiException.network();
     } on TimeoutException {

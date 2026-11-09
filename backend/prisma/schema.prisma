@@ -215,6 +215,154 @@ model DeviceKey {
   @@index([userId])
 }
 
+// Module 5 : sinistres, suivi, notifications, messagerie.
+// driverId, agentId, companyId et constatId restent de simples identifiants :
+// pas de clé étrangère vers les tables des autres modules.
+model Claim {
+  id                String    @id
+  constatId         String?
+  companyId         String?
+  driverId          String
+  agentId           String?
+  agentName         String?
+  type              String
+  place             String
+  date              String
+  status            String
+  severity          String
+  observations      String    @default("")
+  // Cases cochées par le conducteur A (le déclarant) et par le conducteur B.
+  circumstances     String[]
+  circumstancesB    String[]  @default([])
+  impactZones       String[]
+  expertName        String?
+  expertAppointment DateTime?
+  expertPhone       String?
+  // Lieu du rendez-vous : garage, agence, cabinet médical.
+  expertPlace       String?
+  // « Véhicule » ou « Corporelle » (blessé, piéton).
+  expertKind        String?
+  // Créneau : « proposed » puis « accepted » ; appointmentBy : driver ou agent.
+  appointmentState  String?
+  appointmentBy     String?
+  appointmentNote   String?
+  responsibility    Int?
+  indemnity         Float?
+  decisionReason    String?
+  // Proposition du système au moment de la décision, pour mesurer l'écart.
+  aiProposal        Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  events     ClaimEvent[]
+  documents  ClaimDocument[]
+  requests   DocumentRequest[]
+  messages   ChatMessage[]
+}
+
+model ClaimEvent {
+  id        Int      @id @default(autoincrement())
+  claimId   String
+  label     String
+  createdAt DateTime @default(now())
+  claim     Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+}
+
+model ClaimDocument {
+  id         String   @id
+  claimId    String
+  name       String
+  kind       String   @default("Pièce")
+  storedName String?
+  requestId  String?
+  // Données lues dans la pièce par Claude, absentes sans clé.
+  analysis   Json?
+  createdAt  DateTime @default(now())
+  claim      Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+}
+
+model DocumentRequest {
+  id         String   @id
+  claimId    String
+  label      String
+  note       String   @default("")
+  documentId String?
+  createdAt  DateTime @default(now())
+  claim      Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+}
+
+model ClaimNotification {
+  id          String   @id @default(uuid())
+  claimId     String?
+  audience    String
+  recipientId String?
+  body        String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([audience, recipientId])
+}
+
+model ChatMessage {
+  id               String   @id
+  claimId          String
+  author           String
+  senderRole       String
+  body             String   @default("")
+  attachmentName   String?
+  attachmentStored String?
+  read             Boolean  @default(false)
+  sentAt           DateTime @default(now())
+  claim            Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+}
+
+// Une ligne par requête déjà appliquée : un renvoi ne s'applique pas deux fois.
+model ProcessedRequest {
+  key       String   @id
+  status    Int
+  body      Json
+  createdAt DateTime @default(now())
+}
+
+// Texte généré par Claude, réutilisé tant que le dossier ne change pas.
+model ClaimAiNote {
+  claimId   String
+  kind      String
+  hash      String
+  text      String
+  // Modèle qui a rédigé le texte, affiché dans l'application.
+  by        String?
+  updatedAt DateTime @updatedAt
+
+  @@id([claimId, kind])
+}
+
+// Journal des appels aux modèles : fournisseur (source), coût, échecs, qui a demandé quoi.
+model AiCall {
+  id           Int      @id @default(autoincrement())
+  claimId      String?
+  feature      String
+  actorRole    String
+  source       String
+  model        String?
+  ok           Boolean
+  error        String?
+  inputTokens  Int?
+  outputTokens Int?
+  ms           Int?
+  createdAt    DateTime @default(now())
+
+  @@index([claimId])
+}
+
 // ── Module 2 : véhicules et contrats d'assurance ──────────────────────────────
 // Stockage côté serveur pour la synchronisation multi-appareils et les rapports
 // d'assurance. Le SQLite local (Drift) reste la source de vérité hors-ligne ;

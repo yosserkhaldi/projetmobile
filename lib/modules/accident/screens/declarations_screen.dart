@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/screens/accident_wizard.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
+import 'package:mon_constat_digital/modules/claims/screens/claims_screen.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
@@ -22,9 +24,20 @@ class DeclarationsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.only(bottom: 28),
           children: [
-            const PageHead(
+            PageHead(
               'Mes déclarations',
               subtitle: 'Brouillons et dossiers transmis',
+              actions: [
+                // Module 5 : recherche et filtres sur tous les dossiers.
+                IconButton(
+                  tooltip: context.t.claimsSearchMine,
+                  onPressed: () => open(
+                    context,
+                    Scaffold(appBar: AppBar(), body: const ClaimsScreen()),
+                  ),
+                  icon: const Icon(Icons.search),
+                ),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

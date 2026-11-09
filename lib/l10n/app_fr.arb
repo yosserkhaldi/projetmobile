@@ -1,5 +1,566 @@
 {
   "@@locale": "fr",
+  "claimsMyClaims": "Mes dossiers",
+  "claimsReceived": "Sinistres reçus",
+  "claimsCount": "{shown} sur {total} dossiers",
+  "@claimsCount": {
+    "placeholders": {
+      "shown": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsFilterHint": "Filtrer par numéro, statut ou gravité",
+  "claimsStatus": "Statut",
+  "claimsSeverity": "Gravité",
+  "claimsDate": "Date",
+  "claimsAllOf": "Tous : {label}",
+  "@claimsAllOf": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsNoMatch": "Aucun dossier ne correspond.",
+  "claimsAgentSpace": "Espace agent",
+  "claimsAgentSubtitle": "Instruction des sinistres",
+  "claimsStatistics": "Statistiques",
+  "claimsNotifications": "Notifications",
+  "claimsToHandle": "À traiter",
+  "claimsExpertises": "Expertises",
+  "claimsClosedCount": "Clôturés",
+  "claimsPriority": "Dossiers prioritaires",
+  "claimsNothingToHandle": "Aucun dossier à traiter.",
+  "claimsAssistant": "Assistant",
+  "claimsMessaging": "Messagerie",
+  "claimsRequestedDocuments": "Pièces demandées",
+  "claimsUpload": "Déposer",
+  "claimsExpertiseTitle": "Expertise",
+  "claimsAppointmentOn": "Rendez-vous le {date}",
+  "@claimsAppointmentOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsTimeline": "Chronologie",
+  "claimsConstat": "Constat",
+  "claimsDocuments": "Pièces du dossier",
+  "claimsDownload": "Télécharger",
+  "claimsNoDocument": "Aucune pièce déposée.",
+  "claimsUploadDocument": "Déposer une pièce",
+  "claimsHandling": "Instruction",
+  "claimsDocMismatch": "Ne correspond pas à la demande.",
+  "claimsRejectedTitle": "Dossier rejeté",
+  "claimsClosedTitle": "Dossier clôturé",
+  "claimsReason": "Motif : {reason}",
+  "@claimsReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsResponsibilitySplit": "Responsabilité : A {a} %, B {b} %",
+  "@claimsResponsibilitySplit": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsIndemnity": "Indemnisation : {amount} TND",
+  "@claimsIndemnity": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsCircumstances": "Circonstances",
+  "claimsImpactPoint": "Point de choc",
+  "claimsObservations": "Observations",
+  "claimsNoConstat": "Aucune information de constat.",
+  "claimsLabelColon": "{label} : ",
+  "@claimsLabelColon": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsTakeCharge": "Prendre en charge",
+  "claimsRequestDocument": "Demander une pièce",
+  "claimsMoveAppointment": "Déplacer le rendez-vous",
+  "claimsAppointExpert": "Désigner un expert",
+  "claimsAttachReport": "Joindre le rapport d’expertise",
+  "claimsReject": "Rejeter le dossier",
+  "claimsDocument": "Pièce",
+  "claimsDetail": "Précision",
+  "claimsSendRequest": "Envoyer la demande",
+  "claimsExpert": "Expert",
+  "claimsSchedule": "Planifier",
+  "claimsReasonLabel": "Motif",
+  "claimsRejectAction": "Rejeter",
+  "claimsInvalidAmount": "Saisissez un montant valide.",
+  "claimsDecision": "Décision",
+  "claimsProposal": "Proposition : A {a} %, B {b} %. {reason}",
+  "@claimsProposal": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsIndemnityAmount": "Montant d'indemnisation (TND)",
+  "claimsCloseClaim": "Clôturer le dossier",
+  "claimsProposalFault": "{box} : manœuvre à risque de A.",
+  "@claimsProposalFault": {
+    "placeholders": {
+      "box": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsProposalParked": "A était en stationnement.",
+  "claimsProposalTurn": "{box} : partage par défaut.",
+  "@claimsProposalTurn": {
+    "placeholders": {
+      "box": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsProposalUnknown": "Cases insuffisantes : partage par défaut.",
+  "claimsSummaryOffline": "Synthèse indisponible hors connexion.",
+  "claimsDecisionHelp": "Aide à la décision",
+  "claimsOverdue": "Retard {days} j",
+  "@claimsOverdue": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsEstimate": "Estimation",
+  "claimsRange": "{low} à {high} TND",
+  "@claimsRange": {
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsUsualDuration": "Durée habituelle",
+  "claimsDays": "{days} jours",
+  "@claimsDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsRejectionRisk": "Risque de rejet",
+  "claimsRiskLow": "faible",
+  "claimsRiskMedium": "moyen",
+  "claimsRiskHigh": "élevé",
+  "claimsRiskWithFactors": "{level} : {factors}",
+  "@claimsRiskWithFactors": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      },
+      "factors": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsRecommended": "Recommandée pour ce dossier",
+  "claimsToCheck": "À vérifier",
+  "claimsMissingDocuments": "Pièces manquantes",
+  "claimsRequest": "Demander",
+  "claimsSimilar": "Dossiers similaires",
+  "claimsSummaryBy": "Synthèse rédigée par {by}",
+  "@claimsSummaryBy": {
+    "placeholders": {
+      "by": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsSummaryRules": "Synthèse automatique, sans IA générative",
+  "claimsSummarizing": "Synthèse en cours",
+  "claimsSummarize": "Résumer le dossier",
+  "claimsModelDisclaimer": "Estimations issues d’un modèle entraîné sur des données simulées. La décision appartient à l’agent.",
+  "claimsDriverIdea1": "Où en est mon dossier ?",
+  "claimsDriverIdea2": "Quelles pièces dois-je déposer ?",
+  "claimsDriverIdea3": "Combien de temps ça va prendre ?",
+  "claimsAgentIdea1": "Que dois-je faire ensuite ?",
+  "claimsAgentIdea2": "Quels points vérifier ?",
+  "claimsAgentIdea3": "Quelle responsabilité proposes-tu ?",
+  "claimsAssistantUnavailable": "Assistant indisponible pour le moment. Réessayez plus tard.",
+  "claimsAssistantTitle": "Assistant {id}",
+  "@claimsAssistantTitle": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsAssistantIntro": "Posez une question sur ce dossier. L’assistant informe, il ne prend aucune décision.",
+  "claimsAssistantReading": "L’assistant lit le dossier…",
+  "claimsYourQuestion": "Votre question",
+  "claimsSend": "Envoyer",
+  "claimsAutomaticAnswer": "Réponse automatique",
+  "claimsStatsServerOnly": "Statistiques disponibles avec le serveur.",
+  "claimsTotal": "Dossiers",
+  "claimsLate": "En retard",
+  "claimsAverageDuration": "Durée moyenne",
+  "claimsDaysShort": "{days} j",
+  "@claimsDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsIndemnified": "Indemnisé (TND)",
+  "claimsByStatus": "Dossiers par statut",
+  "claimsSystemVsAgents": "Le système face aux agents",
+  "claimsNoDecisionYet": "Pas encore de décision à comparer.",
+  "claimsAgreement": "Sur {count} décision(s), la responsabilité proposée a été retenue dans {percent} % des cas.",
+  "@claimsAgreement": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsAverageGap": "Écart moyen avec le montant décidé : {gap} TND.",
+  "@claimsAverageGap": {
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsModel": "Modèle",
+  "claimsModelVersion": "Version {version}",
+  "@claimsModelVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsTrainedOn": "Entraîné sur {synthetic} cas simulés et {real} dossiers réels.",
+  "@claimsTrainedOn": {
+    "placeholders": {
+      "synthetic": {
+        "type": "String"
+      },
+      "real": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsModelTest": "Test : erreur moyenne {mae} TND, AUC rejet {auc}.",
+  "@claimsModelTest": {
+    "placeholders": {
+      "mae": {
+        "type": "String"
+      },
+      "auc": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsSimulatedWarning": "Ces mesures portent sur des données simulées : elles ne disent pas encore si le modèle est juste sur de vrais sinistres.",
+  "claimsSuggestionsUnavailable": "Suggestions indisponibles.",
+  "claimsNoMessages": "Aucun message sur ce dossier.",
+  "claimsSuggestReply": "Suggérer une réponse",
+  "claimsAttachFile": "Joindre un fichier",
+  "claimsYourMessage": "Votre message",
+  "claimsOneConversation": "Une conversation par dossier",
+  "claimsNoClaims": "Aucun dossier.",
+  "claimsNoMessage": "Aucun message",
+  "claimsMarkAllRead": "Tout marquer lu",
+  "claimsNoNotification": "Aucune notification.",
+  "claimsOffline": "Hors ligne : vos changements partiront au retour du réseau",
+  "claimsFileUnavailable": "Fichier indisponible pour le moment.",
+  "claimsValueDraft": "Brouillon",
+  "claimsValueDeclared": "Déclaré",
+  "claimsValueSigned": "Constat signé",
+  "claimsValueTransmitted": "Transmis",
+  "claimsValueInReview": "En instruction",
+  "claimsValueDocumentRequested": "Pièce demandée",
+  "claimsValueExpertise": "Expertise",
+  "claimsValueClosed": "Clôturé",
+  "claimsValueRejected": "Rejeté",
+  "claimsValueCollision": "Collision",
+  "claimsValueOffRoad": "Sortie de route",
+  "claimsValuePedestrian": "Piéton",
+  "claimsValueMaterialAccident": "Accident matériel",
+  "claimsValueOther": "Autre",
+  "claimsValueMaterial": "Matériel",
+  "claimsValueLight": "Léger",
+  "claimsValueSerious": "Grave",
+  "claimsValueParked": "En stationnement",
+  "claimsValueLeavingParking": "Quittait un stationnement",
+  "claimsValueChangingLane": "Changeait de file",
+  "claimsValueOvertaking": "Doublait",
+  "claimsValueTurningRight": "Virait à droite",
+  "claimsValueTurningLeft": "Virait à gauche",
+  "claimsValueReversing": "Reculait",
+  "claimsValueFront": "Avant",
+  "claimsValueRear": "Arrière",
+  "claimsValueLeftSide": "Côté gauche",
+  "claimsValueRightSide": "Côté droit",
+  "claimsValueQuote": "Devis",
+  "claimsValueInvoice": "Facture",
+  "claimsValuePoliceReport": "PV de police",
+  "claimsValueExpertReport": "Rapport d'expertise",
+  "claimsValueSupporting": "Pièce",
+  "claimsValuePhoto": "Photo",
+  "claimsValueVideo": "Vidéo",
+  "claimsValueVoiceNote": "Note vocale",
+  "claimsValueAccidentReport": "Constat amiable",
+  "claimsEventDraftCreated": "Brouillon créé",
+  "claimsEventDeclared": "Déclaration complétée",
+  "claimsEventEvidence": "{count} preuves ajoutées",
+  "@claimsEventEvidence": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsEventSigned": "Double signature",
+  "claimsEventPdfLocked": "PDF verrouillé",
+  "claimsEventSent": "Transmis aux assureurs",
+  "claimsEventMoved": "Rendez-vous déplacé",
+  "claimsEventReport": "Rapport d’expertise joint",
+  "claimsEventDetail": "{status} : {detail}",
+  "@claimsEventDetail": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsNotifNew": "Nouveau sinistre reçu : {id}",
+  "@claimsNotifNew": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsNotifRequested": "{id} : pièce demandée ({document})",
+  "@claimsNotifRequested": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "document": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsNotifUploaded": "{id} : pièce déposée ({name})",
+  "@claimsNotifUploaded": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsNotifMoved": "{id} : rendez-vous d’expertise déplacé",
+  "@claimsNotifMoved": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsNotifEvent": "{id} : {event}",
+  "@claimsNotifEvent": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      },
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsNotifInReview": "Votre dossier {id} est en instruction.",
+  "@claimsNotifInReview": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsNotifContract": "Votre contrat expire dans {days} jours.",
+  "@claimsNotifContract": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsValueVehicle": "Véhicule",
+  "claimsValueBodily": "Corporelle",
+  "claimsValueReopened": "Rouvert",
+  "claimsEventConfirmed": "Rendez-vous confirmé",
+  "claimsEventOtherSlot": "Autre créneau proposé",
+  "claimsNotifConfirmed": "{id} : rendez-vous d’expertise confirmé",
+  "@claimsNotifConfirmed": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsNotifOtherSlot": "{id} : autre créneau proposé pour l’expertise",
+  "@claimsNotifOtherSlot": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsQuestionOnDecision": "Une question sur la décision ? Écrire à l’agent",
+  "claimsReportPending": "L’expert envoie son rapport à l’assureur après le rendez-vous. Il apparaîtra ici.",
+  "claimsReportReceived": "Rapport de l’expert, joint par l’agent",
+  "claimsReopen": "Rouvrir le dossier",
+  "claimsReopenHelp": "En cas d’erreur, rouvrez le dossier : il revient en instruction et la décision précédente reste dans la chronologie.",
+  "claimsReopenAction": "Rouvrir",
+  "claimsKindHelp": "Corporelle : examen médical d’une personne blessée, un piéton par exemple. Aucun véhicule à présenter.",
+  "claimsExpertPhone": "Téléphone de l’expert",
+  "claimsExpertPlace": "Lieu du rendez-vous",
+  "claimsPlaceHintBody": "Cabinet médical, clinique…",
+  "claimsPlaceHintVehicle": "Garage, agence, domicile…",
+  "claimsSuggestedSlots": "Créneaux suggérés",
+  "claimsNoteOptional": "Message (facultatif)",
+  "claimsExpertRequired": "Indiquez le nom de l’expert.",
+  "claimsSlotConfirmed": "Confirmé",
+  "claimsSlotYourTurn": "À confirmer",
+  "claimsSlotWaitingAgent": "En attente de l’agent",
+  "claimsSlotWaitingDriver": "En attente du conducteur",
+  "claimsExpertiseBody": "Expertise médicale",
+  "claimsExpertiseVehicle": "Expertise du véhicule",
+  "claimsPlaceFromExpert": "Lieu communiqué par l’expert",
+  "claimsFromDriver": "Du conducteur",
+  "claimsFromAgent": "De l’agent",
+  "claimsToBring": "À apporter",
+  "claimsBringId": "Votre pièce d’identité",
+  "claimsBringCertificates": "Les certificats médicaux",
+  "claimsBringPrescriptions": "Les ordonnances et factures de soins",
+  "claimsBringVehicle": "Le véhicule, non réparé",
+  "claimsBringRegistration": "La carte grise",
+  "claimsBringLicence": "Le permis de conduire",
+  "claimsBringInsurance": "L’attestation d’assurance",
+  "claimsAccept": "Accepter",
+  "claimsProposeOther": "Proposer un autre créneau",
+  "claimsCannotCome": "Je ne peux plus venir",
+  "claimsOtherDateTime": "Autre date et heure",
+  "claimsSendProposal": "Envoyer la proposition",
+  "claimsStepReceived": "Reçu",
+  "claimsStepReview": "Étude",
+  "claimsStepExpertise": "Expertise",
+  "claimsStepDecision": "Décision",
+  "claimsYourTodo": "À faire",
+  "claimsRemainingDays": "{days, plural, =1{Encore environ 1 jour} other{Encore environ {days} jours}}",
+  "@claimsRemainingDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "claimsEstimateNote": "Estimation, pas un engagement.",
+  "claimsTakingLonger": "Votre dossier prend plus de temps que d’habitude. Vous pouvez écrire à votre agent.",
+  "claimsCircumstancesA": "Circonstances de A",
+  "claimsCircumstancesB": "Circonstances de B",
+  "claimsProposalFaultB": "{box} : manœuvre à risque de B.",
+  "@claimsProposalFaultB": {
+    "placeholders": {
+      "box": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsProposalBoth": "A : {a}, B : {b}. Manœuvres à risque des deux côtés : partage.",
+  "@claimsProposalBoth": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsProposalParkedB": "B était en stationnement.",
+  "claimsNoCompany": "Compagnie non renseignée",
+  "claimsEventSealed": "Constat scellé (SHA-256 {hash})",
+  "@claimsEventSealed": {
+    "placeholders": {
+      "hash": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsEventSealedLocal": "Constat scellé sur le téléphone (SHA-256 {hash})",
+  "@claimsEventSealedLocal": {
+    "placeholders": {
+      "hash": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsEventWaitingSync": "En attente de connexion pour l’envoi",
+  "claimsSummaryTitle": "Résumé du dossier",
+  "claimsPriorityScore": "Priorité {score}",
+  "@claimsPriorityScore": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsSearchMine": "Rechercher dans mes dossiers",
+  "claimsBySeverity": "Par gravité",
+  "claimsByType": "Par type d’accident",
+  "claimsAnswersBySource": "Réponses par source",
   "appTitle": "Mon Constat Digital",
   "brand": "Mon Constat",
   "save": "Enregistrer",

@@ -22,7 +22,8 @@ class MonConstatApp extends StatefulWidget {
 
 class _MonConstatAppState extends State<MonConstatApp>
     with WidgetsBindingObserver {
-  late final AppStores stores = widget.stores ?? AppStores();
+  late final AppStores stores =
+      widget.stores ?? (AppStores()..startClaimsSync());
   final _navigator = GlobalKey<NavigatorState>();
   late AuthStatus _lastStatus = stores.users.status;
 

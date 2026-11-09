@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
@@ -5,6 +7,7 @@ import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_steps.dart';
+import 'package:mon_constat_digital/modules/claims/data/declaration_files.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/constat/models/constat.dart';
 import 'package:mon_constat_digital/modules/constat/screens/constat_sealed_screen.dart';
@@ -28,6 +31,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
   final witnessPhone = TextEditingController();
   final observations = TextEditingController();
   int step = 0;
+  bool _sending = false;
 
   static const steps = [
     ('Contexte', 'Lieu, heure et conditions'),
@@ -147,8 +151,11 @@ class _AccidentWizardState extends State<AccidentWizard> {
       _persistDraft();
       return;
     }
-
+    // Le scellement prend un instant : un second appui ne crée pas un doublon.
+    if (_sending) return;
+    _sending = true;
     final stores = AppScope.of(context);
+    final navigator = Navigator.of(context);
 
     // Dialogue d'attente pendant la génération et le scellement
     showDialog(
@@ -179,8 +186,13 @@ class _AccidentWizardState extends State<AccidentWizard> {
       ),
     );
 
+    // Module 4 : le PDF scellé sur le serveur fait foi. Hors ligne, il est
+    // scellé localement et le sinistre reste en attente de synchronisation.
+    Constat constat;
+    Uint8List pdfBytes;
+    bool sealedOnline;
     try {
-      final sealed = await stores.constats.sealAndSubmit(
+      constat = await stores.constats.sealAndSubmit(
         draft: draft,
         driverAName: stores.users.userName,
         driverAPlate: 'Véhicule A',
@@ -188,44 +200,12 @@ class _AccidentWizardState extends State<AccidentWizard> {
         companyAId: stores.users.currentUser?.companyId,
         companyBId: draft.driverBCompanyId,
       );
-
-      final claim = Claim(
-        id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-        type: draft.type,
-        place: draft.place,
-        date: draft.occurredAt.toString().substring(0, 16),
-        severity: draft.severity,
-        status: 'Transmis',
-      );
-      claim.timeline.addAll([
-        'Déclaration complétée',
-        '${draft.evidenceCount} preuves ajoutées',
-        'Double signature bilatérale',
-        'Scellement SHA-256 (${sealed.sha256Hash.substring(0, 8)}...)',
-        'Transmis aux assureurs',
-      ]);
-      claim.documents.add('Constat amiable scellé.pdf');
-      stores.claims.addClaim(claim);
-      stores.accidents.clearDraft();
-
-      if (!mounted) return;
-      Navigator.pop(context); // ferme le dialog
-
-      await Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ConstatSealedScreen(
-            constat: sealed,
-            draft: draft,
-            pdfBytes: stores.constats.lastSealedPdfBytes,
-          ),
-        ),
-      );
+      pdfBytes = stores.constats.lastSealedPdfBytes!;
+      sealedOnline = true;
     } catch (_) {
-      // En cas de mode déconnecté (hors-ligne), scellement local garanti
-      final pdfBytes = await AccidentPdfService().build(draft);
+      pdfBytes = await AccidentPdfService().build(draft);
       final hash = stores.constats.crypto.computeSha256(pdfBytes);
-      final localConstat = Constat(
+      constat = Constat(
         id: 'local-${DateTime.now().millisecondsSinceEpoch}',
         userId: stores.users.currentUser?.id ?? '',
         status: 'SIGNED',
@@ -234,9 +214,15 @@ class _AccidentWizardState extends State<AccidentWizard> {
         driverAName: stores.users.userName,
         driverAPlate: 'Véhicule A',
         driverAInsurer: stores.users.currentUser?.companyName ?? 'Assureur A',
-        driverBName: draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
-        driverBPlate: draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'Véhicule B',
-        driverBInsurer: draft.driverBInsurer.isNotEmpty ? draft.driverBInsurer : 'Assureur B',
+        driverBName: draft.driverBName.isNotEmpty
+            ? draft.driverBName
+            : 'Conducteur B',
+        driverBPlate: draft.driverBPlate.isNotEmpty
+            ? draft.driverBPlate
+            : 'Véhicule B',
+        driverBInsurer: draft.driverBInsurer.isNotEmpty
+            ? draft.driverBInsurer
+            : 'Assureur B',
         place: draft.place,
         occurredAt: draft.occurredAt,
         circumstancesA: draft.circumstancesA.toList(),
@@ -244,39 +230,60 @@ class _AccidentWizardState extends State<AccidentWizard> {
         impactZones: draft.impactZones.toList(),
         observations: draft.observations,
       );
-
-      final claim = Claim(
-        id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-        type: draft.type,
-        place: draft.place,
-        date: draft.occurredAt.toString().substring(0, 16),
-        severity: draft.severity,
-        status: 'Transmis',
-      );
-      claim.timeline.addAll([
-        'Déclaration complétée',
-        'Double signature bilatérale',
-        'Scellement local SHA-256 (${hash.substring(0, 8)}...)',
-        'En attente de synchronisation réseau',
-      ]);
-      claim.documents.add('Constat amiable scellé.pdf');
-      stores.claims.addClaim(claim);
-      stores.accidents.clearDraft();
-
-      if (!mounted) return;
-      Navigator.pop(context); // ferme le dialog
-
-      await Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ConstatSealedScreen(
-            constat: localConstat,
-            draft: draft,
-            pdfBytes: pdfBytes,
-          ),
-        ),
-      );
+      sealedOnline = false;
     }
+
+    final claim = Claim(
+      id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+      type: draft.type,
+      place: draft.place,
+      date: draft.occurredAt.toString().substring(0, 16),
+      severity: draft.severity,
+      status: 'Transmis',
+      observations: draft.observations,
+    );
+    // Module 5 : la proposition de responsabilité lit les cases du déclarant (A).
+    claim.circumstances.addAll(draft.circumstancesA);
+    claim.circumstancesB.addAll(draft.circumstancesB);
+    // Module 5 : le sinistre va aux agents de l'assureur du conducteur.
+    claim.companyId = declarationCompany(stores.vehicles.vehicles);
+    // Module 5 : le constat scellé sur le serveur ; hors ligne, pas encore.
+    if (sealedOnline) claim.constatId = constat.id;
+    claim.impactZones.addAll(draft.impactZones);
+    final shortHash = constat.sha256Hash.substring(0, 8);
+    claim.timeline.addAll([
+      'Déclaration complétée',
+      '${draft.evidenceCount} preuves ajoutées',
+      'Double signature bilatérale',
+      if (sealedOnline) ...[
+        'Scellement SHA-256 ($shortHash...)',
+        'Transmis aux assureurs',
+      ] else ...[
+        'Scellement local SHA-256 ($shortHash...)',
+        'En attente de synchronisation réseau',
+      ],
+    ]);
+    stores.claims.addClaim(claim);
+    // Module 5 : photos, vidéo, note vocale et le PDF scellé (le même octet
+    // pour octet, pour que son SHA-256 corresponde) rejoignent le dossier.
+    // Lus avant d'effacer le brouillon.
+    stores.claims.attachDeclaration(
+      claim,
+      await declarationFiles(draft, buildPdf: (_) async => pdfBytes),
+    );
+    stores.accidents.clearDraft();
+
+    if (!mounted) return;
+    navigator.pop(); // ferme le dialog
+    await navigator.pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => ConstatSealedScreen(
+          constat: constat,
+          draft: draft,
+          pdfBytes: pdfBytes,
+        ),
+      ),
+    );
   }
 
   void _goBack() {
@@ -312,8 +319,12 @@ class _AccidentWizardState extends State<AccidentWizard> {
       );
       return false;
     }
-    if (step == 4 && draft.circumstancesA.isEmpty && draft.circumstancesB.isEmpty) {
-      _showError('Sélectionnez au moins une circonstance pour le véhicule A ou B.');
+    if (step == 4 &&
+        draft.circumstancesA.isEmpty &&
+        draft.circumstancesB.isEmpty) {
+      _showError(
+        'Sélectionnez au moins une circonstance pour le véhicule A ou B.',
+      );
       return false;
     }
     if (step == 5 && (!draft.sketchConfirmed || draft.impactZones.isEmpty)) {

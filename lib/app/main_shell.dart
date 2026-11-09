@@ -26,12 +26,14 @@ class _MainShellState extends State<MainShell> {
   int index = 0;
   @override
   Widget build(BuildContext context) {
-    final store = AppScope.of(context).users;
+    final stores = AppScope.of(context);
+    final store = stores.users;
     // Administrateur sur grand écran (ordinateur, tablette) : la console.
     if (store.role == UserRole.admin &&
         MediaQuery.sizeOf(context).width >= adminConsoleMinWidth) {
       return const AdminConsole();
     }
+    final unreadMessages = stores.messages.unreadCount(store.role);
     final pages = store.role == UserRole.driver
         ? const [
             DriverHome(),
@@ -84,7 +86,18 @@ class _MainShellState extends State<MainShell> {
         selectedIndex: index,
         onDestinationSelected: (v) => setState(() => index = v),
         destinations: items
-            .map((e) => NavigationDestination(icon: Icon(e.$2), label: e.$1))
+            .map(
+              (e) => NavigationDestination(
+                icon: e.$1 == t.navMessages
+                    ? Badge(
+                        isLabelVisible: unreadMessages > 0,
+                        label: Text('$unreadMessages'),
+                        child: Icon(e.$2),
+                      )
+                    : Icon(e.$2),
+                label: e.$1,
+              ),
+            )
             .toList(),
       ),
     );
