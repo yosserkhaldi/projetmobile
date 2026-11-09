@@ -531,6 +531,23 @@
   },
   "claimsProposalParkedB": "B était en stationnement.",
   "claimsNoCompany": "Compagnie non renseignée",
+  "claimsEventSealed": "Constat scellé (SHA-256 {hash})",
+  "@claimsEventSealed": {
+    "placeholders": {
+      "hash": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsEventSealedLocal": "Constat scellé sur le téléphone (SHA-256 {hash})",
+  "@claimsEventSealedLocal": {
+    "placeholders": {
+      "hash": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsEventWaitingSync": "En attente de connexion pour l’envoi",
   "claimsSummaryTitle": "Résumé du dossier",
   "claimsPriorityScore": "Priorité {score}",
   "@claimsPriorityScore": {

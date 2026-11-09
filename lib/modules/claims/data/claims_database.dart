@@ -34,7 +34,7 @@ class ClaimsDatabase extends _$ClaimsDatabase {
   );
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -47,6 +47,8 @@ class ClaimsDatabase extends _$ClaimsDatabase {
         await m.addColumn(claims, claims.circumstancesB);
         await m.addColumn(claims, claims.companyId);
       }
+      // Constat scellé du module 4.
+      if (from < 6) await m.addColumn(claims, claims.constatId);
     },
     beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
   );

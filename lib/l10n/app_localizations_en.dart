@@ -809,6 +809,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get claimsNoCompany => 'Insurer not given';
 
   @override
+  String claimsEventSealed(String hash) {
+    return 'Report sealed (SHA-256 $hash)';
+  }
+
+  @override
+  String claimsEventSealedLocal(String hash) {
+    return 'Report sealed on the phone (SHA-256 $hash)';
+  }
+
+  @override
+  String get claimsEventWaitingSync => 'Waiting for a connection to send';
+
+  @override
   String get claimsSummaryTitle => 'Claim summary';
 
   @override

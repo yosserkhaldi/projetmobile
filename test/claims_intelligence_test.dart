@@ -272,7 +272,7 @@ void main() {
       expect(request.fileName, 'a.png');
     });
 
-    test('la migration de la v2 à la v5 garde les données', () async {
+    test('la migration de la v2 à la v6 garde les données', () async {
       final v2 = ClaimsDatabase(NativeDatabase(file));
       await v2.claimsDao.insertClaim(
         claimNamed('SIN-1')
@@ -297,6 +297,8 @@ void main() {
         // v5 : cases de B et compagnie.
         'circumstances_b',
         'company_id',
+        // v6 : constat scellé.
+        'constat_id',
       ]) {
         await v2.customStatement('ALTER TABLE claims DROP COLUMN $column');
       }
@@ -310,6 +312,7 @@ void main() {
       expect(claim.expertPlace, isNull);
       expect(claim.circumstancesB, isEmpty);
       expect(claim.companyId, isNull);
+      expect(claim.constatId, isNull);
       expect(await v3.claimsDao.loadInsights(), isEmpty);
     });
   });

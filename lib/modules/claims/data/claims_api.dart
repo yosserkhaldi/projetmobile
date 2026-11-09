@@ -190,6 +190,7 @@ class ClaimsApi {
       appointmentBy: row['appointmentBy'] as String?,
       appointmentNote: row['appointmentNote'] as String?,
       companyId: row['companyId'] as String?,
+      constatId: row['constatId'] as String?,
       responsibility: row['responsibility'] as int?,
       indemnity: (row['indemnity'] as num?)?.toDouble(),
       decisionReason: row['decisionReason'] as String?,

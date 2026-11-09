@@ -62,6 +62,25 @@ void main() {
     });
   });
 
+  test('les étapes du module 4 suivent la langue', () {
+    final en = lookupAppLocalizations(const Locale('en'));
+    final ar = lookupAppLocalizations(const Locale('ar'));
+    String plain(String text) => text.replaceAll(RegExp('[\u2066-\u2069]'), '');
+    expect(
+      plain(en.claimEvent('Scellement SHA-256 (1a2b3c4d...)')),
+      'Report sealed (SHA-256 1a2b3c4d...)',
+    );
+    expect(
+      plain(en.claimEvent('Scellement local SHA-256 (1a2b3c4d...)')),
+      'Report sealed on the phone (SHA-256 1a2b3c4d...)',
+    );
+    expect(en.claimEvent('Double signature bilatérale'), en.claimsEventSigned);
+    expect(
+      ar.claimEvent('En attente de synchronisation réseau'),
+      'في انتظار الاتصال للإرسال',
+    );
+  });
+
   group('compagnie du sinistre', () {
     test('un seul assureur : le sinistre lui va', () {
       expect(

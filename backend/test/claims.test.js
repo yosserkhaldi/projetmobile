@@ -350,6 +350,38 @@ describe('API sinistres', () => {
     }
   });
 
+  test('le sinistre garde le constat scellé de son conducteur', async () => {
+    const constat = (owner) =>
+      prisma.constat.create({
+        data: {
+          userId: owner,
+          sha256Hash: `${owner}${Date.now()}`.padEnd(64, '0').slice(0, 64),
+          pdfFile: 'x.pdf',
+          driverAName: 'A',
+          driverAPlate: 'A',
+          driverAInsurer: 'A',
+          driverBName: 'B',
+          driverBPlate: 'B',
+          driverBInsurer: 'B',
+          place: 'Tunis',
+          occurredAt: new Date(),
+        },
+      });
+    const [mine, theirs] = [await constat(driver.id), await constat(other.id)];
+    try {
+      const kept = await createClaim({ constatId: mine.id });
+      const refused = await createClaim({ constatId: theirs.id });
+      const local = await createClaim({ constatId: 'local-123' });
+      const get = async (id) => (await call(driver, 'GET', `/${id}`)).body.constatId;
+      assert.equal(await get(kept), mine.id);
+      assert.equal(await get(refused), null);
+      assert.equal(await get(local), null);
+    } finally {
+      await prisma.claim.deleteMany();
+      await prisma.constat.deleteMany({ where: { id: { in: [mine.id, theirs.id] } } });
+    }
+  });
+
   test('la proposition lit les cases de A et de B', async () => {
     const id = await createClaim({
       circumstances: ['Virait à gauche'],

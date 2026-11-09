@@ -53,11 +53,20 @@ const canSee = (user, claim) => {
   );
 };
 
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Constat scellé du module 4, s'il appartient bien au conducteur. Un
+// constat scellé hors ligne (identifiant local) n'est pas encore connu.
+async function constatOf(tx, driverId, requested) {
+  if (typeof requested !== 'string' || !uuid.test(requested)) return null;
+  const constat = await tx.constat.findUnique({ where: { id: requested } });
+  return constat?.userId === driverId ? constat.id : null;
+}
+
 // Compagnie du sinistre : celle du contrat choisi dans l'application, sinon,
 // côté serveur, l'unique compagnie des véhicules du conducteur. Une compagnie
 // inconnue n'empêche pas la déclaration : le sinistre reste sans compagnie.
 async function companyOf(tx, driverId, requested) {
-  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (typeof requested === 'string' && uuid.test(requested)) {
     const company = await tx.company.findUnique({ where: { id: requested } });
     if (company) return company.id;
@@ -179,6 +188,7 @@ export const createClaim = (tx, user, input) => {
         status: Status.transmitted,
         observations: input.observations ?? '',
         companyId: await companyOf(tx, user.id, input.companyId),
+        constatId: await constatOf(tx, user.id, input.constatId),
         circumstances: input.circumstances ?? [],
         circumstancesB: input.circumstancesB ?? [],
         impactZones: input.impactZones ?? [],

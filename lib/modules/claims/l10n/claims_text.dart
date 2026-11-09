@@ -71,7 +71,8 @@ extension ClaimsText on AppLocalizations {
     final known = switch (label) {
       'Brouillon créé' => claimsEventDraftCreated,
       'Déclaration complétée' => claimsEventDeclared,
-      'Double signature' => claimsEventSigned,
+      'Double signature' || 'Double signature bilatérale' => claimsEventSigned,
+      'En attente de synchronisation réseau' => claimsEventWaitingSync,
       'PDF verrouillé' => claimsEventPdfLocked,
       'Transmis aux assureurs' => claimsEventSent,
       'Rendez-vous déplacé' => claimsEventMoved,
@@ -81,6 +82,13 @@ extension ClaimsText on AppLocalizations {
       _ => null,
     };
     if (known != null) return known;
+    // Module 4 : « Scellement SHA-256 (1a2b3c4d...) », en ligne ou local.
+    if (RegExp(r'^Scellement (local )?SHA-256 \((.+)\)$').firstMatch(label)
+        case final m?) {
+      return m[1] == null
+          ? claimsEventSealed(ltr(m[2]!))
+          : claimsEventSealedLocal(ltr(m[2]!));
+    }
     if (RegExp(r'^(\d+) preuves ajoutées$').firstMatch(label) case final m?) {
       return claimsEventEvidence(m[1]!);
     }

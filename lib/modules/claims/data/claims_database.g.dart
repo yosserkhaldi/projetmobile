@@ -123,6 +123,17 @@ class $ClaimsTable extends Claims with TableInfo<$ClaimsTable, ClaimRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _constatIdMeta = const VerificationMeta(
+    'constatId',
+  );
+  @override
+  late final GeneratedColumn<String> constatId = GeneratedColumn<String>(
+    'constat_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _agentNameMeta = const VerificationMeta(
     'agentName',
   );
@@ -269,6 +280,7 @@ class $ClaimsTable extends Claims with TableInfo<$ClaimsTable, ClaimRow> {
     impactZones,
     circumstancesB,
     companyId,
+    constatId,
     agentName,
     expertName,
     expertAppointment,
@@ -379,6 +391,12 @@ class $ClaimsTable extends Claims with TableInfo<$ClaimsTable, ClaimRow> {
       context.handle(
         _companyIdMeta,
         companyId.isAcceptableOrUnknown(data['company_id']!, _companyIdMeta),
+      );
+    }
+    if (data.containsKey('constat_id')) {
+      context.handle(
+        _constatIdMeta,
+        constatId.isAcceptableOrUnknown(data['constat_id']!, _constatIdMeta),
       );
     }
     if (data.containsKey('agent_name')) {
@@ -530,6 +548,10 @@ class $ClaimsTable extends Claims with TableInfo<$ClaimsTable, ClaimRow> {
         DriftSqlType.string,
         data['${effectivePrefix}company_id'],
       ),
+      constatId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}constat_id'],
+      ),
       agentName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}agent_name'],
@@ -601,6 +623,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
   final String impactZones;
   final String circumstancesB;
   final String? companyId;
+  final String? constatId;
   final String? agentName;
   final String? expertName;
   final DateTime? expertAppointment;
@@ -625,6 +648,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
     required this.impactZones,
     required this.circumstancesB,
     this.companyId,
+    this.constatId,
     this.agentName,
     this.expertName,
     this.expertAppointment,
@@ -653,6 +677,9 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
     map['circumstances_b'] = Variable<String>(circumstancesB);
     if (!nullToAbsent || companyId != null) {
       map['company_id'] = Variable<String>(companyId);
+    }
+    if (!nullToAbsent || constatId != null) {
+      map['constat_id'] = Variable<String>(constatId);
     }
     if (!nullToAbsent || agentName != null) {
       map['agent_name'] = Variable<String>(agentName);
@@ -708,6 +735,9 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
       companyId: companyId == null && nullToAbsent
           ? const Value.absent()
           : Value(companyId),
+      constatId: constatId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(constatId),
       agentName: agentName == null && nullToAbsent
           ? const Value.absent()
           : Value(agentName),
@@ -764,6 +794,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
       impactZones: serializer.fromJson<String>(json['impactZones']),
       circumstancesB: serializer.fromJson<String>(json['circumstancesB']),
       companyId: serializer.fromJson<String?>(json['companyId']),
+      constatId: serializer.fromJson<String?>(json['constatId']),
       agentName: serializer.fromJson<String?>(json['agentName']),
       expertName: serializer.fromJson<String?>(json['expertName']),
       expertAppointment: serializer.fromJson<DateTime?>(
@@ -795,6 +826,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
       'impactZones': serializer.toJson<String>(impactZones),
       'circumstancesB': serializer.toJson<String>(circumstancesB),
       'companyId': serializer.toJson<String?>(companyId),
+      'constatId': serializer.toJson<String?>(constatId),
       'agentName': serializer.toJson<String?>(agentName),
       'expertName': serializer.toJson<String?>(expertName),
       'expertAppointment': serializer.toJson<DateTime?>(expertAppointment),
@@ -822,6 +854,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
     String? impactZones,
     String? circumstancesB,
     Value<String?> companyId = const Value.absent(),
+    Value<String?> constatId = const Value.absent(),
     Value<String?> agentName = const Value.absent(),
     Value<String?> expertName = const Value.absent(),
     Value<DateTime?> expertAppointment = const Value.absent(),
@@ -846,6 +879,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
     impactZones: impactZones ?? this.impactZones,
     circumstancesB: circumstancesB ?? this.circumstancesB,
     companyId: companyId.present ? companyId.value : this.companyId,
+    constatId: constatId.present ? constatId.value : this.constatId,
     agentName: agentName.present ? agentName.value : this.agentName,
     expertName: expertName.present ? expertName.value : this.expertName,
     expertAppointment: expertAppointment.present
@@ -892,6 +926,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
           ? data.circumstancesB.value
           : this.circumstancesB,
       companyId: data.companyId.present ? data.companyId.value : this.companyId,
+      constatId: data.constatId.present ? data.constatId.value : this.constatId,
       agentName: data.agentName.present ? data.agentName.value : this.agentName,
       expertName: data.expertName.present
           ? data.expertName.value
@@ -941,6 +976,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
           ..write('impactZones: $impactZones, ')
           ..write('circumstancesB: $circumstancesB, ')
           ..write('companyId: $companyId, ')
+          ..write('constatId: $constatId, ')
           ..write('agentName: $agentName, ')
           ..write('expertName: $expertName, ')
           ..write('expertAppointment: $expertAppointment, ')
@@ -970,6 +1006,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
     impactZones,
     circumstancesB,
     companyId,
+    constatId,
     agentName,
     expertName,
     expertAppointment,
@@ -998,6 +1035,7 @@ class ClaimRow extends DataClass implements Insertable<ClaimRow> {
           other.impactZones == this.impactZones &&
           other.circumstancesB == this.circumstancesB &&
           other.companyId == this.companyId &&
+          other.constatId == this.constatId &&
           other.agentName == this.agentName &&
           other.expertName == this.expertName &&
           other.expertAppointment == this.expertAppointment &&
@@ -1024,6 +1062,7 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
   final Value<String> impactZones;
   final Value<String> circumstancesB;
   final Value<String?> companyId;
+  final Value<String?> constatId;
   final Value<String?> agentName;
   final Value<String?> expertName;
   final Value<DateTime?> expertAppointment;
@@ -1049,6 +1088,7 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
     this.impactZones = const Value.absent(),
     this.circumstancesB = const Value.absent(),
     this.companyId = const Value.absent(),
+    this.constatId = const Value.absent(),
     this.agentName = const Value.absent(),
     this.expertName = const Value.absent(),
     this.expertAppointment = const Value.absent(),
@@ -1075,6 +1115,7 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
     this.impactZones = const Value.absent(),
     this.circumstancesB = const Value.absent(),
     this.companyId = const Value.absent(),
+    this.constatId = const Value.absent(),
     this.agentName = const Value.absent(),
     this.expertName = const Value.absent(),
     this.expertAppointment = const Value.absent(),
@@ -1106,6 +1147,7 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
     Expression<String>? impactZones,
     Expression<String>? circumstancesB,
     Expression<String>? companyId,
+    Expression<String>? constatId,
     Expression<String>? agentName,
     Expression<String>? expertName,
     Expression<DateTime>? expertAppointment,
@@ -1132,6 +1174,7 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
       if (impactZones != null) 'impact_zones': impactZones,
       if (circumstancesB != null) 'circumstances_b': circumstancesB,
       if (companyId != null) 'company_id': companyId,
+      if (constatId != null) 'constat_id': constatId,
       if (agentName != null) 'agent_name': agentName,
       if (expertName != null) 'expert_name': expertName,
       if (expertAppointment != null) 'expert_appointment': expertAppointment,
@@ -1160,6 +1203,7 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
     Value<String>? impactZones,
     Value<String>? circumstancesB,
     Value<String?>? companyId,
+    Value<String?>? constatId,
     Value<String?>? agentName,
     Value<String?>? expertName,
     Value<DateTime?>? expertAppointment,
@@ -1186,6 +1230,7 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
       impactZones: impactZones ?? this.impactZones,
       circumstancesB: circumstancesB ?? this.circumstancesB,
       companyId: companyId ?? this.companyId,
+      constatId: constatId ?? this.constatId,
       agentName: agentName ?? this.agentName,
       expertName: expertName ?? this.expertName,
       expertAppointment: expertAppointment ?? this.expertAppointment,
@@ -1237,6 +1282,9 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
     }
     if (companyId.present) {
       map['company_id'] = Variable<String>(companyId.value);
+    }
+    if (constatId.present) {
+      map['constat_id'] = Variable<String>(constatId.value);
     }
     if (agentName.present) {
       map['agent_name'] = Variable<String>(agentName.value);
@@ -1294,6 +1342,7 @@ class ClaimsCompanion extends UpdateCompanion<ClaimRow> {
           ..write('impactZones: $impactZones, ')
           ..write('circumstancesB: $circumstancesB, ')
           ..write('companyId: $companyId, ')
+          ..write('constatId: $constatId, ')
           ..write('agentName: $agentName, ')
           ..write('expertName: $expertName, ')
           ..write('expertAppointment: $expertAppointment, ')
@@ -4591,6 +4640,7 @@ typedef $$ClaimsTableCreateCompanionBuilder =
       Value<String> impactZones,
       Value<String> circumstancesB,
       Value<String?> companyId,
+      Value<String?> constatId,
       Value<String?> agentName,
       Value<String?> expertName,
       Value<DateTime?> expertAppointment,
@@ -4618,6 +4668,7 @@ typedef $$ClaimsTableUpdateCompanionBuilder =
       Value<String> impactZones,
       Value<String> circumstancesB,
       Value<String?> companyId,
+      Value<String?> constatId,
       Value<String?> agentName,
       Value<String?> expertName,
       Value<DateTime?> expertAppointment,
@@ -4760,6 +4811,11 @@ class $$ClaimsTableFilterComposer
 
   ColumnFilters<String> get companyId => $composableBuilder(
     column: $table.companyId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get constatId => $composableBuilder(
+    column: $table.constatId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4963,6 +5019,11 @@ class $$ClaimsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get constatId => $composableBuilder(
+    column: $table.constatId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get agentName => $composableBuilder(
     column: $table.agentName,
     builder: (column) => ColumnOrderings(column),
@@ -5073,6 +5134,9 @@ class $$ClaimsTableAnnotationComposer
 
   GeneratedColumn<String> get companyId =>
       $composableBuilder(column: $table.companyId, builder: (column) => column);
+
+  GeneratedColumn<String> get constatId =>
+      $composableBuilder(column: $table.constatId, builder: (column) => column);
 
   GeneratedColumn<String> get agentName =>
       $composableBuilder(column: $table.agentName, builder: (column) => column);
@@ -5250,6 +5314,7 @@ class $$ClaimsTableTableManager
                 Value<String> impactZones = const Value.absent(),
                 Value<String> circumstancesB = const Value.absent(),
                 Value<String?> companyId = const Value.absent(),
+                Value<String?> constatId = const Value.absent(),
                 Value<String?> agentName = const Value.absent(),
                 Value<String?> expertName = const Value.absent(),
                 Value<DateTime?> expertAppointment = const Value.absent(),
@@ -5275,6 +5340,7 @@ class $$ClaimsTableTableManager
                 impactZones: impactZones,
                 circumstancesB: circumstancesB,
                 companyId: companyId,
+                constatId: constatId,
                 agentName: agentName,
                 expertName: expertName,
                 expertAppointment: expertAppointment,
@@ -5302,6 +5368,7 @@ class $$ClaimsTableTableManager
                 Value<String> impactZones = const Value.absent(),
                 Value<String> circumstancesB = const Value.absent(),
                 Value<String?> companyId = const Value.absent(),
+                Value<String?> constatId = const Value.absent(),
                 Value<String?> agentName = const Value.absent(),
                 Value<String?> expertName = const Value.absent(),
                 Value<DateTime?> expertAppointment = const Value.absent(),
@@ -5327,6 +5394,7 @@ class $$ClaimsTableTableManager
                 impactZones: impactZones,
                 circumstancesB: circumstancesB,
                 companyId: companyId,
+                constatId: constatId,
                 agentName: agentName,
                 expertName: expertName,
                 expertAppointment: expertAppointment,

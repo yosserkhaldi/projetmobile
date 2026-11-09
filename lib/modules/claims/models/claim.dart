@@ -67,6 +67,7 @@ class Claim {
     this.appointmentBy,
     this.appointmentNote,
     this.companyId,
+    this.constatId,
     this.responsibility,
     this.indemnity,
     this.decisionReason,
@@ -87,6 +88,10 @@ class Claim {
   /// Compagnie d'assurance du sinistre (module 1). Absente quand la
   /// déclaration ne dit pas quel véhicule était concerné.
   String? companyId;
+
+  /// Constat scellé du module 4 (SHA-256 vérifiable sur le serveur). Absent
+  /// quand le constat a été scellé hors ligne.
+  String? constatId;
 
   bool get appointmentConfirmed => appointmentState == 'accepted';
 
@@ -147,6 +152,7 @@ class Claim {
     appointmentBy = other.appointmentBy;
     appointmentNote = other.appointmentNote;
     companyId = other.companyId;
+    constatId = other.constatId;
     responsibility = other.responsibility;
     indemnity = other.indemnity;
     decisionReason = other.decisionReason;
@@ -193,6 +199,7 @@ class Claim {
           appointmentBy: appointmentBy,
           appointmentNote: appointmentNote,
           companyId: companyId,
+          constatId: constatId,
           responsibility: responsibility,
           indemnity: indemnity,
           decisionReason: decisionReason,

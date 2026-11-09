@@ -155,6 +155,7 @@ class ClaimStore extends ChangeNotifier with PersistedStore {
         'circumstances': snapshot.circumstances,
         'circumstancesB': snapshot.circumstancesB,
         'companyId': snapshot.companyId,
+        'constatId': snapshot.constatId,
         'impactZones': snapshot.impactZones,
         'timeline': snapshot.timeline,
       },

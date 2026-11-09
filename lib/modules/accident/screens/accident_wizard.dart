@@ -247,6 +247,8 @@ class _AccidentWizardState extends State<AccidentWizard> {
     claim.circumstancesB.addAll(draft.circumstancesB);
     // Module 5 : le sinistre va aux agents de l'assureur du conducteur.
     claim.companyId = declarationCompany(stores.vehicles.vehicles);
+    // Module 5 : le constat scellé sur le serveur ; hors ligne, pas encore.
+    if (sealedOnline) claim.constatId = constat.id;
     claim.impactZones.addAll(draft.impactZones);
     final shortHash = constat.sha256Hash.substring(0, 8);
     claim.timeline.addAll([

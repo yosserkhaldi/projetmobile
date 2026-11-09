@@ -810,6 +810,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get claimsNoCompany => 'Compagnie non renseignée';
 
   @override
+  String claimsEventSealed(String hash) {
+    return 'Constat scellé (SHA-256 $hash)';
+  }
+
+  @override
+  String claimsEventSealedLocal(String hash) {
+    return 'Constat scellé sur le téléphone (SHA-256 $hash)';
+  }
+
+  @override
+  String get claimsEventWaitingSync => 'En attente de connexion pour l’envoi';
+
+  @override
   String get claimsSummaryTitle => 'Résumé du dossier';
 
   @override

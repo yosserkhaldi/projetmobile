@@ -19,6 +19,7 @@ class Claims extends Table {
   TextColumn get impactZones => text().withDefault(const Constant('[]'))();
   TextColumn get circumstancesB => text().withDefault(const Constant('[]'))();
   TextColumn get companyId => text().nullable()();
+  TextColumn get constatId => text().nullable()();
 
   TextColumn get agentName => text().nullable()();
   TextColumn get expertName => text().nullable()();

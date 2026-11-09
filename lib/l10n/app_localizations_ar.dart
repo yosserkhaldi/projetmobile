@@ -809,6 +809,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get claimsNoCompany => 'شركة التأمين غير محدّدة';
 
   @override
+  String claimsEventSealed(String hash) {
+    return 'تم ختم المحضر (SHA-256 $hash)';
+  }
+
+  @override
+  String claimsEventSealedLocal(String hash) {
+    return 'تم ختم المحضر على الهاتف (SHA-256 $hash)';
+  }
+
+  @override
+  String get claimsEventWaitingSync => 'في انتظار الاتصال للإرسال';
+
+  @override
   String get claimsSummaryTitle => 'ملخص الملف';
 
   @override

@@ -1522,6 +1522,24 @@ abstract class AppLocalizations {
   /// **'Compagnie non renseignée'**
   String get claimsNoCompany;
 
+  /// No description provided for @claimsEventSealed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat scellé (SHA-256 {hash})'**
+  String claimsEventSealed(String hash);
+
+  /// No description provided for @claimsEventSealedLocal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat scellé sur le téléphone (SHA-256 {hash})'**
+  String claimsEventSealedLocal(String hash);
+
+  /// No description provided for @claimsEventWaitingSync.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente de connexion pour l’envoi'**
+  String get claimsEventWaitingSync;
+
   /// No description provided for @claimsSummaryTitle.
   ///
   /// In fr, this message translates to:
