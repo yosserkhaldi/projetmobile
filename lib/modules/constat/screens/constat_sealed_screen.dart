@@ -330,9 +330,11 @@ class ConstatSealedScreen extends StatelessWidget {
         onLayout: (_) async => bytes,
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur aperçu PDF : $e')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur aperçu PDF : $e')),
+        );
+      }
     }
   }
 
@@ -344,9 +346,11 @@ class ConstatSealedScreen extends StatelessWidget {
         filename: 'constat-${constat.sha256Hash.substring(0, 8)}.pdf',
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur partage PDF : $e')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur partage PDF : $e')),
+        );
+      }
     }
   }
 }

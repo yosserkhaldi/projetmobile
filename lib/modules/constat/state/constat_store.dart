@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
