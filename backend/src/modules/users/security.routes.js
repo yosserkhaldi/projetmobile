@@ -458,8 +458,8 @@ function documentChecks(user, number, extracted, documentType) {
 
 /**
  * Nom du compte sur la pièce. Passeport : nom et prénom dans la MRZ. CIN :
- * nom et prénom lus en arabe, comparés par leurs consonnes (الجلاصي ≈
- * Jlassi). null si rien n'a pu être lu.
+ * nom et prénom lus en arabe, comparés par leurs consonnes (الطرابلسي ≈
+ * Trabelsi). null si rien n'a pu être lu.
  */
 function nameCheck(user, extracted) {
   if (extracted?.nameLine) {

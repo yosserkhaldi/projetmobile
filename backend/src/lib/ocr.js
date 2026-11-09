@@ -578,8 +578,8 @@ export function nameInMrz(nameLine, name) {
 // ---------------------------------------------------------------------------
 // Nom en arabe (CIN) comparé au nom du compte, en lettres latines.
 //
-// Les voyelles s'écrivent de mille façons (Jlassi, Jelassi, Djellassi) : on
-// compare le « squelette » des consonnes. الجلاصي → JLS, Jlassi → JLS.
+// Les voyelles s'écrivent de mille façons (Trabelsi, Trablsi, Tarabelsi) : on
+// compare le « squelette » des consonnes. الطرابلسي → TRBLS, Trabelsi → TRBLS.
 
 const ARABIC_CONSONANTS = {
   ب: 'B', ت: 'T', ث: 'T', ج: 'J', ح: 'H', خ: 'K', د: 'D', ذ: 'D', ر: 'R',
