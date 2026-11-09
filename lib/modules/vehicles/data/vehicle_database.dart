@@ -32,14 +32,11 @@ class Vehicles extends Table {
   TextColumn get technicalExpiry => text().nullable()();
   TextColumn get color => text().nullable()();
   IntColumn get mileage => integer().nullable()();
-  TextColumn get type =>
-      text().withDefault(const Constant('car'))();
-  TextColumn get fuel =>
-      text().withDefault(const Constant('petrol'))();
+  TextColumn get type => text().withDefault(const Constant('car'))();
+  TextColumn get fuel => text().withDefault(const Constant('petrol'))();
   TextColumn get photoPath => text().nullable()();
   IntColumn get claimCount => integer().withDefault(const Constant(0))();
-  BoolColumn get archived =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get archived => boolean().withDefault(const Constant(false))();
   TextColumn get createdAt => text()();
 
   @override

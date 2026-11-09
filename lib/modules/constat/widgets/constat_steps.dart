@@ -5,7 +5,9 @@ import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart'
 import 'package:mon_constat_digital/modules/accident/services/accident_media_service.dart';
 import 'package:mon_constat_digital/modules/accident/services/driving_license_ocr_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_review.dart';
+import 'package:mon_constat_digital/modules/constat/screens/guest_qr_screen.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/signature_box.dart';
+import 'package:mon_constat_digital/modules/users/widgets/company_picker.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
 
 class GuestDriverStep extends StatefulWidget {
@@ -140,12 +142,17 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
         ),
       ),
       const SizedBox(height: 8),
-      _DriverField(
-        initialValue: widget.draft.driverBInsurer,
-        label: 'Compagnie d’assurance *',
-        icon: Icons.shield_outlined,
-        onChanged: (value) {
-          widget.draft.driverBInsurer = value;
+      // Selection via CompanyPicker (module 1 - Iheb) pour obtenir un UUID
+      // companyBId transmis au backend : permet aux agents de la compagnie B
+      // de recevoir le sinistre automatiquement.
+      CompanyPicker(
+        companyId: widget.draft.driverBCompanyId,
+        withAgency: false,
+        required: false,
+        onChanged: (company, _) {
+          widget.draft.driverBCompanyId = company?.id;
+          // On garde aussi le nom lisible dans driverBInsurer pour l'affichage
+          widget.draft.driverBInsurer = company?.name ?? '';
           widget.onChanged();
         },
       ),
@@ -153,15 +160,14 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
-          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Le partage sécurisé par QR code sera ajouté ultérieurement.',
-              ),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => GuestQrScreen(draft: widget.draft),
             ),
           ),
-          icon: const Icon(Icons.qr_code_scanner),
-          label: const Text('Remplir ensemble par QR code'),
+          icon: const Icon(Icons.qr_code_2),
+          label: const Text('Partager par QR code avec le conducteur B'),
         ),
       ),
     ],

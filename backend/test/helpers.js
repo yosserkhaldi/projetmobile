@@ -31,7 +31,7 @@ export function migrate() {
 
 export const resetDatabase = () =>
   prisma.$executeRawUnsafe(
-    'TRUNCATE "User", "Company", "Agency", "RefreshToken", "VerificationCode", "DeviceKey", "Session", "LoginEvent" CASCADE',
+    'TRUNCATE "User", "Company", "Agency", "RefreshToken", "VerificationCode", "DeviceKey", "Session", "LoginEvent", "Accident", "Vehicle", "Constat" CASCADE',
   );
 
 /** Démarre l'API sur un port libre et capture les SMS et e-mails envoyés. */
@@ -67,7 +67,7 @@ export async function startApi(t) {
       body: form ?? (body === undefined ? undefined : JSON.stringify(body)),
     });
     const type = response.headers.get('content-type') ?? '';
-    if (type.startsWith('image/')) {
+    if (type.startsWith('image/') || type === 'application/pdf') {
       return {
         status: response.status,
         type,

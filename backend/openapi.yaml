@@ -33,6 +33,8 @@ tags:
     description: Module 1 — vérification de la CIN par un administrateur
   - name: Données personnelles
     description: Module 1 — loi n° 2004-63 (export, suppression du compte)
+  - name: Constats
+    description: Module 4 — constat amiable numérique scellé, empreinte SHA-256, PDF
 
 paths:
   /health:
@@ -846,6 +848,139 @@ paths:
         '204': { description: Supprimée }
         '404': { $ref: '#/components/responses/Error' }
 
+  /constats:
+    get:
+      tags: [Constats]
+      summary: Liste des constats signés
+      description: |
+        - Conducteur : liste ses constats signés
+        - Agent : liste les constats impliquant sa compagnie (A ou B)
+        - Administrateur : liste tous les constats
+      responses:
+        '200':
+          description: Liste des constats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  constats:
+                    type: array
+                    items: { $ref: '#/components/schemas/Constat' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+    post:
+      tags: [Constats]
+      summary: Sceller un constat amiable après double signature
+      description: Reçoit les données du constat et le fichier PDF signé. Vérifie l'intégrité SHA-256 et transmet aux assureurs.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [pdf, data]
+              properties:
+                pdf:
+                  type: string
+                  format: binary
+                  description: Document PDF généré et signé
+                data:
+                  type: string
+                  description: Objet JSON contenant les données du constat (ConstatInput)
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConstatInput'
+      responses:
+        '201':
+          description: Constat scellé et enregistré
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  constat: { $ref: '#/components/schemas/Constat' }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /constats/{id}:
+    get:
+      tags: [Constats]
+      summary: Détail d'un constat scellé
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Détail du constat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  constat: { $ref: '#/components/schemas/Constat' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /constats/{id}/pdf:
+    get:
+      tags: [Constats]
+      summary: Télécharger l'exemplaire officiel scellé du PDF
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Document PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /constats/verify/{hash}:
+    get:
+      tags: [Constats]
+      summary: Vérification publique d'intégrité par empreinte SHA-256
+      security: []
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          description: Empreinte SHA-256 (64 caractères hexadécimaux)
+          schema: { type: string }
+      responses:
+        '200':
+          description: Constat authentique
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid: { type: boolean, const: true }
+                  constat:
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      sha256Hash: { type: string }
+                      place: { type: string }
+                      occurredAt: { type: string, format: date-time }
+                      driverAName: { type: string }
+                      driverAPlate: { type: string }
+                      driverAInsurer: { type: string }
+                      driverBName: { type: string }
+                      driverBPlate: { type: string }
+                      driverBInsurer: { type: string }
+                      createdAt: { type: string, format: date-time }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
 security:
   - bearer: []
 
@@ -1104,3 +1239,70 @@ components:
                 properties:
                   field: { type: string }
                   message: { type: string }
+    Constat:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        accidentId: { type: [string, 'null'], format: uuid }
+        userId: { type: string, format: uuid }
+        status: { type: string, enum: [SIGNED, TRANSMITTED, ARCHIVED] }
+        sha256Hash: { type: string }
+        pdfUrl: { type: string }
+        driverAName: { type: string }
+        driverAPlate: { type: string }
+        driverAInsurer: { type: string }
+        driverAPolicy: { type: [string, 'null'] }
+        companyAId: { type: [string, 'null'], format: uuid }
+        driverBName: { type: string }
+        driverBEmail: { type: [string, 'null'], format: email }
+        driverBPhone: { type: [string, 'null'] }
+        driverBPlate: { type: string }
+        driverBInsurer: { type: string }
+        driverBPolicy: { type: [string, 'null'] }
+        companyBId: { type: [string, 'null'], format: uuid }
+        place: { type: string }
+        occurredAt: { type: string, format: date-time }
+        circumstancesA: { type: array, items: { type: string } }
+        circumstancesB: { type: array, items: { type: string } }
+        impactZones: { type: array, items: { type: string } }
+        observations: { type: [string, 'null'] }
+        driverASignedAt: { type: string, format: date-time }
+        driverBSignedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ConstatInput:
+      type: object
+      required:
+        - sha256Hash
+        - driverAName
+        - driverAPlate
+        - driverAInsurer
+        - driverBName
+        - driverBPlate
+        - driverBInsurer
+        - place
+        - occurredAt
+      properties:
+        accidentId: { type: string, format: uuid }
+        sha256Hash: { type: string }
+        pdfBase64: { type: string }
+        driverAName: { type: string }
+        driverAPlate: { type: string }
+        driverAInsurer: { type: string }
+        driverAPolicy: { type: string }
+        companyAId: { type: string, format: uuid }
+        driverBName: { type: string }
+        driverBEmail: { type: string, format: email }
+        driverBPhone: { type: string }
+        driverBPlate: { type: string }
+        driverBInsurer: { type: string }
+        driverBPolicy: { type: string }
+        companyBId: { type: string, format: uuid }
+        place: { type: string }
+        occurredAt: { type: string, format: date-time }
+        circumstancesA: { type: array, items: { type: string } }
+        circumstancesB: { type: array, items: { type: string } }
+        impactZones: { type: array, items: { type: string } }
+        observations: { type: string }
+        driverASignedAt: { type: string, format: date-time }
+        driverBSignedAt: { type: string, format: date-time }

@@ -4,8 +4,10 @@ import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/network/device_identity.dart';
 import 'package:mon_constat_digital/core/network/token_storage.dart';
 import 'package:mon_constat_digital/modules/claims/state/claim_store.dart';
+import 'package:mon_constat_digital/modules/claims/state/claims_sync.dart';
 import 'package:mon_constat_digital/modules/accident/state/accident_store.dart';
 import 'package:mon_constat_digital/modules/claims/state/message_store.dart';
+import 'package:mon_constat_digital/modules/constat/state/constat_store.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
 import 'package:mon_constat_digital/modules/users/data/users_database.dart';
 import 'package:mon_constat_digital/modules/users/state/admin_store.dart';
@@ -36,12 +38,14 @@ class AppStores {
     companies = CompanyStore(this.api, localDb);
     admin = AdminStore(this.api, companies);
     vehicles = VehicleStore(vehicleDb ?? VehicleDatabase());
+    constats = ConstatStore(api: this.api);
     listenable = Listenable.merge([
       accidents,
       users,
       companies,
       admin,
       vehicles,
+      constats,
       claims,
       messages,
     ]);
@@ -58,8 +62,21 @@ class AppStores {
   late final CompanyStore companies;
   final accidents = AccidentStore();
   late final VehicleStore vehicles;
+  late final ConstatStore constats;
   final claims = ClaimStore();
   final messages = MessageStore();
+
+  /// Absent dans les tests d'écran : seule l'application le démarre.
+  ClaimsSync? claimsSync;
+
+  void startClaimsSync() {
+    claimsSync ??= ClaimsSync.start(
+      client: api,
+      claims: claims,
+      messages: messages,
+      users: users,
+    );
+  }
 
   late final Listenable listenable;
 }

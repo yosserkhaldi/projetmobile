@@ -627,6 +627,7 @@ class UserStore extends ChangeNotifier {
     currentUser = user;
     status = AuthStatus.signedIn;
     notifyListeners();
+    _storage.write(_userKey, jsonEncode(user.toJson()));
     _localDb?.saveProfile(user).catchError((Object e) {
       debugPrint('Profil hors ligne non enregistré : $e');
     });

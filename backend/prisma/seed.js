@@ -2,6 +2,7 @@
 import bcrypt from 'bcryptjs';
 
 import { prisma } from '../src/lib/prisma.js';
+import { seedClaims } from './claims-demo.js';
 
 if (process.env.NODE_ENV === 'production') {
   throw new Error('Le seed de démonstration est interdit en production.');
@@ -65,6 +66,9 @@ for (const user of USERS) {
     create: { ...user, passwordHash, phoneVerifiedAt: new Date() },
   });
 }
+
+// Module 5 : dossiers en cours de Sami et dossiers terminés (prisma/claims-demo.js).
+await seedClaims();
 
 console.log(`Seed terminé. Comptes de démonstration, mot de passe : ${PASSWORD}`);
 await prisma.$disconnect();

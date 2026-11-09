@@ -17,8 +17,9 @@ services:
 
   api:
     build: ./backend
-    # SMTP_* (e-mails) et autres réglages locaux. Facultatif : sans ce fichier,
-    # les e-mails s'affichent dans les logs.
+    # SMTP_* (e-mails), clés d'IA et autres réglages locaux. Facultatif : sans
+    # ce fichier, les e-mails s'affichent dans les logs et le module 5 répond
+    # avec ses règles.
     env_file:
       - path: ./backend/.env
         required: false

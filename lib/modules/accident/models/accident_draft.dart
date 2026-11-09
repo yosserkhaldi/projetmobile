@@ -33,6 +33,9 @@ class AccidentDraft {
   String driverBPermitExpiry = '';
   String driverBPlate = '';
   String driverBInsurer = '';
+  /// UUID de la compagnie d'assurance du conducteur B (via CompanyPicker).
+  /// Nul si non sélectionné (mode hors-ligne ou QR guest non complété).
+  String? driverBCompanyId;
   String driverBPolicy = '';
   final Set<String> circumstancesA = <String>{};
   final Set<String> circumstancesB = <String>{};
@@ -79,6 +82,7 @@ class AccidentDraft {
     'driver_b_permit_expiry': driverBPermitExpiry,
     'driver_b_plate': driverBPlate,
     'driver_b_insurer': driverBInsurer,
+    'driver_b_company_id': driverBCompanyId,
     'driver_b_policy': driverBPolicy,
     'circumstances_json': jsonEncode({
       'A': circumstancesA.toList(),
@@ -122,6 +126,7 @@ class AccidentDraft {
       ..driverBPermitExpiry = row['driver_b_permit_expiry'] as String? ?? ''
       ..driverBPlate = row['driver_b_plate'] as String? ?? ''
       ..driverBInsurer = row['driver_b_insurer'] as String? ?? ''
+      ..driverBCompanyId = row['driver_b_company_id'] as String?
       ..driverBPolicy = row['driver_b_policy'] as String? ?? ''
       ..observations = row['observations'] as String? ?? ''
       ..sketchConfirmed = row['sketch_confirmed'] == 1
