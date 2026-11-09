@@ -56,7 +56,7 @@ export async function startApi(t) {
       body: form ?? (body === undefined ? undefined : JSON.stringify(body)),
     });
     const type = response.headers.get('content-type') ?? '';
-    if (type.startsWith('image/')) {
+    if (type.startsWith('image/') || type === 'application/pdf') {
       return {
         status: response.status,
         type,
