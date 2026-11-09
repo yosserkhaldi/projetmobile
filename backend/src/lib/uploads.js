@@ -59,3 +59,28 @@ export async function deleteImage(name, folder) {
 }
 
 export const imagePath = (name, folder) => join(uploadDir(), folder, name);
+
+/** Garde le PDF en mémoire, un seul fichier dans le champ `field`. */
+export const singlePdf = (field) =>
+  multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 15 * 1024 * 1024, files: 1 },
+  }).single(field);
+
+/** Enregistre un fichier PDF et renvoie son nom. */
+export async function savePdf(file, folder = 'constats') {
+  if (!file) {
+    throw new HttpError(400, 'FILE_REQUIRED', 'Aucun fichier PDF reçu.');
+  }
+  if (file.buffer.length < 4 || file.buffer.subarray(0, 4).toString('ascii') !== '%PDF') {
+    throw new HttpError(415, 'UNSUPPORTED_FILE', 'Format accepté : PDF uniquement.');
+  }
+  const dir = join(uploadDir(), folder);
+  await mkdir(dir, { recursive: true });
+  const name = `${randomUUID()}.pdf`;
+  await writeFile(join(dir, name), file.buffer);
+  return name;
+}
+
+export const filePath = (name, folder = 'constats') => join(uploadDir(), folder, name);
+

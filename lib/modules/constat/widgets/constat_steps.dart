@@ -5,6 +5,7 @@ import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart'
 import 'package:mon_constat_digital/modules/accident/services/accident_media_service.dart';
 import 'package:mon_constat_digital/modules/accident/services/driving_license_ocr_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_review.dart';
+import 'package:mon_constat_digital/modules/constat/screens/guest_qr_screen.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/signature_box.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
 
@@ -153,15 +154,14 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
-          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Le partage sécurisé par QR code sera ajouté ultérieurement.',
-              ),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => GuestQrScreen(draft: widget.draft),
             ),
           ),
-          icon: const Icon(Icons.qr_code_scanner),
-          label: const Text('Remplir ensemble par QR code'),
+          icon: const Icon(Icons.qr_code_2),
+          label: const Text('Partager par QR code avec le conducteur B'),
         ),
       ),
     ],

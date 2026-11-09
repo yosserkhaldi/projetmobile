@@ -85,6 +85,7 @@ export function passwordResetEmail({ firstName, language, code }) {
   return { subject: t.subject, text, html };
 }
 
+
 const LOGIN_TEXTS = {
   FR: {
     subject: 'Nouvelle connexion à votre compte',
@@ -149,5 +150,90 @@ export function newLoginEmail({ firstName, language, deviceName, when }) {
   </table>
 </body>
 </html>`;
+  return { subject: t.subject, text, html };
+}
+
+
+const CONSTAT_TEXTS = {
+  FR: {
+    subject: 'Votre constat amiable numérique scellé',
+    title: 'Constat amiable scellé',
+    body: (place, date) =>
+      `Le constat amiable pour l'accident survenu à ${place} le ${date} a été signé par les deux parties et scellé avec succès.`,
+    hashLabel: 'Empreinte de sécurité (SHA-256) :',
+    attachedInfo:
+      'L’exemplaire officiel du constat au format PDF est joint à cet e-mail. Ce document est infalsifiable et a été transmis à votre assureur.',
+    footer: 'Mon Constat Digital, le constat amiable sans papier.',
+  },
+  EN: {
+    subject: 'Your sealed digital accident report',
+    title: 'Sealed accident report',
+    body: (place, date) =>
+      `The accident report for the incident at ${place} on ${date} has been signed by both parties and successfully sealed.`,
+    hashLabel: 'Security fingerprint (SHA-256):',
+    attachedInfo:
+      'The official PDF accident report is attached to this email. It is tamper-proof and has been transmitted to your insurer.',
+    footer: 'Mon Constat Digital, paper-free accident reports.',
+  },
+  AR: {
+    subject: 'المعاينة الودية الرقمية المعتمدة والمختومة',
+    title: 'معاينة ودية معتمدة',
+    body: (place, date) =>
+      `تم إمضاء المعاينة الودية للحادث في ${place} بتاريخ ${date} من الطرفين وختمها بنجاح.`,
+    hashLabel: 'البصمة الرقمية للأمان (SHA-256):',
+    attachedInfo:
+      'النسخة الرسمية من المعاينة الودية بصيغة PDF مرفقة مع هذه الرسالة. هذه الوثيقة غير قابلة للتعديل وتم إرسالها لشركة التأمين.',
+    footer: 'Mon Constat Digital، المعاينة الودية بدون ورق.',
+  },
+};
+
+export function constatSealedEmail({ name, place, date, sha256Hash, language = 'FR' }) {
+  const t = CONSTAT_TEXTS[language] ?? CONSTAT_TEXTS.FR;
+  const hello = (TEXTS[language] ?? TEXTS.FR).hello;
+  const dir = language === 'AR' ? 'rtl' : 'ltr';
+
+  const text = [
+    hello(name),
+    '',
+    t.body(place, date),
+    '',
+    `${t.hashLabel} ${sha256Hash}`,
+    '',
+    t.attachedInfo,
+    '',
+    t.footer,
+  ].join('\n');
+
+  const html = `<!doctype html>
+<html lang="${language.toLowerCase()}" dir="${dir}">
+<body style="margin:0;padding:0;background:#F2F4F7;font-family:Arial,Helvetica,sans-serif;color:#0B1626">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F2F4F7;padding:24px 12px">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border:1px solid #E4E8EE;border-radius:20px;overflow:hidden">
+        <tr><td style="background:#0B1626;padding:22px 24px">
+          <span style="display:inline-block;background:#F5A524;color:#0B1626;font-weight:800;border-radius:10px;padding:6px 10px;font-size:14px">MC</span>
+          <span style="color:#FFFFFF;font-weight:800;font-size:18px;padding:0 10px">Mon Constat</span>
+        </td></tr>
+        <tr><td dir="${dir}" style="padding:28px 24px 8px;font-size:15px;line-height:1.5">
+          <h2 style="margin:0 0 14px;color:#1537A8;font-size:20px">${t.title}</h2>
+          <p style="margin:0 0 12px">${hello(escape(name))}</p>
+          <p style="margin:0 0 18px">${t.body(`<b>${escape(place)}</b>`, `<b>${escape(date)}</b>`)}</p>
+        </td></tr>
+        <tr><td align="center" style="padding:0 24px">
+          <div style="background:#F2F4F7;border:1px solid #DCE1E8;border-radius:12px;padding:12px;text-align:left">
+            <div style="font-size:11px;color:#4A5568;font-weight:700;margin-bottom:4px">${t.hashLabel}</div>
+            <div dir="ltr" style="font-family:'Courier New',monospace;font-size:12px;word-break:break-all;color:#0B1626;font-weight:700">${sha256Hash}</div>
+          </div>
+        </td></tr>
+        <tr><td dir="${dir}" style="padding:18px 24px 26px;font-size:13px;line-height:1.5;color:#4A5568">
+          <p style="margin:0">${t.attachedInfo}</p>
+        </td></tr>
+        <tr><td dir="${dir}" style="border-top:1px solid #EEF1F5;padding:14px 24px;font-size:12px;color:#4A5568">${t.footer}</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
   return { subject: t.subject, text, html };
 }

@@ -98,11 +98,11 @@ Chaque module Flutter suit la même structure : `models/`, `state/`, `screens/`,
 
 | Module | Périmètre | Flutter | Backend | Dépend de | Responsable |
 |---|---|---|---|---|---|
-| 1 | Utilisateurs, rôles, administration | `modules/users` | `users` | Aucun | À définir |
-| 2 | Véhicules et contrats | `modules/vehicles` | `vehicles` | 1 | À définir |
-| 3 | Déclaration d'accident | `modules/accident` | `accidents` | 1, 2 | À définir |
-| 4 | Constat numérique | `modules/constat` | `constats` | 3 | À définir |
-| 5 | Sinistres, suivi, communication | `modules/claims` | `claims` | 4 | À définir |
+| 1 | Utilisateurs, rôles, administration | `modules/users` | `users` | Aucun | Iheb Jlassi |
+| 2 | Véhicules et contrats | `modules/vehicles` | `vehicles` | 1 | Emna Homrani |
+| 3 | Déclaration d'accident | `modules/accident` | `accidents` | 1, 2 | Yosser Khaldi |
+| 4 | Constat numérique | `modules/constat` | `constats` | 3 | Abdelkader Kaddachi |
+| 5 | Sinistres, suivi, communication | `modules/claims` | `claims` | 4 | Salma Louhichi |
 
 ### Utiliser l'authentification dans un module
 
