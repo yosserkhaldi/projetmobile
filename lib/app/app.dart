@@ -40,7 +40,9 @@ class _MonConstatAppState extends State<MonConstatApp>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    stores.users.removeListener(_onUsersChanged);
+    stores.users
+      ..removeListener(_onUsersChanged)
+      ..stopAutoSync();
     stores.accidents.dispose();
     stores.vehicles.dispose();
     super.dispose();
@@ -52,6 +54,8 @@ class _MonConstatAppState extends State<MonConstatApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       stores.users.refreshBiometricAvailability();
+      // Le réseau est peut-être revenu : envoyer la file hors ligne.
+      stores.users.syncPending();
     }
   }
 

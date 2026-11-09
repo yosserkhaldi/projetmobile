@@ -3009,6 +3009,216 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Hors ligne : liste enregistrée le {date}'**
   String companiesOffline(String date);
+
+  /// No description provided for @pendingSyncTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifications en attente'**
+  String get pendingSyncTitle;
+
+  /// No description provided for @pendingSyncBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrées sur le téléphone. Elles seront envoyées dès le retour du réseau.'**
+  String get pendingSyncBody;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur a refusé la modification : {reason}'**
+  String syncFailed(String reason);
+
+  /// No description provided for @syncNow.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchroniser'**
+  String get syncNow;
+
+  /// No description provided for @retrySync.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réessayer'**
+  String get retrySync;
+
+  /// No description provided for @discardChanges.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler les modifications'**
+  String get discardChanges;
+
+  /// No description provided for @savedOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistré sur le téléphone. Envoi dès le retour du réseau.'**
+  String get savedOffline;
+
+  /// No description provided for @syncing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisation…'**
+  String get syncing;
+
+  /// No description provided for @consoleDashboard.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tableau de bord'**
+  String get consoleDashboard;
+
+  /// No description provided for @consoleToHandle.
+  ///
+  /// In fr, this message translates to:
+  /// **'À traiter'**
+  String get consoleToHandle;
+
+  /// No description provided for @consoleReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Examiner'**
+  String get consoleReview;
+
+  /// No description provided for @consoleSeeAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout voir'**
+  String get consoleSeeAll;
+
+  /// No description provided for @consoleNothingToHandle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rien à traiter pour le moment.'**
+  String get consoleNothingToHandle;
+
+  /// No description provided for @refresh.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actualiser'**
+  String get refresh;
+
+  /// No description provided for @signedInAs.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connecté'**
+  String get signedInAs;
+
+  /// No description provided for @colUser.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utilisateur'**
+  String get colUser;
+
+  /// No description provided for @colStatus.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statut'**
+  String get colStatus;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous'**
+  String get filterAll;
+
+  /// No description provided for @filterDrivers.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conducteurs'**
+  String get filterDrivers;
+
+  /// No description provided for @filterAgents.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agents'**
+  String get filterAgents;
+
+  /// No description provided for @filterAdmins.
+  ///
+  /// In fr, this message translates to:
+  /// **'Administrateurs'**
+  String get filterAdmins;
+
+  /// No description provided for @accountsCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun compte} =1{1 compte} other{{count} comptes}}'**
+  String accountsCount(int count);
+
+  /// No description provided for @statusActive.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actif'**
+  String get statusActive;
+
+  /// No description provided for @statusSuspended.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suspendu'**
+  String get statusSuspended;
+
+  /// No description provided for @changeRole.
+  ///
+  /// In fr, this message translates to:
+  /// **'Changer le rôle'**
+  String get changeRole;
+
+  /// No description provided for @suspendAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suspendre'**
+  String get suspendAccount;
+
+  /// No description provided for @reactivateAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réactiver'**
+  String get reactivateAccount;
+
+  /// No description provided for @selectRequest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionnez une demande pour voir la CIN.'**
+  String get selectRequest;
+
+  /// No description provided for @pendingCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucune demande} =1{1 demande} other{{count} demandes}}'**
+  String pendingCount(int count);
+
+  /// No description provided for @selectCompany.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionnez une compagnie pour gérer ses agences.'**
+  String get selectCompany;
+
+  /// No description provided for @agenciesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agences'**
+  String get agenciesTitle;
+
+  /// No description provided for @noAgencies.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune agence pour le moment.'**
+  String get noAgencies;
+
+  /// No description provided for @heroPoint1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un constat complet en moins de 10 minutes, même hors ligne'**
+  String get heroPoint1;
+
+  /// No description provided for @heroPoint2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Signature des deux conducteurs et PDF infalsifiable'**
+  String get heroPoint2;
+
+  /// No description provided for @heroPoint3.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suivi du dossier en temps réel jusqu’à l’indemnisation'**
+  String get heroPoint3;
 }
 
 class _AppLocalizationsDelegate

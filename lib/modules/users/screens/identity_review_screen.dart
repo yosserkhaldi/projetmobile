@@ -148,7 +148,7 @@ class _ReviewDetailState extends State<_ReviewDetail> with FormActions {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => const _RejectSheet(),
+      builder: (_) => const RejectReasonSheet(),
     );
     if (reason == null) return;
     await submit(() async {
@@ -223,14 +223,14 @@ class _ReviewDetailState extends State<_ReviewDetail> with FormActions {
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 6),
-            _Photo(user: user, photo: UserPhoto.cinFront),
+            IdentityPhotoFrame(user: user, photo: UserPhoto.cinFront),
             const SizedBox(height: 16),
             Text(
               t.cinBack,
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 6),
-            _Photo(user: user, photo: UserPhoto.cinBack),
+            IdentityPhotoFrame(user: user, photo: UserPhoto.cinBack),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -262,14 +262,14 @@ class _ReviewDetailState extends State<_ReviewDetail> with FormActions {
   }
 }
 
-class _RejectSheet extends StatefulWidget {
-  const _RejectSheet();
+class RejectReasonSheet extends StatefulWidget {
+  const RejectReasonSheet({super.key});
 
   @override
-  State<_RejectSheet> createState() => _RejectSheetState();
+  State<RejectReasonSheet> createState() => RejectReasonSheetState();
 }
 
-class _RejectSheetState extends State<_RejectSheet> {
+class RejectReasonSheetState extends State<RejectReasonSheet> {
   final _other = TextEditingController();
   String? _choice;
 
@@ -336,8 +336,12 @@ class _RejectSheetState extends State<_RejectSheet> {
   }
 }
 
-class _Photo extends StatelessWidget {
-  const _Photo({required this.user, required this.photo});
+class IdentityPhotoFrame extends StatelessWidget {
+  const IdentityPhotoFrame({
+    required this.user,
+    required this.photo,
+    super.key,
+  });
   final AppUser user;
   final UserPhoto photo;
 

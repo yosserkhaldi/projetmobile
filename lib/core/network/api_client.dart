@@ -99,9 +99,11 @@ class ApiClient {
     required List<int> bytes,
     required String filename,
     String method = 'PUT',
+    Map<String, String>? fields,
   }) async {
     final response = await _execute(
       () => http.MultipartRequest(method, _uri(path))
+        ..fields.addAll(fields ?? const {})
         ..files.add(
           http.MultipartFile.fromBytes(field, bytes, filename: filename),
         ),

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import 'package:mon_constat_digital/core/data/drift_web.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_dao.dart';
 import 'package:mon_constat_digital/modules/claims/data/claims_tables.dart';
 
@@ -29,13 +30,7 @@ class ClaimsDatabase extends _$ClaimsDatabase {
   /// Connexion unique de l'application. Elle ne s'ouvre qu'à la première
   /// requête. `test/flutter_test_config.dart` la remplace pendant les tests.
   static ClaimsDatabase shared = ClaimsDatabase(
-    driftDatabase(
-      name: 'claims',
-      web: DriftWebOptions(
-        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
-        driftWorker: Uri.parse('drift_worker.js'),
-      ),
-    ),
+    driftDatabase(name: 'claims', web: driftWebOptions),
   );
 
   @override

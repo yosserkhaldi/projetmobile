@@ -679,6 +679,78 @@ void main() {
     });
   });
 
+  group("modifications hors ligne (file SQLite)", () {
+    Future<void> editNameOffline(
+      WidgetTester tester,
+      FakeBackend backend,
+    ) async {
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      backend.offline = true;
+      await tester.tap(find.byKey(const Key('edit-identity')));
+      await tester.pumpAndSettle();
+      await tester.enterText(field('Prénom'), 'Samir');
+      await tester.tap(find.text('Enregistrer'));
+      await tester.pumpAndSettle();
+      // Le nouvel essai toutes les 20 s ne doit pas survivre au test.
+      addTearDown(backend.stores.users.stopAutoSync);
+    }
+
+    testWidgets('sans réseau : affichée tout de suite, gardée en attente', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await editNameOffline(tester, backend);
+      expect(
+        find.textContaining('Enregistré sur le téléphone'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('pending-sync')), findsOneWidget);
+      expect(backend.stores.users.userName, 'Samir Ben Ali');
+      expect(await backend.usersDb.pending(), hasLength(1));
+      expect(backend.requests, isNot(contains('PATCH /users/me')));
+    });
+
+    testWidgets('retour du réseau : envoyée puis retirée de la file', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await editNameOffline(tester, backend);
+      backend.offline = false;
+      await tester.tap(find.text('Synchroniser'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['PATCH /users/me']!['firstName'], 'Samir');
+      expect(await backend.usersDb.pending(), isEmpty);
+      expect(find.byKey(const Key('pending-sync')), findsNothing);
+    });
+
+    testWidgets('refus du serveur : motif affiché, modification annulable', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await editNameOffline(tester, backend);
+      backend
+        ..offline = false
+        ..failures['PATCH /users/me'] = (
+          409,
+          'ALREADY_EXISTS',
+          'E-mail ou téléphone déjà utilisé.',
+        );
+      await tester.tap(find.text('Synchroniser'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('déjà utilisé'), findsOneWidget);
+      expect(find.text('Annuler les modifications'), findsOneWidget);
+
+      backend.failures.remove('PATCH /users/me');
+      await tester.tap(find.text('Annuler les modifications'));
+      await tester.pumpAndSettle();
+      expect(await backend.usersDb.pending(), isEmpty);
+      expect(backend.stores.users.userName, 'Sami Ben Ali');
+    });
+  });
+
   group('données personnelles', () {
     testWidgets('suppression du compte : mot de passe, puis déconnexion', (
       tester,
@@ -737,6 +809,106 @@ void main() {
     // Plus de chiffres fictifs d'accidents.
     expect(find.text('248'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  group("console d'administration (grand écran)", () {
+    Future<FakeBackend> openConsole(WidgetTester tester) async {
+      final backend =
+          FakeBackend(
+              user: userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+            )
+            ..users = [
+              userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+              userJson(id: 'u2'),
+              userJson(
+                id: 'u3',
+                firstName: 'Leïla',
+                lastName: 'Mansour',
+                role: 'AGENT',
+              ),
+            ]
+            ..pendingIdentities = [
+              {
+                ...userJson(id: 'u4', firstName: 'Mouna', lastName: 'Trabelsi'),
+                'identity': {
+                  'status': 'PENDING',
+                  'cinNumber': '08123456',
+                  'frontId': 'f.png',
+                  'backId': 'b.png',
+                  'submittedAt': '2026-11-09T10:00:00.000Z',
+                },
+              },
+            ]
+            ..companies = [
+              {
+                'id': 'c1',
+                'name': 'STAR Assurances',
+                'agencies': [
+                  {'id': 'a1', 'name': 'Agence Lac', 'city': 'Tunis'},
+                ],
+              },
+            ];
+      tester.view.physicalSize = const Size(1440, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(MonConstatApp(stores: backend.stores));
+      await tester.pumpAndSettle();
+      await signIn(tester);
+      return backend;
+    }
+
+    testWidgets('barre latérale, tableau de bord et demande à traiter', (
+      tester,
+    ) async {
+      await openConsole(tester);
+      expect(find.text('Tableau de bord'), findsWidgets);
+      // Pas d'onglets du téléphone sur grand écran.
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.text('Mouna Trabelsi'), findsOneWidget);
+      expect(find.text('Examiner'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('comptes : tableau et filtre par rôle', (tester) async {
+      final backend = await openConsole(tester);
+      await tester.tap(find.text('Comptes'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DataTable), findsOneWidget);
+      expect(find.text('Leïla Mansour'), findsOneWidget);
+      expect(find.text('3 comptes'), findsOneWidget);
+
+      await tester.tap(find.text('Agents'));
+      await tester.pumpAndSettle();
+      expect(backend.headers.keys, contains('GET /users'));
+      expect(
+        backend.requests.where((r) => r == 'GET /users').length,
+        greaterThan(1),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+      'identités : examen depuis le tableau de bord, puis validation',
+      (tester) async {
+        final backend = await openConsole(tester);
+        await tester.tap(find.text('Examiner'));
+        await tester.pumpAndSettle();
+        expect(find.text('08123456'), findsWidgets);
+        await tester.tap(find.text('Valider'));
+        await tester.pumpAndSettle();
+        expect(backend.requests, contains('POST /users/u4/identity/approve'));
+        expect(find.text('Aucune demande en attente.'), findsOneWidget);
+      },
+    );
+
+    testWidgets('compagnies : agences de la compagnie choisie', (tester) async {
+      await openConsole(tester);
+      await tester.tap(find.text('Compagnies'));
+      await tester.pumpAndSettle();
+      expect(find.text('Agence Lac'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('administration', () {
