@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { Router } from 'express';
 
 import {
@@ -5,6 +6,7 @@ import {
   isForeignKeyViolation,
   isUniqueViolation,
 } from '../../lib/errors.js';
+import { documentReader } from '../../lib/ocr.js';
 import { prisma } from '../../lib/prisma.js';
 import {
   deleteImage,
@@ -13,6 +15,7 @@ import {
   singleImage,
 } from '../../lib/uploads.js';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { aiQuota } from '../../middleware/quota.js';
 import {
   hashPassword,
   publicUser,
@@ -83,17 +86,48 @@ const PHOTOS = {
   'license-photo': 'licensePhotoFile',
 };
 const PHOTO_FOLDER = 'users';
+// La photo du permis passe par l'OCR : même quota que la vérification d'identité.
+const ocrQuota = aiQuota({ max: 30 });
+
+/** Lecture du permis par l'OCR. En panne : null, le formulaire reste à remplir. */
+async function readLicense(buffer) {
+  try {
+    const { number, categories, issuedAt, expiresAt, birthDate } =
+      await documentReader.read(buffer, 'LICENSE');
+    return { number, categories, issuedAt, expiresAt, birthDate };
+  } catch (err) {
+    console.error('Lecture du permis', err);
+    return null;
+  }
+}
 
 for (const [route, column] of Object.entries(PHOTOS)) {
-  router.put(`/me/${route}`, singleImage('photo'), async (req, res) => {
+  router.put(`/me/${route}`, ocrQuota, singleImage('photo'), async (req, res) => {
+    const isLicense = route === 'license-photo';
+    // Permis : l'IA lit la carte (numéro, catégories, dates) pour remplir le
+    // formulaire. L'utilisateur vérifie avant d'enregistrer.
+    const extracted = isLicense ? await readLicense(req.file.buffer) : undefined;
     const name = await saveImage(req.file, PHOTO_FOLDER);
     const user = await prisma.user.update({
       where: { id: req.user.id },
-      data: { [column]: name },
+      data: {
+        [column]: name,
+        ...(isLicense && { licenseReading: extracted ?? Prisma.DbNull }),
+      },
       include: withCompany,
     });
     await deleteImage(req.user[column], PHOTO_FOLDER);
-    res.json({ user: publicUser(user) });
+    // Contrôle croisé : la date de naissance du permis et celle de la pièce
+    // d'identité doivent être les mêmes.
+    const identityBirth = req.user.identityExtracted?.birthDate;
+    const birthDateMatchesIdentity =
+      isLicense && extracted?.birthDate && identityBirth
+        ? extracted.birthDate === identityBirth
+        : null;
+    res.json({
+      user: publicUser(user),
+      extracted: extracted && { ...extracted, birthDateMatchesIdentity },
+    });
   });
 
   router.delete(`/me/${route}`, async (req, res) => {

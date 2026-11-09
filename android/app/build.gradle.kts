@@ -9,10 +9,9 @@ android {
     namespace = "com.example.flutter_workshops_5sae1_2627"
     compileSdk = flutter.compileSdkVersion
 
-    packaging {
-        // Keep native debug symbols so debug builds do not require llvm-strip.
-        jniLibs.keepDebugSymbols += "**/*.so"
-    }
+    // NDK fixé : Gradle retire les symboles de débogage des bibliothèques
+    // natives (moteur Flutter de 166 Mo → environ 10 Mo par architecture).
+    ndkVersion = flutter.ndkVersion
     // Aucun plugin natif pour cette première version autonome.
 
     compileOptions {

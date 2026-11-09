@@ -59,11 +59,13 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
     _debounce = Timer(const Duration(milliseconds: 300), _load);
   }
 
-  Future<void> _run(Future<void> Function() action) async {
+  /// [done] : message affiché quand l'action réussit.
+  Future<void> _run(Future<void> Function() action, {String? done}) async {
     final messenger = ScaffoldMessenger.of(context);
     String describe(Object error) => errorMessage(context, error);
     try {
       await action();
+      if (done != null) messenger.showSnackBar(SnackBar(content: Text(done)));
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(describe(e))));
     }
@@ -296,9 +298,16 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
                       ),
                     ),
                     DataCell(
-                      user.role == UserRole.driver
-                          ? identityChip(context, user.identity.status)
-                          : Text('—', style: TextStyle(color: p.textMuted)),
+                      user.role != UserRole.driver
+                          ? Text('—', style: TextStyle(color: p.textMuted))
+                          : user.identity.blocked
+                          ? StatusChip(
+                              label: t.identityBlockedChip,
+                              background: p.errorBg,
+                              foreground: p.errorText,
+                              icon: Icons.block,
+                            )
+                          : identityChip(context, user.identity.status),
                     ),
                     DataCell(
                       StatusChip(
@@ -315,11 +324,26 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
                               icon: const Icon(Icons.more_horiz),
                               onSelected: (action) => switch (action) {
                                 'role' => _changeRole(user),
+                                'unblock' => _run(
+                                  () => admin.unblockIdentity(user),
+                                  done: t.identityUnblocked,
+                                ),
                                 _ => _run(
                                   () => admin.setActive(user, !user.active),
                                 ),
                               },
                               itemBuilder: (_) => [
+                                if (user.identity.blocked ||
+                                    user.identity.waiting)
+                                  PopupMenuItem(
+                                    value: 'unblock',
+                                    child: ListTile(
+                                      key: const Key('unblock-identity'),
+                                      dense: true,
+                                      leading: const Icon(Icons.lock_open),
+                                      title: Text(t.unblockIdentity),
+                                    ),
+                                  ),
                                 PopupMenuItem(
                                   value: 'role',
                                   child: ListTile(

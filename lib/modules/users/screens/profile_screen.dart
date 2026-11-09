@@ -996,10 +996,55 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
   };
   late String? _issuedAt = widget.user.licenseIssuedAt;
 
+  /// Résultat du dernier scan : rempli par l'IA, ou carte illisible.
+  bool? _filledByAi;
+  bool _scanning = false;
+
+  /// Date de naissance du permis différente de celle de la pièce d'identité.
+  bool _birthMismatch = false;
+
   @override
   void dispose() {
     _number.dispose();
     super.dispose();
+  }
+
+  /// Photo du permis → l'IA remplit le formulaire, que l'utilisateur vérifie.
+  Future<void> _scan() async {
+    final users = AppScope.of(context).users;
+    String describe(Object e) => errorMessage(context, e);
+    final file = await pickPhoto(context);
+    if (file == null || !mounted) return;
+    setState(() {
+      _scanning = true;
+      error = null;
+    });
+    try {
+      final reading = await users.scanLicense(
+        await file.readAsBytes(),
+        file.name,
+      );
+      if (!mounted) return;
+      setState(() {
+        _birthMismatch = reading?.birthDateMatchesIdentity == false;
+        if (reading == null || reading.isEmpty) {
+          _filledByAi = false;
+          return;
+        }
+        _filledByAi = true;
+        if (reading.number != null) _number.text = reading.number!;
+        if (reading.categories.isNotEmpty) {
+          _categories
+            ..clear()
+            ..addAll(reading.categories);
+        }
+        if (reading.issuedAt != null) _issuedAt = reading.issuedAt;
+      });
+    } catch (e) {
+      if (mounted) setState(() => error = describe(e));
+    } finally {
+      if (mounted) setState(() => _scanning = false);
+    }
   }
 
   Future<void> _pickDate() async {
@@ -1048,6 +1093,70 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
               ErrorBanner(error!),
               const SizedBox(height: 14),
             ],
+            // Le plus simple : une photo, l'IA remplit le reste.
+            FilledButton.icon(
+              key: const Key('scan-license'),
+              onPressed: _scanning || busy ? null : _scan,
+              icon: _scanning
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.document_scanner_outlined),
+              label: Text(_scanning ? t.readingDocument : t.scanLicense),
+            ),
+            const SizedBox(height: 8),
+            if (_filledByAi == null)
+              Text(
+                t.scanLicenseHint,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.4,
+                  color: context.palette.textMuted,
+                ),
+              )
+            else
+              Container(
+                key: const Key('license-scan-result'),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _filledByAi!
+                      ? context.palette.successBg
+                      : context.palette.warningBg,
+                  borderRadius: BorderRadius.circular(AppRadius.input),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _filledByAi! ? Icons.auto_awesome : Icons.info_outline,
+                      size: 18,
+                      color: _filledByAi!
+                          ? context.palette.successText
+                          : context.palette.warningText,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _filledByAi! ? t.licenseFilledByAi : t.licenseNotRead,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: _filledByAi!
+                              ? context.palette.successText
+                              : context.palette.warningText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            // Contrôle croisé avec la pièce d'identité.
+            if (_birthMismatch) ...[
+              const SizedBox(height: 8),
+              ErrorBanner(t.licenseBirthMismatch),
+            ],
+            const SizedBox(height: 16),
             LabeledField(
               label: t.licenseNumberLabel,
               controller: _number,

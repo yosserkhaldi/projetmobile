@@ -1451,11 +1451,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get identityIntro =>
-      'Un administrateur vérifie votre CIN. Elle est exigée pour signer un constat.';
+      'Choisissez une pièce, photographiez-la, puis vérifiez votre visage. Notre IA compare votre visage à la photo de la pièce, sur nos serveurs, sans aucun service extérieur.';
 
   @override
   String get identityPendingNote =>
-      'Un administrateur vérifie vos documents. Vous serez prévenu sur WhatsApp et par e-mail.';
+      'L\'IA n\'a pas pu conclure : un administrateur compare vos photos. Vous serez prévenu sur WhatsApp et par e-mail.';
 
   @override
   String get identityVerifiedNote => 'Vous pouvez signer vos constats.';
@@ -1481,8 +1481,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get addPhoto => 'Ajouter la photo';
 
   @override
-  String get identityPhotosRequired =>
-      'Ajoutez le recto et le verso de votre CIN.';
+  String get identityPhotosRequired => 'Ajoutez les photos de la pièce.';
 
   @override
   String get submitIdentity => 'Envoyer pour vérification';
@@ -1528,7 +1527,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rejectReasonNameMismatch => 'Nom différent du compte';
 
   @override
-  String get rejectReasonNotCin => 'Ce n\'est pas une CIN';
+  String get rejectReasonNotCin => 'Pièce non valable';
 
   @override
   String get otherReason => 'Autre motif';
@@ -1544,7 +1543,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Votre identité est en cours de vérification ou déjà vérifiée.';
 
   @override
-  String get errorCinInUse => 'Ce numéro de CIN est déjà utilisé.';
+  String get errorCinInUse => 'Ce numéro de pièce est déjà utilisé.';
 
   @override
   String get errorIdentityNotVerified =>
@@ -1746,7 +1745,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get reactivateAccount => 'Réactiver';
 
   @override
-  String get selectRequest => 'Sélectionnez une demande pour voir la CIN.';
+  String get selectRequest => 'Sélectionnez une demande pour voir la pièce.';
 
   @override
   String pendingCount(int count) {
@@ -1781,4 +1780,338 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get heroPoint3 =>
       'Suivi du dossier en temps réel jusqu’à l’indemnisation';
+
+  @override
+  String get identityVerifiedAutoNote =>
+      'Vérifiée automatiquement par reconnaissance faciale. Vous pouvez signer vos constats.';
+
+  @override
+  String get documentTypeLabel => 'Pièce d\'identité';
+
+  @override
+  String get documentCin => 'CIN';
+
+  @override
+  String get documentLicense => 'Permis';
+
+  @override
+  String get documentPassport => 'Passeport';
+
+  @override
+  String get passportNumberLabel => 'N° du passeport';
+
+  @override
+  String get licenseNumberInvalid =>
+      'Numéro de permis invalide (ex. 12/345678).';
+
+  @override
+  String get passportNumberInvalid =>
+      'Numéro de passeport invalide (ex. X1234567).';
+
+  @override
+  String get licenseFront => 'Recto du permis';
+
+  @override
+  String get licenseBack => 'Verso du permis';
+
+  @override
+  String get passportPage => 'Page photo du passeport';
+
+  @override
+  String get faceCheckTitle => 'Vérification du visage';
+
+  @override
+  String get faceCheckIntro =>
+      'Trois photos rapides : de face, puis la tête tournée de chaque côté. Une photo imprimée ou un écran ne passe pas.';
+
+  @override
+  String get faceCheckDone => 'Visage vérifié';
+
+  @override
+  String get faceCheckStart => 'Vérifier mon visage';
+
+  @override
+  String get faceCheckRedo => 'Recommencer';
+
+  @override
+  String get faceCheckRequired => 'Faites d\'abord la vérification du visage.';
+
+  @override
+  String get livenessCenter => 'Regardez la caméra, bien de face';
+
+  @override
+  String get livenessLeft => 'Tournez la tête vers la gauche';
+
+  @override
+  String get livenessRight => 'Tournez la tête vers la droite';
+
+  @override
+  String livenessStepOf(int current, int total) {
+    return 'Photo $current sur $total';
+  }
+
+  @override
+  String get livenessAnalyzing => 'Analyse par l\'IA…';
+
+  @override
+  String get livenessNoCamera =>
+      'Caméra indisponible. Autorisez l\'accès à la caméra, puis réessayez.';
+
+  @override
+  String get livenessPrivacy =>
+      'La photo de face sert uniquement à cette vérification. Elle est effacée dès la décision.';
+
+  @override
+  String get livenessSuccess =>
+      'Visage vérifié. Vous pouvez envoyer la demande.';
+
+  @override
+  String get identityVerifiedByAi => 'Identité vérifiée par l\'IA';
+
+  @override
+  String get errorNoFaceOnDocument =>
+      'Aucun visage détecté sur la pièce. Reprenez la photo à plat, bien éclairée et sans reflet.';
+
+  @override
+  String get errorLivenessNoFace =>
+      'Visage introuvable. Placez votre visage dans l\'ovale, bien éclairé.';
+
+  @override
+  String get errorLivenessManyFaces =>
+      'Une seule personne doit être devant la caméra.';
+
+  @override
+  String get errorLivenessNotCentered =>
+      'Regardez la caméra bien de face pour la première photo.';
+
+  @override
+  String get errorLivenessNoTurn =>
+      'Tournez davantage la tête quand la consigne le demande.';
+
+  @override
+  String get errorLivenessDifferentFaces =>
+      'Les photos ne montrent pas la même personne.';
+
+  @override
+  String get errorLivenessExpired =>
+      'Le défi a expiré. Recommencez la vérification du visage.';
+
+  @override
+  String get errorFaceEngine =>
+      'L\'analyse du visage est indisponible. Réessayez dans un instant.';
+
+  @override
+  String aiMatch(int percent) {
+    return 'Ressemblance IA : $percent %';
+  }
+
+  @override
+  String get aiNoConclusion => 'IA : pas de conclusion';
+
+  @override
+  String get livenessPassed => 'Visage vivant vérifié';
+
+  @override
+  String get selfieLabel => 'Photo du visage';
+
+  @override
+  String get documentNumberLabel => 'N° de la pièce';
+
+  @override
+  String get rejectReasonFaceMismatch =>
+      'Le visage ne correspond pas à la pièce';
+
+  @override
+  String dashVerifiedIdsAi(int count, int ai) {
+    return '$count vérifiées, dont $ai par l\'IA';
+  }
+
+  @override
+  String get readingDocument => 'Lecture de la pièce par l\'IA…';
+
+  @override
+  String get readOnCard => 'Lu sur la pièce par l\'IA';
+
+  @override
+  String get readNumber => 'Numéro';
+
+  @override
+  String get readName => 'Nom';
+
+  @override
+  String get readParents => 'Filiation';
+
+  @override
+  String get readBirth => 'Naissance';
+
+  @override
+  String get readExpiry => 'Valable jusqu\'au';
+
+  @override
+  String get readConfirm =>
+      'Vérifiez ces informations. Le numéro saisi doit être celui de la pièce.';
+
+  @override
+  String get readNothing =>
+      'L\'IA n\'a pas pu lire la pièce. Saisissez le numéro : un administrateur vérifiera.';
+
+  @override
+  String get useNumberRead => 'Utiliser ce numéro';
+
+  @override
+  String get useLicensePhoto => 'Utiliser la photo du permis de mon profil';
+
+  @override
+  String get errorBackHasFace =>
+      'Cette photo montre un recto. Photographiez le verso de la même pièce.';
+
+  @override
+  String get errorLicensePhotoMissing =>
+      'Aucune photo de permis dans votre profil.';
+
+  @override
+  String get checksTitle => 'Contrôles de l\'IA';
+
+  @override
+  String get checkLiveness => 'Visage vivant';
+
+  @override
+  String get checkFace => 'Visage identique à la photo de la pièce';
+
+  @override
+  String checkNumber(String number) {
+    return 'Numéro saisi = numéro lu ($number)';
+  }
+
+  @override
+  String get checkNumberUnread => 'Numéro illisible sur la pièce';
+
+  @override
+  String get checkName => 'Nom du compte sur la pièce';
+
+  @override
+  String get checkExpiry => 'Pièce en cours de validité';
+
+  @override
+  String get scanLicense => 'Scanner mon permis';
+
+  @override
+  String get scanLicenseHint =>
+      'Prenez votre permis en photo : l\'IA remplit le numéro, les catégories et la date.';
+
+  @override
+  String get licenseFilledByAi =>
+      'Rempli par l\'IA à partir de la photo. Vérifiez avant d\'enregistrer.';
+
+  @override
+  String get licenseNotRead =>
+      'Photo enregistrée, mais l\'IA n\'a pas pu lire le permis. Complétez les champs.';
+
+  @override
+  String get errorBackNotRecognized =>
+      'Ce n\'est pas le verso de la pièce. Sur une CIN, le code-barres doit être net et entier sur la photo.';
+
+  @override
+  String get checkBack => 'Verso reconnu';
+
+  @override
+  String get rejectSevere => 'Refus définitif : bloquer les nouvelles demandes';
+
+  @override
+  String get rejectSevereHint =>
+      'Pour une fraude probable : visage différent, fausse pièce.';
+
+  @override
+  String get identityBlockedNote =>
+      'La vérification de votre identité est bloquée. Contactez le support.';
+
+  @override
+  String identityRetryOn(String date) {
+    return 'Nouvelle demande possible le $date.';
+  }
+
+  @override
+  String identityAttemptsLeft(int count) {
+    return 'Essais restants : $count.';
+  }
+
+  @override
+  String get errorIdentityBlocked =>
+      'La vérification de votre identité est bloquée. Contactez le support.';
+
+  @override
+  String get errorIdentityRetryLater =>
+      'Attendez 24 h après un refus avant une nouvelle demande.';
+
+  @override
+  String get unblockIdentity => 'Débloquer la vérification';
+
+  @override
+  String get identityUnblocked => 'Vérification débloquée';
+
+  @override
+  String get identityBlockedChip => 'Vérification bloquée';
+
+  @override
+  String get attemptsTitle => 'Demandes de ce compte';
+
+  @override
+  String refusalsCount(int count) {
+    return 'Refus : $count';
+  }
+
+  @override
+  String get outcomeAuto => 'Validée par l\'IA';
+
+  @override
+  String get outcomeVerified => 'Validée';
+
+  @override
+  String get outcomeRejected => 'Refusée';
+
+  @override
+  String get outcomePending => 'En attente';
+
+  @override
+  String get biometricConsentLabel =>
+      'J\'accepte que mon visage soit analysé pour vérifier mon identité. Analyse faite sur les serveurs de Mon Constat, photo effacée dès la décision (loi n° 2004-63).';
+
+  @override
+  String get errorAiQuota =>
+      'Trop d\'analyses en peu de temps. Réessayez dans un moment.';
+
+  @override
+  String get livenessHintNoFace => 'Placez votre visage dans l\'ovale';
+
+  @override
+  String get livenessHintLookStraight => 'Regardez la caméra bien en face';
+
+  @override
+  String get livenessHintTurnMore => 'Tournez davantage la tête';
+
+  @override
+  String get dashAiTitle => 'Vérification par l\'IA';
+
+  @override
+  String get dashAiFooter =>
+      'Sur la période affichée. Analyse sur nos serveurs, sans service extérieur.';
+
+  @override
+  String get dashAiRequests => 'demandes';
+
+  @override
+  String get dashAiAutoRate => 'validées par l\'IA seule';
+
+  @override
+  String get dashAiAverageMatch => 'ressemblance moyenne';
+
+  @override
+  String get dashAiBlocked => 'comptes bloqués';
+
+  @override
+  String get checkBirthDate => 'Même date de naissance que le permis';
+
+  @override
+  String get licenseBirthMismatch =>
+      'Attention : la date de naissance du permis ne correspond pas à votre pièce d\'identité.';
 }

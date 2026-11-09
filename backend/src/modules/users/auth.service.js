@@ -55,9 +55,22 @@ export function publicUser(user) {
     licensePhotoId: user.licensePhotoFile ?? null,
     identity: {
       status: user.identityStatus,
+      documentType: user.identityDocument,
       cinNumber: user.cinNumber,
       frontId: user.cinFrontFile ?? null,
       backId: user.cinBackFile ?? null,
+      selfieId: user.identitySelfieFile ?? null,
+      livenessAt: user.identityLivenessAt?.toISOString() ?? null,
+      faceMatch: user.identityFaceMatch,
+      autoVerified: user.identityAutoVerified,
+      // Lu sur la pièce par l'IA, et contrôles faits à l'envoi.
+      extracted: user.identityExtracted ?? null,
+      checks: user.identityChecks ?? null,
+      // Refus déjà reçus, prochaine demande possible, ou blocage.
+      refusals: user.identityRefusals ?? 0,
+      retryAt: user.identityRetryAt?.toISOString() ?? null,
+      blocked: user.identityBlocked ?? false,
+      biometricConsentAt: user.identityBiometricConsentAt?.toISOString() ?? null,
       submittedAt: user.identitySubmittedAt?.toISOString() ?? null,
       rejectionReason: user.identityRejectionReason,
     },

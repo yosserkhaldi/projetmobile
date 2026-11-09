@@ -125,7 +125,18 @@ Future<Uint8List> buildDataExportPdf(Map<String, dynamic> export) async {
         ]),
         section("Vérification d'identité", [
           ['État', value(identity['status'])],
-          ['N° de CIN', value(identity['cinNumber'])],
+          ['Pièce', value(identity['documentType'])],
+          ['N° de la pièce', value(identity['cinNumber'])],
+          [
+            "Ressemblance calculée par l'IA",
+            identity['faceMatch'] == null
+                ? '—'
+                : '${((identity['faceMatch'] as num) * 100).round()} %',
+          ],
+          [
+            "Validée par l'IA",
+            identity['autoVerified'] == true ? 'Oui' : 'Non',
+          ],
           ['Envoyée le', date(identity['submittedAt'])],
         ]),
         section('Appareils', [

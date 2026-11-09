@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 
+import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { Router } from 'express';
 
@@ -101,15 +102,27 @@ router.delete('/me', requireAuth, async (req, res) => {
         licenseIssuedAt: null,
         photoFile: null,
         licensePhotoFile: null,
+        licenseReading: Prisma.DbNull,
         cinNumber: null,
         cinFrontFile: null,
         cinBackFile: null,
         identityStatus: 'UNVERIFIED',
         identityRejectionReason: null,
+        identitySelfieFile: null,
+        identityLivenessAt: null,
+        identityFaceMatch: null,
+        identityAutoVerified: false,
+        identityExtracted: Prisma.DbNull,
+        identityChecks: Prisma.DbNull,
+        identityRefusals: 0,
+        identityRetryAt: null,
+        identityBlocked: false,
+        identityBiometricConsentAt: null,
         deletedAt: new Date(),
       },
     }),
     prisma.loginEvent.deleteMany({ where: { userId: user.id } }),
+    prisma.identityAttempt.deleteMany({ where: { userId: user.id } }),
     prisma.verificationCode.deleteMany({ where: { userId: user.id } }),
   ]);
   await revokeSessions(user.id);
@@ -118,6 +131,7 @@ router.delete('/me', requireAuth, async (req, res) => {
     deleteImage(user.licensePhotoFile, 'users'),
     deleteImage(user.cinFrontFile, 'identity'),
     deleteImage(user.cinBackFile, 'identity'),
+    deleteImage(user.identitySelfieFile, 'identity'),
   ]);
   res.status(204).end();
 });
@@ -126,6 +140,45 @@ router.delete('/me', requireAuth, async (req, res) => {
 // Statistiques des comptes (tableau de bord administrateur)
 
 const DAY_MS = 24 * 60 * 60_000;
+
+/**
+ * Bilan de la vérification d'identité par l'IA sur la période : demandes,
+ * part validée sans administrateur, refus, ressemblance moyenne, comptes
+ * bloqués. Pour le tableau de bord et la soutenance.
+ */
+async function identityAiStats(since) {
+  const window = { createdAt: { gte: since } };
+  const [byOutcome, average, blocked] = await Promise.all([
+    prisma.identityAttempt.groupBy({
+      by: ['outcome'],
+      where: window,
+      _count: true,
+    }),
+    prisma.identityAttempt.aggregate({
+      where: { ...window, faceMatch: { not: null } },
+      _avg: { faceMatch: true },
+    }),
+    prisma.user.count({ where: { deletedAt: null, identityBlocked: true } }),
+  ]);
+  const of = (outcome) =>
+    byOutcome.find((row) => row.outcome === outcome)?._count ?? 0;
+  const requests = byOutcome.reduce((sum, row) => sum + row._count, 0);
+  const auto = of('AUTO_VERIFIED');
+  return {
+    requests,
+    autoVerified: auto,
+    adminVerified: of('VERIFIED'),
+    rejected: of('REJECTED'),
+    pending: of('PENDING'),
+    // Part des demandes validées par l'IA seule, de 0 à 1.
+    autoRate: requests ? Math.round((auto / requests) * 100) / 100 : null,
+    averageMatch:
+      average._avg.faceMatch === null
+        ? null
+        : Math.round(average._avg.faceMatch * 100) / 100,
+    blocked,
+  };
+}
 
 router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
   const { days } = statsQuery.parse(req.query);
@@ -143,6 +196,8 @@ router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
     logins,
     companies,
     agencies,
+    autoVerified,
+    aiStats,
   ] = await Promise.all([
     prisma.user.groupBy({ by: ['role'], where: live, _count: true }),
     prisma.user.groupBy({
@@ -163,6 +218,10 @@ router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
     }),
     prisma.company.count(),
     prisma.agency.count(),
+    prisma.user.count({
+      where: { ...live, identityStatus: 'VERIFIED', identityAutoVerified: true },
+    }),
+    identityAiStats(since),
   ]);
 
   const count = (rows, key, value) =>
@@ -197,6 +256,9 @@ router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
         count(byIdentity, 'identityStatus', s),
       ]),
     ),
+    // Identités validées par la reconnaissance faciale, sans administrateur.
+    identityAutoVerified: autoVerified,
+    identityAi: aiStats,
     signIns7Days: {
       success: count(logins, 'success', true),
       failed: count(logins, 'success', false),

@@ -1443,11 +1443,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get identityIntro =>
-      'An administrator checks your ID card. It is required to sign an accident report.';
+      'Choose a document, take a photo of it, then check your face. Our AI compares your face with the photo on the document, on our own servers, with no outside service.';
 
   @override
   String get identityPendingNote =>
-      'An administrator is checking your documents. You will be told on WhatsApp and by email.';
+      'The AI could not decide: an administrator is comparing your photos. You will be notified on WhatsApp and by email.';
 
   @override
   String get identityVerifiedNote => 'You can sign your accident reports.';
@@ -1473,8 +1473,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addPhoto => 'Add photo';
 
   @override
-  String get identityPhotosRequired =>
-      'Add the front and back of your ID card.';
+  String get identityPhotosRequired => 'Add the photos of your document.';
 
   @override
   String get submitIdentity => 'Send for review';
@@ -1518,7 +1517,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rejectReasonNameMismatch => 'Name doesn\'t match the account';
 
   @override
-  String get rejectReasonNotCin => 'Not an ID card';
+  String get rejectReasonNotCin => 'Invalid document';
 
   @override
   String get otherReason => 'Other reason';
@@ -1534,7 +1533,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your identity is under review or already verified.';
 
   @override
-  String get errorCinInUse => 'This ID card number is already used.';
+  String get errorCinInUse => 'This document number is already in use.';
 
   @override
   String get errorIdentityNotVerified =>
@@ -1736,7 +1735,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reactivateAccount => 'Reactivate';
 
   @override
-  String get selectRequest => 'Select a request to see the ID card.';
+  String get selectRequest => 'Select a request to see the document.';
 
   @override
   String pendingCount(int count) {
@@ -1768,4 +1767,333 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get heroPoint3 => 'Real-time tracking until compensation';
+
+  @override
+  String get identityVerifiedAutoNote =>
+      'Verified automatically by face recognition. You can now sign your accident reports.';
+
+  @override
+  String get documentTypeLabel => 'Identity document';
+
+  @override
+  String get documentCin => 'ID card';
+
+  @override
+  String get documentLicense => 'Licence';
+
+  @override
+  String get documentPassport => 'Passport';
+
+  @override
+  String get passportNumberLabel => 'Passport number';
+
+  @override
+  String get licenseNumberInvalid => 'Invalid licence number (e.g. 12/345678).';
+
+  @override
+  String get passportNumberInvalid =>
+      'Invalid passport number (e.g. X1234567).';
+
+  @override
+  String get licenseFront => 'Licence front';
+
+  @override
+  String get licenseBack => 'Licence back';
+
+  @override
+  String get passportPage => 'Passport photo page';
+
+  @override
+  String get faceCheckTitle => 'Face check';
+
+  @override
+  String get faceCheckIntro =>
+      'Three quick photos: facing the camera, then turning your head each way. A printed photo or a screen will not pass.';
+
+  @override
+  String get faceCheckDone => 'Face checked';
+
+  @override
+  String get faceCheckStart => 'Check my face';
+
+  @override
+  String get faceCheckRedo => 'Start again';
+
+  @override
+  String get faceCheckRequired => 'Do the face check first.';
+
+  @override
+  String get livenessCenter => 'Look straight at the camera';
+
+  @override
+  String get livenessLeft => 'Turn your head to the left';
+
+  @override
+  String get livenessRight => 'Turn your head to the right';
+
+  @override
+  String livenessStepOf(int current, int total) {
+    return 'Photo $current of $total';
+  }
+
+  @override
+  String get livenessAnalyzing => 'AI analysis…';
+
+  @override
+  String get livenessNoCamera =>
+      'Camera unavailable. Allow camera access, then try again.';
+
+  @override
+  String get livenessPrivacy =>
+      'The front photo is only used for this check. It is deleted as soon as a decision is made.';
+
+  @override
+  String get livenessSuccess => 'Face checked. You can send your request.';
+
+  @override
+  String get identityVerifiedByAi => 'Identity verified by the AI';
+
+  @override
+  String get errorNoFaceOnDocument =>
+      'No face found on the document. Retake the photo flat, well lit and without glare.';
+
+  @override
+  String get errorLivenessNoFace =>
+      'Face not found. Put your face in the oval, in good light.';
+
+  @override
+  String get errorLivenessManyFaces =>
+      'Only one person should be in front of the camera.';
+
+  @override
+  String get errorLivenessNotCentered =>
+      'Look straight at the camera for the first photo.';
+
+  @override
+  String get errorLivenessNoTurn => 'Turn your head further when asked.';
+
+  @override
+  String get errorLivenessDifferentFaces =>
+      'The photos do not show the same person.';
+
+  @override
+  String get errorLivenessExpired =>
+      'The challenge expired. Start the face check again.';
+
+  @override
+  String get errorFaceEngine =>
+      'Face analysis is unavailable. Try again in a moment.';
+
+  @override
+  String aiMatch(int percent) {
+    return 'AI match: $percent%';
+  }
+
+  @override
+  String get aiNoConclusion => 'AI: no conclusion';
+
+  @override
+  String get livenessPassed => 'Live face checked';
+
+  @override
+  String get selfieLabel => 'Face photo';
+
+  @override
+  String get documentNumberLabel => 'Document number';
+
+  @override
+  String get rejectReasonFaceMismatch => 'The face does not match the document';
+
+  @override
+  String dashVerifiedIdsAi(int count, int ai) {
+    return '$count verified, $ai by the AI';
+  }
+
+  @override
+  String get readingDocument => 'The AI is reading your document…';
+
+  @override
+  String get readOnCard => 'Read from the document by the AI';
+
+  @override
+  String get readNumber => 'Number';
+
+  @override
+  String get readName => 'Name';
+
+  @override
+  String get readParents => 'Parents';
+
+  @override
+  String get readBirth => 'Birth';
+
+  @override
+  String get readExpiry => 'Valid until';
+
+  @override
+  String get readConfirm =>
+      'Check this information. The number you enter must be the one on the document.';
+
+  @override
+  String get readNothing =>
+      'The AI could not read the document. Enter the number: an administrator will check it.';
+
+  @override
+  String get useNumberRead => 'Use this number';
+
+  @override
+  String get useLicensePhoto => 'Use the licence photo from my profile';
+
+  @override
+  String get errorBackHasFace =>
+      'This photo shows a front side. Take a photo of the back of the same document.';
+
+  @override
+  String get errorLicensePhotoMissing => 'No licence photo in your profile.';
+
+  @override
+  String get checksTitle => 'AI checks';
+
+  @override
+  String get checkLiveness => 'Live face';
+
+  @override
+  String get checkFace => 'Face matches the document photo';
+
+  @override
+  String checkNumber(String number) {
+    return 'Entered number = number read ($number)';
+  }
+
+  @override
+  String get checkNumberUnread => 'Number unreadable on the document';
+
+  @override
+  String get checkName => 'Account name on the document';
+
+  @override
+  String get checkExpiry => 'Document still valid';
+
+  @override
+  String get scanLicense => 'Scan my licence';
+
+  @override
+  String get scanLicenseHint =>
+      'Take a photo of your licence: the AI fills in the number, categories and date.';
+
+  @override
+  String get licenseFilledByAi =>
+      'Filled in by the AI from the photo. Check before saving.';
+
+  @override
+  String get licenseNotRead =>
+      'Photo saved, but the AI could not read the licence. Fill in the fields.';
+
+  @override
+  String get errorBackNotRecognized =>
+      'This is not the back of the document. On an ID card, the barcode must be sharp and fully visible.';
+
+  @override
+  String get checkBack => 'Back side recognised';
+
+  @override
+  String get rejectSevere => 'Final refusal: block new requests';
+
+  @override
+  String get rejectSevereHint =>
+      'For likely fraud: different face, fake document.';
+
+  @override
+  String get identityBlockedNote =>
+      'Your identity verification is blocked. Contact support.';
+
+  @override
+  String identityRetryOn(String date) {
+    return 'You can send a new request on $date.';
+  }
+
+  @override
+  String identityAttemptsLeft(int count) {
+    return 'Attempts left: $count.';
+  }
+
+  @override
+  String get errorIdentityBlocked =>
+      'Your identity verification is blocked. Contact support.';
+
+  @override
+  String get errorIdentityRetryLater =>
+      'Wait 24 hours after a refusal before a new request.';
+
+  @override
+  String get unblockIdentity => 'Unblock verification';
+
+  @override
+  String get identityUnblocked => 'Verification unblocked';
+
+  @override
+  String get identityBlockedChip => 'Verification blocked';
+
+  @override
+  String get attemptsTitle => 'Requests from this account';
+
+  @override
+  String refusalsCount(int count) {
+    return 'Refusals: $count';
+  }
+
+  @override
+  String get outcomeAuto => 'Verified by the AI';
+
+  @override
+  String get outcomeVerified => 'Verified';
+
+  @override
+  String get outcomeRejected => 'Refused';
+
+  @override
+  String get outcomePending => 'Pending';
+
+  @override
+  String get biometricConsentLabel =>
+      'I agree to have my face analysed to verify my identity. Analysis on Mon Constat servers, photo deleted as soon as a decision is made (law no. 2004-63).';
+
+  @override
+  String get errorAiQuota =>
+      'Too many analyses in a short time. Try again in a while.';
+
+  @override
+  String get livenessHintNoFace => 'Put your face in the oval';
+
+  @override
+  String get livenessHintLookStraight => 'Look straight at the camera';
+
+  @override
+  String get livenessHintTurnMore => 'Turn your head further';
+
+  @override
+  String get dashAiTitle => 'AI verification';
+
+  @override
+  String get dashAiFooter =>
+      'Over the period shown. Analysis on our servers, no outside service.';
+
+  @override
+  String get dashAiRequests => 'requests';
+
+  @override
+  String get dashAiAutoRate => 'verified by the AI alone';
+
+  @override
+  String get dashAiAverageMatch => 'average match';
+
+  @override
+  String get dashAiBlocked => 'blocked accounts';
+
+  @override
+  String get checkBirthDate => 'Same birth date as the licence';
+
+  @override
+  String get licenseBirthMismatch =>
+      'Warning: the birth date on the licence does not match your identity document.';
 }

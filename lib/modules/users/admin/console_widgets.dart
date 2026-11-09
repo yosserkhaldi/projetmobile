@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:intl/intl.dart' show DateFormat;
+
+import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/models/identity_attempt.dart';
+import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 
 /// Texte des boutons de la console : plus discret que sur téléphone.
 const consoleButtonText = TextStyle(fontSize: 14, fontWeight: FontWeight.w700);
@@ -192,6 +197,99 @@ StatusChip identityChip(BuildContext context, IdentityStatus status) {
   };
 }
 
+/// Contrôles de l'IA sur une demande, pour voir d'un coup d'œil pourquoi elle
+/// attend un administrateur.
+class IdentityChecklist extends StatelessWidget {
+  const IdentityChecklist({required this.identity, super.key});
+  final Identity identity;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final p = context.palette;
+    final checks = identity.checks;
+    final match = identity.faceMatch;
+    final number = checks?.numberRead;
+    final items = <(String, bool?)>[
+      (t.checkLiveness, identity.livenessAt != null ? true : null),
+      (t.checkFace, match == null ? null : match >= 0.6),
+      (
+        number == null ? t.checkNumberUnread : t.checkNumber(number),
+        checks?.numberMatches,
+      ),
+      if (identity.documentType.hasBack) (t.checkBack, checks?.backRecognized),
+      if (checks?.nameMatches != null) (t.checkName, checks!.nameMatches),
+      if (checks?.notExpired != null) (t.checkExpiry, checks!.notExpired),
+      if (checks?.birthDateMatches != null)
+        (t.checkBirthDate, checks!.birthDateMatches),
+    ];
+    return Column(
+      key: const Key('identity-checklist'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          t.checksTitle.toUpperCase(),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+            color: p.textMuted,
+          ),
+        ),
+        for (final (label, ok) in items)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Row(
+              children: [
+                Icon(
+                  switch (ok) {
+                    true => Icons.check_circle,
+                    false => Icons.cancel,
+                    null => Icons.help_outline,
+                  },
+                  size: 18,
+                  color: switch (ok) {
+                    true => p.successText,
+                    false => p.errorText,
+                    null => p.textMuted,
+                  },
+                ),
+                const SizedBox(width: 8),
+                Expanded(child: Text(label)),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Verdict de l'IA sur une demande : ressemblance pièce / visage.
+StatusChip aiMatchChip(BuildContext context, Identity identity) {
+  final t = context.t;
+  final p = context.palette;
+  final match = identity.faceMatch;
+  if (match == null) {
+    return StatusChip(
+      label: t.aiNoConclusion,
+      background: p.surfaceAlt,
+      foreground: p.textMuted,
+      icon: Icons.psychology_alt_outlined,
+    );
+  }
+  final (bg, fg) = match >= 0.6
+      ? (p.successBg, p.successText)
+      : match >= 0.35
+      ? (p.warningBg, p.warningText)
+      : (p.errorBg, p.errorText);
+  return StatusChip(
+    label: t.aiMatch((match * 100).round()),
+    background: bg,
+    foreground: fg,
+    icon: Icons.face_retouching_natural,
+  );
+}
+
 StatusChip roleChip(BuildContext context, UserRole role) {
   final p = context.palette;
   final (bg, fg) = switch (role) {
@@ -260,4 +358,112 @@ class ConsoleEmpty extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Bouton « Demandes de ce compte » : ouvre l'historique des demandes
+/// d'identité, pour repérer quelqu'un qui essaie plusieurs pièces.
+class AttemptHistoryButton extends StatelessWidget {
+  const AttemptHistoryButton({required this.user, super.key});
+  final AppUser user;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: TextButton.icon(
+        key: const Key('attempt-history'),
+        onPressed: () => showDialog<void>(
+          context: context,
+          builder: (_) => _AttemptHistoryDialog(user: user),
+        ),
+        icon: const Icon(Icons.history, size: 18),
+        label: Text(
+          user.identity.refusals > 0
+              ? '${t.attemptsTitle} · ${t.refusalsCount(user.identity.refusals)}'
+              : t.attemptsTitle,
+        ),
+      ),
+    );
+  }
+}
+
+class _AttemptHistoryDialog extends StatelessWidget {
+  const _AttemptHistoryDialog({required this.user});
+  final AppUser user;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final p = context.palette;
+    final admin = AppScope.of(context).admin;
+    String outcome(AttemptOutcome o) => switch (o) {
+      AttemptOutcome.autoVerified => t.outcomeAuto,
+      AttemptOutcome.verified => t.outcomeVerified,
+      AttemptOutcome.rejected => t.outcomeRejected,
+      AttemptOutcome.pending => t.outcomePending,
+    };
+    return AlertDialog(
+      title: Text('${t.attemptsTitle} · ${user.name}'),
+      content: SizedBox(
+        width: 480,
+        child: FutureBuilder<List<IdentityAttempt>>(
+          future: admin.identityAttempts(user),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Text(errorMessage(context, snapshot.error!));
+            }
+            final items = snapshot.data;
+            if (items == null) {
+              return const SizedBox(
+                height: 80,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            return ListView(
+              shrinkWrap: true,
+              children: [
+                for (final a in items)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(
+                      switch (a.outcome) {
+                        AttemptOutcome.rejected => Icons.cancel,
+                        AttemptOutcome.pending => Icons.hourglass_top,
+                        _ => Icons.check_circle,
+                      },
+                      color: switch (a.outcome) {
+                        AttemptOutcome.rejected => p.errorText,
+                        AttemptOutcome.pending => p.warningText,
+                        _ => p.successText,
+                      },
+                    ),
+                    title: Text(
+                      '${outcome(a.outcome)} · ${a.documentType} ${a.number}',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: Text(
+                      [
+                        DateFormat.yMMMd(
+                          t.localeName,
+                        ).add_Hm().format(a.createdAt),
+                        if (a.faceMatch != null)
+                          t.aiMatch((a.faceMatch! * 100).round()),
+                        ?a.reason,
+                      ].join(' · '),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(MaterialLocalizations.of(context).closeButtonLabel),
+        ),
+      ],
+    );
+  }
 }
