@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { db } from '../claims.db.js';
+import { scopeOf } from '../claims.service.js';
 import { Status } from '../claims.workflow.js';
 import { langOf, textsIn } from './i18n.js';
 import { analyze, driverView, historyOf, priorClaimsOf } from './insights.js';
@@ -37,7 +38,8 @@ export const caseFacts = (claim, role = 'agent') => ({
   date: claim.date,
   statut: claim.status,
   gravite: claim.severity,
-  circonstances: claim.circumstances,
+  circonstancesA: claim.circumstances,
+  circonstancesB: claim.circumstancesB ?? [],
   pointsDeChoc: claim.impactZones,
   observations: claim.observations,
   chronologie: claim.events.map((event) => event.label),
@@ -100,13 +102,18 @@ function toolsFor(role, claim, analysis, lang) {
 // Analyse du dossier, rédigée dans la langue de `user`.
 export async function loadContext(claim, user) {
   const { role } = user;
-  const claims = await db().claim.findMany({
-    where: role === 'driver' ? { driverId: claim.driverId } : {},
-    include: { events: true, documents: true, requests: true },
-  });
+  const include = { events: true, documents: true, requests: true };
+  // Les dossiers similaires restent dans la compagnie de l'agent ; le nombre
+  // de sinistres du conducteur compte, lui, toutes les compagnies.
+  const [own, visible] = await Promise.all([
+    db().claim.findMany({ where: { driverId: claim.driverId }, include }),
+    role === 'driver'
+      ? []
+      : db().claim.findMany({ where: scopeOf(user), include }),
+  ]);
   return analyze(claim, {
-    priorClaims: priorClaimsOf(claim, claims),
-    history: role === 'driver' ? [] : historyOf(claims),
+    priorClaims: priorClaimsOf(claim, own),
+    history: historyOf(visible),
     lang: langOf(user),
   });
 }

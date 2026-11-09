@@ -788,6 +788,28 @@ class AppLocalizationsFr extends AppLocalizations {
       'Votre dossier prend plus de temps que d’habitude. Vous pouvez écrire à votre agent.';
 
   @override
+  String get claimsCircumstancesA => 'Circonstances de A';
+
+  @override
+  String get claimsCircumstancesB => 'Circonstances de B';
+
+  @override
+  String claimsProposalFaultB(String box) {
+    return '$box : manœuvre à risque de B.';
+  }
+
+  @override
+  String claimsProposalBoth(String a, String b) {
+    return 'A : $a, B : $b. Manœuvres à risque des deux côtés : partage.';
+  }
+
+  @override
+  String get claimsProposalParkedB => 'B était en stationnement.';
+
+  @override
+  String get claimsNoCompany => 'Compagnie non renseignée';
+
+  @override
   String get claimsSummaryTitle => 'Résumé du dossier';
 
   @override

@@ -4,6 +4,7 @@ import 'package:path/path.dart' as p;
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
+import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 
 typedef DeclarationFile = ({
   String name,
@@ -11,6 +12,25 @@ typedef DeclarationFile = ({
   String? path,
   Uint8List? bytes,
 });
+
+/// Compagnie d'assurance du sinistre, prise dans les contrats du module 2.
+///
+/// La déclaration (module 3) ne dit pas encore quel véhicule est concerné :
+/// on retient l'assureur s'il est le même pour tous les véhicules actifs du
+/// conducteur. Sinon, null, et le serveur essaie avec ses propres données ;
+/// à défaut, tous les agents voient le sinistre.
+String? declarationCompany(Iterable<Vehicle> vehicles, {String? vehicleId}) {
+  if (vehicleId != null) {
+    for (final vehicle in vehicles) {
+      if (vehicle.id == vehicleId) return vehicle.companyId;
+    }
+  }
+  final companies = {
+    for (final vehicle in vehicles)
+      if (!vehicle.archived && vehicle.companyId != null) vehicle.companyId!,
+  };
+  return companies.length == 1 ? companies.single : null;
+}
 
 /// Ce que la déclaration (module 3) apporte au dossier : les photos de
 /// preuve, la vidéo, la note vocale et le constat en PDF.

@@ -149,9 +149,9 @@ router.get('/ai/status', (_req, res) => {
   });
 });
 
-router.get('/analytics', agent, async (_req, res) => {
+router.get('/analytics', agent, async (req, res) => {
   const [all, calls] = await Promise.all([
-    claims.listClaims({ role: 'agent' }, {}),
+    claims.listClaims(req.user, {}),
     db().aiCall.findMany({ select: { source: true, ok: true } }),
   ]);
   res.json(analytics(all, calls));

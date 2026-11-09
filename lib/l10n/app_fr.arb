@@ -508,6 +508,29 @@
   },
   "claimsEstimateNote": "Estimation, pas un engagement.",
   "claimsTakingLonger": "Votre dossier prend plus de temps que d’habitude. Vous pouvez écrire à votre agent.",
+  "claimsCircumstancesA": "Circonstances de A",
+  "claimsCircumstancesB": "Circonstances de B",
+  "claimsProposalFaultB": "{box} : manœuvre à risque de B.",
+  "@claimsProposalFaultB": {
+    "placeholders": {
+      "box": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsProposalBoth": "A : {a}, B : {b}. Manœuvres à risque des deux côtés : partage.",
+  "@claimsProposalBoth": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      }
+    }
+  },
+  "claimsProposalParkedB": "B était en stationnement.",
+  "claimsNoCompany": "Compagnie non renseignée",
   "claimsSummaryTitle": "Résumé du dossier",
   "claimsPriorityScore": "Priorité {score}",
   "@claimsPriorityScore": {

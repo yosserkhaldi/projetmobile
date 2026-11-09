@@ -1486,6 +1486,42 @@ abstract class AppLocalizations {
   /// **'Votre dossier prend plus de temps que d’habitude. Vous pouvez écrire à votre agent.'**
   String get claimsTakingLonger;
 
+  /// No description provided for @claimsCircumstancesA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Circonstances de A'**
+  String get claimsCircumstancesA;
+
+  /// No description provided for @claimsCircumstancesB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Circonstances de B'**
+  String get claimsCircumstancesB;
+
+  /// No description provided for @claimsProposalFaultB.
+  ///
+  /// In fr, this message translates to:
+  /// **'{box} : manœuvre à risque de B.'**
+  String claimsProposalFaultB(String box);
+
+  /// No description provided for @claimsProposalBoth.
+  ///
+  /// In fr, this message translates to:
+  /// **'A : {a}, B : {b}. Manœuvres à risque des deux côtés : partage.'**
+  String claimsProposalBoth(String a, String b);
+
+  /// No description provided for @claimsProposalParkedB.
+  ///
+  /// In fr, this message translates to:
+  /// **'B était en stationnement.'**
+  String get claimsProposalParkedB;
+
+  /// No description provided for @claimsNoCompany.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compagnie non renseignée'**
+  String get claimsNoCompany;
+
   /// No description provided for @claimsSummaryTitle.
   ///
   /// In fr, this message translates to:

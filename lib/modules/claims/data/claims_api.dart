@@ -189,12 +189,14 @@ class ClaimsApi {
       appointmentState: row['appointmentState'] as String?,
       appointmentBy: row['appointmentBy'] as String?,
       appointmentNote: row['appointmentNote'] as String?,
+      companyId: row['companyId'] as String?,
       responsibility: row['responsibility'] as int?,
       indemnity: (row['indemnity'] as num?)?.toDouble(),
       decisionReason: row['decisionReason'] as String?,
     );
     claim.circumstances.addAll(_strings(row['circumstances']));
     claim.impactZones.addAll(_strings(row['impactZones']));
+    claim.circumstancesB.addAll(_strings(row['circumstancesB']));
 
     final events = (row['events'] as List<dynamic>? ?? const [])
         .cast<Map<String, dynamic>>();

@@ -21,12 +21,16 @@ export function attachClaimsSocket(httpServer) {
   io.on('connection', (socket) => {
     socket.join(`user:${socket.user.id}`);
     socket.join(`role:${socket.user.role}`);
+    if (socket.user.companyId) socket.join(`company:${socket.user.companyId}`);
   });
   return io;
 }
 
+// Les agents d'une autre compagnie ne sont pas prévenus. Un sinistre sans
+// compagnie connue reste visible de tous les agents.
 export function announceChange(claim) {
-  io?.to('role:agent').to(`user:${claim.driverId}`).emit('claims:changed', {
+  const agents = claim.companyId ? `company:${claim.companyId}` : 'role:agent';
+  io?.to(agents).to(`user:${claim.driverId}`).emit('claims:changed', {
     claimId: claim.id,
   });
 }

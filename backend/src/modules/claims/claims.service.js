@@ -6,6 +6,7 @@ import {
   insightsFor,
   priorClaimsOf,
 } from './ai/insights.js';
+import { companyScope } from '../../middleware/auth.js';
 import { db } from './claims.db.js';
 import { badRequest, conflict, notFound } from './claims.errors.js';
 import { announceChange } from './claims.socket.js';
@@ -29,8 +30,45 @@ export function visibleTo(user, claim) {
   };
 }
 
-const canSee = (user, claim) =>
-  user.role !== 'driver' || claim.driverId === user.id;
+// Qui voit quels sinistres (module 1, companyScope) :
+// - conducteur : les siens ;
+// - agent : ceux de sa compagnie, et ceux dont la compagnie est inconnue
+//   (la déclaration ne dit pas toujours quel véhicule est concerné) ;
+// - administrateur : tous.
+// Un agent sans compagnie est refusé (403) par companyScope.
+export function scopeOf(user) {
+  if (user.role === 'driver') return { driverId: user.id };
+  const scope = companyScope({
+    user: { role: user.role.toUpperCase(), companyId: user.companyId },
+  });
+  if (!scope.companyId) return scope;
+  return { OR: [scope, { companyId: null }] };
+}
+
+const canSee = (user, claim) => {
+  if (user.role === 'driver') return claim.driverId === user.id;
+  scopeOf(user);
+  return (
+    user.role !== 'agent' || !claim.companyId || claim.companyId === user.companyId
+  );
+};
+
+// Compagnie du sinistre : celle du contrat choisi dans l'application, sinon,
+// côté serveur, l'unique compagnie des véhicules du conducteur. Une compagnie
+// inconnue n'empêche pas la déclaration : le sinistre reste sans compagnie.
+async function companyOf(tx, driverId, requested) {
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (typeof requested === 'string' && uuid.test(requested)) {
+    const company = await tx.company.findUnique({ where: { id: requested } });
+    if (company) return company.id;
+  }
+  const vehicles = await tx.vehicle.findMany({
+    where: { userId: driverId, archived: false, companyId: { not: null } },
+    select: { companyId: true },
+  });
+  const companies = [...new Set(vehicles.map((v) => v.companyId))];
+  return companies.length === 1 ? companies[0] : null;
+}
 
 const required = (value, message) => {
   const text = typeof value === 'string' ? value.trim() : '';
@@ -92,7 +130,8 @@ const reply = async (tx, id, user, status = 200) => {
 export async function listClaims(user, { status, severity, from, to, q }) {
   const claims = await db().claim.findMany({
     where: {
-      ...(user.role === 'driver' ? { driverId: user.id } : {}),
+      // AND : la recherche texte a son propre OR, qui écraserait le périmètre.
+      AND: [scopeOf(user)],
       ...(status ? { status } : {}),
       ...(severity ? { severity } : {}),
       ...(from || to
@@ -139,7 +178,9 @@ export const createClaim = (tx, user, input) => {
         severity: required(input.severity, 'Gravité requise.'),
         status: Status.transmitted,
         observations: input.observations ?? '',
+        companyId: await companyOf(tx, user.id, input.companyId),
         circumstances: input.circumstances ?? [],
+        circumstancesB: input.circumstancesB ?? [],
         impactZones: input.impactZones ?? [],
         events: {
           create: (input.timeline ?? [Status.transmitted]).map((label) => ({
@@ -403,23 +444,31 @@ export async function rejectClaim(tx, user, id, input) {
   return reply(tx, id, user);
 }
 
-export const notificationsFor = (user) =>
+// Un agent ne voit que les notifications des sinistres de son périmètre.
+async function notificationScope(user) {
+  if (user.role === 'driver') {
+    return { audience: 'driver', recipientId: user.id };
+  }
+  const visible = await db().claim.findMany({
+    where: scopeOf(user),
+    select: { id: true },
+  });
+  return {
+    audience: user.role,
+    OR: [{ claimId: null }, { claimId: { in: visible.map((c) => c.id) } }],
+  };
+}
+
+export const notificationsFor = async (user) =>
   db().claimNotification.findMany({
-    where:
-      user.role === 'driver'
-        ? { audience: 'driver', recipientId: user.id }
-        : { audience: user.role },
+    where: await notificationScope(user),
     orderBy: { createdAt: 'desc' },
   });
 
 export async function markNotificationsRead(tx, user, ids) {
   if (!Array.isArray(ids)) throw badRequest('Liste d’identifiants requise.');
   await tx.claimNotification.updateMany({
-    where: {
-      id: { in: ids },
-      audience: user.role,
-      ...(user.role === 'driver' ? { recipientId: user.id } : {}),
-    },
+    where: { id: { in: ids }, ...(await notificationScope(user)) },
     data: { read: true },
   });
   return { body: { ok: true } };

@@ -33,8 +33,9 @@ npm run db:seed               # demo accounts and claims
 ```
 
 Password for every account: `Password123!`
-- `sami@example.com`: driver
-- `leila@assurance.tn`: agent
+- `sami@example.com`: driver, his claims go to STAR Assurances
+- `leila@assurance.tn`: agent at STAR Assurances
+- `karim@comar.tn`: agent at COMAR, to check that each insurer only sees its own claims
 
 To replay the scenarios from the start, `npm run claims:demo` resets the module 5 claims, and only those.
 
@@ -129,33 +130,41 @@ flutter run --dart-define=API_URL=http://192.168.1.9:3000/api
 18. **A**, reject another claim with a reason → Rejeté, and D sees the reason.
 19. **A**, on a closed or rejected claim, "Rouvrir le dossier" with a reason → back to En instruction. The old decision stays in the timeline as "Rouvert : …", and D is notified.
 
+### Insurers and both drivers' boxes
+20. **Each insurer sees only its own claims.** Log in as Karim (COMAR) in a third window. He sees only SIN-2026-0430, not Sami's STAR claims, and none of their notifications. Leïla doesn't see 0430. A claim whose insurer is unknown shows a blue "Compagnie non renseignée" chip, and every agent can see it.
+21. **Where the insurer comes from.** It's the insurer of Sami's vehicles in the Véhicules tab (module 2). Give his vehicle(s) a single insurer, then declare an accident: the new claim goes to that insurer's agents. If his vehicles have different insurers, the claim stays "Compagnie non renseignée", because the declaration (module 3) doesn't yet say which vehicle was involved.
+22. **Driver B's boxes.** The Constat section shows "Circonstances de A" and "Circonstances de B". The Décision card reads both:
+    - SIN-2026-0421 (A reversing, B leaving a parking space) → 50/50, risky manoeuvres on both sides;
+    - SIN-2026-0430, as Karim (A parked, B reversing) → A 0 %;
+    - SIN-2026-0422 (A overtaking, B turning left) → A 100 %.
+
 ### Messages and notifications
-20. Messages between D and A arrive in about a second, without refreshing.
-21. The Messages tab shows an unread count, which clears when the conversation is opened. One tick means sent, two ticks mean read.
-22. The paperclip attaches a file, and tapping it downloads it.
-23. **A**, light bulb in a conversation: 3 suggested replies, and tapping one fills the input box.
-24. Bell icon: each change made by one side notifies the other. Tapping a notification opens the claim; "Tout marquer lu" marks them all read.
+23. Messages between D and A arrive in about a second, without refreshing.
+24. The Messages tab shows an unread count, which clears when the conversation is opened. One tick means sent, two ticks mean read.
+25. The paperclip attaches a file, and tapping it downloads it.
+26. **A**, light bulb in a conversation: 3 suggested replies, and tapping one fills the input box.
+27. Bell icon: each change made by one side notifies the other. Tapping a notification opens the claim; "Tout marquer lu" marks them all read.
 
 ### Assistant
-25. Headset icon on a claim: the suggested questions stay above the input box. The ones already asked move to the end.
-26. **D**: "Combien je vais être remboursé ?" → the assistant refuses and sends him to the agent.
-27. **A**: "Quelle responsabilité proposes-tu ?" → the proposal and its reason.
-28. Answers say who wrote them: "Claude (CLI) · …" or "Réponse automatique".
+28. Headset icon on a claim: the suggested questions stay above the input box. The ones already asked move to the end.
+29. **D**: "Combien je vais être remboursé ?" → the assistant refuses and sends him to the agent.
+30. **A**: "Quelle responsabilité proposes-tu ?" → the proposal and its reason.
+31. Answers say who wrote them: "Claude (CLI) · …" or "Réponse automatique".
 
 ### Statistics (agent, chart icon)
-29. Animated tiles, a donut chart by status, bars by severity and by accident type, a gauge showing how often the agent followed the system, and AI answers per source.
+32. Animated tiles, a donut chart by status, bars by severity and by accident type, a gauge showing how often the agent followed the system, and AI answers per source.
 
 ### Languages
-30. Profile > language Arabic or English: every module 5 screen switches language, and Arabic reads right to left.
-31. Server texts follow too: tracking card, next action, priority reasons, and assistant answers.
+33. Profile > language Arabic or English: every module 5 screen switches language, and Arabic reads right to left.
+34. Server texts follow too: tracking card, next action, priority reasons, and assistant answers.
 
 ### Offline
-32. `docker compose stop db` (or stop `npm run dev`): a "Hors ligne" banner appears. Send a message or a document; it waits on the phone.
-33. Restart it: the banner disappears and everything is sent, in order.
+35. `docker compose stop db` (or stop `npm run dev`): a "Hors ligne" banner appears. Send a message or a document; it waits on the phone.
+36. Restart it: the banner disappears and everything is sent, in order.
 
 ### Security
-34. D never sees risk, estimates, warnings or other drivers' claims, and has no Statistics.
-35. Log out → the claims are cleared from the screen.
+37. D never sees risk, estimates, warnings or other drivers' claims, and has no Statistics.
+38. Log out → the claims are cleared from the screen.
 
 ## 6. Run the tests
 

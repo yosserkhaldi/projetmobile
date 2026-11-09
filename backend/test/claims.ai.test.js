@@ -48,6 +48,26 @@ describe('règles', () => {
     assert.equal(responsibilityProposal([]).driverA, 50);
   });
 
+  test('barème avec les cases des deux conducteurs', () => {
+    const cases = [
+      [['Changeait de file'], ['Reculait'], 50, 'both'],
+      [[], ['Doublait'], 0, 'fault-b'],
+      [['Virait à gauche'], ['En stationnement'], 100, 'parked-b'],
+      [['En stationnement'], ['Virait à droite'], 0, 'parked-a'],
+      [['Changeait de file'], [], 100, 'fault-a'],
+      [['En stationnement'], ['En stationnement'], 50, 'unknown'],
+    ];
+    for (const [a, b, share, basis] of cases) {
+      const proposal = responsibilityProposal(a, b);
+      assert.equal(proposal.driverA, share, `${a} / ${b}`);
+      assert.equal(proposal.basis, basis, `${a} / ${b}`);
+    }
+    assert.equal(
+      responsibilityProposal([], ['Doublait'], 'EN').reason,
+      'Overtaking: risky manoeuvre by B.',
+    );
+  });
+
   test('un sinistre grave demande un PV et un expert', () => {
     const result = analyze(claimWith({ severity: 'Grave' }), { now });
     assert.deepEqual(result.missingDocuments.map((d) => d.label), ['Devis', 'PV de police']);
@@ -287,11 +307,20 @@ describe('API intelligence', () => {
   let busy;
   let agent;
 
+  let testCompany;
   async function account(number, role, firstName) {
     const { signAccessToken } = await import('../src/lib/tokens.js');
+    // Un agent doit appartenir à une compagnie (companyScope, module 1).
+    // Créée une seule fois : deux upserts simultanés se gênent.
+    testCompany ??= prisma.company.upsert({
+      where: { name: 'Compagnie ai' },
+      update: {},
+      create: { name: 'Compagnie ai' },
+    });
+    const companyId = role === 'AGENT' ? (await testCompany).id : null;
     const user = await prisma.user.upsert({
       where: { email: `ai${number}@test.tn` },
-      update: {},
+      update: { companyId },
       create: {
         firstName,
         lastName: 'Secret',
@@ -299,6 +328,7 @@ describe('API intelligence', () => {
         phone: `+21651${number}`,
         passwordHash: 'x',
         role,
+        companyId,
       },
     });
     const session = await prisma.session.create({ data: { userId: user.id } });

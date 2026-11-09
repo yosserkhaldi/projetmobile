@@ -386,8 +386,9 @@ class _DecisionCard extends StatefulWidget {
 }
 
 class _DecisionCardState extends State<_DecisionCard> {
-  late final proposal = ResponsibilityProposal.fromCircumstances(
+  late final proposal = ResponsibilityProposal.fromBoxes(
     widget.claim.circumstances,
+    widget.claim.circumstancesB,
   );
   late int share = widget.claim.responsibility ?? proposal.driverA;
   final amount = TextEditingController();

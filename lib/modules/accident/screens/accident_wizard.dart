@@ -163,6 +163,9 @@ class _AccidentWizardState extends State<AccidentWizard> {
     );
     // Module 5 : la proposition de responsabilité lit les cases du déclarant (A).
     claim.circumstances.addAll(draft.circumstancesA);
+    claim.circumstancesB.addAll(draft.circumstancesB);
+    // Module 5 : le sinistre va aux agents de l'assureur du conducteur.
+    claim.companyId = declarationCompany(scope.vehicles.vehicles);
     claim.impactZones.addAll(draft.impactZones);
     claim.timeline.addAll([
       'Déclaration complétée',
@@ -212,8 +215,12 @@ class _AccidentWizardState extends State<AccidentWizard> {
       );
       return false;
     }
-    if (step == 4 && draft.circumstancesA.isEmpty && draft.circumstancesB.isEmpty) {
-      _showError('Sélectionnez au moins une circonstance pour le véhicule A ou B.');
+    if (step == 4 &&
+        draft.circumstancesA.isEmpty &&
+        draft.circumstancesB.isEmpty) {
+      _showError(
+        'Sélectionnez au moins une circonstance pour le véhicule A ou B.',
+      );
       return false;
     }
     if (step == 5 && (!draft.sketchConfirmed || draft.impactZones.isEmpty)) {

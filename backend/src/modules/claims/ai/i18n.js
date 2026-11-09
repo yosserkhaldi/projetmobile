@@ -104,7 +104,10 @@ const fr = {
   value: (v) => v,
   proposal: {
     fault: (box) => `${box} : manœuvre à risque de A.`,
+    faultB: (box) => `${box} : manœuvre à risque de B.`,
+    both: (a, b) => `A : ${a}, B : ${b}. Manœuvres à risque des deux côtés : partage.`,
     parked: 'A était en stationnement.',
+    parkedB: 'B était en stationnement.',
     turn: (box) => `${box} : partage par défaut.`,
     unknown: 'Cases insuffisantes : partage par défaut.',
   },
@@ -212,7 +215,10 @@ const en = {
   value: (v) => valueIn('EN', v),
   proposal: {
     fault: (box) => `${box}: risky manoeuvre by A.`,
+    faultB: (box) => `${box}: risky manoeuvre by B.`,
+    both: (a, b) => `A: ${a}, B: ${b}. Risky manoeuvres on both sides: shared.`,
     parked: 'A was parked.',
+    parkedB: 'B was parked.',
     turn: (box) => `${box}: shared by default.`,
     unknown: 'Not enough boxes ticked: shared by default.',
   },
@@ -320,7 +326,10 @@ const ar = {
   value: (v) => valueIn('AR', v),
   proposal: {
     fault: (box) => `${box}: مناورة خطرة من السائق A.`,
+    faultB: (box) => `${box}: مناورة خطرة من السائق B.`,
+    both: (a, b) => `A: ${a}، B: ${b}. مناورات خطرة من الطرفين: مسؤولية مشتركة.`,
     parked: 'كانت سيارة A متوقفة.',
+    parkedB: 'كانت سيارة B متوقفة.',
     turn: (box) => `${box}: مسؤولية مشتركة افتراضيًا.`,
     unknown: 'الخانات غير كافية: مسؤولية مشتركة افتراضيًا.',
   },

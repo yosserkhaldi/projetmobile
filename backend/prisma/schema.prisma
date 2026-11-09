@@ -227,7 +227,9 @@ model Claim {
   status            String
   severity          String
   observations      String    @default("")
+  // Cases cochées par le conducteur A (le déclarant) et par le conducteur B.
   circumstances     String[]
+  circumstancesB    String[]  @default([])
   impactZones       String[]
   expertName        String?
   expertAppointment DateTime?

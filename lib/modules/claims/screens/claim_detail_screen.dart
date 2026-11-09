@@ -314,7 +314,9 @@ class _ConstatSummary extends StatelessWidget {
     final t = context.t;
     final rows = [
       if (claim.circumstances.isNotEmpty)
-        (t.claimsCircumstances, t.claimValues(claim.circumstances)),
+        (t.claimsCircumstancesA, t.claimValues(claim.circumstances)),
+      if (claim.circumstancesB.isNotEmpty)
+        (t.claimsCircumstancesB, t.claimValues(claim.circumstancesB)),
       if (claim.impactZones.isNotEmpty)
         (t.claimsImpactPoint, t.claimValues(claim.impactZones)),
       if (claim.observations.isNotEmpty)

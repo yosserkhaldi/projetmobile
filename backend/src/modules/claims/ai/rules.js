@@ -25,18 +25,30 @@ const atFault = [
 const shared = ['Virait à droite', 'Virait à gauche'];
 const moving = [...atFault, ...shared];
 
-// Même barème que ResponsibilityProposal côté Flutter. La raison est
-// rédigée dans la langue demandée (FR, AR, EN).
-export function responsibilityProposal(boxes = [], lang = 'FR') {
+// Même barème que ResponsibilityProposal côté Flutter, avec les cases des
+// deux conducteurs (module 4) :
+// - une manœuvre à risque d'un seul côté : ce conducteur à 100 % ;
+// - des deux côtés : partage ;
+// - un véhicule en stationnement face à un véhicule qui roulait : 0 % pour lui ;
+// - sinon, un virage ou rien de décisif : partage par défaut.
+// `basis` est un code stable ; `reason` est rédigée dans la langue demandée.
+export function responsibilityProposal(boxesA = [], boxesB = [], lang = 'FR') {
   const t = textsIn(lang);
-  const fault = atFault.find((box) => boxes.includes(box));
-  if (fault) return { driverA: 100, reason: t.proposal.fault(t.value(fault)) };
-  if (boxes.includes('En stationnement')) {
-    return { driverA: 0, reason: t.proposal.parked };
+  const riskyA = atFault.find((box) => boxesA.includes(box));
+  const riskyB = atFault.find((box) => boxesB.includes(box));
+  const parkedA = boxesA.includes('En stationnement');
+  const parkedB = boxesB.includes('En stationnement');
+  const share = (driverA, basis, reason) => ({ driverA, basis, reason });
+  if (riskyA && riskyB) {
+    return share(50, 'both', t.proposal.both(t.value(riskyA), t.value(riskyB)));
   }
-  const turn = shared.find((box) => boxes.includes(box));
-  if (turn) return { driverA: 50, reason: t.proposal.turn(t.value(turn)) };
-  return { driverA: 50, reason: t.proposal.unknown };
+  if (riskyA) return share(100, 'fault-a', t.proposal.fault(t.value(riskyA)));
+  if (riskyB) return share(0, 'fault-b', t.proposal.faultB(t.value(riskyB)));
+  if (parkedA && !parkedB) return share(0, 'parked-a', t.proposal.parked);
+  if (parkedB && !parkedA) return share(100, 'parked-b', t.proposal.parkedB);
+  const turn = shared.find((box) => boxesA.includes(box) || boxesB.includes(box));
+  if (turn) return share(50, 'turn', t.proposal.turn(t.value(turn)));
+  return share(50, 'unknown', t.proposal.unknown);
 }
 
 const days = (from, to) => (to - from) / 86_400_000;

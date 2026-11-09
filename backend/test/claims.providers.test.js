@@ -115,11 +115,20 @@ describe('API sinistres avec chaque fournisseur', () => {
   let requests = [];
   let replies = [];
 
+  let testCompany;
   async function account(number, role, firstName, language = 'FR') {
     const { signAccessToken } = await import('../src/lib/tokens.js');
+    // Un agent doit appartenir à une compagnie (companyScope, module 1).
+    // Créée une seule fois : deux upserts simultanés se gênent.
+    testCompany ??= prisma.company.upsert({
+      where: { name: 'Compagnie prov' },
+      update: {},
+      create: { name: 'Compagnie prov' },
+    });
+    const companyId = role === 'AGENT' ? (await testCompany).id : null;
     const user = await prisma.user.upsert({
       where: { email: `prov${number}@test.tn` },
-      update: { language },
+      update: { companyId, language },
       create: {
         firstName,
         lastName: 'Secret',
@@ -127,6 +136,7 @@ describe('API sinistres avec chaque fournisseur', () => {
         phone: `+21652${number}`,
         passwordHash: 'x',
         role,
+        companyId,
         language,
       },
     });

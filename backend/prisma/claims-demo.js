@@ -5,6 +5,8 @@
 //   npm run claims:demo
 import { fileURLToPath } from 'node:url';
 
+import bcrypt from 'bcryptjs';
+
 import { prisma } from '../src/lib/prisma.js';
 
 const day = 86_400_000;
@@ -24,10 +26,11 @@ const OPEN = [
     status: 'En instruction',
     severity: 'Matériel',
     circumstances: ['Changeait de file'],
+    circumstancesB: [],
     impactZones: ['Avant'],
     events: ['Brouillon créé', 'Transmis', 'En instruction'],
   },
-  // Nouveau, à prendre en charge.
+  // Nouveau, à prendre en charge. A et B manœuvraient : partage 50/50.
   {
     id: 'SIN-2026-0421',
     type: 'Collision',
@@ -36,6 +39,7 @@ const OPEN = [
     status: 'Transmis',
     severity: 'Léger',
     circumstances: ['Reculait'],
+    circumstancesB: ['Quittait un stationnement'],
     impactZones: ['Arrière'],
     observations: 'Choc à faible vitesse sur le parking du supermarché.',
     events: ['Brouillon créé', 'Transmis'],
@@ -50,6 +54,7 @@ const OPEN = [
     status: 'Transmis',
     severity: 'Grave',
     circumstances: ['Doublait'],
+    circumstancesB: ['Virait à gauche'],
     impactZones: [],
     events: ['Brouillon créé', 'Transmis'],
   },
@@ -62,6 +67,7 @@ const OPEN = [
     status: 'En instruction',
     severity: 'Léger',
     circumstances: [],
+    circumstancesB: [],
     impactZones: ['Avant'],
     observations: 'Piéton heurté au passage clouté, blessure légère au genou.',
     events: ['Brouillon créé', 'Transmis', 'En instruction'],
@@ -77,6 +83,44 @@ const HISTORY = [
   ['SIN-2026-0105', 'Grave', ['Doublait'], ['Avant', 'Côté gauche'], 100, 2100, 31],
   ['SIN-2026-0106', 'Grave', ['En stationnement'], ['Arrière', 'Côté droit'], 0, 5400, 38],
 ];
+
+// Un agent d'une autre compagnie et un sinistre chez elle : Leïla (STAR)
+// ne doit ni le voir ni en être prévenue.
+const OTHER_AGENT = {
+  firstName: 'Karim',
+  lastName: 'Jaziri',
+  email: 'karim@comar.tn',
+  phone: '+21620000004',
+  role: 'AGENT',
+};
+const OTHER_DRIVER = {
+  firstName: 'Hedi',
+  lastName: 'Trabelsi',
+  email: 'hedi@example.com',
+  phone: '+21620000005',
+  role: 'DRIVER',
+};
+const OTHER_CLAIM = {
+  id: 'SIN-2026-0430',
+  type: 'Collision',
+  place: 'Avenue de la République, Sfax',
+  ago: 2,
+  status: 'Transmis',
+  severity: 'Matériel',
+  circumstances: ['En stationnement'],
+  circumstancesB: ['Reculait'],
+  impactZones: ['Arrière'],
+  events: ['Brouillon créé', 'Transmis'],
+};
+
+async function account(user, companyId) {
+  const passwordHash = await bcrypt.hash('Password123!', 10);
+  return prisma.user.upsert({
+    where: { email: user.email },
+    update: companyId ? { companyId } : {},
+    create: { ...user, companyId, passwordHash, phoneVerifiedAt: new Date() },
+  });
+}
 
 function openClaim(claim, driverId) {
   const { ago, declaredAfter = 0, events, ...fields } = claim;
@@ -123,14 +167,25 @@ export async function seedClaims({ reset = false } = {}) {
   const sami = await prisma.user.findUniqueOrThrow({
     where: { email: 'sami@example.com' },
   });
+  const star = await prisma.company.findUniqueOrThrow({
+    where: { name: 'STAR Assurances' },
+  });
+  const comar = await prisma.company.findUniqueOrThrow({ where: { name: 'COMAR' } });
+  await account(OTHER_AGENT, comar.id);
+  const hedi = await account(OTHER_DRIVER, null);
+  // Les dossiers de Sami et l'historique sont chez STAR, comme Leïla.
   const rows = [
-    ...OPEN.map((claim) => openClaim(claim, sami.id)),
-    ...HISTORY.map(closedClaim),
+    ...OPEN.map((claim) => ({ ...openClaim(claim, sami.id), companyId: star.id })),
+    ...HISTORY.map((claim) => ({ ...closedClaim(claim), companyId: star.id })),
+    { ...openClaim(OTHER_CLAIM, hedi.id), agentName: null, companyId: comar.id },
   ];
   if (reset) {
     // Les dossiers que Sami a déclarés pendant les tests partent aussi.
     const ids = [
       ...rows.map((row) => row.id),
+      ...(await prisma.claim.findMany({ where: { driverId: hedi.id }, select: { id: true } })).map(
+        (claim) => claim.id,
+      ),
       ...(await prisma.claim.findMany({ where: { driverId: sami.id }, select: { id: true } })).map(
         (claim) => claim.id,
       ),
@@ -142,11 +197,11 @@ export async function seedClaims({ reset = false } = {}) {
   for (const data of rows) {
     await prisma.claim.upsert({
       where: { id: data.id },
-      update: data.driverId === sami.id ? { driverId: sami.id } : {},
+      update: { driverId: data.driverId, companyId: data.companyId },
       create: data,
     });
   }
-  const fresh = OPEN.filter((claim) => claim.status === 'Transmis');
+  const fresh = [...OPEN, OTHER_CLAIM].filter((claim) => claim.status === 'Transmis');
   for (const claim of fresh) {
     const known = await prisma.claimNotification.findFirst({
       where: { claimId: claim.id, audience: 'agent' },

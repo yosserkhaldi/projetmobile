@@ -128,9 +128,13 @@ extension ClaimsText on AppLocalizations {
   /// Raison de la proposition de responsabilité, dans la langue de l'écran.
   String claimProposalReason(ResponsibilityProposal proposal) {
     final box = claimValue(proposal.box ?? '');
+    final boxB = claimValue(proposal.boxB ?? '');
     return switch (proposal.basis) {
       ProposalBasis.fault => claimsProposalFault(box),
+      ProposalBasis.faultB => claimsProposalFaultB(boxB),
+      ProposalBasis.both => claimsProposalBoth(box, boxB),
       ProposalBasis.parked => claimsProposalParked,
+      ProposalBasis.parkedB => claimsProposalParkedB,
       ProposalBasis.turn => claimsProposalTurn(box),
       ProposalBasis.unknown => claimsProposalUnknown,
     };

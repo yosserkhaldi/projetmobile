@@ -787,6 +787,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your claim is taking longer than usual. You can write to your agent.';
 
   @override
+  String get claimsCircumstancesA => 'Circumstances of A';
+
+  @override
+  String get claimsCircumstancesB => 'Circumstances of B';
+
+  @override
+  String claimsProposalFaultB(String box) {
+    return '$box: risky manoeuvre by B.';
+  }
+
+  @override
+  String claimsProposalBoth(String a, String b) {
+    return 'A: $a, B: $b. Risky manoeuvres on both sides: shared.';
+  }
+
+  @override
+  String get claimsProposalParkedB => 'B was parked.';
+
+  @override
+  String get claimsNoCompany => 'Insurer not given';
+
+  @override
   String get claimsSummaryTitle => 'Claim summary';
 
   @override

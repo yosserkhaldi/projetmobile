@@ -62,12 +62,14 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
         appointmentState: row.appointmentState,
         appointmentBy: row.appointmentBy,
         appointmentNote: row.appointmentNote,
+        companyId: row.companyId,
         responsibility: row.responsibility,
         indemnity: row.indemnity,
         decisionReason: row.decisionReason,
       );
       claim.circumstances.addAll(_decodeList(row.circumstances));
       claim.impactZones.addAll(_decodeList(row.impactZones));
+      claim.circumstancesB.addAll(_decodeList(row.circumstancesB));
 
       final claimEvents = events.where((e) => e.claimId == row.id).toList();
       claim.timeline
@@ -125,6 +127,8 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
     observations: Value(claim.observations),
     circumstances: Value(jsonEncode(claim.circumstances)),
     impactZones: Value(jsonEncode(claim.impactZones)),
+    circumstancesB: Value(jsonEncode(claim.circumstancesB)),
+    companyId: Value(claim.companyId),
     agentName: Value(claim.agentName),
     expertName: Value(claim.expertName),
     expertAppointment: Value(claim.expertAppointment),

@@ -66,6 +66,7 @@ class Claim {
     this.appointmentState,
     this.appointmentBy,
     this.appointmentNote,
+    this.companyId,
     this.responsibility,
     this.indemnity,
     this.decisionReason,
@@ -82,6 +83,10 @@ class Claim {
   /// « proposed » ou « accepted ». [appointmentBy] : `agent` ou `driver`,
   /// l'auteur du dernier créneau proposé. [appointmentNote] l'accompagne.
   String? appointmentState, appointmentBy, appointmentNote;
+
+  /// Compagnie d'assurance du sinistre (module 1). Absente quand la
+  /// déclaration ne dit pas quel véhicule était concerné.
+  String? companyId;
 
   bool get appointmentConfirmed => appointmentState == 'accepted';
 
@@ -104,7 +109,10 @@ class Claim {
   final Map<int, DateTime> timelineDates = {};
   final List<ClaimDocument> documents = [];
   final List<DocumentRequest> requests = [];
+
+  /// Cases cochées par le conducteur A (le déclarant) et par le conducteur B.
   final List<String> circumstances = [];
+  final List<String> circumstancesB = [];
   final List<String> impactZones = [];
 
   Iterable<DocumentRequest> get openRequests =>
@@ -138,6 +146,7 @@ class Claim {
     appointmentState = other.appointmentState;
     appointmentBy = other.appointmentBy;
     appointmentNote = other.appointmentNote;
+    companyId = other.companyId;
     responsibility = other.responsibility;
     indemnity = other.indemnity;
     decisionReason = other.decisionReason;
@@ -156,6 +165,9 @@ class Claim {
     circumstances
       ..clear()
       ..addAll(other.circumstances);
+    circumstancesB
+      ..clear()
+      ..addAll(other.circumstancesB);
     impactZones
       ..clear()
       ..addAll(other.impactZones);
@@ -180,6 +192,7 @@ class Claim {
           appointmentState: appointmentState,
           appointmentBy: appointmentBy,
           appointmentNote: appointmentNote,
+          companyId: companyId,
           responsibility: responsibility,
           indemnity: indemnity,
           decisionReason: decisionReason,
@@ -189,5 +202,6 @@ class Claim {
         ..documents.addAll(documents)
         ..requests.addAll(requests)
         ..circumstances.addAll(circumstances)
+        ..circumstancesB.addAll(circumstancesB)
         ..impactZones.addAll(impactZones);
 }

@@ -54,13 +54,20 @@ class ClaimCard extends StatelessWidget {
           if (insight case final insight? when insight.isForAgent) ...[
             const SizedBox(height: 10),
             _PriorityBar(insight.priority),
-            if (insight.reasons.isNotEmpty) ...[
+            if (insight.reasons.isNotEmpty || claim.companyId == null) ...[
               const SizedBox(height: 8),
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
                 children: [
                   for (final reason in insight.reasons) _ReasonChip(reason),
+                  // Visible de tous les agents tant que l'assureur manque.
+                  if (claim.companyId == null)
+                    _ReasonChip(
+                      context.t.claimsNoCompany,
+                      color: ClaimsColors.sky,
+                      icon: Icons.domain_disabled_outlined,
+                    ),
                 ],
               ),
             ],
@@ -122,25 +129,31 @@ class _PriorityBar extends StatelessWidget {
 }
 
 class _ReasonChip extends StatelessWidget {
-  const _ReasonChip(this.text);
+  const _ReasonChip(
+    this.text, {
+    this.color = ClaimsColors.coral,
+    this.icon = Icons.flag,
+  });
   final String text;
+  final Color color;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     decoration: BoxDecoration(
-      color: ClaimsColors.coral.withValues(alpha: .15),
+      color: color.withValues(alpha: .15),
       borderRadius: BorderRadius.circular(99),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.flag, size: 13, color: ClaimsColors.coral),
+        Icon(icon, size: 13, color: color),
         const SizedBox(width: 4),
         Text(
           text,
-          style: const TextStyle(
-            color: ClaimsColors.coral,
+          style: TextStyle(
+            color: color,
             fontSize: 12,
             fontWeight: FontWeight.w700,
           ),

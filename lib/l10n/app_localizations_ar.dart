@@ -787,6 +787,28 @@ class AppLocalizationsAr extends AppLocalizations {
       'ملفك يستغرق وقتًا أطول من المعتاد. يمكنك مراسلة العون.';
 
   @override
+  String get claimsCircumstancesA => 'ظروف السائق A';
+
+  @override
+  String get claimsCircumstancesB => 'ظروف السائق B';
+
+  @override
+  String claimsProposalFaultB(String box) {
+    return '$box: مناورة خطرة من السائق B.';
+  }
+
+  @override
+  String claimsProposalBoth(String a, String b) {
+    return 'A: $a، B: $b. مناورات خطرة من الطرفين: مسؤولية مشتركة.';
+  }
+
+  @override
+  String get claimsProposalParkedB => 'كانت سيارة B متوقفة.';
+
+  @override
+  String get claimsNoCompany => 'شركة التأمين غير محدّدة';
+
+  @override
   String get claimsSummaryTitle => 'ملخص الملف';
 
   @override

@@ -17,6 +17,8 @@ class Claims extends Table {
   /// Listes encodées en JSON.
   TextColumn get circumstances => text().withDefault(const Constant('[]'))();
   TextColumn get impactZones => text().withDefault(const Constant('[]'))();
+  TextColumn get circumstancesB => text().withDefault(const Constant('[]'))();
+  TextColumn get companyId => text().nullable()();
 
   TextColumn get agentName => text().nullable()();
   TextColumn get expertName => text().nullable()();

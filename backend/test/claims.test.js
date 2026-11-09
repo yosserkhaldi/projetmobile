@@ -22,12 +22,20 @@ describe('API sinistres', () => {
   let driver;
   let other;
   let agent;
+  let rival;
+  let homeless;
+  let star;
+  let comar;
 
   // Vrais comptes et vrais jetons : le module 1 relit l'utilisateur en base.
-  async function account(id, role, firstName) {
+  async function company(name) {
+    return prisma.company.upsert({ where: { name }, update: {}, create: { name } });
+  }
+
+  async function account(id, role, firstName, companyId = null) {
     const user = await prisma.user.upsert({
       where: { email: `${id}@test.tn` },
-      update: {},
+      update: { companyId },
       create: {
         firstName,
         lastName: 'Test',
@@ -35,6 +43,7 @@ describe('API sinistres', () => {
         phone: `+216${id}`,
         passwordHash: 'x',
         role,
+        companyId,
       },
     });
     // Le module 1 lie chaque jeton à une session d'appareil.
@@ -88,15 +97,20 @@ describe('API sinistres', () => {
 
   before(async () => {
     migrate();
+    [star, comar] = await Promise.all([
+      company('Test STAR'),
+      company('Test COMAR'),
+    ]);
     const accounts = await Promise.all([
       account('50000001', 'DRIVER', 'Sami'),
       account('50000002', 'DRIVER', 'Hedi'),
-      account('50000003', 'AGENT', 'Leïla'),
+      account('50000003', 'AGENT', 'Leïla', star.id),
+      account('50000004', 'AGENT', 'Karim', comar.id),
+      account('50000005', 'AGENT', 'Sans compagnie'),
     ]);
-    [driver, other, agent] = accounts.map(({ authorization, user }) => ({
-      authorization,
-      id: user.id,
-    }));
+    [driver, other, agent, rival, homeless] = accounts.map(
+      ({ authorization, user }) => ({ authorization, id: user.id }),
+    );
     server = createApp().listen(0);
     await new Promise((resolve) => server.once('listening', resolve));
     attachClaimsSocket(server);
@@ -112,6 +126,7 @@ describe('API sinistres', () => {
   after(async () => {
     await prisma.claim.deleteMany();
     await prisma.user.deleteMany({ where: { email: { endsWith: '@test.tn' } } });
+    await prisma.company.deleteMany({ where: { name: { startsWith: 'Test ' } } });
     await new Promise((resolve) => server.close(resolve));
   });
 
@@ -286,6 +301,65 @@ describe('API sinistres', () => {
     assert.equal(claim.events.at(-1).label, 'Rouvert : Montant erroné');
     // Un dossier en cours ne se rouvre pas.
     assert.equal((await call(agent, 'POST', `/${id}/reopen`, { reason: 'x' })).status, 409);
+  });
+
+  test('un agent ne voit que les sinistres de sa compagnie', async () => {
+    const mine = await createClaim({ companyId: star.id });
+    const theirs = await createClaim({ companyId: comar.id });
+    const unknown = await createClaim({ companyId: 'pas-une-compagnie' });
+
+    const ids = async (who) =>
+      (await call(who, 'GET', '/')).body.map((claim) => claim.id).sort();
+    assert.deepEqual(await ids(agent), [mine, unknown].sort());
+    assert.deepEqual(await ids(rival), [theirs, unknown].sort());
+    assert.equal((await call(rival, 'GET', `/${mine}`)).status, 404);
+    assert.equal((await call(rival, 'POST', `/${mine}/take-charge`)).status, 404);
+    // Recherche texte : le périmètre tient toujours.
+    const search = (await call(rival, 'GET', '/?q=Tunis')).body.map((c) => c.id);
+    assert.ok(!search.includes(mine));
+
+    const notes = (await call(rival, 'GET', '/notifications')).body;
+    assert.ok(notes.every((n) => n.claimId !== mine));
+    assert.ok(notes.some((n) => n.claimId === theirs));
+
+    const sync = (await call(rival, 'GET', '/sync')).body;
+    assert.ok(sync.claims.every((claim) => claim.id !== mine));
+    assert.equal((await call(homeless, 'GET', '/')).status, 403);
+  });
+
+  test('la compagnie vient du seul assureur des véhicules du conducteur', async () => {
+    const vehicle = await prisma.vehicle.create({
+      data: {
+        userId: driver.id,
+        plate: '123 TU 4567',
+        brand: 'Kia',
+        model: 'Picanto',
+        year: 2020,
+        policy: 'P-1',
+        companyId: comar.id,
+        insuranceExpiry: new Date('2027-01-01'),
+      },
+    });
+    try {
+      const id = await createClaim();
+      const claim = (await call(rival, 'GET', `/${id}`)).body;
+      assert.equal(claim.companyId, comar.id);
+      assert.equal((await call(agent, 'GET', `/${id}`)).status, 404);
+    } finally {
+      await prisma.vehicle.delete({ where: { id: vehicle.id } });
+    }
+  });
+
+  test('la proposition lit les cases de A et de B', async () => {
+    const id = await createClaim({
+      circumstances: ['Virait à gauche'],
+      circumstancesB: ['En stationnement'],
+    });
+    const insights = (await call(agent, 'GET', `/${id}/insights`)).body;
+    assert.equal(insights.proposal.driverA, 100);
+    assert.equal(insights.proposal.basis, 'parked-b');
+    const claim = (await call(driver, 'GET', `/${id}`)).body;
+    assert.deepEqual(claim.circumstancesB, ['En stationnement']);
   });
 
   test('applique les rôles et isole les conducteurs', async () => {

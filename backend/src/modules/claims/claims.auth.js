@@ -9,10 +9,12 @@ export { requireRole } from '../../middleware/auth.js';
 // comme dans ses tables et côté Flutter.
 export async function requireUser(req, res, next) {
   await requireAuth(req, res, () => {});
-  const { id, role, firstName, lastName, language } = req.user;
+  const { id, role, firstName, lastName, language, companyId } = req.user;
   req.user = {
     id,
     role: role.toLowerCase(),
+    // Compagnie de l'agent : il ne voit que les sinistres de celle-ci.
+    companyId: companyId ?? null,
     name: `${firstName} ${lastName}`,
     // Langue du profil : celle des réponses de l'assistant.
     language,
@@ -35,5 +37,9 @@ export async function identifySocket({ token }) {
     payload.sid ? prisma.session.findUnique({ where: { id: payload.sid } }) : null,
   ]);
   if (!user || !user.active || !session || session.revokedAt) throw invalid;
-  return { id: user.id, role: user.role.toLowerCase() };
+  return {
+    id: user.id,
+    role: user.role.toLowerCase(),
+    companyId: user.companyId ?? null,
+  };
 }

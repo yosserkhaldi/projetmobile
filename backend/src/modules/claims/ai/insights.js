@@ -149,7 +149,11 @@ export function analyze(
   { priorClaims = 0, history = [], now = new Date(), lang = 'FR' } = {},
 ) {
   const t = textsIn(lang);
-  const proposal = responsibilityProposal(claim.circumstances, lang);
+  const proposal = responsibilityProposal(
+    claim.circumstances,
+    claim.circumstancesB ?? [],
+    lang,
+  );
   const features = featuresOf(claim, {
     responsibility: claim.responsibility ?? proposal.driverA,
     priorClaims,
