@@ -186,6 +186,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
         driverAPlate: 'Véhicule A',
         driverAInsurer: stores.users.currentUser?.company?.name ?? 'Assureur A',
         companyAId: stores.users.currentUser?.companyId,
+        companyBId: draft.driverBCompanyId,
       );
 
       final claim = Claim(
