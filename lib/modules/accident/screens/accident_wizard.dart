@@ -203,6 +203,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
         'Scellement SHA-256 (${sealed.sha256Hash.substring(0, 8)}...)',
         'Transmis aux assureurs',
       ]);
+      claim.documents.add('Constat amiable scellé.pdf');
       stores.claims.addClaim(claim);
       stores.accidents.clearDraft();
 
@@ -257,6 +258,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
         'Scellement local SHA-256 (${hash.substring(0, 8)}...)',
         'En attente de synchronisation réseau',
       ]);
+      claim.documents.add('Constat amiable scellé.pdf');
       stores.claims.addClaim(claim);
       stores.accidents.clearDraft();
 
