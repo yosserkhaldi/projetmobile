@@ -7,6 +7,7 @@ import multer from 'multer';
 import { HttpError } from './errors.js';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_PDF_BYTES = 5 * 1024 * 1024;
 
 /** Dossier des fichiers envoyés. Hors du dossier public, servi par des routes protégées. */
 export const uploadDir = () => resolve(process.env.UPLOAD_DIR ?? 'uploads');
@@ -64,7 +65,7 @@ export const imagePath = (name, folder) => join(uploadDir(), folder, name);
 export const singlePdf = (field) =>
   multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 15 * 1024 * 1024, files: 1 },
+    limits: { fileSize: MAX_PDF_BYTES, files: 1 },
   }).single(field);
 
 /** Enregistre un fichier PDF et renvoie son nom. */

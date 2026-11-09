@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { createReadStream, existsSync } from 'node:fs';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { Router } from 'express';
 import { z } from 'zod';
 
@@ -170,7 +171,7 @@ router.get('/:id', async (req, res) => {
 // ── 4. Téléchargement du PDF scellé ────────────────────────────────────────
 router.get('/:id/pdf', async (req, res) => {
   const constat = await findAuthorizedConstat(req.params.id, req.user);
-  const pdfPath = filePath(constat.pdfFile, 'constats');
+  const pdfPath = resolve(filePath(constat.pdfFile, 'constats'));
 
   if (!existsSync(pdfPath)) {
     throw new HttpError(404, 'PDF_NOT_FOUND', 'Fichier PDF introuvable sur le serveur.');
@@ -181,52 +182,104 @@ router.get('/:id/pdf', async (req, res) => {
     'Content-Disposition',
     `inline; filename="constat-${constat.sha256Hash.slice(0, 10)}.pdf"`,
   );
-  createReadStream(pdfPath).pipe(res);
+  res.sendFile(pdfPath);
 });
 
-// ── 5. Enregistrement et scellement d'un nouveau constat ────────────────────
-router.post('/', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
-  let bodyData = req.body;
-  if (typeof req.body.data === 'string') {
+function parseBodyData(req) {
+  if (typeof req.body?.data === 'string') {
     try {
-      bodyData = JSON.parse(req.body.data);
+      return JSON.parse(req.body.data);
     } catch {
       throw new HttpError(400, 'INVALID_PAYLOAD', 'Le champ data doit être un JSON valide.');
     }
   }
+  return req.body;
+}
 
+function verifyBufferHash(buffer, expectedHash) {
+  const computedHash = createHash('sha256').update(buffer).digest('hex');
+  if (computedHash.toLowerCase() !== expectedHash.toLowerCase()) {
+    throw new HttpError(
+      400,
+      'HASH_MISMATCH',
+      'L’empreinte SHA-256 fournie ne correspond pas au contenu PDF.',
+    );
+  }
+}
+
+async function extractAndVerifyPdf(req, data, bodyData) {
+  if (req.file) {
+    verifyBufferHash(req.file.buffer, data.sha256Hash);
+    const pdfFileName = await savePdf(req.file, 'constats');
+    return { fileBuffer: req.file.buffer, pdfFileName };
+  }
+  if (bodyData.pdfBase64) {
+    const fileBuffer = Buffer.from(bodyData.pdfBase64, 'base64');
+    verifyBufferHash(fileBuffer, data.sha256Hash);
+    const pdfFileName = await savePdf({ buffer: fileBuffer }, 'constats');
+    return { fileBuffer, pdfFileName };
+  }
+  throw new HttpError(400, 'PDF_REQUIRED', 'Le document PDF signé est requis.');
+}
+
+async function linkAccident(accidentId, userId) {
+  if (!accidentId) return;
+  const accident = await prisma.accident.findFirst({
+    where: { id: accidentId, userId },
+  });
+  if (accident) {
+    await prisma.accident.update({
+      where: { id: accidentId },
+      data: { status: 'SUBMITTED', submittedAt: new Date() },
+    });
+  }
+}
+
+function sendSealedNotifications(constat, data, fileBuffer, user) {
+  const dateFormatted = new Date(data.occurredAt).toLocaleString('fr-TN', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Africa/Tunis',
+  });
+  const attachment = [
+    {
+      filename: `constat-${constat.sha256Hash.slice(0, 10)}.pdf`,
+      content: fileBuffer,
+    },
+  ];
+
+  const mailA = constatSealedEmail({
+    name: data.driverAName,
+    place: data.place,
+    date: dateFormatted,
+    sha256Hash: constat.sha256Hash,
+    language: user.language || 'FR',
+  });
+  notifier
+    .sendMail(user.email, mailA.subject, mailA.text, mailA.html, attachment)
+    .catch((err) => console.error('Erreur envoi email conducteur A :', err));
+
+  if (data.driverBEmail) {
+    const mailB = constatSealedEmail({
+      name: data.driverBName,
+      place: data.place,
+      date: dateFormatted,
+      sha256Hash: constat.sha256Hash,
+      language: 'FR',
+    });
+    notifier
+      .sendMail(data.driverBEmail, mailB.subject, mailB.text, mailB.html, attachment)
+      .catch((err) => console.error('Erreur envoi email conducteur B :', err));
+  }
+}
+
+// ── 5. Enregistrement et scellement d'un nouveau constat ────────────────────
+router.post('/', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
+  const bodyData = parseBodyData(req);
   const data = constatSchema.parse(bodyData);
 
-  let pdfFileName;
-  let fileBuffer;
+  const { fileBuffer, pdfFileName } = await extractAndVerifyPdf(req, data, bodyData);
 
-  if (req.file) {
-    fileBuffer = req.file.buffer;
-    const computedHash = createHash('sha256').update(fileBuffer).digest('hex');
-    if (computedHash.toLowerCase() !== data.sha256Hash.toLowerCase()) {
-      throw new HttpError(
-        400,
-        'HASH_MISMATCH',
-        'L’empreinte SHA-256 fournie ne correspond pas au fichier PDF reçu.',
-      );
-    }
-    pdfFileName = await savePdf(req.file, 'constats');
-  } else if (bodyData.pdfBase64) {
-    fileBuffer = Buffer.from(bodyData.pdfBase64, 'base64');
-    const computedHash = createHash('sha256').update(fileBuffer).digest('hex');
-    if (computedHash.toLowerCase() !== data.sha256Hash.toLowerCase()) {
-      throw new HttpError(
-        400,
-        'HASH_MISMATCH',
-        'L’empreinte SHA-256 fournie ne correspond pas au contenu PDF.',
-      );
-    }
-    pdfFileName = await savePdf({ buffer: fileBuffer }, 'constats');
-  } else {
-    throw new HttpError(400, 'PDF_REQUIRED', 'Le document PDF signé est requis.');
-  }
-
-  // Vérifier qu'un constat avec ce hash n'existe pas déjà (inviolabilité)
   const existingWithHash = await prisma.constat.findUnique({
     where: { sha256Hash: data.sha256Hash },
   });
@@ -238,21 +291,7 @@ router.post('/', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
     );
   }
 
-  // Si rattaché à une déclaration d'accident du Module 3
-  if (data.accidentId) {
-    const accident = await prisma.accident.findFirst({
-      where: { id: data.accidentId, userId: req.user.id },
-    });
-    if (accident) {
-      await prisma.accident.update({
-        where: { id: data.accidentId },
-        data: {
-          status: 'SUBMITTED',
-          submittedAt: new Date(),
-        },
-      });
-    }
-  }
+  await linkAccident(data.accidentId, req.user.id);
 
   const constat = await prisma.constat.create({
     data: {
@@ -284,45 +323,7 @@ router.post('/', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
     },
   });
 
-  // Notification par e-mail en arrière-plan
-  const dateFormatted = new Date(data.occurredAt).toLocaleString('fr-TN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Africa/Tunis',
-  });
-
-  const emailAttachment = [
-    {
-      filename: `constat-${constat.sha256Hash.slice(0, 10)}.pdf`,
-      content: fileBuffer,
-    },
-  ];
-
-  // E-mail au conducteur A
-  const mailA = constatSealedEmail({
-    name: data.driverAName,
-    place: data.place,
-    date: dateFormatted,
-    sha256Hash: constat.sha256Hash,
-    language: req.user.language || 'FR',
-  });
-  notifier
-    .sendMail(req.user.email, mailA.subject, mailA.text, mailA.html, emailAttachment)
-    .catch((err) => console.error('Erreur envoi email conducteur A :', err));
-
-  // E-mail au conducteur B s'il a renseigné son adresse
-  if (data.driverBEmail) {
-    const mailB = constatSealedEmail({
-      name: data.driverBName,
-      place: data.place,
-      date: dateFormatted,
-      sha256Hash: constat.sha256Hash,
-      language: 'FR',
-    });
-    notifier
-      .sendMail(data.driverBEmail, mailB.subject, mailB.text, mailB.html, emailAttachment)
-      .catch((err) => console.error('Erreur envoi email conducteur B :', err));
-  }
+  sendSealedNotifications(constat, data, fileBuffer, req.user);
 
   res.status(201).json({ constat: publicConstat(constat) });
 });
