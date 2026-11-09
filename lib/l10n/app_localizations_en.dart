@@ -807,4 +807,132 @@ class AppLocalizationsEn extends AppLocalizations {
   String companiesOffline(String date) {
     return 'Offline: list saved on $date';
   }
+
+  @override
+  String get pendingSyncTitle => 'Changes waiting to sync';
+
+  @override
+  String get pendingSyncBody =>
+      'Saved on this phone. They will be sent as soon as the network is back.';
+
+  @override
+  String syncFailed(String reason) {
+    return 'The server declined the change: $reason';
+  }
+
+  @override
+  String get syncNow => 'Sync now';
+
+  @override
+  String get retrySync => 'Retry';
+
+  @override
+  String get discardChanges => 'Discard changes';
+
+  @override
+  String get savedOffline =>
+      'Saved on this phone. Sent when the network is back.';
+
+  @override
+  String get syncing => 'Syncing…';
+
+  @override
+  String get consoleDashboard => 'Dashboard';
+
+  @override
+  String get consoleToHandle => 'To handle';
+
+  @override
+  String get consoleReview => 'Review';
+
+  @override
+  String get consoleSeeAll => 'See all';
+
+  @override
+  String get consoleNothingToHandle => 'Nothing to handle right now.';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get signedInAs => 'Signed in';
+
+  @override
+  String get colUser => 'User';
+
+  @override
+  String get colStatus => 'Status';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterDrivers => 'Drivers';
+
+  @override
+  String get filterAgents => 'Agents';
+
+  @override
+  String get filterAdmins => 'Administrators';
+
+  @override
+  String accountsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count accounts',
+      one: '1 account',
+      zero: 'No accounts',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statusActive => 'Active';
+
+  @override
+  String get statusSuspended => 'Suspended';
+
+  @override
+  String get changeRole => 'Change role';
+
+  @override
+  String get suspendAccount => 'Suspend';
+
+  @override
+  String get reactivateAccount => 'Reactivate';
+
+  @override
+  String get selectRequest => 'Select a request to see the ID card.';
+
+  @override
+  String pendingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count requests',
+      one: '1 request',
+      zero: 'No requests',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get selectCompany => 'Select a company to manage its branches.';
+
+  @override
+  String get agenciesTitle => 'Branches';
+
+  @override
+  String get noAgencies => 'No branches yet.';
+
+  @override
+  String get heroPoint1 =>
+      'A complete report in under 10 minutes, even offline';
+
+  @override
+  String get heroPoint2 => 'Both drivers\' signatures and a tamper-proof PDF';
+
+  @override
+  String get heroPoint3 => 'Real-time tracking until compensation';
 }

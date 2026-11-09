@@ -62,6 +62,10 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _ProfileHeader(user: user),
+            if (users.pendingCount > 0) ...[
+              const SizedBox(height: 12),
+              const _PendingSyncBanner(),
+            ],
             const SizedBox(height: 22),
             _Section(
               title: t.sectionIdentity,
@@ -915,14 +919,15 @@ class _IdentitySheetState extends State<_IdentitySheet> with FormActions {
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final saved = context.t.profileSaved;
+    final offline = context.t.savedOffline;
     submit(() async {
-      await users.updateProfile({
+      final online = await users.updateProfile({
         'firstName': _firstName.text.trim(),
         'lastName': _lastName.text.trim(),
         'phone': _phone.text.trim(),
       });
       navigator.pop();
-      messenger.showSnackBar(SnackBar(content: Text(saved)));
+      messenger.showSnackBar(SnackBar(content: Text(online ? saved : offline)));
     });
   }
 
@@ -1015,16 +1020,17 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final saved = context.t.profileSaved;
+    final offline = context.t.savedOffline;
     // Ordre officiel des catégories, quel que soit l'ordre des clics.
     final categories = licenseCategories.where(_categories.contains).join(', ');
     submit(() async {
-      await users.updateProfile({
+      final online = await users.updateProfile({
         'licenseNumber': _number.text.trim(),
         'licenseCategory': categories,
         'licenseIssuedAt': _issuedAt ?? '',
       });
       navigator.pop();
-      messenger.showSnackBar(SnackBar(content: Text(saved)));
+      messenger.showSnackBar(SnackBar(content: Text(online ? saved : offline)));
     });
   }
 
@@ -1326,6 +1332,88 @@ class _DeleteAccountSheetState extends State<_DeleteAccountSheet>
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Modifications faites hors ligne, gardées dans la file SQLite.
+class _PendingSyncBanner extends StatelessWidget {
+  const _PendingSyncBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final p = context.palette;
+    final users = AppScope.of(context).users;
+    final error = users.pendingError;
+    final fg = error == null ? p.warningText : p.errorText;
+    return Container(
+      key: const Key('pending-sync'),
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 6),
+      decoration: BoxDecoration(
+        color: error == null ? p.warningBg : p.errorBg,
+        borderRadius: BorderRadius.circular(AppRadius.input),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                error == null
+                    ? Icons.cloud_upload_outlined
+                    : Icons.sync_problem_rounded,
+                color: fg,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      t.pendingSyncTitle,
+                      style: TextStyle(color: fg, fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      error == null ? t.pendingSyncBody : t.syncFailed(error),
+                      style: TextStyle(color: fg, fontSize: 13, height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Wrap(
+              children: [
+                if (error != null)
+                  TextButton(
+                    onPressed: users.discardPending,
+                    style: TextButton.styleFrom(foregroundColor: fg),
+                    child: Text(t.discardChanges),
+                  ),
+                TextButton(
+                  onPressed: users.syncing
+                      ? null
+                      : (error == null
+                            ? users.syncPending
+                            : users.retryPending),
+                  style: TextButton.styleFrom(foregroundColor: fg),
+                  child: Text(
+                    users.syncing
+                        ? t.syncing
+                        : (error == null ? t.syncNow : t.retrySync),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

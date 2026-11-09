@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart' show ThemeMode;
@@ -77,6 +78,19 @@ class UserStore extends ChangeNotifier {
   // sur celui du compte à la connexion.
   bool _languageChosen = false;
 
+  // --- File hors ligne (SQLite) -------------------------------------------
+
+  /// Modifications du profil enregistrées sur le téléphone, pas encore
+  /// envoyées au serveur.
+  int pendingCount = 0;
+
+  /// Refus du serveur pour une modification en attente (téléphone déjà
+  /// utilisé…). Plus de nouvel essai automatique tant qu'il est affiché.
+  String? pendingError;
+  bool syncing = false;
+  Timer? _syncTimer;
+  static const _syncEvery = Duration(seconds: 20);
+
   /// Le téléphone a un capteur configuré.
   bool biometricAvailable = false;
 
@@ -123,8 +137,10 @@ class UserStore extends ChangeNotifier {
 
   Future<void> _restoreSession() async {
     final cached = await _readCachedUser();
+    await _refreshPending();
     try {
       await _api.refreshSession();
+      unawaited(syncPending());
     } on ApiException catch (error) {
       if (error.status == 401) return; // onSessionExpired a déjà déconnecté.
       if (cached == null) {
@@ -171,6 +187,11 @@ class UserStore extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    // Dernière chance d'envoyer les modifications, puis la file est vidée :
+    // le prochain compte sur ce téléphone ne doit pas les recevoir.
+    await syncPending();
+    await _localDb?.clearPending();
+    await _refreshPending();
     await _api.endSession();
     _signOutLocally();
   }
@@ -207,8 +228,133 @@ class UserStore extends ChangeNotifier {
     );
   }
 
-  Future<void> updateProfile(Map<String, Object?> changes) async {
-    _setUser(await _api.patch('/users/me', body: changes));
+  /// Enregistre sur le serveur. Sans réseau, la modification est appliquée
+  /// tout de suite à l'écran et gardée dans la file SQLite.
+  /// Renvoie `false` si elle attend le retour du réseau.
+  Future<bool> updateProfile(Map<String, Object?> changes) async {
+    final db = _localDb;
+    // Des modifications attendent déjà : on passe derrière elles, sinon
+    // l'ancienne écraserait la nouvelle à la synchronisation.
+    if (db != null && pendingCount > 0) {
+      await _queue(changes);
+      await syncPending();
+      return pendingCount == 0;
+    }
+    try {
+      _setUser(await _api.patch('/users/me', body: changes));
+      return true;
+    } on ApiException catch (error) {
+      if (!error.isNetwork || db == null || currentUser == null) rethrow;
+      await _queue(changes);
+      return false;
+    }
+  }
+
+  Future<void> _queue(Map<String, Object?> changes) async {
+    await _localDb!.enqueue('profile', changes);
+    _setUser({'user': _applyLocally(currentUser!, changes)});
+    await _refreshPending();
+  }
+
+  /// Ce que le serveur fera de la modification, pour l'afficher sans attendre.
+  static Map<String, dynamic> _applyLocally(
+    AppUser user,
+    Map<String, Object?> changes,
+  ) {
+    final json = user.toJson();
+    for (final MapEntry(:key, :value) in changes.entries) {
+      json[key] = value == '' ? null : value;
+    }
+    final phone = changes['phone'];
+    if (phone is String) {
+      final compact = phone.replaceAll(RegExp(r'[\s.-]'), '');
+      json['phone'] = RegExp(r'^\d{8}$').hasMatch(compact)
+          ? '+216$compact'
+          : compact;
+      // Un nouveau numéro devra être revérifié, comme côté serveur.
+      if (json['phone'] != user.phone) json['phoneVerified'] = false;
+    }
+    return json;
+  }
+
+  /// Envoie les modifications en attente, dans l'ordre.
+  Future<void> syncPending() async {
+    final db = _localDb;
+    if (db == null || syncing || status != AuthStatus.signedIn) return;
+    syncing = true;
+    notifyListeners();
+    try {
+      for (final row in await db.pending()) {
+        if (row.lastError != null) continue;
+        try {
+          final response = await _api.patch(
+            '/users/me',
+            body: jsonDecode(row.payload),
+          );
+          await db.removePending(row.id);
+          _setUser(response);
+        } on ApiException catch (error) {
+          if (error.isNetwork) {
+            await db.markAttempted(row.id);
+            break;
+          }
+          if (error.status == 401) break;
+          await db.markFailed(row.id, error.message);
+        }
+      }
+    } catch (e) {
+      debugPrint('Synchronisation impossible : $e');
+    } finally {
+      syncing = false;
+      await _refreshPending();
+    }
+  }
+
+  /// Réessayer après un refus du serveur.
+  Future<void> retryPending() async {
+    await _localDb?.clearPendingErrors();
+    await _refreshPending();
+    await syncPending();
+  }
+
+  /// Abandonner les modifications en attente et reprendre le profil du serveur.
+  Future<void> discardPending() async {
+    await _localDb?.clearPending();
+    await _refreshPending();
+    try {
+      _setUser(await _api.get('/users/me'));
+    } on ApiException catch (error) {
+      if (!error.isNetwork) rethrow;
+    }
+  }
+
+  Future<void> _refreshPending() async {
+    final rows = await _localDb?.pending() ?? const <PendingChangeRow>[];
+    pendingCount = rows.length;
+    pendingError = rows
+        .where((r) => r.lastError != null)
+        .map((r) => r.lastError)
+        .firstOrNull;
+    // Nouvel essai régulier tant que des modifications attendent le réseau.
+    if (pendingCount > 0 && pendingError == null) {
+      _syncTimer ??= Timer.periodic(_syncEvery, (_) => syncPending());
+    } else {
+      _syncTimer?.cancel();
+      _syncTimer = null;
+    }
+    notifyListeners();
+  }
+
+  /// Arrête les nouveaux essais automatiques (fermeture de l'application).
+  void stopAutoSync() {
+    _syncTimer?.cancel();
+    _syncTimer = null;
+  }
+
+  @override
+  void dispose() {
+    stopAutoSync();
+    super.dispose();
   }
 
   /// Revérifie le capteur, par exemple après un passage dans les réglages.
@@ -287,9 +433,9 @@ class UserStore extends ChangeNotifier {
     await _storage.write(_languageKey, value.apiValue);
     if (status == AuthStatus.signedIn) {
       try {
+        // Sans réseau, la langue part dans la file d'attente.
         await updateProfile({'language': value.apiValue});
       } on ApiException catch (error) {
-        // Sans réseau, la langue reste appliquée sur ce téléphone.
         if (!error.isNetwork) rethrow;
       }
     }
@@ -364,6 +510,8 @@ class UserStore extends ChangeNotifier {
   /// Supprime (anonymise) le compte, puis déconnecte ce téléphone.
   Future<void> deleteAccount(String password) async {
     await _api.delete('/users/me', body: {'password': password});
+    await _localDb?.clearPending();
+    await _refreshPending();
     await _storage.delete(_deviceKey);
     biometricEnabled = false;
     await _api.closeSession();
@@ -385,6 +533,8 @@ class UserStore extends ChangeNotifier {
     await _api.openSession(session);
     _applySession(session);
     await _syncLanguage();
+    await _refreshPending();
+    unawaited(syncPending());
   }
 
   /// À la connexion : la langue choisie sur ce téléphone est enregistrée sur

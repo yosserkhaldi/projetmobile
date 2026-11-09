@@ -62,7 +62,7 @@ class _UsersScreenState extends State<UsersScreen> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _RoleSheet(
+      builder: (_) => RoleSheet(
         user: user,
         onSave: (role, companyId) =>
             admin.setRole(user, role, companyId: companyId),
@@ -160,16 +160,16 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 }
 
-class _RoleSheet extends StatefulWidget {
-  const _RoleSheet({required this.user, required this.onSave});
+class RoleSheet extends StatefulWidget {
+  const RoleSheet({required this.user, required this.onSave, super.key});
   final AppUser user;
   final Future<void> Function(UserRole role, String? companyId) onSave;
 
   @override
-  State<_RoleSheet> createState() => _RoleSheetState();
+  State<RoleSheet> createState() => RoleSheetState();
 }
 
-class _RoleSheetState extends State<_RoleSheet> with FormActions {
+class RoleSheetState extends State<RoleSheet> with FormActions {
   late UserRole _role = widget.user.role;
   late String? _companyId = widget.user.companyId;
 

@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/modules/claims/screens/agent_dashboard_scree
 import 'package:mon_constat_digital/modules/claims/screens/claims_screen.dart';
 import 'package:mon_constat_digital/modules/accident/screens/declarations_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/messages_screen.dart';
+import 'package:mon_constat_digital/modules/users/admin/admin_console.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/admin_dashboard_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/companies_screen.dart';
@@ -26,6 +27,11 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final store = AppScope.of(context).users;
+    // Administrateur sur grand écran (ordinateur, tablette) : la console.
+    if (store.role == UserRole.admin &&
+        MediaQuery.sizeOf(context).width >= adminConsoleMinWidth) {
+      return const AdminConsole();
+    }
     final pages = store.role == UserRole.driver
         ? const [
             DriverHome(),

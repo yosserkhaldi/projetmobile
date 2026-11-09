@@ -370,5 +370,61 @@
         "type": "String"
       }
     }
-  }
+  },
+  "pendingSyncTitle": "Modifications en attente",
+  "pendingSyncBody": "Enregistrées sur le téléphone. Elles seront envoyées dès le retour du réseau.",
+  "syncFailed": "Le serveur a refusé la modification : {reason}",
+  "syncNow": "Synchroniser",
+  "retrySync": "Réessayer",
+  "discardChanges": "Annuler les modifications",
+  "savedOffline": "Enregistré sur le téléphone. Envoi dès le retour du réseau.",
+  "syncing": "Synchronisation…",
+  "@syncFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "consoleDashboard": "Tableau de bord",
+  "consoleToHandle": "À traiter",
+  "consoleReview": "Examiner",
+  "consoleSeeAll": "Tout voir",
+  "consoleNothingToHandle": "Rien à traiter pour le moment.",
+  "refresh": "Actualiser",
+  "signedInAs": "Connecté",
+  "colUser": "Utilisateur",
+  "colStatus": "Statut",
+  "filterAll": "Tous",
+  "filterDrivers": "Conducteurs",
+  "filterAgents": "Agents",
+  "filterAdmins": "Administrateurs",
+  "accountsCount": "{count, plural, =0{Aucun compte} =1{1 compte} other{{count} comptes}}",
+  "@accountsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statusActive": "Actif",
+  "statusSuspended": "Suspendu",
+  "changeRole": "Changer le rôle",
+  "suspendAccount": "Suspendre",
+  "reactivateAccount": "Réactiver",
+  "selectRequest": "Sélectionnez une demande pour voir la CIN.",
+  "pendingCount": "{count, plural, =0{Aucune demande} =1{1 demande} other{{count} demandes}}",
+  "@pendingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectCompany": "Sélectionnez une compagnie pour gérer ses agences.",
+  "agenciesTitle": "Agences",
+  "noAgencies": "Aucune agence pour le moment.",
+  "heroPoint1": "Un constat complet en moins de 10 minutes, même hors ligne",
+  "heroPoint2": "Signature des deux conducteurs et PDF infalsifiable",
+  "heroPoint3": "Suivi du dossier en temps réel jusqu’à l’indemnisation"
 }

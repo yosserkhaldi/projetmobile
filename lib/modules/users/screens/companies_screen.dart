@@ -52,7 +52,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
     final admin = AppScope.of(context).admin;
     final values = await showDialog<List<String>>(
       context: context,
-      builder: (_) => _NameDialog(
+      builder: (_) => NameDialog(
         title: company == null ? context.t.newCompany : context.t.renameCompany,
         fields: [context.t.companyNameLabel],
         initial: [company?.name ?? ''],
@@ -70,7 +70,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
     final admin = AppScope.of(context).admin;
     final values = await showDialog<List<String>>(
       context: context,
-      builder: (_) => _NameDialog(
+      builder: (_) => NameDialog(
         title: agency == null ? context.t.newAgency : context.t.editAgency,
         fields: [context.t.agencyNameLabel, context.t.cityLabel],
         initial: [agency?.name ?? '', agency?.city ?? ''],
@@ -208,21 +208,22 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
   }
 }
 
-class _NameDialog extends StatefulWidget {
-  const _NameDialog({
+class NameDialog extends StatefulWidget {
+  const NameDialog({
     required this.title,
     required this.fields,
     required this.initial,
+    super.key,
   });
   final String title;
   final List<String> fields;
   final List<String> initial;
 
   @override
-  State<_NameDialog> createState() => _NameDialogState();
+  State<NameDialog> createState() => NameDialogState();
 }
 
-class _NameDialogState extends State<_NameDialog> {
+class NameDialogState extends State<NameDialog> {
   final _form = GlobalKey<FormState>();
   late final _controllers = [
     for (final value in widget.initial) TextEditingController(text: value),
