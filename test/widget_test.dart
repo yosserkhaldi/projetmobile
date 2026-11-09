@@ -6,7 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mon_constat_digital/main.dart';
 import 'package:mon_constat_digital/modules/users/screens/liveness_screen.dart';
+import 'package:mon_constat_digital/modules/users/models/liveness.dart';
 import 'package:mon_constat_digital/modules/users/screens/profile_screen.dart';
+import 'package:mon_constat_digital/modules/users/services/face_guide.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
 
@@ -366,6 +368,30 @@ void main() {
       });
     });
 
+    testWidgets('scanner le permis : date de naissance différente signalée', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend()
+        ..licenseReading = {
+          'number': '12/345678',
+          'categories': ['B'],
+          'issuedAt': '2018-06-15',
+          'birthDateMatchesIdentity': false,
+        };
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('scan-license')));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('la date de naissance du permis ne correspond pas'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('scanner le permis illisible : formulaire à compléter', (
       tester,
     ) async {
@@ -606,8 +632,15 @@ void main() {
   });
 
   group("vérification d'identité", () {
-    setUp(() => LivenessScreen.cameraFactory = FakeFaceCamera.new);
-    tearDown(() => LivenessScreen.cameraFactory = DeviceFaceCamera.new);
+    setUp(() {
+      LivenessScreen.cameraFactory = FakeFaceCamera.new;
+      // Par défaut sans détection sur le téléphone : compte à rebours.
+      LivenessScreen.guideFactory = () => null;
+    });
+    tearDown(() {
+      LivenessScreen.cameraFactory = DeviceFaceCamera.new;
+      LivenessScreen.guideFactory = deviceFaceGuide;
+    });
 
     /// Compte avec les photos de la pièce, et au besoin le visage déjà vérifié.
     Map<String, dynamic> withIdentity({
@@ -901,6 +934,50 @@ void main() {
       );
       expect(find.text("Lu sur la pièce par l'IA"), findsOneWidget);
       expect(find.text('12/345678'), findsWidgets);
+    });
+
+    testWidgets('détection sur le téléphone : photos prises au bon moment', (
+      tester,
+    ) async {
+      final guide = FakeFaceGuide([
+        null, // personne devant la caméra
+        (faces: 1, yaw: 3.0), // de face : gardée
+        (faces: 1, yaw: 8.0), // pas assez tournée
+        (faces: 1, yaw: 31.0), // tournée : gardée
+        (faces: 1, yaw: 27.0), // même sens : refusée
+        (faces: 1, yaw: -29.0), // sens opposé : gardée
+      ]);
+      LivenessScreen.guideFactory = () => guide;
+      final backend = FakeBackend(user: withIdentity());
+      await openIdentity(tester, backend);
+      await openFaceCheck(tester);
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+      await tester.pumpAndSettle();
+      expect(guide.seen, 6);
+      final upload = backend.uploads['POST /users/me/identity/selfie']!;
+      expect('filename='.allMatches(latin1.decode(upload.bodyBytes)).length, 3);
+      expect(find.text('Visage vérifié'), findsOneWidget);
+    });
+
+    test('pose attendue : de face, puis deux rotations de sens opposés', () {
+      expect(poseMatches(LivenessStep.center, (faces: 1, yaw: 5)), isTrue);
+      expect(poseMatches(LivenessStep.center, (faces: 1, yaw: 25)), isFalse);
+      expect(poseMatches(LivenessStep.center, (faces: 2, yaw: 0)), isFalse);
+      expect(poseMatches(LivenessStep.left, (faces: 1, yaw: 15)), isFalse);
+      expect(poseMatches(LivenessStep.left, (faces: 1, yaw: -24)), isTrue);
+      expect(
+        poseMatches(LivenessStep.right, (
+          faces: 1,
+          yaw: -30,
+        ), firstTurnSign: -1),
+        isFalse,
+      );
+      expect(
+        poseMatches(LivenessStep.right, (faces: 1, yaw: 30), firstTurnSign: -1),
+        isTrue,
+      );
     });
 
     testWidgets('caméra refusée : message clair, aucune requête', (
@@ -1216,6 +1293,15 @@ void main() {
     expect(find.text('75 %'), findsOneWidget);
     // Plus de chiffres fictifs d'accidents.
     expect(find.text('248'), findsNothing);
+    // Bilan de l'IA.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('dash-ai')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('63 %'), findsOneWidget);
+    expect(find.text('71 %'), findsOneWidget);
+    expect(find.text("validées par l'IA seule"), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

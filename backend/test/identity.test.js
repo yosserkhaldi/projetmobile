@@ -439,6 +439,16 @@ test('statistiques : identités validées par l IA', async (t) => {
   const { token: admin } = await createAdmin(call);
   const stats = await call('GET', '/users/stats', { token: admin });
   assert.equal(stats.body.identityAutoVerified, 1);
+  assert.deepEqual(stats.body.identityAi, {
+    requests: 1,
+    autoVerified: 1,
+    adminVerified: 0,
+    rejected: 0,
+    pending: 0,
+    autoRate: 1,
+    averageMatch: 1,
+    blocked: 0,
+  });
   assert.equal(stats.body.identity.VERIFIED, 1);
 });
 
@@ -478,6 +488,7 @@ test('numéro différent de celui lu sur la carte : l administrateur décide', a
     numberMatches: false,
     nameMatches: null,
     notExpired: null,
+    birthDateMatches: null,
     backRecognized: true,
   });
 });
@@ -609,4 +620,42 @@ test('quota : 30 analyses par heure et par compte', async (t) => {
     body: { consent: true },
   });
   assert.equal(res.status, 200);
+});
+
+test('CIN : nom arabe différent du compte, l administrateur décide', async (t) => {
+  const { call } = await startApi(t);
+  const { token } = await register(call);
+  await uploadDocument(call, token, { front: 'other-name' });
+  await liveness(call, token);
+  const res = await submit(call, token);
+  assert.equal(res.body.user.identity.status, 'PENDING');
+  assert.equal(res.body.user.identity.checks.nameMatches, false);
+});
+
+test('CIN : nom arabe du compte reconnu (سامي بن علي = Sami Ben Ali)', async (t) => {
+  const { call } = await startApi(t);
+  const { token } = await register(call);
+  await uploadDocument(call, token);
+  await liveness(call, token);
+  const res = await submit(call, token);
+  assert.equal(res.body.user.identity.checks.nameMatches, true);
+  assert.equal(res.body.user.identity.status, 'VERIFIED');
+});
+
+test('contrôle croisé : date de naissance de la CIN et du permis', async (t) => {
+  const { call } = await startApi(t);
+  const { token } = await register(call);
+  const data = new FormData();
+  data.append('photo', new Blob([image('license')], { type: 'image/png' }), 'p.png');
+  await call('PUT', '/users/me/license-photo', { token, form: data });
+  await uploadDocument(call, token);
+  await liveness(call, token);
+  const res = await submit(call, token);
+  assert.equal(res.body.user.identity.checks.birthDateMatches, true);
+
+  // Permis scanné après : comparé à la pièce d'identité.
+  const again = new FormData();
+  again.append('photo', new Blob([image('license')], { type: 'image/png' }), 'p.png');
+  const scan = await call('PUT', '/users/me/license-photo', { token, form: again });
+  assert.equal(scan.body.extracted.birthDateMatchesIdentity, true);
 });

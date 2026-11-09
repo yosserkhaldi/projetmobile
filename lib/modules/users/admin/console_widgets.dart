@@ -220,6 +220,8 @@ class IdentityChecklist extends StatelessWidget {
       if (identity.documentType.hasBack) (t.checkBack, checks?.backRecognized),
       if (checks?.nameMatches != null) (t.checkName, checks!.nameMatches),
       if (checks?.notExpired != null) (t.checkExpiry, checks!.notExpired),
+      if (checks?.birthDateMatches != null)
+        (t.checkBirthDate, checks!.birthDateMatches),
     ];
     return Column(
       key: const Key('identity-checklist'),

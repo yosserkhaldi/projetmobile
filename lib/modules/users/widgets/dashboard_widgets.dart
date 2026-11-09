@@ -13,11 +13,15 @@ class DashboardSections {
     required this.signups,
     required this.roles,
     required this.identity,
+    required this.ai,
     required this.accidents,
   });
 
   final List<Widget> kpis;
   final Widget signups, roles, identity, accidents;
+
+  /// Bilan de la vérification d'identité par l'IA.
+  final Widget ai;
 
   /// Disposition téléphone : KPI en grille 2 × 2, puis les panneaux.
   List<Widget> get phone => [
@@ -34,8 +38,69 @@ class DashboardSections {
     signups,
     roles,
     identity,
+    ai,
     accidents,
   ];
+}
+
+/// Panneau « Vérification par l'IA » : volume, part validée sans
+/// administrateur, ressemblance moyenne, comptes bloqués, et répartition des
+/// décisions.
+Widget _aiPanel(BuildContext context, Map<String, dynamic>? ai) {
+  final t = context.t;
+  final p = context.palette;
+  if (ai == null) return const SizedBox.shrink();
+  final requests = ai['requests'] as int;
+  String percent(Object? value) =>
+      value == null ? '—' : '${((value as num) * 100).round()} %';
+  Widget figure(String value, String label) => Expanded(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontFamily: AppFonts.display,
+            fontWeight: FontWeight.w800,
+            fontSize: 22,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(color: p.textMuted, fontSize: 12, height: 1.3),
+        ),
+      ],
+    ),
+  );
+  return DashPanel(
+    key: const Key('dash-ai'),
+    title: t.dashAiTitle,
+    footer: t.dashAiFooter,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            figure('$requests', t.dashAiRequests),
+            figure(percent(ai['autoRate']), t.dashAiAutoRate),
+            figure(percent(ai['averageMatch']), t.dashAiAverageMatch),
+            figure('${ai['blocked']}', t.dashAiBlocked),
+          ],
+        ),
+        const SizedBox(height: 14),
+        SplitBar(
+          total: requests,
+          parts: [
+            (t.outcomeAuto, ai['autoVerified'] as int, p.successText),
+            (t.outcomeVerified, ai['adminVerified'] as int, AppColors.primary),
+            (t.outcomePending, ai['pending'] as int, AppColors.accent),
+            (t.outcomeRejected, ai['rejected'] as int, p.errorText),
+          ],
+        ),
+      ],
+    ),
+  );
 }
 
 DashboardSections dashboardSections(
@@ -134,6 +199,7 @@ DashboardSections dashboardSections(
         ],
       ),
     ),
+    ai: _aiPanel(context, stats['identityAi'] as Map<String, dynamic>?),
     accidents: DashPanel(
       title: t.dashAccidentsTitle,
       child: Row(

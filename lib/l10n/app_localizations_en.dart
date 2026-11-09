@@ -1228,4 +1228,39 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorAiQuota =>
       'Too many analyses in a short time. Try again in a while.';
+
+  @override
+  String get livenessHintNoFace => 'Put your face in the oval';
+
+  @override
+  String get livenessHintLookStraight => 'Look straight at the camera';
+
+  @override
+  String get livenessHintTurnMore => 'Turn your head further';
+
+  @override
+  String get dashAiTitle => 'AI verification';
+
+  @override
+  String get dashAiFooter =>
+      'Over the period shown. Analysis on our servers, no outside service.';
+
+  @override
+  String get dashAiRequests => 'requests';
+
+  @override
+  String get dashAiAutoRate => 'verified by the AI alone';
+
+  @override
+  String get dashAiAverageMatch => 'average match';
+
+  @override
+  String get dashAiBlocked => 'blocked accounts';
+
+  @override
+  String get checkBirthDate => 'Same birth date as the licence';
+
+  @override
+  String get licenseBirthMismatch =>
+      'Warning: the birth date on the licence does not match your identity document.';
 }

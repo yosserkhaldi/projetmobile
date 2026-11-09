@@ -129,6 +129,7 @@ export const FACES = {
   random: { faces: 0 },
   unreadable: { faces: 1, descriptor: vector(0), yaw: 0 },
   'other-number': { faces: 1, descriptor: vector(0), yaw: 0 },
+  'other-name': { faces: 1, descriptor: vector(0), yaw: 0 },
   passport: { faces: 1, descriptor: vector(0), yaw: 0 },
   'passport-expired': { faces: 1, descriptor: vector(0), yaw: 0 },
   'passport-other': { faces: 1, descriptor: vector(0), yaw: 0 },
@@ -153,11 +154,14 @@ export const READINGS = {
   me: { number: '12345678', lastNameAr: 'بن علي', firstNameAr: 'سامي', birthDate: '1999-03-12' },
   unreadable: { number: null },
   'other-number': { number: '87654321' },
+  // Nom arabe d'une autre personne que « Sami Ben Ali ».
+  'other-name': { number: '12345678', lastNameAr: 'الطرابلسي', firstNameAr: 'منى', birthDate: '1999-03-12' },
   passport: { number: 'X1234567', lastName: 'BEN ALI', firstName: 'SAMI', expiresAt: '2030-01-01' },
   'passport-expired': { number: 'X1234567', lastName: 'BEN ALI', firstName: 'SAMI', expiresAt: '2020-01-01' },
   'passport-other': { number: 'X1234567', lastName: 'TRABELSI', firstName: 'MOUNA', expiresAt: '2030-01-01' },
   license: {
     number: '12/345678',
+    birthDate: '1999-03-12',
     categories: ['B', 'B+E'],
     issuedAt: '2020-05-10',
     expiresAt: '2030-05-10',

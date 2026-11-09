@@ -1245,4 +1245,39 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get errorAiQuota =>
       'Trop d\'analyses en peu de temps. Réessayez dans un moment.';
+
+  @override
+  String get livenessHintNoFace => 'Placez votre visage dans l\'ovale';
+
+  @override
+  String get livenessHintLookStraight => 'Regardez la caméra bien en face';
+
+  @override
+  String get livenessHintTurnMore => 'Tournez davantage la tête';
+
+  @override
+  String get dashAiTitle => 'Vérification par l\'IA';
+
+  @override
+  String get dashAiFooter =>
+      'Sur la période affichée. Analyse sur nos serveurs, sans service extérieur.';
+
+  @override
+  String get dashAiRequests => 'demandes';
+
+  @override
+  String get dashAiAutoRate => 'validées par l\'IA seule';
+
+  @override
+  String get dashAiAverageMatch => 'ressemblance moyenne';
+
+  @override
+  String get dashAiBlocked => 'comptes bloqués';
+
+  @override
+  String get checkBirthDate => 'Même date de naissance que le permis';
+
+  @override
+  String get licenseBirthMismatch =>
+      'Attention : la date de naissance du permis ne correspond pas à votre pièce d\'identité.';
 }

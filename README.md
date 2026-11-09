@@ -169,11 +169,15 @@ Le conducteur choisit sa pièce (CIN, permis ou passeport), la photographie, pui
 
 La reconnaissance faciale tourne **dans l'API**, sans service extérieur ([`backend/src/lib/face.js`](backend/src/lib/face.js)) : face-api et TensorFlow.js en WebAssembly. Trois modèles : détection du visage (SSD MobileNet v1), 68 points du visage, et empreinte de 128 nombres (ResNet-34).
 
-1. **Recto de la pièce :** refusé tout de suite s'il ne contient aucun visage.
-2. **Visage vivant :** un seul visage par photo, de face puis tourné des deux côtés (sens opposés, mesurés avec les points du nez et des yeux), et la même personne sur les trois photos. Une photo imprimée ou un écran ne passe pas.
-3. **Décision :** l'IA compare le visage à la photo de la pièce. Si la ressemblance atteint 60 %, l'identité est **validée automatiquement**. Sinon, la demande va dans la file de l'administrateur, avec le score et les photos côte à côte.
+1. **Recto de la pièce :** refusé s'il ne contient aucun visage. Une photo de travers est remise à l'endroit (les 4 sens sont essayés). L'IA lit la pièce ([`backend/src/lib/ocr.js`](backend/src/lib/ocr.js), Tesseract) : numéro et champs en arabe de la CIN, MRZ du passeport avec ses chiffres de contrôle, numéro du permis.
+2. **Verso :** refusé s'il montre un visage (c'est un recto). Code-barres ou date de délivrance reconnus : indice pour la validation automatique.
+3. **Visage vivant :** sur le téléphone, ML Kit détecte le visage et prend chaque photo au bon moment (sinon compte à rebours, sur le web). Sur le serveur : un seul visage par photo, de face puis tourné des deux côtés, et la même personne sur les trois photos. Une photo imprimée ou un écran ne passe pas.
+4. **Décision :** validée automatiquement seulement si le visage ressemble à la photo de la pièce (60 % au moins), le numéro saisi est celui lu, le verso est reconnu, le nom du compte figure sur la pièce (en arabe, comparé par ses consonnes : الجلاصي ≈ Jlassi) et la pièce est valide. Sinon, la file de l'administrateur, avec la liste des contrôles.
+5. **Refus :** 24 h d'attente, 3 refus au plus ; un refus grave bloque. L'administrateur débloque et voit l'historique des demandes.
 
-Pour la loi n° 2004-63, aucune photo n'est envoyée à un tiers, l'empreinte du visage n'est jamais enregistrée et la photo du visage est **effacée dès la décision**. Les autres modules exigent une identité vérifiée avec `requireVerifiedIdentity`.
+Contrôles croisés : la date de naissance de la pièce d'identité est comparée à celle du permis scanné dans le profil. Le tableau de bord montre le bilan de l'IA (part validée seule, ressemblance moyenne, comptes bloqués).
+
+Pour la loi n° 2004-63, l'analyse du visage demande un **accord explicite et daté**, aucune photo n'est envoyée à un tiers, l'empreinte du visage n'est jamais enregistrée et la photo du visage est **effacée dès la décision**. Chaque compte a droit à 30 analyses par heure, pour que personne ne sature le serveur. Les autres modules exigent une identité vérifiée avec `requireVerifiedIdentity`.
 
 ## Travailler en équipe
 

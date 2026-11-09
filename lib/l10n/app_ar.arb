@@ -361,5 +361,16 @@
   "outcomeRejected": "مرفوضة",
   "outcomePending": "قيد الانتظار",
   "biometricConsentLabel": "أوافق على تحليل وجهي للتحقق من هويتي. يتم التحليل على خوادم Mon Constat وتُحذف الصورة فور اتخاذ القرار (القانون عدد 63 لسنة 2004).",
-  "errorAiQuota": "عدد كبير من التحاليل في وقت قصير. أعد المحاولة بعد قليل."
+  "errorAiQuota": "عدد كبير من التحاليل في وقت قصير. أعد المحاولة بعد قليل.",
+  "livenessHintNoFace": "ضع وجهك داخل الإطار",
+  "livenessHintLookStraight": "انظر مباشرة إلى الكاميرا",
+  "livenessHintTurnMore": "أدر رأسك أكثر",
+  "dashAiTitle": "التحقق بالذكاء الاصطناعي",
+  "dashAiFooter": "خلال الفترة المعروضة. التحليل على خوادمنا دون خدمة خارجية.",
+  "dashAiRequests": "طلبات",
+  "dashAiAutoRate": "وثّقها الذكاء الاصطناعي وحده",
+  "dashAiAverageMatch": "متوسط التطابق",
+  "dashAiBlocked": "حسابات محظورة",
+  "checkBirthDate": "نفس تاريخ الولادة في الرخصة",
+  "licenseBirthMismatch": "تنبيه: تاريخ الولادة في الرخصة لا يطابق وثيقة هويتك."
 }

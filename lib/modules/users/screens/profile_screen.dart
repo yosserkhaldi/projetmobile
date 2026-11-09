@@ -1000,6 +1000,9 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
   bool? _filledByAi;
   bool _scanning = false;
 
+  /// Date de naissance du permis différente de celle de la pièce d'identité.
+  bool _birthMismatch = false;
+
   @override
   void dispose() {
     _number.dispose();
@@ -1023,6 +1026,7 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
       );
       if (!mounted) return;
       setState(() {
+        _birthMismatch = reading?.birthDateMatchesIdentity == false;
         if (reading == null || reading.isEmpty) {
           _filledByAi = false;
           return;
@@ -1147,6 +1151,11 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
                   ],
                 ),
               ),
+            // Contrôle croisé avec la pièce d'identité.
+            if (_birthMismatch) ...[
+              const SizedBox(height: 8),
+              ErrorBanner(t.licenseBirthMismatch),
+            ],
             const SizedBox(height: 16),
             LabeledField(
               label: t.licenseNumberLabel,

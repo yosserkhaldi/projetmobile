@@ -136,6 +136,7 @@ class IdentityChecks {
     this.nameMatches,
     this.notExpired,
     this.backRecognized,
+    this.birthDateMatches,
   });
 
   factory IdentityChecks.fromJson(Map<String, dynamic> json) => IdentityChecks(
@@ -144,6 +145,7 @@ class IdentityChecks {
     nameMatches: json['nameMatches'] as bool?,
     notExpired: json['notExpired'] as bool?,
     backRecognized: json['backRecognized'] as bool?,
+    birthDateMatches: json['birthDateMatches'] as bool?,
   );
 
   final String? numberRead;
@@ -152,12 +154,16 @@ class IdentityChecks {
   /// Verso reconnu (code-barres de la CIN, catégories du permis).
   final bool? backRecognized;
 
+  /// Contrôle croisé : même date de naissance que sur le permis du profil.
+  final bool? birthDateMatches;
+
   Map<String, dynamic> toJson() => {
     'numberRead': numberRead,
     'numberMatches': numberMatches,
     'nameMatches': nameMatches,
     'notExpired': notExpired,
     'backRecognized': backRecognized,
+    'birthDateMatches': birthDateMatches,
   };
 }
 

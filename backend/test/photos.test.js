@@ -152,6 +152,8 @@ test('photo du permis : l IA lit numéro, catégories et dates', async (t) => {
     categories: ['B', 'B+E'],
     issuedAt: '2020-05-10',
     expiresAt: '2030-05-10',
+    birthDate: '1999-03-12',
+    birthDateMatchesIdentity: null,
   });
   // Rien n'est enregistré sans confirmation de l'utilisateur.
   assert.equal(res.body.user.licenseNumber, null);

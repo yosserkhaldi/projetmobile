@@ -2271,6 +2271,72 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Trop d\'analyses en peu de temps. Réessayez dans un moment.'**
   String get errorAiQuota;
+
+  /// No description provided for @livenessHintNoFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Placez votre visage dans l\'ovale'**
+  String get livenessHintNoFace;
+
+  /// No description provided for @livenessHintLookStraight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Regardez la caméra bien en face'**
+  String get livenessHintLookStraight;
+
+  /// No description provided for @livenessHintTurnMore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournez davantage la tête'**
+  String get livenessHintTurnMore;
+
+  /// No description provided for @dashAiTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification par l\'IA'**
+  String get dashAiTitle;
+
+  /// No description provided for @dashAiFooter.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sur la période affichée. Analyse sur nos serveurs, sans service extérieur.'**
+  String get dashAiFooter;
+
+  /// No description provided for @dashAiRequests.
+  ///
+  /// In fr, this message translates to:
+  /// **'demandes'**
+  String get dashAiRequests;
+
+  /// No description provided for @dashAiAutoRate.
+  ///
+  /// In fr, this message translates to:
+  /// **'validées par l\'IA seule'**
+  String get dashAiAutoRate;
+
+  /// No description provided for @dashAiAverageMatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'ressemblance moyenne'**
+  String get dashAiAverageMatch;
+
+  /// No description provided for @dashAiBlocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'comptes bloqués'**
+  String get dashAiBlocked;
+
+  /// No description provided for @checkBirthDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Même date de naissance que le permis'**
+  String get checkBirthDate;
+
+  /// No description provided for @licenseBirthMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : la date de naissance du permis ne correspond pas à votre pièce d\'identité.'**
+  String get licenseBirthMismatch;
 }
 
 class _AppLocalizationsDelegate

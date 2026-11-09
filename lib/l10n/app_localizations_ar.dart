@@ -1219,4 +1219,39 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get errorAiQuota =>
       'عدد كبير من التحاليل في وقت قصير. أعد المحاولة بعد قليل.';
+
+  @override
+  String get livenessHintNoFace => 'ضع وجهك داخل الإطار';
+
+  @override
+  String get livenessHintLookStraight => 'انظر مباشرة إلى الكاميرا';
+
+  @override
+  String get livenessHintTurnMore => 'أدر رأسك أكثر';
+
+  @override
+  String get dashAiTitle => 'التحقق بالذكاء الاصطناعي';
+
+  @override
+  String get dashAiFooter =>
+      'خلال الفترة المعروضة. التحليل على خوادمنا دون خدمة خارجية.';
+
+  @override
+  String get dashAiRequests => 'طلبات';
+
+  @override
+  String get dashAiAutoRate => 'وثّقها الذكاء الاصطناعي وحده';
+
+  @override
+  String get dashAiAverageMatch => 'متوسط التطابق';
+
+  @override
+  String get dashAiBlocked => 'حسابات محظورة';
+
+  @override
+  String get checkBirthDate => 'نفس تاريخ الولادة في الرخصة';
+
+  @override
+  String get licenseBirthMismatch =>
+      'تنبيه: تاريخ الولادة في الرخصة لا يطابق وثيقة هويتك.';
 }

@@ -477,8 +477,21 @@ paths:
       tags: [Identité]
       summary: Démarrer la vérification du visage (défi)
       description: >-
-        Renvoie l'ordre des consignes, tiré au hasard (de face, puis gauche et
-        droite dans un ordre aléatoire), et un jeton valable 5 minutes.
+        Exige l'accord explicite pour l'analyse du visage (`consent: true`,
+        loi n° 2004-63), enregistré avec sa date. Renvoie l'ordre des
+        consignes, tiré au hasard (de face, puis gauche et droite dans un
+        ordre aléatoire), et un jeton valable 5 minutes. Les routes d'analyse
+        par l'IA sont limitées à 30 appels par heure et par compte
+        (429 AI_QUOTA_EXCEEDED, en-tête Retry-After).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [consent]
+              properties:
+                consent: { type: boolean, enum: [true] }
       responses:
         '200':
           description: Défi

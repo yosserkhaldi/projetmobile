@@ -5,6 +5,7 @@ class LicenseReading {
     this.categories = const [],
     this.issuedAt,
     this.expiresAt,
+    this.birthDateMatchesIdentity,
   });
 
   factory LicenseReading.fromJson(Map<String, dynamic> json) => LicenseReading(
@@ -14,6 +15,7 @@ class LicenseReading {
     ],
     issuedAt: json['issuedAt'] as String?,
     expiresAt: json['expiresAt'] as String?,
+    birthDateMatchesIdentity: json['birthDateMatchesIdentity'] as bool?,
   );
 
   final String? number;
@@ -23,6 +25,10 @@ class LicenseReading {
 
   /// Dates au format AAAA-MM-JJ.
   final String? issuedAt, expiresAt;
+
+  /// Contrôle croisé avec la pièce d'identité : false si la date de
+  /// naissance diffère, null si elle n'a pas pu être comparée.
+  final bool? birthDateMatchesIdentity;
 
   bool get isEmpty => number == null && categories.isEmpty && issuedAt == null;
 }

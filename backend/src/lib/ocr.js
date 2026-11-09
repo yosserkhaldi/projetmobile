@@ -575,6 +575,66 @@ export function nameInMrz(nameLine, name) {
   return wanted.length > 1 && lettersOf(nameLine ?? '').includes(wanted);
 }
 
+// ---------------------------------------------------------------------------
+// Nom en arabe (CIN) comparé au nom du compte, en lettres latines.
+//
+// Les voyelles s'écrivent de mille façons (Jlassi, Jelassi, Djellassi) : on
+// compare le « squelette » des consonnes. الجلاصي → JLS, Jlassi → JLS.
+
+const ARABIC_CONSONANTS = {
+  ب: 'B', ت: 'T', ث: 'T', ج: 'J', ح: 'H', خ: 'K', د: 'D', ذ: 'D', ر: 'R',
+  ز: 'Z', س: 'S', ش: 'C', ص: 'S', ض: 'D', ط: 'T', ظ: 'Z', غ: 'G', ف: 'F',
+  ق: 'K', ك: 'K', ل: 'L', م: 'M', ن: 'N', ه: 'H',
+};
+
+const collapse = (value) => value.replace(/(.)\1+/g, '$1');
+
+/** Squelette d'un nom arabe, sans l'article « ال » des noms de famille. */
+export function arabicSkeleton(name) {
+  return collapse(
+    (name ?? '')
+      .split(/\s+/)
+      .map((word) => word.replace(/^ال/, ''))
+      .join('')
+      .split('')
+      .map((char) => ARABIC_CONSONANTS[char] ?? '')
+      .join(''),
+  );
+}
+
+/** Squelette d'un nom écrit en lettres latines (transcription française). */
+export function latinSkeleton(name) {
+  return collapse(
+    lettersOf(name ?? '')
+      .replace(/^(EL|AL)(?=[A-Z]{3})/, '')
+      .replace(/DJ/g, 'J')
+      .replace(/CH|SH/g, '%')
+      .replace(/KH/g, 'K')
+      .replace(/GH/g, 'G')
+      .replace(/TH/g, 'T')
+      .replace(/C(?=[EI])/g, 'S')
+      .replace(/Q|C/g, 'K')
+      .replace(/%/g, 'C')
+      .replace(/[AEIOUYW]/g, ''),
+  );
+}
+
+/**
+ * Le nom arabe lu sur la CIN correspond-il au nom du compte ? Une lettre de
+ * différence est tolérée sur un nom d'au moins 4 consonnes (OCR,
+ * transcription). null si rien à comparer.
+ */
+export function arabicMatchesLatin(arabic, latin) {
+  const a = arabicSkeleton(arabic);
+  const b = latinSkeleton(latin);
+  if (a.length < 2 || b.length < 2) return null;
+  const d = distance(a, b);
+  if (Math.min(a.length, b.length) >= 4) return d <= 1;
+  // Nom court : une lettre en trop ou en moins (OCR) passe, une lettre
+  // différente non (HB ≠ HM).
+  return d === 0 || (d === 1 && a.length !== b.length);
+}
+
 /** Noms comparés sans accents, tirets ni espaces : « Ben-Ali » = « BEN ALI ». */
 export function sameName(a, b) {
   const clean = (value) =>

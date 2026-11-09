@@ -123,7 +123,13 @@ class _ConsoleDashboardState extends State<ConsoleDashboard> {
           children: [
             Expanded(flex: 3, child: _ToHandle(widget: widget)),
             gap,
-            Expanded(flex: 2, child: sections.accidents),
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [sections.ai, sections.accidents],
+              ),
+            ),
           ],
         ),
       ),

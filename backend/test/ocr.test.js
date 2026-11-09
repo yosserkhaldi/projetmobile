@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  arabicMatchesLatin,
   mrzCheckDigit,
   mrzNumberCandidates,
   nameInMrz,
@@ -110,4 +111,17 @@ test('permis : numéro, catégories et dates, ancien et nouveau modèle', () => 
     issuedAt: '2024-05-10',
     expiresAt: '2034-05-10',
   });
+});
+
+test('nom arabe et nom latin : comparés par leurs consonnes', () => {
+  assert.equal(arabicMatchesLatin('الطرابلسي', 'Trabelsi'), true);
+  assert.equal(arabicMatchesLatin('بن علي', 'Ben Ali'), true);
+  assert.equal(arabicMatchesLatin('محمد خليل', 'Mohamed Khalil'), true);
+  assert.equal(arabicMatchesLatin('الشابي', 'Chebbi'), true);
+  assert.equal(arabicMatchesLatin('قاسم', 'Kacem'), true);
+  // Lettre en trop lue par l'OCR sur un nom court : tolérée.
+  assert.equal(arabicMatchesLatin('سامبي', 'Sami'), true);
+  assert.equal(arabicMatchesLatin('الطرابلسي', 'Ben Ali'), false);
+  assert.equal(arabicMatchesLatin('سامي', 'Mouna'), false);
+  assert.equal(arabicMatchesLatin(null, 'Sami'), null);
 });

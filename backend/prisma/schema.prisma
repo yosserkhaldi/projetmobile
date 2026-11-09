@@ -65,6 +65,8 @@ model User {
   // Noms de fichiers dans UPLOAD_DIR/users. Jamais servis publiquement.
   photoFile        String?
   licensePhotoFile String?
+  // Lu sur la photo du permis par l'OCR (numéro, catégories, dates).
+  licenseReading   Json?
   // Vérification d'identité : pièce (CIN, permis ou passeport) et visage
   // comparés par l'IA, sinon décision d'un administrateur.
   identityStatus          IdentityStatus @default(UNVERIFIED)

@@ -12,6 +12,7 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
 import 'package:mon_constat_digital/modules/users/data/users_database.dart';
 import 'package:mon_constat_digital/modules/users/screens/liveness_screen.dart';
+import 'package:mon_constat_digital/modules/users/services/face_guide.dart';
 
 /// Plus petit PNG valide (1 × 1 pixel).
 final tinyPng = base64Decode(
@@ -326,6 +327,16 @@ class FakeBackend {
         'signIns7Days': {'success': 25, 'failed': 3},
         'companies': 3,
         'agencies': 5,
+        'identityAi': {
+          'requests': 8,
+          'autoVerified': 5,
+          'adminVerified': 1,
+          'rejected': 1,
+          'pending': 1,
+          'autoRate': 0.63,
+          'averageMatch': 0.71,
+          'blocked': 1,
+        },
         'signups': [
           for (var i = 0; i < 30; i += 1)
             {
@@ -457,6 +468,21 @@ class FakeFaceCamera implements FaceCamera {
 
   @override
   Future<Uint8List> capture() async => tinyPng;
+
+  @override
+  Future<void> close() async {}
+}
+
+/// Détection simulée sur le téléphone : renvoie les poses dans l'ordre
+/// (null : aucun visage), puis la dernière indéfiniment.
+class FakeFaceGuide implements FaceGuide {
+  FakeFaceGuide(this.poses);
+  final List<FacePose?> poses;
+  int seen = 0;
+
+  @override
+  Future<FacePose?> poseOf(Uint8List jpeg) async =>
+      poses[seen < poses.length ? seen++ : poses.length - 1];
 
   @override
   Future<void> close() async {}

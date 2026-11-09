@@ -14,7 +14,12 @@ import {
   similarity,
 } from '../../lib/face.js';
 import { notifier } from '../../lib/notifier.js';
-import { documentReader, nameInMrz, sameName } from '../../lib/ocr.js';
+import {
+  arabicMatchesLatin,
+  documentReader,
+  nameInMrz,
+  sameName,
+} from '../../lib/ocr.js';
 import { prisma } from '../../lib/prisma.js';
 import {
   signLivenessChallenge,
@@ -428,7 +433,7 @@ const compact = (value) => value.toUpperCase().replace(/[^A-Z0-9]/g, '');
  * Contrôles de la pièce, d'après ce que l'OCR a lu. Chaque contrôle vaut
  * true, false, ou null quand la pièce n'a pas pu être lue.
  */
-function documentChecks(user, number, extracted) {
+function documentChecks(user, number, extracted, documentType) {
   // Passeport : plusieurs lectures possibles, validées par le chiffre de contrôle.
   const readings = extracted?.numberCandidates?.length
     ? extracted.numberCandidates
@@ -436,18 +441,42 @@ function documentChecks(user, number, extracted) {
   const typed = compact(number);
   const matching = readings.find((reading) => compact(reading) === typed);
   const today = new Date().toISOString().slice(0, 10);
+  // Contrôle croisé : même date de naissance sur le permis du profil.
+  const licenseBirth =
+    documentType !== 'LICENSE' ? user.licenseReading?.birthDate : null;
   return {
     numberRead: matching ?? readings[0] ?? null,
     numberMatches: readings.length ? Boolean(matching) : null,
-    // Passeport : nom et prénom du compte, en lettres latines dans la MRZ.
-    nameMatches: extracted?.nameLine
-      ? nameInMrz(extracted.nameLine, user.lastName) &&
-        nameInMrz(extracted.nameLine, user.firstName)
-      : extracted?.lastName
-        ? sameName(extracted.lastName, user.lastName)
-        : null,
+    nameMatches: nameCheck(user, extracted),
     notExpired: extracted?.expiresAt ? extracted.expiresAt >= today : null,
+    birthDateMatches:
+      extracted?.birthDate && licenseBirth
+        ? extracted.birthDate === licenseBirth
+        : null,
   };
+}
+
+/**
+ * Nom du compte sur la pièce. Passeport : nom et prénom dans la MRZ. CIN :
+ * nom et prénom lus en arabe, comparés par leurs consonnes (الجلاصي ≈
+ * Jlassi). null si rien n'a pu être lu.
+ */
+function nameCheck(user, extracted) {
+  if (extracted?.nameLine) {
+    return (
+      nameInMrz(extracted.nameLine, user.lastName) &&
+      nameInMrz(extracted.nameLine, user.firstName)
+    );
+  }
+  if (extracted?.lastName) return sameName(extracted.lastName, user.lastName);
+  // Prénoms composés : la carte peut en porter plus que le compte.
+  const firstWord = (value) => value?.split(/\s+/)[0];
+  const results = [
+    arabicMatchesLatin(extracted?.lastNameAr, user.lastName),
+    arabicMatchesLatin(extracted?.firstNameAr, user.firstName) ||
+      arabicMatchesLatin(firstWord(extracted?.firstNameAr), user.firstName),
+  ].filter((result) => result !== null);
+  return results.length ? results.every(Boolean) : null;
 }
 
 router.post('/me/identity/submit', requireAuth, ai, async (req, res) => {
@@ -493,7 +522,7 @@ router.post('/me/identity/submit', requireAuth, ai, async (req, res) => {
       )
     : null;
   const checks = {
-    ...documentChecks(req.user, number, extracted),
+    ...documentChecks(req.user, number, extracted, documentType),
     backRecognized,
   };
   // L'IA ne valide seule que si tout concorde : visage, numéro lu sur la
