@@ -39,6 +39,8 @@ Password for every account: `Password123!`
 
 To replay the scenarios from the start, `npm run claims:demo` resets the module 5 claims, and only those.
 
+**After every pull or merge**, run `npx prisma migrate deploy` again: teammates add tables (module 4 added the sealed constats, module 5 added appointments and driver B's boxes). Restart `npm run dev` afterwards, and restart `flutter run` completely (`q`, then run again); a hot reload isn't enough when the phone's database changes.
+
 ## 3. Real Claude answers through the Claude Code CLI
 
 The API uses the Claude Code CLI installed on the machine, so any Claude account works (Pro included). No API key is needed, and none is ever committed.
@@ -138,35 +140,48 @@ flutter run --dart-define=API_URL=http://192.168.1.9:3000/api
     - SIN-2026-0430, as Karim (A parked, B reversing) → A 0 %;
     - SIN-2026-0422 (A overtaking, B turning left) → A 100 %.
 
+### Declaration and sealed constat (modules 3, 4 and 5 together)
+23. **D**, Déclarations → "Nouvelle déclaration", then finish the wizard. A waiting dialog seals the constat, then the sealed-constat screen shows its SHA-256 fingerprint (the copy button copies it). Back in the list, a new `SIN-…` claim appears as Transmis, and **A** gets "Nouveau sinistre reçu".
+24. **D**, open the new claim. The timeline reads Déclaration complétée → N preuves ajoutées → Double signature → **Constat scellé (SHA-256 1a2b3c4d…)** → Transmis aux assureurs. In English or Arabic, these steps are translated too.
+25. **The PDF attached to the claim is the sealed one.** Under "Pièces du dossier", download "Constat amiable.pdf". Compute its fingerprint (`shasum -a 256 "Constat amiable.pdf"` on a Mac) and open `http://localhost:3000/api/constats/verify/<fingerprint>`, which needs no login → `"valid": true`. A modified PDF has another fingerprint, and the same link answers 404.
+26. **Offline sealing.** Stop the API (`Ctrl+C` on `npm run dev`) before the wizard's last step. The constat is sealed on the phone: the timeline shows "Constat scellé sur le téléphone (SHA-256 …)" and "En attente de connexion pour l'envoi". When the API is back, the claim is sent; it has no server constat ID, because the server never sealed it.
+
 ### Messages and notifications
-23. Messages between D and A arrive in about a second, without refreshing.
-24. The Messages tab shows an unread count, which clears when the conversation is opened. One tick means sent, two ticks mean read.
-25. The paperclip attaches a file, and tapping it downloads it.
-26. **A**, light bulb in a conversation: 3 suggested replies, and tapping one fills the input box.
-27. Bell icon: each change made by one side notifies the other. Tapping a notification opens the claim; "Tout marquer lu" marks them all read.
+27. Messages between D and A arrive in about a second, without refreshing.
+28. The Messages tab shows an unread count, which clears when the conversation is opened. One tick means sent, two ticks mean read.
+29. The paperclip attaches a file, and tapping it downloads it.
+30. **A**, light bulb in a conversation: 3 suggested replies, and tapping one fills the input box.
+31. Bell icon: each change made by one side notifies the other. Tapping a notification opens the claim; "Tout marquer lu" marks them all read.
 
 ### Assistant
-28. Headset icon on a claim: the suggested questions stay above the input box. The ones already asked move to the end.
-29. **D**: "Combien je vais être remboursé ?" → the assistant refuses and sends him to the agent.
-30. **A**: "Quelle responsabilité proposes-tu ?" → the proposal and its reason.
-31. Answers say who wrote them: "Claude (CLI) · …" or "Réponse automatique".
+32. Headset icon on a claim: the suggested questions stay above the input box. The ones already asked move to the end.
+33. **D**: "Combien je vais être remboursé ?" → the assistant refuses and sends him to the agent.
+34. **A**: "Quelle responsabilité proposes-tu ?" → the proposal and its reason.
+35. Answers say who wrote them: "Claude (CLI) · …" or "Réponse automatique".
 
 ### Statistics (agent, chart icon)
-32. Animated tiles, a donut chart by status, bars by severity and by accident type, a gauge showing how often the agent followed the system, and AI answers per source.
+36. Animated tiles, a donut chart by status, bars by severity and by accident type, a gauge showing how often the agent followed the system, and AI answers per source.
 
 ### Languages
-33. Profile > language Arabic or English: every module 5 screen switches language, and Arabic reads right to left.
-34. Server texts follow too: tracking card, next action, priority reasons, and assistant answers.
+37. Profile > language Arabic or English: every module 5 screen switches language, and Arabic reads right to left.
+38. Server texts follow too: tracking card, next action, priority reasons, and assistant answers.
 
 ### Offline
-35. `docker compose stop db` (or stop `npm run dev`): a "Hors ligne" banner appears. Send a message or a document; it waits on the phone.
-36. Restart it: the banner disappears and everything is sent, in order.
+39. `docker compose stop db` (or stop `npm run dev`): a "Hors ligne" banner appears. Send a message or a document; it waits on the phone.
+40. Restart it: the banner disappears and everything is sent, in order.
 
 ### Security
-37. D never sees risk, estimates, warnings or other drivers' claims, and has no Statistics.
-38. Log out → the claims are cleared from the screen.
+41. D never sees risk, estimates, warnings or other drivers' claims, and has no Statistics.
+42. Log out → the claims are cleared from the screen.
 
-## 6. Run the tests
+## 6. Known limits (not module 5)
+
+- **Driver B gets no e-mail.** The server can send the sealed constat to B, but the declaration never asks for B's e-mail address (module 4).
+- **The sealed record shows placeholders for driver A** ("Conducteur A", "A-Plate", "Assureur A") instead of the real name, plate and insurer, in the record and in the e-mail (module 4).
+- **The declaration doesn't say which vehicle was involved** (module 3), which is why a driver with several insurers gets "Compagnie non renseignée" (scenario 21).
+- **In Chrome, the wizard can't take photos, record video or a voice note.** Use a real phone to test those attachments.
+
+## 7. Run the tests
 
 ```bash
 flutter test
