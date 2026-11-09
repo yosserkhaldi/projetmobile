@@ -29,6 +29,13 @@ export function createApp() {
     app.use(cors({ origin: /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/ }));
   }
   app.use(express.json());
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      console.log(`[HTTP] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${Date.now() - start}ms)`);
+    });
+    next();
+  });
 
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apiDocs));

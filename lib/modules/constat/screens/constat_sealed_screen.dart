@@ -65,7 +65,7 @@ class ConstatSealedScreen extends StatelessWidget {
                       ),
                       child: const Icon(
                         Icons.verified_user_rounded,
-                        color: AppColors.successSolid,
+                        color: AppColors.successText,
                         size: 36,
                       ),
                     ),

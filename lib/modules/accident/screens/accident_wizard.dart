@@ -184,7 +184,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
         draft: draft,
         driverAName: stores.users.userName,
         driverAPlate: 'Véhicule A',
-        driverAInsurer: stores.users.currentUser?.company?.name ?? 'Assureur A',
+        driverAInsurer: stores.users.currentUser?.companyName ?? 'Assureur A',
         companyAId: stores.users.currentUser?.companyId,
         companyBId: draft.driverBCompanyId,
       );
@@ -233,15 +233,15 @@ class _AccidentWizardState extends State<AccidentWizard> {
         pdfUrl: '',
         driverAName: stores.users.userName,
         driverAPlate: 'Véhicule A',
-        driverAInsurer: stores.users.currentUser?.company?.name ?? 'Assureur A',
+        driverAInsurer: stores.users.currentUser?.companyName ?? 'Assureur A',
         driverBName: draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
         driverBPlate: draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'Véhicule B',
         driverBInsurer: draft.driverBInsurer.isNotEmpty ? draft.driverBInsurer : 'Assureur B',
         place: draft.place,
         occurredAt: draft.occurredAt,
-        circumstancesA: draft.circumstancesA,
-        circumstancesB: draft.circumstancesB,
-        impactZones: draft.impactZones,
+        circumstancesA: draft.circumstancesA.toList(),
+        circumstancesB: draft.circumstancesB.toList(),
+        impactZones: draft.impactZones.toList(),
         observations: draft.observations,
       );
 
