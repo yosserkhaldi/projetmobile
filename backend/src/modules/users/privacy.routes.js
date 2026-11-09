@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 
+import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { Router } from 'express';
 
@@ -106,10 +107,20 @@ router.delete('/me', requireAuth, async (req, res) => {
         cinBackFile: null,
         identityStatus: 'UNVERIFIED',
         identityRejectionReason: null,
+        identitySelfieFile: null,
+        identityLivenessAt: null,
+        identityFaceMatch: null,
+        identityAutoVerified: false,
+        identityExtracted: Prisma.DbNull,
+        identityChecks: Prisma.DbNull,
+        identityRefusals: 0,
+        identityRetryAt: null,
+        identityBlocked: false,
         deletedAt: new Date(),
       },
     }),
     prisma.loginEvent.deleteMany({ where: { userId: user.id } }),
+    prisma.identityAttempt.deleteMany({ where: { userId: user.id } }),
     prisma.verificationCode.deleteMany({ where: { userId: user.id } }),
   ]);
   await revokeSessions(user.id);
@@ -118,6 +129,7 @@ router.delete('/me', requireAuth, async (req, res) => {
     deleteImage(user.licensePhotoFile, 'users'),
     deleteImage(user.cinFrontFile, 'identity'),
     deleteImage(user.cinBackFile, 'identity'),
+    deleteImage(user.identitySelfieFile, 'identity'),
   ]);
   res.status(204).end();
 });
@@ -143,6 +155,7 @@ router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
     logins,
     companies,
     agencies,
+    autoVerified,
   ] = await Promise.all([
     prisma.user.groupBy({ by: ['role'], where: live, _count: true }),
     prisma.user.groupBy({
@@ -163,6 +176,9 @@ router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
     }),
     prisma.company.count(),
     prisma.agency.count(),
+    prisma.user.count({
+      where: { ...live, identityStatus: 'VERIFIED', identityAutoVerified: true },
+    }),
   ]);
 
   const count = (rows, key, value) =>
@@ -197,6 +213,8 @@ router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
         count(byIdentity, 'identityStatus', s),
       ]),
     ),
+    // Identités validées par la reconnaissance faciale, sans administrateur.
+    identityAutoVerified: autoVerified,
     signIns7Days: {
       success: count(logins, 'success', true),
       failed: count(logins, 'success', false),

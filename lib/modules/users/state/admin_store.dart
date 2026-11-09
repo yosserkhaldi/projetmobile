@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/models/identity_attempt.dart';
 import 'package:mon_constat_digital/modules/users/models/company.dart';
 import 'package:mon_constat_digital/modules/users/state/company_store.dart';
 
@@ -98,10 +99,32 @@ class AdminStore extends ChangeNotifier {
   Future<void> approveIdentity(AppUser user) =>
       _decideIdentity(_api.post('/users/${user.id}/identity/approve'), user);
 
-  Future<void> rejectIdentity(AppUser user, String reason) => _decideIdentity(
-    _api.post('/users/${user.id}/identity/reject', body: {'reason': reason}),
-    user,
-  );
+  /// Débloque la vérification d'un compte (refus grave ou 3e refus).
+  Future<void> unblockIdentity(AppUser user) async {
+    await _api.post('/users/${user.id}/identity/unblock');
+    await loadUsers();
+  }
+
+  /// Demandes passées d'un compte, les plus récentes d'abord.
+  Future<List<IdentityAttempt>> identityAttempts(AppUser user) async {
+    final body =
+        await _api.get('/users/${user.id}/identity/attempts')
+            as Map<String, dynamic>;
+    return [
+      for (final item in body['items'] as List)
+        IdentityAttempt.fromJson(item as Map<String, dynamic>),
+    ];
+  }
+
+  /// Refus. `severe` : refus définitif, plus de nouvelle demande.
+  Future<void> rejectIdentity(AppUser user, IdentityRejection rejection) =>
+      _decideIdentity(
+        _api.post(
+          '/users/${user.id}/identity/reject',
+          body: {'reason': rejection.reason, 'severe': rejection.severe},
+        ),
+        user,
+      );
 
   Future<void> _decideIdentity(Future<dynamic> decision, AppUser user) async {
     await decision;

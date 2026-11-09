@@ -41,7 +41,7 @@ flutter test
 
 ### Console d'administration (web)
 
-La même application sert de console aux administrateurs sur ordinateur : à partir de 1000 px de large, un compte administrateur voit une barre latérale (tableau de bord, comptes, vérification des CIN, compagnies) au lieu des onglets du téléphone.
+La même application sert de console aux administrateurs sur ordinateur : à partir de 1000 px de large, un compte administrateur voit une barre latérale (tableau de bord, comptes, vérification d'identité avec le score de l'IA, compagnies) au lieu des onglets du téléphone.
 
 ```bash
 flutter run -d chrome                     # en développement
@@ -162,6 +162,18 @@ import { assertCompanyExists, companyScope, requireAuth } from '../../middleware
 await assertCompanyExists(req.body.companyId);                       // module 2
 prisma.claim.findMany({ where: { ...companyScope(req), status } });   // module 5
 ```
+
+### Vérification d'identité par l'IA
+
+Le conducteur choisit sa pièce (CIN, permis ou passeport), la photographie, puis fait une **vérification du visage** : l'API tire au hasard l'ordre des consignes (de face, puis tête à gauche et à droite) et l'application prend une photo par consigne.
+
+La reconnaissance faciale tourne **dans l'API**, sans service extérieur ([`backend/src/lib/face.js`](backend/src/lib/face.js)) : face-api et TensorFlow.js en WebAssembly. Trois modèles : détection du visage (SSD MobileNet v1), 68 points du visage, et empreinte de 128 nombres (ResNet-34).
+
+1. **Recto de la pièce :** refusé tout de suite s'il ne contient aucun visage.
+2. **Visage vivant :** un seul visage par photo, de face puis tourné des deux côtés (sens opposés, mesurés avec les points du nez et des yeux), et la même personne sur les trois photos. Une photo imprimée ou un écran ne passe pas.
+3. **Décision :** l'IA compare le visage à la photo de la pièce. Si la ressemblance atteint 60 %, l'identité est **validée automatiquement**. Sinon, la demande va dans la file de l'administrateur, avec le score et les photos côte à côte.
+
+Pour la loi n° 2004-63, aucune photo n'est envoyée à un tiers, l'empreinte du visage n'est jamais enregistrée et la photo du visage est **effacée dès la décision**. Les autres modules exigent une identité vérifiée avec `requireVerifiedIdentity`.
 
 ## Travailler en équipe
 

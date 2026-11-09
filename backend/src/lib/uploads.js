@@ -11,6 +11,13 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 /** Dossier des fichiers envoyés. Hors du dossier public, servi par des routes protégées. */
 export const uploadDir = () => resolve(process.env.UPLOAD_DIR ?? 'uploads');
 
+/** Garde les images en mémoire : jusqu'à `max` fichiers dans le champ `field`. */
+export const imageArray = (field, max) =>
+  multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: MAX_IMAGE_BYTES, files: max },
+  }).array(field, max);
+
 /** Garde l'image en mémoire, un seul fichier dans le champ `field`. */
 export const singleImage = (field) =>
   multer({
@@ -34,8 +41,8 @@ function imageExtension(buffer) {
   return null;
 }
 
-/** Enregistre l'image reçue et renvoie son nom de fichier. */
-export async function saveImage(file, folder) {
+/** Refuse ce qui n'est pas une image JPEG, PNG ou WebP. Renvoie l'extension. */
+export function assertImage(file) {
   if (!file) {
     throw new HttpError(400, 'FILE_REQUIRED', 'Aucune image reçue.');
   }
@@ -47,6 +54,12 @@ export async function saveImage(file, folder) {
       'Format accepté : JPEG, PNG ou WebP.',
     );
   }
+  return extension;
+}
+
+/** Enregistre l'image reçue et renvoie son nom de fichier. */
+export async function saveImage(file, folder) {
+  const extension = assertImage(file);
   const dir = join(uploadDir(), folder);
   await mkdir(dir, { recursive: true });
   const name = `${randomUUID()}.${extension}`;

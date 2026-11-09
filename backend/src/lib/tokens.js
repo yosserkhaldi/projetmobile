@@ -36,3 +36,16 @@ export const hashCode = (userId, purpose, code) =>
   createHmac('sha256', jwtSecret())
     .update(`${userId}:${purpose}:${code}`)
     .digest('hex');
+
+// Défi de la vérification du visage : signé avec une clé dérivée, pour qu'il
+// ne puisse jamais servir de jeton d'accès.
+const livenessSecret = () => `${jwtSecret()}:liveness`;
+
+export const signLivenessChallenge = (userId, steps) =>
+  jwt.sign({ sub: userId, steps }, livenessSecret(), {
+    algorithm: ALGORITHM,
+    expiresIn: '5m',
+  });
+
+export const verifyLivenessChallenge = (token) =>
+  jwt.verify(token, livenessSecret(), { algorithms: [ALGORITHM] });

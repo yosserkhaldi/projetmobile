@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
-import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
-import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/widgets/dashboard_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';

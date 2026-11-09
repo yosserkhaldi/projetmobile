@@ -69,7 +69,13 @@ DashboardSections dashboardSections(
         icon: Icons.badge_outlined,
         label: t.dashPendingIds,
         value: '${identity['PENDING']}',
-        detail: t.dashVerifiedIds(identity['VERIFIED'] as int),
+        // Part validée par la reconnaissance faciale, quand il y en a une.
+        detail: (stats['identityAutoVerified'] as int? ?? 0) > 0
+            ? t.dashVerifiedIdsAi(
+                identity['VERIFIED'] as int,
+                stats['identityAutoVerified'] as int,
+              )
+            : t.dashVerifiedIds(identity['VERIFIED'] as int),
         highlight: (identity['PENDING'] as int) > 0,
       ),
       Kpi(

@@ -3,9 +3,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mon_constat_digital/main.dart';
+import 'package:mon_constat_digital/modules/users/screens/liveness_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/profile_screen.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
+import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
 
 import 'support/fake_backend.dart';
 
@@ -330,6 +333,59 @@ void main() {
       expect(find.text('Profil enregistré'), findsOneWidget);
     });
 
+    testWidgets('scanner le permis : l IA remplit numéro, catégories, date', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend();
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('scan-license')));
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('PUT /users/me/license-photo'));
+      expect(
+        find.text(
+          "Rempli par l'IA à partir de la photo. Vérifiez avant d'enregistrer.",
+        ),
+        findsOneWidget,
+      );
+      // Rien n'est enregistré avant la confirmation.
+      expect(backend.requests, isNot(contains('PATCH /users/me')));
+
+      await tester.ensureVisible(find.text('Enregistrer'));
+      await tester.tap(find.text('Enregistrer'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['PATCH /users/me'], {
+        'licenseNumber': '12/345678',
+        'licenseCategory': 'B, B+E',
+        'licenseIssuedAt': '2018-06-15',
+      });
+    });
+
+    testWidgets('scanner le permis illisible : formulaire à compléter', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend()..licenseReading = null;
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('scan-license')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          "Photo enregistrée, mais l'IA n'a pas pu lire le permis. Complétez les champs.",
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('modifier le permis : numéro et catégories dans l ordre', (
       tester,
     ) async {
@@ -550,13 +606,84 @@ void main() {
   });
 
   group("vérification d'identité", () {
-    Future<void> openIdentity(WidgetTester tester, FakeBackend backend) async {
+    setUp(() => LivenessScreen.cameraFactory = FakeFaceCamera.new);
+    tearDown(() => LivenessScreen.cameraFactory = DeviceFaceCamera.new);
+
+    /// Compte avec les photos de la pièce, et au besoin le visage déjà vérifié.
+    Map<String, dynamic> withIdentity({
+      bool back = true,
+      bool liveness = false,
+    }) => {
+      ...userJson(),
+      'identity': {
+        'status': 'UNVERIFIED',
+        'frontId': 'front.jpg',
+        if (back) 'backId': 'back.jpg',
+        if (liveness) 'selfieId': 'selfie.jpg',
+        if (liveness) 'livenessAt': DateTime.now().toUtc().toIso8601String(),
+      },
+    };
+
+    final identityList = find
+        .descendant(
+          of: find.byKey(const Key('identity-list')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+
+    Future<void> tapSubmit(WidgetTester tester) async {
+      // Un message en bas d'écran masquerait le bouton.
+      tester
+          .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
+          .clearSnackBars();
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Envoyer pour vérification'),
+        200,
+        scrollable: identityList,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Envoyer pour vérification'));
+      await tester.pumpAndSettle();
+    }
+
+    /// Trois consignes de trois secondes, puis l'analyse.
+    Future<void> pumpCountdown(WidgetTester tester) async {
+      for (var i = 0; i < 12; i++) {
+        await tester.pump(const Duration(seconds: 1));
+      }
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> openFaceCheck(WidgetTester tester) async {
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('start-face-check')),
+        200,
+        scrollable: identityList,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('start-face-check')));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> runFaceCheck(WidgetTester tester) async {
+      await openFaceCheck(tester);
+      await pumpCountdown(tester);
+    }
+
+    Future<void> openIdentity(
+      WidgetTester tester,
+      FakeBackend backend, {
+      bool unverified = true,
+    }) async {
       await pumpApp(tester, backend);
       await signIn(tester);
       await tester.tap(find.text('Profil'));
       await tester.pumpAndSettle();
       await scrollProfileTo(tester, find.byKey(const Key('open-identity')));
-      expect(find.text('Identité non vérifiée'), findsOneWidget);
+      if (unverified) {
+        expect(find.text('Identité non vérifiée'), findsOneWidget);
+      }
       await tester.tap(find.byKey(const Key('open-identity')));
       await tester.pumpAndSettle();
     }
@@ -567,10 +694,39 @@ void main() {
       final backend = FakeBackend();
       await openIdentity(tester, backend);
       await tester.enterText(field('N° de CIN'), '12345678');
-      await tester.tap(find.text('Envoyer pour vérification'));
-      await tester.pumpAndSettle();
+      await tapSubmit(tester);
+      expect(find.text('Ajoutez les photos de la pièce.'), findsOneWidget);
       expect(
-        find.text('Ajoutez le recto et le verso de votre CIN.'),
+        backend.requests,
+        isNot(contains('POST /users/me/identity/submit')),
+      );
+    });
+
+    testWidgets('sans vérification du visage : demande refusée', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: withIdentity());
+      await openIdentity(tester, backend);
+      await tester.enterText(field('N° de CIN'), '1234');
+      await tapSubmit(tester);
+      await tester.scrollUntilVisible(
+        find.text('Le numéro de CIN contient 8 chiffres.'),
+        -200,
+        scrollable: identityList,
+      );
+      expect(
+        find.text('Le numéro de CIN contient 8 chiffres.'),
+        findsOneWidget,
+      );
+      await tester.enterText(field('N° de CIN'), '12345678');
+      await tapSubmit(tester);
+      await tester.scrollUntilVisible(
+        find.text("Faites d'abord la vérification du visage."),
+        -200,
+        scrollable: identityList,
+      );
+      expect(
+        find.text("Faites d'abord la vérification du visage."),
         findsOneWidget,
       );
       expect(
@@ -579,38 +735,180 @@ void main() {
       );
     });
 
-    testWidgets('avec les photos : envoyée, puis en cours de vérification', (
+    testWidgets(
+      'parcours complet : visage vérifié, identité validée par l IA',
+      (tester) async {
+        final backend = FakeBackend(user: withIdentity());
+        await openIdentity(tester, backend);
+        await runFaceCheck(tester);
+
+        // Défi demandé, puis trois photos envoyées avec le jeton.
+        expect(backend.requests, contains('POST /users/me/identity/liveness'));
+        final upload = backend.uploads['POST /users/me/identity/selfie']!;
+        final body = latin1.decode(upload.bodyBytes);
+        expect(body, contains('challenge-1'));
+        expect('filename='.allMatches(body).length, 3);
+        expect(find.text('Visage vérifié'), findsOneWidget);
+
+        await tester.enterText(field('N° de CIN'), '12345678');
+        await tapSubmit(tester);
+        expect(backend.bodies['POST /users/me/identity/submit'], {
+          'documentType': 'CIN',
+          'number': '12345678',
+        });
+        expect(find.text('Identité vérifiée'), findsOneWidget);
+        expect(
+          find.text(
+            'Vérifiée automatiquement par reconnaissance faciale. '
+            'Vous pouvez signer vos constats.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('Envoyer pour vérification'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets('IA dans le doute : la demande attend un administrateur', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: withIdentity(liveness: true))
+        ..aiMatch = 0.4;
+      await openIdentity(tester, backend);
+      await tester.enterText(field('N° de CIN'), '12345678');
+      await tapSubmit(tester);
+      expect(find.text('Vérification en cours'), findsOneWidget);
+      // Verrouillée pendant la vérification.
+      expect(find.text('Envoyer pour vérification'), findsNothing);
+    });
+
+    testWidgets('passeport : une seule page et le numéro du passeport', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: withIdentity(back: false, liveness: true),
+      );
+      await openIdentity(tester, backend);
+      await tester.tap(find.text('Passeport'));
+      await tester.pumpAndSettle();
+      expect(find.text('Page photo du passeport'), findsOneWidget);
+      expect(find.text('Verso de la CIN'), findsNothing);
+
+      await tester.enterText(field('N° du passeport'), '123');
+      await tapSubmit(tester);
+      expect(
+        find.text('Numéro de passeport invalide (ex. X1234567).'),
+        findsOneWidget,
+      );
+      await tester.enterText(field('N° du passeport'), 'x 1234567');
+      await tapSubmit(tester);
+      expect(backend.bodies['POST /users/me/identity/submit'], {
+        'documentType': 'PASSPORT',
+        'number': 'X1234567',
+      });
+    });
+
+    testWidgets('visage refusé par l IA : message, puis nouvel essai', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: withIdentity())
+        ..failures['POST /users/me/identity/selfie'] = (
+          422,
+          'LIVENESS_NO_TURN',
+          'Tournez davantage la tête quand la consigne le demande.',
+        );
+      await openIdentity(tester, backend);
+      await runFaceCheck(tester);
+      expect(
+        find.text('Tournez davantage la tête quand la consigne le demande.'),
+        findsOneWidget,
+      );
+      backend.failures.clear();
+      await tester.tap(find.byKey(const Key('liveness-retry')));
+      await pumpCountdown(tester);
+      expect(find.text('Visage vérifié'), findsOneWidget);
+    });
+
+    testWidgets(
+      'lecture de la pièce : informations lues et numéro pré-rempli',
+      (tester) async {
+        final backend = FakeBackend(
+          user: {
+            ...withIdentity(),
+            'identity': {
+              ...withIdentity()['identity'] as Map<String, dynamic>,
+              'documentType': 'CIN',
+              'extracted': {
+                'type': 'CIN',
+                'number': '12345678',
+                'lastNameAr': 'بن علي',
+                'firstNameAr': 'سامي',
+                'parentsAr': 'بن محمد بن صالح',
+                'birthDate': '1999-03-12',
+              },
+            },
+          },
+        );
+        await openIdentity(tester, backend);
+        expect(find.text("Lu sur la pièce par l'IA"), findsOneWidget);
+        expect(find.text('سامي بن علي'), findsOneWidget);
+        expect(find.text('بن محمد بن صالح'), findsOneWidget);
+        final input = tester.widget<EditableText>(
+          find.descendant(
+            of: field('N° de CIN'),
+            matching: find.byType(EditableText),
+          ),
+        );
+        expect(input.controller.text, '12345678');
+
+        // Une autre pièce choisie : la lecture de la CIN ne s'applique plus.
+        await tester.tap(find.text('Passeport'));
+        await tester.pumpAndSettle();
+        expect(find.text("Lu sur la pièce par l'IA"), findsNothing);
+      },
+    );
+
+    testWidgets('permis du profil réutilisé comme pièce, puis lu par l IA', (
       tester,
     ) async {
       final backend = FakeBackend(
         user: {
           ...userJson(),
-          'identity': {
-            'status': 'UNVERIFIED',
-            'frontId': 'front.jpg',
-            'backId': 'back.jpg',
-          },
+          'licensePhotoId': 'permis.jpg',
+          'identity': {'status': 'UNVERIFIED'},
         },
-      );
+      )..documentReading = {'number': '12/345678'};
       await openIdentity(tester, backend);
-      await tester.enterText(field('N° de CIN'), '1234');
-      await tester.tap(find.text('Envoyer pour vérification'));
+      expect(find.byKey(const Key('use-license-photo')), findsNothing);
+      await tester.tap(find.text('Permis'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('use-license-photo')));
       await tester.pumpAndSettle();
       expect(
-        find.text('Le numéro de CIN contient 8 chiffres.'),
+        backend.requests,
+        contains('POST /users/me/identity/front/from-license'),
+      );
+      expect(find.text("Lu sur la pièce par l'IA"), findsOneWidget);
+      expect(find.text('12/345678'), findsWidgets);
+    });
+
+    testWidgets('caméra refusée : message clair, aucune requête', (
+      tester,
+    ) async {
+      LivenessScreen.cameraFactory = () => FakeFaceCamera(fail: true);
+      final backend = FakeBackend(user: withIdentity());
+      await openIdentity(tester, backend);
+      await openFaceCheck(tester);
+      expect(
+        find.text(
+          "Caméra indisponible. Autorisez l'accès à la caméra, puis réessayez.",
+        ),
         findsOneWidget,
       );
-
-      await tester.enterText(field('N° de CIN'), '12345678');
-      await tester.tap(find.text('Envoyer pour vérification'));
-      await tester.pumpAndSettle();
-      expect(backend.bodies['POST /users/me/identity/submit'], {
-        'cinNumber': '12345678',
-      });
-      expect(find.text('Vérification en cours'), findsOneWidget);
-      // Verrouillée pendant la vérification.
-      expect(find.text('Envoyer pour vérification'), findsNothing);
-      expect(tester.takeException(), isNull);
+      expect(
+        backend.requests,
+        isNot(contains('POST /users/me/identity/liveness')),
+      );
     });
 
     testWidgets('administrateur : valide une demande de la file', (
@@ -641,7 +939,12 @@ void main() {
       await tester.tap(find.text('Mouna Trabelsi'));
       await tester.pumpAndSettle();
       expect(find.text('87654321'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('Valider'), 200);
+      await tester.scrollUntilVisible(
+        find.text('Valider'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Valider'));
       await tester.pumpAndSettle();
       expect(backend.requests, contains('POST /users/u2/identity/approve'));
@@ -666,16 +969,110 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Mouna Trabelsi'));
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('Refuser'), 200);
+      await tester.scrollUntilVisible(
+        find.text('Refuser'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Refuser'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Photo floue'));
       await tester.pumpAndSettle();
+      // Photo floue : nouvelle demande possible, pas de refus définitif.
+      expect(
+        tester
+            .widget<SwitchListTile>(find.byKey(const Key('reject-severe')))
+            .value,
+        isFalse,
+      );
       await tester.tap(find.widgetWithText(FilledButton, 'Refuser'));
       await tester.pumpAndSettle();
       expect(backend.bodies['POST /users/u2/identity/reject'], {
         'reason': 'Photo floue',
+        'severe': false,
       });
+    });
+
+    testWidgets('administrateur : visage différent = refus définitif', (
+      tester,
+    ) async {
+      final backend =
+          FakeBackend(
+              user: userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+            )
+            ..pendingIdentities = [
+              {
+                ...userJson(id: 'u2', firstName: 'Mouna', lastName: 'Trabelsi'),
+                'identity': {'status': 'PENDING', 'cinNumber': '87654321'},
+              },
+            ];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Identités'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mouna Trabelsi'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Refuser'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Refuser'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Le visage ne correspond pas à la pièce'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Refuser'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['POST /users/u2/identity/reject'], {
+        'reason': 'Le visage ne correspond pas à la pièce',
+        'severe': true,
+      });
+    });
+
+    testWidgets('refusée : 24 h d attente, essais restants, demande fermée', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: {
+          ...userJson(),
+          'identity': {
+            'status': 'REJECTED',
+            'rejectionReason': 'Photo floue',
+            'refusals': 1,
+            'retryAt': DateTime.now()
+                .add(const Duration(hours: 20))
+                .toUtc()
+                .toIso8601String(),
+          },
+        },
+      );
+      await openIdentity(tester, backend, unverified: false);
+      expect(
+        find.textContaining('Nouvelle demande possible le'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Essais restants : 2.'), findsOneWidget);
+      expect(find.text('Envoyer pour vérification'), findsNothing);
+    });
+
+    testWidgets('bloquée : message support, demande fermée', (tester) async {
+      final backend = FakeBackend(
+        user: {
+          ...userJson(),
+          'identity': {
+            'status': 'REJECTED',
+            'rejectionReason': 'Pièce non valable',
+            'refusals': 1,
+            'blocked': true,
+          },
+        },
+      );
+      await openIdentity(tester, backend, unverified: false);
+      expect(find.text('Vérification bloquée'), findsWidgets);
+      expect(find.textContaining('Contactez le support'), findsOneWidget);
+      expect(find.text('Envoyer pour vérification'), findsNothing);
     });
   });
 

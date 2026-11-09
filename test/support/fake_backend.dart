@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
 
 import 'package:drift/native.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +11,7 @@ import 'package:mon_constat_digital/core/network/token_storage.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
 import 'package:mon_constat_digital/modules/users/data/users_database.dart';
+import 'package:mon_constat_digital/modules/users/screens/liveness_screen.dart';
 
 /// Plus petit PNG valide (1 × 1 pixel).
 final tinyPng = base64Decode(
@@ -145,6 +149,27 @@ class FakeBackend {
   ];
   List<Map<String, dynamic>> pendingIdentities = [];
 
+  /// Ressemblance pièce / visage que l'IA du serveur simulé renvoie.
+  double aiMatch = 0.9;
+
+  /// Ce que l'OCR simulé lit sur la photo du permis (null : illisible).
+  Map<String, dynamic>? licenseReading = {
+    'number': '12/345678',
+    'categories': ['B', 'B+E'],
+    'issuedAt': '2018-06-15',
+    'expiresAt': null,
+  };
+
+  /// Ce que l'OCR simulé lit sur le recto (données fictives).
+  Map<String, dynamic> documentReading = {
+    'number': '12345678',
+    'lastNameAr': 'بن علي',
+    'firstNameAr': 'سامي',
+    'parentsAr': 'بن محمد بن صالح',
+    'birthDate': '1999-03-12',
+    'birthPlaceAr': 'صفاقس',
+  };
+
   /// Réponses d'erreur forcées : `'POST /auth/login'` vers (status, code, message).
   final failures = <String, (int, String, String)>{};
 
@@ -232,6 +257,31 @@ class FakeBackend {
       user = {...user, 'photoId': 'photo-${uploads.length}.jpg'};
       return _json(200, {'user': user});
     }
+    // Photo du permis : l'IA simulée lit la carte, sans rien enregistrer.
+    if (route == 'PUT /users/me/license-photo') {
+      user = {...user, 'licensePhotoId': 'permis-${requests.length}.jpg'};
+      return _json(200, {'user': user, 'extracted': licenseReading});
+    }
+    // Recto de la pièce : l'IA simulée « lit » la carte.
+    if (route == 'PUT /users/me/identity/front' ||
+        route == 'POST /users/me/identity/front/from-license') {
+      final type = route.startsWith('POST')
+          ? 'LICENSE'
+          : RegExp(
+                  r'name="documentType"\s+(\w+)',
+                ).firstMatch(latin1.decode(uploads[route]!.bodyBytes))?[1] ??
+                'CIN';
+      user = {
+        ...user,
+        'identity': {
+          ...Map<String, dynamic>.from(user['identity'] as Map? ?? {}),
+          'documentType': type,
+          'frontId': 'front-${requests.length}.jpg',
+          'extracted': {'type': type, ...documentReading},
+        },
+      };
+      return _json(200, {'user': user});
+    }
     if (route == 'GET /users/${user['id']}/photo') {
       return http.Response.bytes(tinyPng, 200);
     }
@@ -317,16 +367,38 @@ class FakeBackend {
     if (route == 'GET /users/me/login-events') {
       return _json(200, {'items': loginEvents});
     }
+    if (route == 'POST /users/me/identity/liveness') {
+      return _json(200, {
+        'token': 'challenge-1',
+        'steps': ['center', 'right', 'left'],
+      });
+    }
+    if (route == 'POST /users/me/identity/selfie') {
+      user = {
+        ...user,
+        'identity': {
+          ...Map<String, dynamic>.from(user['identity'] as Map? ?? {}),
+          'selfieId': 'selfie.jpg',
+          'livenessAt': DateTime.now().toUtc().toIso8601String(),
+        },
+      };
+      return _json(200, {'user': user});
+    }
     if (route == 'POST /users/me/identity/submit') {
       final identity = Map<String, dynamic>.from(
         user['identity'] as Map? ?? {},
       );
+      final automatic = aiMatch >= 0.6;
       user = {
         ...user,
         'identity': {
           ...identity,
-          'status': 'PENDING',
-          'cinNumber': bodies[route]!['cinNumber'],
+          'status': automatic ? 'VERIFIED' : 'PENDING',
+          'documentType': bodies[route]!['documentType'],
+          'cinNumber': bodies[route]!['number'],
+          'faceMatch': aiMatch,
+          'autoVerified': automatic,
+          if (automatic) 'selfieId': null,
           'submittedAt': '2026-11-07T10:00:00.000Z',
           'rejectionReason': null,
         },
@@ -368,4 +440,24 @@ class FakeBackend {
     status,
     headers: {'content-type': 'application/json; charset=utf-8'},
   );
+}
+
+/// Caméra simulée de la vérification du visage.
+class FakeFaceCamera implements FaceCamera {
+  FakeFaceCamera({this.fail = false});
+  final bool fail;
+
+  @override
+  Future<void> open() async {
+    if (fail) throw StateError('camera denied');
+  }
+
+  @override
+  Widget preview() => const ColoredBox(color: Colors.black);
+
+  @override
+  Future<Uint8List> capture() async => tinyPng;
+
+  @override
+  Future<void> close() async {}
 }

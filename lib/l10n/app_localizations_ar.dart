@@ -611,11 +611,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get identityIntro =>
-      'يتحقق مسؤول من بطاقة تعريفك. وهي ضرورية لتوقيع المعاينة.';
+      'اختر وثيقة، صوّرها، ثم تحقّق من وجهك. يقارن الذكاء الاصطناعي وجهك بصورة الوثيقة على خوادمنا، دون أي خدمة خارجية.';
 
   @override
   String get identityPendingNote =>
-      'يراجع مسؤول وثائقك. سيصلك إشعار عبر واتساب والبريد الإلكتروني.';
+      'لم يتمكن الذكاء الاصطناعي من الحسم: يقارن أحد المشرفين صورك. ستصلك رسالة على واتساب وبالبريد الإلكتروني.';
 
   @override
   String get identityVerifiedNote => 'يمكنك توقيع معايناتك.';
@@ -641,7 +641,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addPhoto => 'إضافة صورة';
 
   @override
-  String get identityPhotosRequired => 'أضف وجه وظهر بطاقة التعريف.';
+  String get identityPhotosRequired => 'أضف صور الوثيقة.';
 
   @override
   String get submitIdentity => 'إرسال للمراجعة';
@@ -685,7 +685,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rejectReasonNameMismatch => 'الاسم لا يطابق الحساب';
 
   @override
-  String get rejectReasonNotCin => 'ليست بطاقة تعريف';
+  String get rejectReasonNotCin => 'وثيقة غير صالحة';
 
   @override
   String get otherReason => 'سبب آخر';
@@ -700,7 +700,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorIdentityLocked => 'هويتك قيد المراجعة أو تم التحقق منها.';
 
   @override
-  String get errorCinInUse => 'رقم بطاقة التعريف هذا مستعمل.';
+  String get errorCinInUse => 'رقم هذه الوثيقة مستعمل من قبل.';
 
   @override
   String get errorIdentityNotVerified => 'يجب التحقق من هويتك أولًا.';
@@ -897,7 +897,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reactivateAccount => 'إعادة التفعيل';
 
   @override
-  String get selectRequest => 'اختر طلبًا لعرض بطاقة التعريف.';
+  String get selectRequest => 'اختر طلبًا لعرض الوثيقة.';
 
   @override
   String pendingCount(int count) {
@@ -930,4 +930,285 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get heroPoint3 => 'متابعة الملف لحظيًا حتى التعويض';
+
+  @override
+  String get identityVerifiedAutoNote =>
+      'تم التحقق تلقائيًا عبر التعرّف على الوجه. يمكنك الآن توقيع المعاينات.';
+
+  @override
+  String get documentTypeLabel => 'وثيقة الهوية';
+
+  @override
+  String get documentCin => 'بطاقة التعريف';
+
+  @override
+  String get documentLicense => 'رخصة السياقة';
+
+  @override
+  String get documentPassport => 'جواز السفر';
+
+  @override
+  String get passportNumberLabel => 'رقم جواز السفر';
+
+  @override
+  String get licenseNumberInvalid => 'رقم رخصة غير صالح (مثال: 12/345678).';
+
+  @override
+  String get passportNumberInvalid => 'رقم جواز سفر غير صالح (مثال: X1234567).';
+
+  @override
+  String get licenseFront => 'وجه الرخصة';
+
+  @override
+  String get licenseBack => 'ظهر الرخصة';
+
+  @override
+  String get passportPage => 'صفحة الصورة في جواز السفر';
+
+  @override
+  String get faceCheckTitle => 'التحقق من الوجه';
+
+  @override
+  String get faceCheckIntro =>
+      'ثلاث صور سريعة: من الأمام، ثم مع إدارة الرأس إلى كل جهة. لا تنجح صورة مطبوعة أو شاشة.';
+
+  @override
+  String get faceCheckDone => 'تم التحقق من الوجه';
+
+  @override
+  String get faceCheckStart => 'تحقّق من وجهي';
+
+  @override
+  String get faceCheckRedo => 'إعادة';
+
+  @override
+  String get faceCheckRequired => 'قم أولًا بالتحقق من الوجه.';
+
+  @override
+  String get livenessCenter => 'انظر مباشرة إلى الكاميرا';
+
+  @override
+  String get livenessLeft => 'أدر رأسك إلى اليسار';
+
+  @override
+  String get livenessRight => 'أدر رأسك إلى اليمين';
+
+  @override
+  String livenessStepOf(int current, int total) {
+    return 'الصورة $current من $total';
+  }
+
+  @override
+  String get livenessAnalyzing => 'تحليل بالذكاء الاصطناعي…';
+
+  @override
+  String get livenessNoCamera =>
+      'الكاميرا غير متاحة. اسمح بالوصول إلى الكاميرا ثم أعد المحاولة.';
+
+  @override
+  String get livenessPrivacy =>
+      'تُستعمل الصورة الأمامية لهذا التحقق فقط، وتُحذف فور اتخاذ القرار.';
+
+  @override
+  String get livenessSuccess => 'تم التحقق من الوجه. يمكنك إرسال الطلب.';
+
+  @override
+  String get identityVerifiedByAi => 'تم التحقق من الهوية بالذكاء الاصطناعي';
+
+  @override
+  String get errorNoFaceOnDocument =>
+      'لم يُعثر على وجه في الوثيقة. أعد التصوير والوثيقة مسطّحة، بإضاءة جيدة ودون انعكاس.';
+
+  @override
+  String get errorLivenessNoFace =>
+      'لم يُعثر على الوجه. ضع وجهك داخل الإطار البيضاوي بإضاءة جيدة.';
+
+  @override
+  String get errorLivenessManyFaces =>
+      'يجب أن يكون شخص واحد فقط أمام الكاميرا.';
+
+  @override
+  String get errorLivenessNotCentered =>
+      'انظر مباشرة إلى الكاميرا في الصورة الأولى.';
+
+  @override
+  String get errorLivenessNoTurn => 'أدر رأسك أكثر عندما يُطلب منك ذلك.';
+
+  @override
+  String get errorLivenessDifferentFaces => 'الصور لا تُظهر الشخص نفسه.';
+
+  @override
+  String get errorLivenessExpired =>
+      'انتهت صلاحية التحدي. أعد التحقق من الوجه.';
+
+  @override
+  String get errorFaceEngine => 'تحليل الوجه غير متاح. أعد المحاولة بعد قليل.';
+
+  @override
+  String aiMatch(int percent) {
+    return 'تطابق الذكاء الاصطناعي: $percent٪';
+  }
+
+  @override
+  String get aiNoConclusion => 'الذكاء الاصطناعي: دون حسم';
+
+  @override
+  String get livenessPassed => 'تم التحقق من وجه حيّ';
+
+  @override
+  String get selfieLabel => 'صورة الوجه';
+
+  @override
+  String get documentNumberLabel => 'رقم الوثيقة';
+
+  @override
+  String get rejectReasonFaceMismatch => 'الوجه لا يطابق الوثيقة';
+
+  @override
+  String dashVerifiedIdsAi(int count, int ai) {
+    return '$count موثّقة، منها $ai بالذكاء الاصطناعي';
+  }
+
+  @override
+  String get readingDocument => 'يقرأ الذكاء الاصطناعي وثيقتك…';
+
+  @override
+  String get readOnCard => 'ما قرأه الذكاء الاصطناعي من الوثيقة';
+
+  @override
+  String get readNumber => 'الرقم';
+
+  @override
+  String get readName => 'الاسم';
+
+  @override
+  String get readParents => 'النسب';
+
+  @override
+  String get readBirth => 'الولادة';
+
+  @override
+  String get readExpiry => 'صالحة إلى غاية';
+
+  @override
+  String get readConfirm =>
+      'تحقق من هذه المعلومات. يجب أن يكون الرقم المُدخل هو رقم الوثيقة.';
+
+  @override
+  String get readNothing =>
+      'لم يتمكن الذكاء الاصطناعي من قراءة الوثيقة. أدخل الرقم وسيتحقق منه أحد المشرفين.';
+
+  @override
+  String get useNumberRead => 'استعمل هذا الرقم';
+
+  @override
+  String get useLicensePhoto => 'استعمل صورة الرخصة من ملفي';
+
+  @override
+  String get errorBackHasFace =>
+      'هذه الصورة تُظهر الوجه الأمامي. صوّر ظهر الوثيقة نفسها.';
+
+  @override
+  String get errorLicensePhotoMissing => 'لا توجد صورة رخصة في ملفك.';
+
+  @override
+  String get checksTitle => 'فحوصات الذكاء الاصطناعي';
+
+  @override
+  String get checkLiveness => 'وجه حيّ';
+
+  @override
+  String get checkFace => 'الوجه يطابق صورة الوثيقة';
+
+  @override
+  String checkNumber(String number) {
+    return 'الرقم المُدخل = الرقم المقروء ($number)';
+  }
+
+  @override
+  String get checkNumberUnread => 'الرقم غير مقروء في الوثيقة';
+
+  @override
+  String get checkName => 'اسم الحساب على الوثيقة';
+
+  @override
+  String get checkExpiry => 'الوثيقة سارية المفعول';
+
+  @override
+  String get scanLicense => 'امسح رخصتي';
+
+  @override
+  String get scanLicenseHint =>
+      'صوّر رخصتك: يملأ الذكاء الاصطناعي الرقم والأصناف والتاريخ.';
+
+  @override
+  String get licenseFilledByAi =>
+      'ملأها الذكاء الاصطناعي من الصورة. تحقق قبل الحفظ.';
+
+  @override
+  String get licenseNotRead =>
+      'حُفظت الصورة لكن الذكاء الاصطناعي لم يتمكن من قراءة الرخصة. أكمل الحقول.';
+
+  @override
+  String get errorBackNotRecognized =>
+      'هذا ليس ظهر الوثيقة. في بطاقة التعريف يجب أن يظهر الرمز الشريطي كاملًا وواضحًا.';
+
+  @override
+  String get checkBack => 'تم التعرّف على ظهر الوثيقة';
+
+  @override
+  String get rejectSevere => 'رفض نهائي: منع الطلبات الجديدة';
+
+  @override
+  String get rejectSevereHint =>
+      'في حالة احتيال محتمل: وجه مختلف أو وثيقة مزورة.';
+
+  @override
+  String get identityBlockedNote => 'تم حظر التحقق من هويتك. اتصل بالدعم.';
+
+  @override
+  String identityRetryOn(String date) {
+    return 'يمكنك إرسال طلب جديد يوم $date.';
+  }
+
+  @override
+  String identityAttemptsLeft(int count) {
+    return 'المحاولات المتبقية: $count.';
+  }
+
+  @override
+  String get errorIdentityBlocked => 'تم حظر التحقق من هويتك. اتصل بالدعم.';
+
+  @override
+  String get errorIdentityRetryLater =>
+      'انتظر 24 ساعة بعد الرفض قبل تقديم طلب جديد.';
+
+  @override
+  String get unblockIdentity => 'رفع حظر التحقق';
+
+  @override
+  String get identityUnblocked => 'تم رفع حظر التحقق';
+
+  @override
+  String get identityBlockedChip => 'التحقق محظور';
+
+  @override
+  String get attemptsTitle => 'طلبات هذا الحساب';
+
+  @override
+  String refusalsCount(int count) {
+    return 'عدد الرفض: $count';
+  }
+
+  @override
+  String get outcomeAuto => 'وثّقها الذكاء الاصطناعي';
+
+  @override
+  String get outcomeVerified => 'موثّقة';
+
+  @override
+  String get outcomeRejected => 'مرفوضة';
+
+  @override
+  String get outcomePending => 'قيد الانتظار';
 }

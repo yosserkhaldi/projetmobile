@@ -6,6 +6,7 @@ import { after, before, beforeEach, test } from 'node:test';
 import {
   createAdmin,
   driver,
+  image,
   migrate,
   prisma,
   resetDatabase,
@@ -133,4 +134,25 @@ test('photos : visibles par le titulaire et les administrateurs seulement', asyn
     403,
   );
   assert.equal((await call('GET', path, { token: admin })).status, 200);
+});
+
+test('photo du permis : l IA lit numéro, catégories et dates', async (t) => {
+  const { call } = await startApi(t);
+  const { body } = await call('POST', '/auth/register', { body: driver() });
+  const data = new FormData();
+  data.append('photo', new Blob([image('license')], { type: 'image/png' }), 'permis.png');
+  const res = await call('PUT', '/users/me/license-photo', {
+    token: body.accessToken,
+    form: data,
+  });
+  assert.equal(res.status, 200);
+  assert.ok(res.body.user.licensePhotoId);
+  assert.deepEqual(res.body.extracted, {
+    number: '12/345678',
+    categories: ['B', 'B+E'],
+    issuedAt: '2020-05-10',
+    expiresAt: '2030-05-10',
+  });
+  // Rien n'est enregistré sans confirmation de l'utilisateur.
+  assert.equal(res.body.user.licenseNumber, null);
 });

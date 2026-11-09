@@ -74,20 +74,44 @@ class ApiClient {
   Future<dynamic> delete(String path, {Object? body}) =>
       _request('DELETE', path, body: body);
 
-  /// Envoie un fichier en multipart, dans le champ [field].
+  /// Envoie un fichier en multipart, dans le champ [field], avec d'éventuels
+  /// champs texte ([fields]).
   Future<dynamic> upload(
     String path, {
     required String field,
     required List<int> bytes,
     required String filename,
+    Map<String, String> fields = const {},
     String method = 'PUT',
   }) async {
     final response = await _execute(
       () => http.MultipartRequest(method, _uri(path))
+        ..fields.addAll(fields)
         ..files.add(
           http.MultipartFile.fromBytes(field, bytes, filename: filename),
         ),
     );
+    return _decode(response);
+  }
+
+  /// Envoie plusieurs fichiers dans le même champ, avec des champs texte.
+  Future<dynamic> uploadMany(
+    String path, {
+    required String field,
+    required List<List<int>> files,
+    Map<String, String> fields = const {},
+    String method = 'POST',
+  }) async {
+    final response = await _execute(() {
+      final request = http.MultipartRequest(method, _uri(path))
+        ..fields.addAll(fields);
+      for (final (index, bytes) in files.indexed) {
+        request.files.add(
+          http.MultipartFile.fromBytes(field, bytes, filename: '$index.jpg'),
+        );
+      }
+      return request;
+    });
     return _decode(response);
   }
 

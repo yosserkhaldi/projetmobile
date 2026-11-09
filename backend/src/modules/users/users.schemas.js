@@ -153,15 +153,46 @@ export const disableBiometricSchema = z.object({
 export const sessionParams = z.object({ sessionId: id });
 
 export const identitySideParams = z.object({
-  side: z.enum(['front', 'back'], { error: 'Face de la CIN invalide.' }),
+  side: z.enum(['front', 'back'], { error: 'Face de la pièce invalide.' }),
 });
 
-// Carte d'identité nationale tunisienne : 8 chiffres.
-export const cinSchema = z.object({
-  cinNumber: z
-    .string({ error: 'Numéro de CIN obligatoire.' })
-    .trim()
-    .regex(/^\d{8}$/, 'Le numéro de CIN contient 8 chiffres.'),
+// Photos lisibles d'une demande : la pièce et la photo du visage.
+export const identityFileParams = z.object({
+  side: z.enum(['front', 'back', 'selfie'], { error: 'Photo inconnue.' }),
+});
+
+// Format du numéro selon la pièce tunisienne présentée.
+const DOCUMENT_NUMBERS = {
+  CIN: [/^\d{8}$/, 'Le numéro de CIN contient 8 chiffres.'],
+  LICENSE: [/^\d{2}\/?\d{5,8}$/, 'Numéro de permis invalide (ex. 12/345678).'],
+  PASSPORT: [/^[A-Z]\d{6,7}$/, 'Numéro de passeport invalide (ex. X1234567).'],
+};
+
+// Type de pièce envoyé avec la photo du recto, pour la lire correctement.
+export const documentTypeSchema = z.object({
+  documentType: z
+    .enum(['CIN', 'LICENSE', 'PASSPORT'], { error: 'Pièce inconnue.' })
+    .default('CIN'),
+});
+
+export const identitySubmitSchema = z
+  .object({
+    documentType: z
+      .enum(['CIN', 'LICENSE', 'PASSPORT'], { error: 'Pièce inconnue.' })
+      .default('CIN'),
+    number: z
+      .string({ error: 'Numéro de la pièce obligatoire.' })
+      .trim()
+      .toUpperCase()
+      .transform((v) => v.replaceAll(' ', '')),
+  })
+  .superRefine(({ documentType, number }, ctx) => {
+    const [pattern, message] = DOCUMENT_NUMBERS[documentType];
+    if (!pattern.test(number)) ctx.addIssue({ code: 'custom', path: ['number'], message });
+  });
+
+export const livenessFramesSchema = z.object({
+  token: z.string({ error: 'Défi manquant.' }).min(1),
 });
 
 export const rejectIdentitySchema = z.object({
@@ -170,6 +201,8 @@ export const rejectIdentitySchema = z.object({
     .trim()
     .min(3, 'Indiquez un motif.')
     .max(300),
+  // Refus grave (visage différent, pièce non valable) : plus de nouvelle demande.
+  severe: z.boolean().default(false),
 });
 
 export const deleteAccountSchema = z.object({

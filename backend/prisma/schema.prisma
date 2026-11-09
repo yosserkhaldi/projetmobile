@@ -21,6 +21,13 @@ enum Language {
   EN
 }
 
+// Pièce présentée pour la vérification d'identité.
+enum IdentityDocument {
+  CIN
+  LICENSE
+  PASSPORT
+}
+
 enum IdentityStatus {
   UNVERIFIED
   PENDING
@@ -58,11 +65,28 @@ model User {
   // Noms de fichiers dans UPLOAD_DIR/users. Jamais servis publiquement.
   photoFile        String?
   licensePhotoFile String?
-  // Vérification d'identité (CIN) : validée par un administrateur.
+  // Vérification d'identité : pièce (CIN, permis ou passeport) et visage
+  // comparés par l'IA, sinon décision d'un administrateur.
   identityStatus          IdentityStatus @default(UNVERIFIED)
+  identityDocument        IdentityDocument @default(CIN)
+  // Numéro de la pièce présentée (nom historique : la CIN était la seule pièce).
   cinNumber               String?        @unique
   cinFrontFile            String?
   cinBackFile             String?
+  // Photo de face prise pendant la vérification du visage. Effacée dès la décision.
+  identitySelfieFile      String?
+  identityLivenessAt      DateTime?
+  // Ressemblance entre la pièce et le visage, de 0 à 1.
+  identityFaceMatch       Float?
+  identityAutoVerified    Boolean        @default(false)
+  // Lu sur la pièce par l'OCR (numéro, et pour un passeport nom et dates).
+  identityExtracted       Json?
+  // Résultat des contrôles automatiques, montré à l'administrateur.
+  identityChecks          Json?
+  // Refus : 3 au plus, 24 h entre deux demandes ; un refus grave bloque.
+  identityRefusals        Int            @default(0)
+  identityRetryAt         DateTime?
+  identityBlocked         Boolean        @default(false)
   identitySubmittedAt     DateTime?
   identityReviewedAt      DateTime?
   identityReviewerId      String?        @db.Uuid
@@ -80,6 +104,7 @@ model User {
   accidents         Accident[]
   sessions          Session[]
   loginEvents       LoginEvent[]
+  identityAttempts  IdentityAttempt[]
   vehicles          Vehicle[]
 
   @@index([role])
@@ -165,6 +190,26 @@ model RefreshToken {
 }
 
 /// Historique des connexions, réussies ou non.
+// Historique des demandes de vérification d'identité, pour l'administrateur.
+model IdentityAttempt {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  documentType IdentityDocument
+  number       String
+  faceMatch    Float?
+  checks       Json?
+  // AUTO_VERIFIED, PENDING, VERIFIED ou REJECTED.
+  outcome      String
+  reason       String?
+  severe       Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  decidedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
 model LoginEvent {
   id         String   @id @default(uuid()) @db.Uuid
   userId     String   @db.Uuid

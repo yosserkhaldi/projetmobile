@@ -16,6 +16,8 @@ process.env.UPLOAD_DIR = join(tmpdir(), `monconstat-test-${process.pid}`);
 const { createApp } = await import('../src/app.js');
 const { prisma } = await import('../src/lib/prisma.js');
 const { notifier } = await import('../src/lib/notifier.js');
+const { faceEngine } = await import('../src/lib/face.js');
+const { documentReader } = await import('../src/lib/ocr.js');
 
 export { prisma };
 
@@ -41,6 +43,15 @@ export async function startApi(t) {
   t.mock.method(notifier, 'sendMail', async (to, subject, text, html) => {
     sent.mail.push({ to, subject, text, html });
   });
+  t.mock.method(faceEngine, 'analyze', async (buffer) => fakeFaces(buffer));
+  t.mock.method(documentReader, 'read', async (buffer, type) => ({
+    type,
+    ...fakeReading(buffer),
+  }));
+  // Verso : reconnu, sauf une photo quelconque (étiquette « random »).
+  t.mock.method(documentReader, 'readBack', async (buffer) => ({
+    recognized: tagOf(buffer) !== 'random',
+  }));
   const server = createApp().listen(0);
   await new Promise((resolve) => server.once('listening', resolve));
   t.after(() => server.close());
@@ -91,3 +102,66 @@ export async function createAdmin(call) {
   await prisma.user.update({ where: { email }, data: { role: 'ADMIN' } });
   return { token: body.accessToken, id: body.user.id };
 }
+
+// ---------------------------------------------------------------------------
+// Reconnaissance faciale simulée : le vrai moteur est testé à part
+// (face.test.js). Une image de test porte une étiquette après ses octets PNG,
+// qui dit ce que l'IA « voit ».
+
+const PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64',
+);
+const TAG = '#face:';
+const vector = (value) => Array(128).fill(value);
+
+/** Empreintes : « me » et ses variantes sont la même personne, « other » non,
+ * « lookalike » ressemble à moitié (ressemblance 0,4). */
+export const FACES = {
+  me: { faces: 1, descriptor: vector(0), yaw: 0.02 },
+  'me-left': { faces: 1, descriptor: vector(0.01), yaw: 0.35 },
+  'me-right': { faces: 1, descriptor: vector(0.01), yaw: -0.35 },
+  'me-tilted': { faces: 1, descriptor: vector(0.01), yaw: 0.05 },
+  'me-sideways': { faces: 1, descriptor: vector(0), yaw: 0.3 },
+  other: { faces: 1, descriptor: vector(0.1), yaw: -0.35 },
+  lookalike: { faces: 1, descriptor: vector(0.6 / Math.sqrt(128)), yaw: 0 },
+  blank: { faces: 0 },
+  random: { faces: 0 },
+  unreadable: { faces: 1, descriptor: vector(0), yaw: 0 },
+  'other-number': { faces: 1, descriptor: vector(0), yaw: 0 },
+  passport: { faces: 1, descriptor: vector(0), yaw: 0 },
+  'passport-expired': { faces: 1, descriptor: vector(0), yaw: 0 },
+  'passport-other': { faces: 1, descriptor: vector(0), yaw: 0 },
+  license: { faces: 1, descriptor: vector(0), yaw: 0 },
+  crowd: { faces: 2, descriptor: vector(0), yaw: 0 },
+};
+
+/** Image PNG valide portant l'étiquette `tag`. */
+export const image = (tag = 'me') =>
+  Buffer.concat([PNG, Buffer.from(TAG + tag)]);
+
+function tagOf(buffer) {
+  const text = buffer.toString('latin1');
+  const at = text.lastIndexOf(TAG);
+  return at === -1 ? 'me' : text.slice(at + TAG.length);
+}
+
+const fakeFaces = (buffer) => FACES[tagOf(buffer)] ?? FACES.me;
+
+/** Ce que l'OCR « lit » sur une pièce, selon son étiquette. */
+export const READINGS = {
+  me: { number: '12345678', lastNameAr: 'بن علي', firstNameAr: 'سامي', birthDate: '1999-03-12' },
+  unreadable: { number: null },
+  'other-number': { number: '87654321' },
+  passport: { number: 'X1234567', lastName: 'BEN ALI', firstName: 'SAMI', expiresAt: '2030-01-01' },
+  'passport-expired': { number: 'X1234567', lastName: 'BEN ALI', firstName: 'SAMI', expiresAt: '2020-01-01' },
+  'passport-other': { number: 'X1234567', lastName: 'TRABELSI', firstName: 'MOUNA', expiresAt: '2030-01-01' },
+  license: {
+    number: '12/345678',
+    categories: ['B', 'B+E'],
+    issuedAt: '2020-05-10',
+    expiresAt: '2030-05-10',
+  },
+};
+
+const fakeReading = (buffer) => READINGS[tagOf(buffer)] ?? READINGS.me;

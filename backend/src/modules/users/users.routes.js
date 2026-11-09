@@ -5,6 +5,7 @@ import {
   isForeignKeyViolation,
   isUniqueViolation,
 } from '../../lib/errors.js';
+import { documentReader } from '../../lib/ocr.js';
 import { prisma } from '../../lib/prisma.js';
 import {
   deleteImage,
@@ -84,6 +85,18 @@ const PHOTOS = {
 };
 const PHOTO_FOLDER = 'users';
 
+/** Lecture du permis par l'OCR. En panne : null, le formulaire reste à remplir. */
+async function readLicense(buffer) {
+  try {
+    const { number, categories, issuedAt, expiresAt } =
+      await documentReader.read(buffer, 'LICENSE');
+    return { number, categories, issuedAt, expiresAt };
+  } catch (err) {
+    console.error('Lecture du permis', err);
+    return null;
+  }
+}
+
 for (const [route, column] of Object.entries(PHOTOS)) {
   router.put(`/me/${route}`, singleImage('photo'), async (req, res) => {
     const name = await saveImage(req.file, PHOTO_FOLDER);
@@ -93,7 +106,11 @@ for (const [route, column] of Object.entries(PHOTOS)) {
       include: withCompany,
     });
     await deleteImage(req.user[column], PHOTO_FOLDER);
-    res.json({ user: publicUser(user) });
+    // Permis : l'IA lit la carte (numéro, catégories, dates) pour remplir le
+    // formulaire. L'utilisateur vérifie avant d'enregistrer.
+    const extracted =
+      route === 'license-photo' ? await readLicense(req.file.buffer) : undefined;
+    res.json({ user: publicUser(user), extracted });
   });
 
   router.delete(`/me/${route}`, async (req, res) => {
