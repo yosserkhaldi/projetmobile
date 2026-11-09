@@ -811,6 +811,106 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  group("console d'administration (grand écran)", () {
+    Future<FakeBackend> openConsole(WidgetTester tester) async {
+      final backend =
+          FakeBackend(
+              user: userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+            )
+            ..users = [
+              userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+              userJson(id: 'u2'),
+              userJson(
+                id: 'u3',
+                firstName: 'Leïla',
+                lastName: 'Mansour',
+                role: 'AGENT',
+              ),
+            ]
+            ..pendingIdentities = [
+              {
+                ...userJson(id: 'u4', firstName: 'Mouna', lastName: 'Trabelsi'),
+                'identity': {
+                  'status': 'PENDING',
+                  'cinNumber': '08123456',
+                  'frontId': 'f.png',
+                  'backId': 'b.png',
+                  'submittedAt': '2026-11-09T10:00:00.000Z',
+                },
+              },
+            ]
+            ..companies = [
+              {
+                'id': 'c1',
+                'name': 'STAR Assurances',
+                'agencies': [
+                  {'id': 'a1', 'name': 'Agence Lac', 'city': 'Tunis'},
+                ],
+              },
+            ];
+      tester.view.physicalSize = const Size(1440, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(MonConstatApp(stores: backend.stores));
+      await tester.pumpAndSettle();
+      await signIn(tester);
+      return backend;
+    }
+
+    testWidgets('barre latérale, tableau de bord et demande à traiter', (
+      tester,
+    ) async {
+      await openConsole(tester);
+      expect(find.text('Tableau de bord'), findsWidgets);
+      // Pas d'onglets du téléphone sur grand écran.
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.text('Mouna Trabelsi'), findsOneWidget);
+      expect(find.text('Examiner'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('comptes : tableau et filtre par rôle', (tester) async {
+      final backend = await openConsole(tester);
+      await tester.tap(find.text('Comptes'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DataTable), findsOneWidget);
+      expect(find.text('Leïla Mansour'), findsOneWidget);
+      expect(find.text('3 comptes'), findsOneWidget);
+
+      await tester.tap(find.text('Agents'));
+      await tester.pumpAndSettle();
+      expect(backend.headers.keys, contains('GET /users'));
+      expect(
+        backend.requests.where((r) => r == 'GET /users').length,
+        greaterThan(1),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+      'identités : examen depuis le tableau de bord, puis validation',
+      (tester) async {
+        final backend = await openConsole(tester);
+        await tester.tap(find.text('Examiner'));
+        await tester.pumpAndSettle();
+        expect(find.text('08123456'), findsWidgets);
+        await tester.tap(find.text('Valider'));
+        await tester.pumpAndSettle();
+        expect(backend.requests, contains('POST /users/u4/identity/approve'));
+        expect(find.text('Aucune demande en attente.'), findsOneWidget);
+      },
+    );
+
+    testWidgets('compagnies : agences de la compagnie choisie', (tester) async {
+      await openConsole(tester);
+      await tester.tap(find.text('Compagnies'));
+      await tester.pumpAndSettle();
+      expect(find.text('Agence Lac'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('administration', () {
     FakeBackend adminBackend() =>
         FakeBackend(

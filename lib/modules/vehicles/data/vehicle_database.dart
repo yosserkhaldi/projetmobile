@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:mon_constat_digital/core/data/drift_web.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -143,6 +144,7 @@ class VehicleDatabase extends _$VehicleDatabase {
 QueryExecutor _openConnection() => driftDatabase(
   name: 'mon_constat_vehicles',
   native: DriftNativeOptions(databasePath: _databasePath),
+  web: driftWebOptions,
 );
 
 Future<String> _databasePath() async {

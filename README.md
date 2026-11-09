@@ -39,6 +39,17 @@ flutter analyze
 flutter test
 ```
 
+### Console d'administration (web)
+
+La même application sert de console aux administrateurs sur ordinateur : à partir de 1000 px de large, un compte administrateur voit une barre latérale (tableau de bord, comptes, vérification des CIN, compagnies) au lieu des onglets du téléphone.
+
+```bash
+flutter run -d chrome                     # en développement
+flutter build web                         # version à déployer (dossier build/web)
+```
+
+Les bases SQLite (drift) marchent aussi dans le navigateur grâce à `web/sqlite3.wasm` et `web/drift_worker.js` (release drift 2.35.3) : à mettre à jour avec le paquet drift. Chaque base passe `web: driftWebOptions` (`lib/core/data/drift_web.dart`).
+
 ### API et base de données
 
 Prérequis : Docker.

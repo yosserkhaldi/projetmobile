@@ -844,4 +844,107 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get syncing => 'Synchronisation…';
+
+  @override
+  String get consoleDashboard => 'Tableau de bord';
+
+  @override
+  String get consoleToHandle => 'À traiter';
+
+  @override
+  String get consoleReview => 'Examiner';
+
+  @override
+  String get consoleSeeAll => 'Tout voir';
+
+  @override
+  String get consoleNothingToHandle => 'Rien à traiter pour le moment.';
+
+  @override
+  String get refresh => 'Actualiser';
+
+  @override
+  String get signedInAs => 'Connecté';
+
+  @override
+  String get colUser => 'Utilisateur';
+
+  @override
+  String get colStatus => 'Statut';
+
+  @override
+  String get filterAll => 'Tous';
+
+  @override
+  String get filterDrivers => 'Conducteurs';
+
+  @override
+  String get filterAgents => 'Agents';
+
+  @override
+  String get filterAdmins => 'Administrateurs';
+
+  @override
+  String accountsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count comptes',
+      one: '1 compte',
+      zero: 'Aucun compte',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statusActive => 'Actif';
+
+  @override
+  String get statusSuspended => 'Suspendu';
+
+  @override
+  String get changeRole => 'Changer le rôle';
+
+  @override
+  String get suspendAccount => 'Suspendre';
+
+  @override
+  String get reactivateAccount => 'Réactiver';
+
+  @override
+  String get selectRequest => 'Sélectionnez une demande pour voir la CIN.';
+
+  @override
+  String pendingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count demandes',
+      one: '1 demande',
+      zero: 'Aucune demande',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get selectCompany =>
+      'Sélectionnez une compagnie pour gérer ses agences.';
+
+  @override
+  String get agenciesTitle => 'Agences';
+
+  @override
+  String get noAgencies => 'Aucune agence pour le moment.';
+
+  @override
+  String get heroPoint1 =>
+      'Un constat complet en moins de 10 minutes, même hors ligne';
+
+  @override
+  String get heroPoint2 =>
+      'Signature des deux conducteurs et PDF infalsifiable';
+
+  @override
+  String get heroPoint3 =>
+      'Suivi du dossier en temps réel jusqu’à l’indemnisation';
 }

@@ -827,4 +827,107 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get syncing => 'جارٍ المزامنة…';
+
+  @override
+  String get consoleDashboard => 'لوحة القيادة';
+
+  @override
+  String get consoleToHandle => 'للمعالجة';
+
+  @override
+  String get consoleReview => 'مراجعة';
+
+  @override
+  String get consoleSeeAll => 'عرض الكل';
+
+  @override
+  String get consoleNothingToHandle => 'لا شيء للمعالجة حاليًا.';
+
+  @override
+  String get refresh => 'تحديث';
+
+  @override
+  String get signedInAs => 'متصل';
+
+  @override
+  String get colUser => 'المستخدم';
+
+  @override
+  String get colStatus => 'الحالة';
+
+  @override
+  String get filterAll => 'الكل';
+
+  @override
+  String get filterDrivers => 'السائقون';
+
+  @override
+  String get filterAgents => 'الأعوان';
+
+  @override
+  String get filterAdmins => 'المسؤولون';
+
+  @override
+  String accountsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count حساب',
+      few: '$count حسابات',
+      two: 'حسابان',
+      one: 'حساب واحد',
+      zero: 'لا توجد حسابات',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statusActive => 'نشط';
+
+  @override
+  String get statusSuspended => 'موقوف';
+
+  @override
+  String get changeRole => 'تغيير الدور';
+
+  @override
+  String get suspendAccount => 'إيقاف';
+
+  @override
+  String get reactivateAccount => 'إعادة التفعيل';
+
+  @override
+  String get selectRequest => 'اختر طلبًا لعرض بطاقة التعريف.';
+
+  @override
+  String pendingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count طلب',
+      few: '$count طلبات',
+      two: 'طلبان',
+      one: 'طلب واحد',
+      zero: 'لا توجد طلبات',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get selectCompany => 'اختر شركة لإدارة وكالاتها.';
+
+  @override
+  String get agenciesTitle => 'الوكالات';
+
+  @override
+  String get noAgencies => 'لا توجد وكالات بعد.';
+
+  @override
+  String get heroPoint1 => 'معاينة كاملة في أقل من 10 دقائق، حتى دون اتصال';
+
+  @override
+  String get heroPoint2 => 'توقيع السائقين وملف PDF غير قابل للتزوير';
+
+  @override
+  String get heroPoint3 => 'متابعة الملف لحظيًا حتى التعويض';
 }

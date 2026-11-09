@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:flutter/foundation.dart';
+import 'package:mon_constat_digital/core/data/drift_web.dart';
 
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/models/company.dart';
@@ -98,12 +98,14 @@ class PendingChanges extends Table {
 class UsersDatabase extends _$UsersDatabase {
   /// Les tests passent une base en mémoire (`NativeDatabase.memory()`).
   UsersDatabase([QueryExecutor? executor])
-    : super(executor ?? driftDatabase(name: 'mon_constat_users'));
+    : super(
+        executor ??
+            driftDatabase(name: 'mon_constat_users', web: driftWebOptions),
+      );
 
-  /// La base du téléphone, ou `null` là où SQLite n'est pas configuré (web) :
-  /// l'application marche alors sans copie hors ligne.
+  /// La base du téléphone (ou du navigateur), ou `null` si SQLite ne peut pas
+  /// s'ouvrir : l'application marche alors sans copie hors ligne.
   static UsersDatabase? tryOpen() {
-    if (kIsWeb) return null;
     try {
       return UsersDatabase();
     } catch (_) {

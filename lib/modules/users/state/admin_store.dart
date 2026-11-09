@@ -30,11 +30,15 @@ class AdminStore extends ChangeNotifier {
   /// Identités en attente de vérification, les plus anciennes d'abord.
   List<AppUser> pendingIdentities = const [];
 
-  Future<void> loadUsers({String query = ''}) async {
+  Future<void> loadUsers({String query = '', UserRole? role}) async {
     final response =
         await _api.get(
               '/users',
-              query: {if (query.isNotEmpty) 'q': query, 'pageSize': '100'},
+              query: {
+                if (query.isNotEmpty) 'q': query,
+                'role': ?role?.apiValue,
+                'pageSize': '100',
+              },
             )
             as Map<String, dynamic>;
     users = (response['items'] as List)
