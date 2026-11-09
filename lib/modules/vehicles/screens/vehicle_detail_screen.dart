@@ -123,8 +123,27 @@ class VehicleDetailScreen extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   // ── Contrat d'assurance ───────────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Contrat d\'assurance',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: context.palette.primaryText,
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: () => _showRenewDialog(context, current),
+                        icon: const Icon(Icons.refresh, size: 16),
+                        label: const Text('Renouveler'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
                   _InfoSection(
-                    title: 'Contrat d\'assurance',
+                    title: '',
                     items: [
                       if (current.insurerName.isNotEmpty)
                         _InfoItem(
@@ -144,6 +163,44 @@ class VehicleDetailScreen extends StatelessWidget {
                         statusDays: current.daysUntilInsuranceExpiry,
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.successBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.successText.withAlpha(50)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.shield_outlined, color: AppColors.successText, size: 28),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Prime d’assurance estimée (IA)',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.successText,
+                                ),
+                              ),
+                              Text(
+                                '${VehicleAiService.instance.estimateAnnualPremium(current, risk).toStringAsFixed(0)} TND / an',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.successText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
                   if (current.technicalExpiry != null) ...[
@@ -198,6 +255,56 @@ class VehicleDetailScreen extends StatelessWidget {
     if (dt == null) return iso;
     return '${dt.day.toString().padLeft(2, '0')}/'
         '${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+  }
+
+  Future<void> _showRenewDialog(BuildContext context, Vehicle vehicle) async {
+    final store = AppScope.of(context).vehicles;
+    final policyController = TextEditingController(text: vehicle.policy);
+    final expiryController = TextEditingController(text: vehicle.insuranceExpiry);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Renouveler le contrat d’assurance'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: policyController,
+              decoration: const InputDecoration(labelText: 'N° de police'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: expiryController,
+              decoration: const InputDecoration(labelText: 'Date d’expiration (AAAA-MM-JJ)'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Renouveler'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final updated = vehicle.copyWith(
+        policy: policyController.text.trim(),
+        insuranceExpiry: expiryController.text.trim(),
+      );
+      await store.updateVehicle(updated);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Contrat d’assurance renouvelé avec succès !')),
+        );
+      }
+    }
   }
 
   String _typeLabel(VehicleType t) => const {
