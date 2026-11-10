@@ -61,6 +61,9 @@ class AccidentDrafts extends Table {
   TextColumn get driverBPlate => text().withDefault(const Constant(''))();
   TextColumn get driverBInsurer => text().withDefault(const Constant(''))();
   TextColumn get driverBPolicy => text().withDefault(const Constant(''))();
+  // Compagnie du conducteur B (CompanyPicker) et véhicule du conducteur A.
+  TextColumn get driverBCompanyId => text().nullable()();
+  TextColumn get vehicleId => text().nullable()();
   TextColumn get circumstancesJson => text()();
   TextColumn get observations => text()();
   TextColumn get impactZonesJson => text()();
@@ -87,7 +90,7 @@ class AccidentDatabase extends _$AccidentDatabase {
     : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -115,6 +118,10 @@ class AccidentDatabase extends _$AccidentDatabase {
       if (from < 5) {
         await m.addColumn(accidentDrafts, accidentDrafts.videoPath);
         await m.addColumn(accidentDrafts, accidentDrafts.voiceNotePath);
+      }
+      if (from < 6) {
+        await m.addColumn(accidentDrafts, accidentDrafts.driverBCompanyId);
+        await m.addColumn(accidentDrafts, accidentDrafts.vehicleId);
       }
     },
   );
@@ -178,6 +185,8 @@ class AccidentDatabase extends _$AccidentDatabase {
     'driver_b_plate': r.driverBPlate,
     'driver_b_insurer': r.driverBInsurer,
     'driver_b_policy': r.driverBPolicy,
+    'driver_b_company_id': r.driverBCompanyId,
+    'vehicle_id': r.vehicleId,
     'circumstances_json': r.circumstancesJson,
     'observations': r.observations,
     'impact_zones_json': r.impactZonesJson,
@@ -220,6 +229,8 @@ class AccidentDatabase extends _$AccidentDatabase {
       driverBPlate: Value(m['driver_b_plate'] as String),
       driverBInsurer: Value(m['driver_b_insurer'] as String),
       driverBPolicy: Value(m['driver_b_policy'] as String),
+      driverBCompanyId: Value(m['driver_b_company_id'] as String?),
+      vehicleId: Value(m['vehicle_id'] as String?),
       circumstancesJson: m['circumstances_json'] as String,
       observations: m['observations'] as String,
       impactZonesJson: m['impact_zones_json'] as String,

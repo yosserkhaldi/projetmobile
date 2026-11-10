@@ -11,6 +11,8 @@ class ConstatService {
   final ApiClient _api;
 
   /// Soumet un constat scellé avec son document PDF et son empreinte SHA-256.
+  /// Le conducteur A vient du brouillon, rempli depuis le profil et le
+  /// véhicule choisi (AccidentDraft.driverA…).
   Future<Constat> sealConstat({
     required AccidentDraft draft,
     required Uint8List pdfBytes,
@@ -23,11 +25,13 @@ class ConstatService {
     final payload = {
       if (accidentId != null) 'accidentId': accidentId,
       'sha256Hash': sha256Hash,
-      'driverAName': 'Conducteur A',
-      'driverAPlate': 'A-Plate',
-      'driverAInsurer': 'Assureur A',
-      if (driverAPolicy != null) 'driverAPolicy': driverAPolicy,
-      if (companyAId != null) 'companyAId': companyAId,
+      'driverAName': _or(draft.driverAName, 'Conducteur A'),
+      'driverAPlate': _or(draft.driverAPlate, 'Non renseignée'),
+      'driverAInsurer': _or(draft.driverAInsurer, 'Non renseigné'),
+      if ((driverAPolicy ?? draft.driverAPolicy).isNotEmpty)
+        'driverAPolicy': driverAPolicy ?? draft.driverAPolicy,
+      if ((companyAId ?? draft.driverACompanyId) != null)
+        'companyAId': companyAId ?? draft.driverACompanyId,
       'driverBName': draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
       'driverBPlate': draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'B-Plate',
       'driverBInsurer': draft.driverBInsurer.isNotEmpty ? draft.driverBInsurer : 'Assureur B',
@@ -55,6 +59,9 @@ class ConstatService {
 
     return Constat.fromJson(response['constat'] as Map<String, dynamic>);
   }
+
+  static String _or(String value, String fallback) =>
+      value.trim().isEmpty ? fallback : value.trim();
 
   /// Liste les constats scellés pour l'utilisateur connecté.
   Future<List<Constat>> listConstats() async {

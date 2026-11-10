@@ -3,6 +3,24 @@ import 'dart:convert';
 class AccidentDraft {
   AccidentDraft();
 
+  /// Véhicule du conducteur A (module 2), choisi au début de la déclaration.
+  /// Son assureur reçoit le sinistre.
+  String? vehicleId;
+
+  /// Conducteur A, repris du profil et du véhicule au moment de signer
+  /// (pas enregistré : recalculé à partir de [vehicleId] et du compte).
+  String driverAName = '';
+  String driverALicense = '';
+  String driverAPlate = '';
+  String driverAVehicle = '';
+  String driverAInsurer = '';
+  String driverAPolicy = '';
+  String? driverACompanyId;
+
+  /// Identifiant de la déclaration sur le serveur (/api/accidents), une fois
+  /// envoyée.
+  String? serverId;
+
   String place = 'Position GPS détectée — Tunis';
   double? latitude;
   double? longitude;
@@ -57,6 +75,7 @@ class AccidentDraft {
   Map<String, Object?> toDatabaseMap({required int currentStep}) => {
     'id': 1,
     'current_step': currentStep,
+    'vehicle_id': vehicleId,
     'place': place,
     'latitude': latitude,
     'longitude': longitude,
@@ -101,6 +120,7 @@ class AccidentDraft {
 
   factory AccidentDraft.fromDatabaseMap(Map<String, Object?> row) {
     final draft = AccidentDraft()
+      ..vehicleId = row['vehicle_id'] as String?
       ..place = row['place'] as String? ?? ''
       ..latitude = (row['latitude'] as num?)?.toDouble()
       ..longitude = (row['longitude'] as num?)?.toDouble()

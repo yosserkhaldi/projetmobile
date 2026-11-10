@@ -20,10 +20,11 @@ class SignatureBox extends StatelessWidget {
     children: [
       Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
       const SizedBox(height: 7),
-      DrawingPad(
+      DrawingField(
         strokes: strokes,
-        height: 150,
+        title: label,
         hint: 'Signez avec votre doigt ou le curseur',
+        icon: Icons.draw_outlined,
         onChanged: onChanged,
       ),
     ],

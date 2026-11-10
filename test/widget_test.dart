@@ -13,6 +13,7 @@ import 'package:mon_constat_digital/modules/users/screens/identity_review_screen
 import 'package:mon_constat_digital/modules/users/services/face_guide.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
+import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 
 import 'support/fake_backend.dart';
 
@@ -117,7 +118,11 @@ void main() {
       final backend = FakeBackend();
       backend.storage.values['refresh_token'] = 'refresh-0';
       await pumpApp(tester, backend);
-      expect(backend.requests, ['POST /auth/refresh']);
+      expect(backend.requests.where((r) => r.contains('/auth/')), [
+        'POST /auth/refresh',
+      ]);
+      // Session reprise : les véhicules du compte reviennent du serveur.
+      expect(backend.requests, contains('GET /vehicles'));
       expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
     });
 
@@ -2231,7 +2236,7 @@ void main() {
   });
 
   testWidgets('exige deux preuves avant le constat', (tester) async {
-    await pumpApp(tester, FakeBackend());
+    await pumpApp(tester, FakeBackend()..vehicles = [vehicleJson()]);
     await signIn(tester);
     await tester.tap(find.text('Commencer une déclaration'));
     await tester.pumpAndSettle();
@@ -2265,8 +2270,73 @@ void main() {
     expect(find.text('Conducteur B'), findsNothing);
   });
 
+  testWidgets('déclaration : véhicule obligatoire, contrat expiré bloquant', (
+    tester,
+  ) async {
+    // Sans véhicule : on propose d'en ajouter un, et on ne passe pas.
+    final backend = FakeBackend();
+    await pumpApp(tester, backend);
+    await signIn(tester);
+    await tester.tap(find.text('Commencer une déclaration'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('add-vehicle')), findsOneWidget);
+    await tester.tap(find.text('Continuer'));
+    await tester.pump();
+    expect(
+      find.text('Choisissez votre véhicule : son assureur reçoit le constat.'),
+      findsOneWidget,
+    );
+    expect(find.text('Que s’est-il passé ?'), findsNothing);
+  });
+
+  testWidgets('déclaration : contrat expiré, déclaration refusée', (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      FakeBackend()..vehicles = [vehicleJson(insuranceExpiry: '2025-01-31')],
+    );
+    await signIn(tester);
+    await tester.tap(find.text('Commencer une déclaration'));
+    await tester.pumpAndSettle();
+    // Seul véhicule : choisi d'office, mais son contrat a expiré.
+    expect(find.textContaining('Contrat expiré le 31/01/2025'), findsOneWidget);
+    await tester.tap(find.text('Continuer'));
+    await tester.pump();
+    expect(find.textContaining('a expiré le 31/01/2025'), findsOneWidget);
+    expect(find.text('Que s’est-il passé ?'), findsNothing);
+  });
+
+  testWidgets(
+    'véhicules : repris du serveur, envoyés, effacés à la déconnexion',
+    (tester) async {
+      final backend = FakeBackend()..vehicles = [vehicleJson()];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      final store = backend.stores.vehicles;
+      expect(store.vehicles.map((v) => v.plate), ['245 TU 8812']);
+      expect(store.vehicles.single.companyId, 'c-star');
+
+      // Un véhicule ajouté sur le téléphone part sur le serveur.
+      final added = Vehicle.fromApi(
+        vehicleJson(
+          id: '22222222-2222-4222-8222-222222222222',
+          plate: '1 TU 1',
+        ),
+      );
+      await store.addVehicle(added);
+      expect(backend.bodies['POST /vehicles']!['id'], added.id);
+      expect(backend.bodies['POST /vehicles']!['companyId'], 'c-star');
+
+      // Déconnexion : plus rien pour le compte suivant sur ce téléphone.
+      await backend.stores.users.logout();
+      await tester.pumpAndSettle();
+      expect(store.vehicles, isEmpty);
+    },
+  );
+
   testWidgets('reprend un brouillon à la dernière étape', (tester) async {
-    await pumpApp(tester, FakeBackend());
+    await pumpApp(tester, FakeBackend()..vehicles = [vehicleJson()]);
     await signIn(tester);
     await tester.tap(find.text('Commencer une déclaration'));
     await tester.pumpAndSettle();

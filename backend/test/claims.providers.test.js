@@ -163,6 +163,8 @@ describe('API sinistres avec chaque fournisseur', () => {
       severity: 'Grave',
       circumstances: ['Reculait'],
       impactZones: ['Avant'],
+      // Assuré chez la compagnie de l'agent de test.
+      companyId: (await testCompany).id,
       observations: 'Pare-choc arrière abîmé.',
     });
     return id;

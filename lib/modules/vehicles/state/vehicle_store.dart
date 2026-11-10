@@ -1,18 +1,25 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/vehicles/data/vehicle_database.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 import 'package:mon_constat_digital/modules/vehicles/services/vehicle_ai_service.dart';
 
 /// Gère la liste des véhicules du conducteur connecté.
 ///
-/// Persiste dans SQLite via [VehicleDatabase].
+/// Persiste dans SQLite via [VehicleDatabase], puis sur le serveur
+/// (/api/vehicles) : c'est là que l'assureur du véhicule est connu, pour lui
+/// adresser les sinistres.
 /// Compatible hors-ligne : les modifications sont immédiatement appliquées
-/// en mémoire, puis écrites en base de façon asynchrone.
+/// en mémoire, écrites en base, puis envoyées ; ce qui n'a pas pu partir est
+/// renvoyé à la prochaine synchronisation ([syncWithServer]).
 class VehicleStore extends ChangeNotifier {
-  VehicleStore(this._db);
+  VehicleStore(this._db, {ApiClient? api}) : _api = api;
 
   final VehicleDatabase _db;
+
+  /// Absent dans certains tests : tout reste alors sur le téléphone.
+  final ApiClient? _api;
 
   // Liste en mémoire — seule source de vérité pour l'UI.
   final List<Vehicle> _vehicles = [];
@@ -99,6 +106,7 @@ class VehicleStore extends ChangeNotifier {
     _vehicles.add(v);
     notifyListeners();
     await _db.saveVehicle(v);
+    await _send(v);
   }
 
   Future<void> updateVehicle(Vehicle v) async {
@@ -107,12 +115,98 @@ class VehicleStore extends ChangeNotifier {
     _vehicles[idx] = v;
     notifyListeners();
     await _db.saveVehicle(v);
+    await _send(v);
   }
 
   Future<void> removeVehicle(Vehicle v) async {
     _vehicles.removeWhere((e) => e.id == v.id);
     notifyListeners();
     await _db.deleteVehicle(v.id);
+    final api = _api;
+    if (api == null || !v.hasServerId) return;
+    try {
+      await api.delete('/vehicles/${v.id}');
+    } on ApiException catch (error) {
+      // Déjà absent du serveur : rien à faire. Hors ligne : il reviendra à
+      // la prochaine synchronisation, et pourra être supprimé à nouveau.
+      if (!error.isNetwork && error.status != 404) rethrow;
+    }
+  }
+
+  // ── Serveur ────────────────────────────────────────────────────────────────
+
+  /// Envoie un véhicule : modification s'il existe, sinon création. Une
+  /// erreur réseau n'empêche rien : il partira à la prochaine synchronisation.
+  Future<void> _send(Vehicle v) async {
+    final api = _api;
+    if (api == null) return;
+    try {
+      if (v.hasServerId) {
+        try {
+          await api.patch('/vehicles/${v.id}', body: v.toApi());
+          return;
+        } on ApiException catch (error) {
+          if (error.status != 404) rethrow;
+        }
+      }
+      final created =
+          await api.post('/vehicles', body: v.toApi(withId: true))
+              as Map<String, dynamic>;
+      // Ancien identifiant (pas un UUID) : on adopte celui du serveur.
+      if (created['id'] != v.id) await _replace(v, Vehicle.fromApi(created, local: v));
+    } on ApiException catch (error) {
+      if (!error.isNetwork) debugPrint('Véhicule non envoyé : ${error.message}');
+    }
+  }
+
+  Future<void> _replace(Vehicle old, Vehicle fresh) async {
+    final idx = _vehicles.indexWhere((e) => e.id == old.id);
+    if (idx != -1) _vehicles[idx] = fresh;
+    await _db.deleteVehicle(old.id);
+    await _db.saveVehicle(fresh);
+    notifyListeners();
+  }
+
+  /// À la connexion : les véhicules du compte sur le serveur rejoignent ceux
+  /// du téléphone, et ce que le téléphone a de plus (créé hors ligne) part.
+  Future<void> syncWithServer() async {
+    final api = _api;
+    if (api == null) return;
+    await initialize();
+    final List<Map<String, dynamic>> remote;
+    try {
+      remote = [
+        for (final archived in ['false', 'true'])
+          ...((await api.get(
+                    '/vehicles',
+                    query: {'archived': archived, 'pageSize': '50'},
+                  )
+                  as Map<String, dynamic>)['vehicles'] as List)
+              .cast<Map<String, dynamic>>(),
+      ];
+    } on ApiException {
+      return; // Hors ligne : on réessaiera à la prochaine connexion.
+    }
+    final localIds = {for (final v in _vehicles) v.id};
+    for (final json in remote) {
+      if (localIds.contains(json['id'])) continue;
+      final vehicle = Vehicle.fromApi(json);
+      _vehicles.add(vehicle);
+      await _db.saveVehicle(vehicle);
+    }
+    final remoteIds = {for (final json in remote) json['id']};
+    for (final vehicle in [..._vehicles]) {
+      if (!remoteIds.contains(vehicle.id)) await _send(vehicle);
+    }
+    notifyListeners();
+  }
+
+  /// À la déconnexion : les véhicules ne restent pas pour le compte suivant
+  /// sur ce téléphone. Ils sont sur le serveur et reviennent à la connexion.
+  Future<void> clear() async {
+    _vehicles.clear();
+    notifyListeners();
+    await _db.deleteAll();
   }
 
   Future<void> archiveVehicle(Vehicle v) async {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/accident/data/accident_database.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 
@@ -51,6 +52,39 @@ class AccidentStore extends ChangeNotifier {
     notifyListeners();
     _enqueue(() => _database.saveDraft(draft!, currentStep));
     return draft!;
+  }
+
+  /// Envoie la déclaration au serveur (/api/accidents) et la marque transmise.
+  /// Renvoie son identifiant, à lier au constat, ou null hors ligne : le
+  /// constat est alors scellé sur le téléphone.
+  Future<String?> submitToServer(
+    ApiClient api,
+    AccidentDraft value, {
+    required String clientId,
+  }) async {
+    try {
+      final saved =
+          await api.post(
+                '/accidents',
+                body: {
+                  'clientId': clientId,
+                  'currentStep': 6,
+                  'place': value.place.trim().isEmpty ? 'Non précisé' : value.place,
+                  'occurredAt': value.occurredAt.toUtc().toIso8601String(),
+                  'payload': value.toDatabaseMap(currentStep: 6)
+                    ..remove('id')
+                    ..remove('current_step'),
+                },
+              )
+              as Map<String, dynamic>;
+      final id = (saved['accident'] as Map<String, dynamic>)['id'] as String;
+      await api.post('/accidents/$id/submit');
+      value.serverId = id;
+      return id;
+    } on ApiException catch (error) {
+      if (error.isNetwork) return null;
+      rethrow;
+    }
   }
 
   void clearDraft() {

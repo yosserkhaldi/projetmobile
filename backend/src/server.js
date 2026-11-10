@@ -1,6 +1,7 @@
 import { createApp } from './app.js';
 import { assertAuthConfig } from './lib/tokens.js';
 import { attachClaimsSocket } from './modules/claims/claims.socket.js';
+import { scheduleExpiryReminders } from './modules/vehicles/vehicles.reminders.js';
 
 assertAuthConfig();
 
@@ -11,3 +12,6 @@ const server = createApp().listen(port, () => {
 });
 
 attachClaimsSocket(server);
+
+// Rappels d'échéance des contrats et visites techniques (module 2).
+scheduleExpiryReminders();

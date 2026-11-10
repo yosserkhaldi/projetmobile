@@ -2,16 +2,21 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_steps.dart';
+import 'package:mon_constat_digital/modules/accident/widgets/vehicle_choice.dart';
 import 'package:mon_constat_digital/modules/claims/data/declaration_files.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/constat/models/constat.dart';
 import 'package:mon_constat_digital/modules/constat/screens/constat_sealed_screen.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/constat_steps.dart';
+import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/screens/identity_screen.dart';
+import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 
 /// Parcours en 7 étapes : les 3 premières relèvent du module 3 (déclaration),
 /// les 4 suivantes du module 4 (constat).
@@ -33,6 +38,10 @@ class _AccidentWizardState extends State<AccidentWizard> {
   int step = 0;
   bool _sending = false;
 
+  /// Identifiant de la déclaration côté téléphone : un nouvel envoi (après
+  /// une coupure) met à jour la même déclaration sur le serveur.
+  final _clientId = 'acc-${DateTime.now().microsecondsSinceEpoch}';
+
   static const steps = [
     ('Contexte', 'Lieu, heure et conditions'),
     ('Description', 'Type, gravité et témoins'),
@@ -53,7 +62,10 @@ class _AccidentWizardState extends State<AccidentWizard> {
     witnessPhone.text = draft.witnessPhone;
     observations.text = draft.observations;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _persistDraft();
+      if (!mounted) return;
+      VehicleChoice.preselect(draft, AppScope.of(context).vehicles.vehicles);
+      _persistDraft();
+      setState(() {});
     });
   }
 
@@ -109,7 +121,13 @@ class _AccidentWizardState extends State<AccidentWizard> {
   );
 
   Widget _content() => switch (step) {
-    0 => ContextStep(draft: draft, place: place, onChanged: _touch),
+    0 => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        VehicleChoice(draft: draft, onChanged: _touch),
+        ContextStep(draft: draft, place: place, onChanged: _touch),
+      ],
+    ),
     1 => DescriptionStep(
       draft: draft,
       witnessName: witnessName,
@@ -153,9 +171,30 @@ class _AccidentWizardState extends State<AccidentWizard> {
     }
     // Le scellement prend un instant : un second appui ne crée pas un doublon.
     if (_sending) return;
-    _sending = true;
     final stores = AppScope.of(context);
     final navigator = Navigator.of(context);
+    final user = stores.users.currentUser;
+    // Signer engage : identité vérifiée obligatoire (le serveur le vérifie
+    // aussi). On le dit avant le scellement plutôt qu'après.
+    if (user?.identity.status != IdentityStatus.verified) {
+      await _askIdentity();
+      return;
+    }
+    final vehicle = _vehicle(stores.vehicles.vehicles);
+    if (vehicle == null) {
+      _showError('Choisissez votre véhicule à la première étape.');
+      return;
+    }
+    _sending = true;
+    // Conducteur A : le profil et le véhicule choisi, pas des valeurs fictives.
+    draft
+      ..driverAName = user!.name
+      ..driverALicense = user.licenseNumber ?? ''
+      ..driverAPlate = vehicle.plate
+      ..driverAVehicle = '${vehicle.brand} ${vehicle.model}'
+      ..driverAInsurer = vehicle.companyName ?? vehicle.insurerName
+      ..driverAPolicy = vehicle.policy
+      ..driverACompanyId = vehicle.companyId;
 
     // Dialogue d'attente pendant la génération et le scellement
     showDialog(
@@ -192,16 +231,37 @@ class _AccidentWizardState extends State<AccidentWizard> {
     Uint8List pdfBytes;
     bool sealedOnline;
     try {
+      // Module 3 : la déclaration rejoint le serveur, liée au constat.
+      final accidentId = await stores.accidents.submitToServer(
+        stores.api,
+        draft,
+        clientId: _clientId,
+      );
       constat = await stores.constats.sealAndSubmit(
         draft: draft,
-        driverAName: stores.users.userName,
-        driverAPlate: 'Véhicule A',
-        driverAInsurer: stores.users.currentUser?.companyName ?? 'Assureur A',
-        companyAId: stores.users.currentUser?.companyId,
+        accidentId: accidentId,
+        driverAPolicy: vehicle.policy,
+        companyAId: vehicle.companyId,
         companyBId: draft.driverBCompanyId,
       );
       pdfBytes = stores.constats.lastSealedPdfBytes!;
       sealedOnline = true;
+    } on ApiException catch (error) {
+      if (!error.isNetwork) {
+        // Refus du serveur (identité, données) : rien n'est scellé, le
+        // brouillon reste pour corriger et réessayer.
+        _sending = false;
+        if (mounted) {
+          navigator.pop(); // ferme le dialog
+          _showError(error.message);
+        }
+        return;
+      }
+      // Hors ligne : scellé sur le téléphone, envoyé plus tard.
+      pdfBytes = await AccidentPdfService().build(draft);
+      final hash = stores.constats.crypto.computeSha256(pdfBytes);
+      constat = _localConstat(stores, hash);
+      sealedOnline = false;
     } catch (_) {
       pdfBytes = await AccidentPdfService().build(draft);
       final hash = stores.constats.crypto.computeSha256(pdfBytes);
@@ -211,9 +271,9 @@ class _AccidentWizardState extends State<AccidentWizard> {
         status: 'SIGNED',
         sha256Hash: hash,
         pdfUrl: '',
-        driverAName: stores.users.userName,
-        driverAPlate: 'Véhicule A',
-        driverAInsurer: stores.users.currentUser?.companyName ?? 'Assureur A',
+        driverAName: draft.driverAName,
+        driverAPlate: draft.driverAPlate,
+        driverAInsurer: draft.driverAInsurer,
         driverBName: draft.driverBName.isNotEmpty
             ? draft.driverBName
             : 'Conducteur B',
@@ -245,8 +305,9 @@ class _AccidentWizardState extends State<AccidentWizard> {
     // Module 5 : la proposition de responsabilité lit les cases du déclarant (A).
     claim.circumstances.addAll(draft.circumstancesA);
     claim.circumstancesB.addAll(draft.circumstancesB);
-    // Module 5 : le sinistre va aux agents de l'assureur du conducteur.
-    claim.companyId = declarationCompany(stores.vehicles.vehicles);
+    // Module 5 : le sinistre va aux agents de l'assureur du véhicule choisi.
+    claim.companyId =
+        vehicle.companyId ?? declarationCompany(stores.vehicles.vehicles);
     // Module 5 : le constat scellé sur le serveur ; hors ligne, pas encore.
     if (sealedOnline) claim.constatId = constat.id;
     claim.impactZones.addAll(draft.impactZones);
@@ -286,6 +347,64 @@ class _AccidentWizardState extends State<AccidentWizard> {
     );
   }
 
+  Vehicle? _vehicle(List<Vehicle> vehicles) =>
+      vehicles.where((v) => v.id == draft.vehicleId).firstOrNull;
+
+  /// Constat scellé sur le téléphone (hors ligne), envoyé plus tard.
+  Constat _localConstat(AppStores stores, String hash) => Constat(
+    id: 'local-${DateTime.now().millisecondsSinceEpoch}',
+    userId: stores.users.currentUser?.id ?? '',
+    status: 'SIGNED',
+    sha256Hash: hash,
+    pdfUrl: '',
+    driverAName: draft.driverAName,
+    driverAPlate: draft.driverAPlate,
+    driverAInsurer: draft.driverAInsurer,
+    driverBName: draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
+    driverBPlate: draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'Véhicule B',
+    driverBInsurer: draft.driverBInsurer.isNotEmpty
+        ? draft.driverBInsurer
+        : 'Assureur B',
+    place: draft.place,
+    occurredAt: draft.occurredAt,
+    circumstancesA: draft.circumstancesA.toList(),
+    circumstancesB: draft.circumstancesB.toList(),
+    impactZones: draft.impactZones.toList(),
+    observations: draft.observations,
+  );
+
+  /// Identité pas encore vérifiée : on propose de le faire tout de suite.
+  Future<void> _askIdentity() async {
+    final verify = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.verified_user_outlined),
+        title: const Text('Vérifiez votre identité pour signer'),
+        content: const Text(
+          'Le constat engage les deux conducteurs : votre identité doit être '
+          'vérifiée avant la signature. Votre brouillon reste enregistré.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Plus tard'),
+          ),
+          FilledButton(
+            key: const ValueKey('verify-identity-to-sign'),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Vérifier mon identité'),
+          ),
+        ],
+      ),
+    );
+    if (verify == true && mounted) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IdentityScreen()),
+      );
+    }
+  }
+
   void _goBack() {
     setState(() => step--);
     _persistDraft();
@@ -296,6 +415,16 @@ class _AccidentWizardState extends State<AccidentWizard> {
   }
 
   bool _isCurrentStepValid() {
+    if (step == 0) {
+      final problem = VehicleChoice.problem(
+        draft,
+        AppScope.of(context).vehicles.vehicles,
+      );
+      if (problem != null) {
+        _showError(problem);
+        return false;
+      }
+    }
     if (step == 0 && !(_contextForm.currentState?.validate() ?? false)) {
       _showError('Vérifiez le lieu de l’accident.');
       return false;
