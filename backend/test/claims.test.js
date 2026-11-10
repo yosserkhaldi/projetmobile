@@ -83,6 +83,8 @@ describe('API sinistres', () => {
       date: '2026-11-07 10:00',
       severity: 'Grave',
       circumstances: ['Reculait'],
+      // Assuré chez STAR, la compagnie de l'agent Leïla.
+      companyId: star.id,
       ...extra,
     });
     assert.equal(created.status, 201);
@@ -310,8 +312,14 @@ describe('API sinistres', () => {
 
     const ids = async (who) =>
       (await call(who, 'GET', '/')).body.map((claim) => claim.id).sort();
-    assert.deepEqual(await ids(agent), [mine, unknown].sort());
-    assert.deepEqual(await ids(rival), [theirs, unknown].sort());
+    // Compagnie inconnue : aucun agent ne le voit, seul l'administrateur.
+    assert.deepEqual(await ids(agent), [mine]);
+    assert.deepEqual(await ids(rival), [theirs]);
+    assert.equal((await call(agent, 'GET', `/${unknown}`)).status, 404);
+    assert.equal(
+      (await prisma.claim.findUnique({ where: { id: unknown } })).companyId,
+      null,
+    );
     assert.equal((await call(rival, 'GET', `/${mine}`)).status, 404);
     assert.equal((await call(rival, 'POST', `/${mine}/take-charge`)).status, 404);
     // Recherche texte : le périmètre tient toujours.
@@ -341,7 +349,8 @@ describe('API sinistres', () => {
       },
     });
     try {
-      const id = await createClaim();
+      // Aucune compagnie envoyée : celle du véhicule.
+      const id = await createClaim({ companyId: undefined });
       const claim = (await call(rival, 'GET', `/${id}`)).body;
       assert.equal(claim.companyId, comar.id);
       assert.equal((await call(agent, 'GET', `/${id}`)).status, 404);

@@ -32,25 +32,21 @@ export function visibleTo(user, claim) {
 
 // Qui voit quels sinistres (module 1, companyScope) :
 // - conducteur : les siens ;
-// - agent : ceux de sa compagnie, et ceux dont la compagnie est inconnue
-//   (la déclaration ne dit pas toujours quel véhicule est concerné) ;
-// - administrateur : tous.
+// - agent : ceux de sa compagnie seulement ;
+// - administrateur : tous, dont ceux dont la compagnie est inconnue, qu'aucun
+//   agent ne voit (un sinistre n'est jamais montré à une autre compagnie).
 // Un agent sans compagnie est refusé (403) par companyScope.
 export function scopeOf(user) {
   if (user.role === 'driver') return { driverId: user.id };
-  const scope = companyScope({
+  return companyScope({
     user: { role: user.role.toUpperCase(), companyId: user.companyId },
   });
-  if (!scope.companyId) return scope;
-  return { OR: [scope, { companyId: null }] };
 }
 
 const canSee = (user, claim) => {
   if (user.role === 'driver') return claim.driverId === user.id;
   scopeOf(user);
-  return (
-    user.role !== 'agent' || !claim.companyId || claim.companyId === user.companyId
-  );
+  return user.role !== 'agent' || claim.companyId === user.companyId;
 };
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

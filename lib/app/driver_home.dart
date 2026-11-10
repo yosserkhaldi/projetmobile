@@ -155,10 +155,16 @@ class DriverHome extends StatelessWidget {
           children: [
             Icon(i, color: c.palette.primaryText),
             const SizedBox(height: 8),
-            Text(
-              t,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            // Une seule ligne, réduite au besoin : « Notifications » ne se
+            // coupe plus en « Notification / s ».
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                t,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),

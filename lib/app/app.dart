@@ -8,6 +8,7 @@ import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/screens/auth_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/onboarding_screen.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 
 class MonConstatApp extends StatefulWidget {
@@ -56,14 +57,25 @@ class _MonConstatAppState extends State<MonConstatApp>
       stores.users.refreshBiometricAvailability();
       // Le réseau est peut-être revenu : envoyer la file hors ligne.
       stores.users.syncPending();
+      if (stores.users.status == AuthStatus.signedIn) {
+        unawaited(stores.vehicles.syncWithServer());
+      }
     }
   }
 
-  /// À la déconnexion, ferme les écrans ouverts au-dessus de l'accueil.
+  /// À la déconnexion, ferme les écrans ouverts au-dessus de l'accueil, et
+  /// efface les véhicules et le brouillon d'accident de ce téléphone : le
+  /// compte suivant ne doit pas les voir. À la connexion, les véhicules du
+  /// compte reviennent du serveur.
   void _onUsersChanged() {
     final status = stores.users.status;
     if (_lastStatus == AuthStatus.signedIn && status == AuthStatus.signedOut) {
       _navigator.currentState?.popUntil((route) => route.isFirst);
+      unawaited(stores.vehicles.clear());
+      stores.accidents.clearDraft();
+    }
+    if (_lastStatus != AuthStatus.signedIn && status == AuthStatus.signedIn) {
+      unawaited(stores.vehicles.syncWithServer());
     }
     _lastStatus = status;
   }
@@ -106,6 +118,13 @@ class _SessionGate extends StatelessWidget {
       body: Center(child: CircularProgressIndicator(color: AppColors.accent)),
     ),
     AuthStatus.signedOut => const AuthScreen(),
-    AuthStatus.signedIn => const MainShell(),
+    // Nouveau compte : l'accueil d'abord, puis l'application en fondu.
+    AuthStatus.signedIn => AnimatedSwitcher(
+      duration: const Duration(milliseconds: 450),
+      switchInCurve: Curves.easeOutCubic,
+      child: AppScope.of(context).users.needsOnboarding
+          ? const OnboardingScreen()
+          : const MainShell(),
+    ),
   };
 }

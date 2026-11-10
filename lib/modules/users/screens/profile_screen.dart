@@ -98,24 +98,27 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
-            _Section(
-              title: t.sectionLicense,
-              editKey: const Key('edit-license'),
-              onEdit: () => _showSheet(context, _LicenseSheet(user: user)),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _LicenseCard(user: user),
-                      const SizedBox(height: 12),
-                      _LicensePhoto(user: user),
-                    ],
+            // Le permis sert à remplir le constat : conducteurs seulement.
+            if (user.role == UserRole.driver)
+              _Section(
+                title: t.sectionLicense,
+                editKey: const Key('edit-license'),
+                onEdit: () => _showSheet(context, _LicenseSheet(user: user)),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _LicenseStatusNote(license: user.license),
+                        _LicenseCard(user: user),
+                        const SizedBox(height: 12),
+                        _LicensePhoto(user: user),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
             if (user.role == UserRole.driver)
               _Section(
                 title: t.identityTitle,
@@ -343,16 +346,26 @@ class _ProfileHeader extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          _Pill(
-                            icon: user.phoneVerified
-                                ? Icons.verified_outlined
-                                : Icons.error_outline,
-                            label: user.phoneVerified
-                                ? t.phoneVerified
-                                : t.phoneNotVerified,
-                            color: user.phoneVerified
-                                ? const Color(0xFF7FE0CC)
-                                : AppColors.accent,
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              _Pill(
+                                icon: user.phoneVerified
+                                    ? Icons.verified_outlined
+                                    : Icons.error_outline,
+                                label: user.phoneVerified
+                                    ? t.phoneVerified
+                                    : t.phoneNotVerified,
+                                color: user.phoneVerified
+                                    ? const Color(0xFF7FE0CC)
+                                    : AppColors.accent,
+                              ),
+                              // Conducteur : l'état de son identité, d'un
+                              // coup d'œil (exigée pour signer un constat).
+                              if (user.role == UserRole.driver)
+                                _identityPill(t, user.identity.status),
+                            ],
                           ),
                         ],
                       ),
@@ -456,8 +469,35 @@ class _Avatar extends StatelessWidget {
   );
 }
 
+_Pill _identityPill(AppLocalizations t, IdentityStatus status) =>
+    switch (status) {
+      IdentityStatus.verified => _Pill(
+        key: const Key('identity-pill'),
+        icon: Icons.verified_user_outlined,
+        label: t.profileIdentityVerified,
+        color: const Color(0xFF7FE0CC),
+      ),
+      IdentityStatus.pending => _Pill(
+        key: const Key('identity-pill'),
+        icon: Icons.hourglass_top_rounded,
+        label: t.profileIdentityPending,
+        color: AppColors.onDarkStrong,
+      ),
+      _ => _Pill(
+        key: const Key('identity-pill'),
+        icon: Icons.badge_outlined,
+        label: t.profileIdentityTodo,
+        color: AppColors.accent,
+      ),
+    };
+
 class _Pill extends StatelessWidget {
-  const _Pill({required this.icon, required this.label, required this.color});
+  const _Pill({
+    required this.icon,
+    required this.label,
+    required this.color,
+    super.key,
+  });
   final IconData icon;
   final String label;
   final Color color;
@@ -706,6 +746,68 @@ class _LicenseCard extends StatelessWidget {
   }
 }
 
+/// Décision sur le permis : validé, en cours de vérification (un contrôle de
+/// l'IA a échoué), ou refusé avec le motif de l'administrateur.
+class _LicenseStatusNote extends StatelessWidget {
+  const _LicenseStatusNote({required this.license});
+  final LicenseReview license;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final p = context.palette;
+    final (text, icon, bg, fg) = switch (license.status) {
+      LicenseStatus.verified => (
+        t.licenseStatusVerified,
+        Icons.verified_outlined,
+        p.successBg,
+        p.successText,
+      ),
+      LicenseStatus.toReview => (
+        t.licenseToReviewNote,
+        Icons.hourglass_top_rounded,
+        p.warningBg,
+        p.warningText,
+      ),
+      LicenseStatus.rejected => (
+        t.licenseRejectedNote(license.rejectionReason ?? ''),
+        Icons.block,
+        p.errorBg,
+        p.errorText,
+      ),
+      null => (null, null, null, null),
+    };
+    if (text == null) return const SizedBox.shrink();
+    return Container(
+      key: Key('license-status-${license.status!.apiValue}'),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(AppRadius.input),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: fg),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: fg,
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LicensePhoto extends StatelessWidget {
   const _LicensePhoto({required this.user});
   final AppUser user;
@@ -715,7 +817,10 @@ class _LicensePhoto extends StatelessWidget {
     final t = context.t;
     final hasPhoto = user.licensePhotoId != null;
     return InkWell(
-      onTap: () => changePhoto(context, UserPhoto.license),
+      key: const Key('license-photo'),
+      // Ouvre le permis : « Scanner mon permis » remplace la photo et relit la
+      // carte (permis refait, nouvelles catégories).
+      onTap: () => _showSheet(context, _LicenseSheet(user: user)),
       borderRadius: BorderRadius.circular(AppRadius.input),
       child: Container(
         height: hasPhoto ? 170 : 52,
@@ -996,10 +1101,61 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
   };
   late String? _issuedAt = widget.user.licenseIssuedAt;
 
+  /// Résultat du dernier scan : rempli par l'IA, ou carte illisible.
+  bool? _filledByAi;
+  bool _scanning = false;
+
+  /// Contrôles croisés en échec : messages à afficher sous le résultat.
+  List<String> _crossCheckWarnings = const [];
+
   @override
   void dispose() {
     _number.dispose();
     super.dispose();
+  }
+
+  /// Photo du permis → l'IA remplit le formulaire, que l'utilisateur vérifie.
+  Future<void> _scan() async {
+    final users = AppScope.of(context).users;
+    String describe(Object e) => errorMessage(context, e);
+    final file = await pickPhoto(context);
+    if (file == null || !mounted) return;
+    setState(() {
+      _scanning = true;
+      error = null;
+    });
+    try {
+      final reading = await users.scanLicense(
+        await file.readAsBytes(),
+        file.name,
+      );
+      if (!mounted) return;
+      setState(() {
+        final t = context.t;
+        _crossCheckWarnings = [
+          if (reading?.nameMatchesAccount == false) t.licenseNameMismatch,
+          if (reading?.cinMatchesIdentity == false) t.licenseCinMismatch,
+          if (reading?.birthDateMatchesIdentity == false)
+            t.licenseBirthMismatch,
+        ];
+        if (reading == null || reading.isEmpty) {
+          _filledByAi = false;
+          return;
+        }
+        _filledByAi = true;
+        if (reading.number != null) _number.text = reading.number!;
+        if (reading.categories.isNotEmpty) {
+          _categories
+            ..clear()
+            ..addAll(reading.categories);
+        }
+        if (reading.issuedAt != null) _issuedAt = reading.issuedAt;
+      });
+    } catch (e) {
+      if (mounted) setState(() => error = describe(e));
+    } finally {
+      if (mounted) setState(() => _scanning = false);
+    }
   }
 
   Future<void> _pickDate() async {
@@ -1037,6 +1193,8 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
+    // Compte à jour : la photo change dès qu'un nouveau scan est envoyé.
+    final user = AppScope.of(context).users.currentUser ?? widget.user;
     return _SheetFrame(
       title: t.editLicenseTitle,
       child: Form(
@@ -1048,6 +1206,87 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
               ErrorBanner(error!),
               const SizedBox(height: 14),
             ],
+            // Photo enregistrée : un nouveau scan la remplace.
+            if (user.licensePhotoId != null) ...[
+              ClipRRect(
+                key: const Key('license-sheet-photo'),
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                child: SizedBox(
+                  height: 150,
+                  child: UserPhotoView(
+                    user: user,
+                    photo: UserPhoto.license,
+                    fit: BoxFit.contain,
+                    placeholder: const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+            // Le plus simple : une photo, l'IA remplit le reste.
+            FilledButton.icon(
+              key: const Key('scan-license'),
+              onPressed: _scanning || busy ? null : _scan,
+              icon: _scanning
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.document_scanner_outlined),
+              label: Text(_scanning ? t.readingDocument : t.scanLicense),
+            ),
+            const SizedBox(height: 8),
+            if (_filledByAi == null)
+              Text(
+                t.scanLicenseHint,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.4,
+                  color: context.palette.textMuted,
+                ),
+              )
+            else
+              Container(
+                key: const Key('license-scan-result'),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _filledByAi!
+                      ? context.palette.successBg
+                      : context.palette.warningBg,
+                  borderRadius: BorderRadius.circular(AppRadius.input),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _filledByAi! ? Icons.auto_awesome : Icons.info_outline,
+                      size: 18,
+                      color: _filledByAi!
+                          ? context.palette.successText
+                          : context.palette.warningText,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _filledByAi! ? t.licenseFilledByAi : t.licenseNotRead,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: _filledByAi!
+                              ? context.palette.successText
+                              : context.palette.warningText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            // Contrôle croisé avec la pièce d'identité.
+            for (final warning in _crossCheckWarnings) ...[
+              const SizedBox(height: 8),
+              ErrorBanner(warning),
+            ],
+            const SizedBox(height: 16),
             LabeledField(
               label: t.licenseNumberLabel,
               controller: _number,

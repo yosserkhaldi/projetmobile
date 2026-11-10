@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
-import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
-import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/screens/license_review_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/dashboard_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 /// Tableau de bord administrateur (1.4), sur les données réelles des comptes.
 /// Les indicateurs d'accidents arrivent avec les modules 3 et 5.
@@ -52,12 +51,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ErrorBanner(_error!),
               TextButton(onPressed: _load, child: Text(t.retry)),
             ],
-            if (stats == null && _error == null)
-              const Padding(
-                padding: EdgeInsets.all(40),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            if (stats != null) ...dashboardSections(context, stats).phone,
+            if (stats == null && _error == null) const SkeletonDashboard(),
+            if (stats != null) ...[
+              // Permis signalés par l'IA : à traiter avant le reste.
+              LicenseReviewAlert(count: stats['licensesToReview'] as int? ?? 0),
+              ...dashboardSections(context, stats).phone,
+            ],
           ],
         ),
       ),

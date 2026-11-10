@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/models/identity_attempt.dart';
 import 'package:mon_constat_digital/modules/users/models/company.dart';
 import 'package:mon_constat_digital/modules/users/state/company_store.dart';
 
@@ -98,10 +99,32 @@ class AdminStore extends ChangeNotifier {
   Future<void> approveIdentity(AppUser user) =>
       _decideIdentity(_api.post('/users/${user.id}/identity/approve'), user);
 
-  Future<void> rejectIdentity(AppUser user, String reason) => _decideIdentity(
-    _api.post('/users/${user.id}/identity/reject', body: {'reason': reason}),
-    user,
-  );
+  /// Débloque la vérification d'un compte (refus grave ou 3e refus).
+  Future<void> unblockIdentity(AppUser user) async {
+    await _api.post('/users/${user.id}/identity/unblock');
+    await loadUsers();
+  }
+
+  /// Demandes passées d'un compte, les plus récentes d'abord.
+  Future<List<IdentityAttempt>> identityAttempts(AppUser user) async {
+    final body =
+        await _api.get('/users/${user.id}/identity/attempts')
+            as Map<String, dynamic>;
+    return [
+      for (final item in body['items'] as List)
+        IdentityAttempt.fromJson(item as Map<String, dynamic>),
+    ];
+  }
+
+  /// Refus. `severe` : refus définitif, plus de nouvelle demande.
+  Future<void> rejectIdentity(AppUser user, IdentityRejection rejection) =>
+      _decideIdentity(
+        _api.post(
+          '/users/${user.id}/identity/reject',
+          body: {'reason': rejection.reason, 'severe': rejection.severe},
+        ),
+        user,
+      );
 
   Future<void> _decideIdentity(Future<dynamic> decision, AppUser user) async {
     await decision;
@@ -110,6 +133,88 @@ class AdminStore extends ChangeNotifier {
         if (pending.id != user.id) pending,
     ];
     notifyListeners();
+  }
+
+  /// Dossier complet d'un compte (identité et permis, même validés par l'IA).
+  Future<AppUser> fetchUser(String id) async =>
+      _applyUser(await _api.get('/users/$id'));
+
+  /// Permis à vérifier : un contrôle croisé a échoué ou rien n'a pu être lu.
+  List<AppUser> licenseReviews = const [];
+
+  Future<void> loadLicenseReviews() async {
+    final response =
+        await _api.get('/users/licenses/review') as Map<String, dynamic>;
+    licenseReviews = [
+      for (final user in response['items'] as List)
+        AppUser.fromJson(user as Map<String, dynamic>),
+    ];
+    notifyListeners();
+  }
+
+  Future<AppUser> approveLicense(AppUser user) =>
+      _license(_api.post('/users/${user.id}/license/approve'));
+
+  /// Refus : photo et informations effacées, le conducteur voit le motif.
+  Future<AppUser> rejectLicense(AppUser user, String reason) => _license(
+    _api.post('/users/${user.id}/license/reject', body: {'reason': reason}),
+  );
+
+  /// Correction des informations du permis.
+  Future<AppUser> updateLicense(AppUser user, Map<String, dynamic> fields) =>
+      _license(_api.patch('/users/${user.id}/license', body: fields));
+
+  Future<AppUser> deleteLicense(AppUser user) =>
+      _license(_api.delete('/users/${user.id}/license'));
+
+  /// Annule une vérification d'identité, même validée par l'IA.
+  Future<AppUser> revokeIdentity(AppUser user, String reason) async {
+    final updated = _applyUser(
+      await _api.post(
+        '/users/${user.id}/identity/revoke',
+        body: {'reason': reason},
+      ),
+    );
+    _refreshStats();
+    return updated;
+  }
+
+  /// Corrige ce que l'IA a lu sur la pièce (nom, lieu de naissance…).
+  Future<AppUser> correctIdentityReading(
+    AppUser user,
+    Map<String, String?> fields,
+  ) async => _applyUser(
+    await _api.patch('/users/${user.id}/identity/reading', body: fields),
+  );
+
+  Future<AppUser> _license(Future<dynamic> change) async {
+    final updated = _applyUser(await change);
+    // Décidé : le permis quitte la file.
+    if (updated.license.status != LicenseStatus.toReview) {
+      licenseReviews = [
+        for (final user in licenseReviews)
+          if (user.id != updated.id) user,
+      ];
+      notifyListeners();
+    }
+    _refreshStats();
+    return updated;
+  }
+
+  /// Compteurs du tableau de bord à jour après une décision, sans attendre.
+  void _refreshStats() {
+    if (stats == null) return;
+    loadStats().catchError((Object _) {});
+  }
+
+  /// Remplace le compte modifié dans les listes et le renvoie.
+  AppUser _applyUser(dynamic response) {
+    final updated = AppUser.fromJson(
+      (response as Map<String, dynamic>)['user'] as Map<String, dynamic>,
+    );
+    users = [for (final user in users) user.id == updated.id ? updated : user];
+    notifyListeners();
+    return updated;
   }
 
   Future<void> loadCompanies() => _companies.load();

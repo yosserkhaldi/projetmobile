@@ -21,7 +21,8 @@ void main() {
     });
 
     test('formate le hash par blocs lisibles de 8 caractères', () {
-      const hash = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+      const hash =
+          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
       final formatted = service.formatHash(hash);
       expect(
         formatted,
@@ -69,4 +70,3 @@ void main() {
 extension on String {
   String repeat(int times) => List.filled(times, this).join();
 }
-

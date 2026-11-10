@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
@@ -19,7 +20,7 @@ class DeclarationsScreen extends StatelessWidget {
     final draft = stores.accidents.draft;
     final claims = stores.claims.claims;
     return ColoredBox(
-      color: AppColors.canvas,
+      color: context.palette.canvas,
       child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.only(bottom: 28),
@@ -51,12 +52,12 @@ class DeclarationsScreen extends StatelessWidget {
               ),
             ),
             if (draft != null) ...[
-              const Padding(
+              Padding(
                 padding: EdgeInsets.fromLTRB(18, 24, 18, 10),
                 child: Text(
                   'BROUILLON EN COURS',
                   style: TextStyle(
-                    color: AppColors.textMuted,
+                    color: context.palette.textMuted,
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     letterSpacing: .6,
@@ -66,7 +67,7 @@ class DeclarationsScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Card(
-                  color: AppColors.warningBg,
+                  color: context.palette.warningBg,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -86,8 +87,8 @@ class DeclarationsScreen extends StatelessWidget {
                                 children: [
                                   Text(
                                     'Étape ${stores.accidents.currentStep + 1} sur 7',
-                                    style: const TextStyle(
-                                      color: AppColors.warningText,
+                                    style: TextStyle(
+                                      color: context.palette.warningText,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -144,10 +145,10 @@ class DeclarationsScreen extends StatelessWidget {
             ],
             Padding(
               padding: EdgeInsets.fromLTRB(18, draft == null ? 24 : 28, 18, 10),
-              child: const Text(
+              child: Text(
                 'DÉCLARATIONS TRANSMISES',
                 style: TextStyle(
-                  color: AppColors.textMuted,
+                  color: context.palette.textMuted,
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                   letterSpacing: .6,

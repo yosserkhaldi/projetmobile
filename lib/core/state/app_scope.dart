@@ -37,7 +37,7 @@ class AppStores {
     );
     companies = CompanyStore(this.api, localDb);
     admin = AdminStore(this.api, companies);
-    vehicles = VehicleStore(vehicleDb ?? VehicleDatabase());
+    vehicles = VehicleStore(vehicleDb ?? VehicleDatabase(), api: this.api);
     constats = ConstatStore(api: this.api);
     listenable = Listenable.merge([
       accidents,

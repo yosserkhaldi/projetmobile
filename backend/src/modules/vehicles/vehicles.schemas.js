@@ -20,12 +20,17 @@ const isoDate = z
 // ── Schéma de création ─────────────────────────────────────────────────────────
 
 export const createVehicleSchema = z.object({
+  // Identifiant créé sur le téléphone (hors ligne) : le même des deux côtés.
+  id: z.uuid().optional(),
   plate,
   brand: z.string().trim().min(1).max(50),
   model: z.string().trim().min(1).max(50),
   year: z.number().int().min(1950).max(new Date().getFullYear() + 1),
   policy: z.string().trim().min(1).max(50),
   insurerName: z.string().trim().max(100).default(''),
+  // Compagnie choisie dans le référentiel (module 1) : c'est elle qui reçoit
+  // les sinistres de ce véhicule.
+  companyId: z.uuid().nullable().optional(),
   insuranceExpiry: isoDate,
   technicalExpiry: isoDate.nullable().optional(),
   color: z.string().trim().max(30).nullable().optional(),
@@ -36,7 +41,10 @@ export const createVehicleSchema = z.object({
 
 // ── Schéma de modification (tous les champs optionnels) ────────────────────────
 
-export const updateVehicleSchema = createVehicleSchema.partial().extend({
+export const updateVehicleSchema = createVehicleSchema
+  .omit({ id: true })
+  .partial()
+  .extend({
   archived: z.boolean().optional(),
   mileage: z.number().int().min(0).max(2_000_000).nullable().optional(),
 });

@@ -2527,7 +2527,7 @@ abstract class AppLocalizations {
   /// No description provided for @navDeclarations.
   ///
   /// In fr, this message translates to:
-  /// **'Déclarations'**
+  /// **'Constats'**
   String get navDeclarations;
 
   /// No description provided for @securityDevicesTitle.
@@ -2683,13 +2683,13 @@ abstract class AppLocalizations {
   /// No description provided for @identityIntro.
   ///
   /// In fr, this message translates to:
-  /// **'Un administrateur vérifie votre CIN. Elle est exigée pour signer un constat.'**
+  /// **'Choisissez une pièce, photographiez-la, puis vérifiez votre visage. Notre IA compare votre visage à la photo de la pièce, sur nos serveurs, sans aucun service extérieur.'**
   String get identityIntro;
 
   /// No description provided for @identityPendingNote.
   ///
   /// In fr, this message translates to:
-  /// **'Un administrateur vérifie vos documents. Vous serez prévenu sur WhatsApp et par e-mail.'**
+  /// **'L\'IA n\'a pas pu conclure : un administrateur compare vos photos. Vous serez prévenu sur WhatsApp et par e-mail.'**
   String get identityPendingNote;
 
   /// No description provided for @identityVerifiedNote.
@@ -2737,7 +2737,7 @@ abstract class AppLocalizations {
   /// No description provided for @identityPhotosRequired.
   ///
   /// In fr, this message translates to:
-  /// **'Ajoutez le recto et le verso de votre CIN.'**
+  /// **'Ajoutez les photos de la pièce.'**
   String get identityPhotosRequired;
 
   /// No description provided for @submitIdentity.
@@ -2821,7 +2821,7 @@ abstract class AppLocalizations {
   /// No description provided for @rejectReasonNotCin.
   ///
   /// In fr, this message translates to:
-  /// **'Ce n\'est pas une CIN'**
+  /// **'Pièce non valable'**
   String get rejectReasonNotCin;
 
   /// No description provided for @otherReason.
@@ -2851,7 +2851,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorCinInUse.
   ///
   /// In fr, this message translates to:
-  /// **'Ce numéro de CIN est déjà utilisé.'**
+  /// **'Ce numéro de pièce est déjà utilisé.'**
   String get errorCinInUse;
 
   /// No description provided for @errorIdentityNotVerified.
@@ -3193,7 +3193,7 @@ abstract class AppLocalizations {
   /// No description provided for @selectRequest.
   ///
   /// In fr, this message translates to:
-  /// **'Sélectionnez une demande pour voir la CIN.'**
+  /// **'Sélectionnez une demande pour voir la pièce.'**
   String get selectRequest;
 
   /// No description provided for @pendingCount.
@@ -3237,6 +3237,1272 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Suivi du dossier en temps réel jusqu’à l’indemnisation'**
   String get heroPoint3;
+
+  /// No description provided for @identityVerifiedAutoNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiée automatiquement par reconnaissance faciale. Vous pouvez signer vos constats.'**
+  String get identityVerifiedAutoNote;
+
+  /// No description provided for @documentTypeLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce d\'identité'**
+  String get documentTypeLabel;
+
+  /// No description provided for @documentCin.
+  ///
+  /// In fr, this message translates to:
+  /// **'CIN'**
+  String get documentCin;
+
+  /// No description provided for @documentLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis'**
+  String get documentLicense;
+
+  /// No description provided for @documentPassport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Passeport'**
+  String get documentPassport;
+
+  /// No description provided for @passportNumberLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° du passeport'**
+  String get passportNumberLabel;
+
+  /// No description provided for @licenseNumberInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro de permis invalide (ex. 12/345678).'**
+  String get licenseNumberInvalid;
+
+  /// No description provided for @passportNumberInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro de passeport invalide (ex. X1234567).'**
+  String get passportNumberInvalid;
+
+  /// No description provided for @licenseFront.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recto du permis'**
+  String get licenseFront;
+
+  /// No description provided for @licenseBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Verso du permis'**
+  String get licenseBack;
+
+  /// No description provided for @passportPage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Page photo du passeport'**
+  String get passportPage;
+
+  /// No description provided for @faceCheckTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification du visage'**
+  String get faceCheckTitle;
+
+  /// No description provided for @faceCheckIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trois photos rapides : de face, puis la tête tournée de chaque côté. Une photo imprimée ou un écran ne passe pas.'**
+  String get faceCheckIntro;
+
+  /// No description provided for @faceCheckDone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage vérifié'**
+  String get faceCheckDone;
+
+  /// No description provided for @faceCheckStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifier mon visage'**
+  String get faceCheckStart;
+
+  /// No description provided for @faceCheckRedo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommencer'**
+  String get faceCheckRedo;
+
+  /// No description provided for @faceCheckRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faites d\'abord la vérification du visage.'**
+  String get faceCheckRequired;
+
+  /// No description provided for @livenessCenter.
+  ///
+  /// In fr, this message translates to:
+  /// **'Regardez la caméra, bien de face'**
+  String get livenessCenter;
+
+  /// No description provided for @livenessLeft.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournez la tête vers la gauche'**
+  String get livenessLeft;
+
+  /// No description provided for @livenessRight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournez la tête vers la droite'**
+  String get livenessRight;
+
+  /// No description provided for @livenessStepOf.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo {current} sur {total}'**
+  String livenessStepOf(int current, int total);
+
+  /// No description provided for @livenessAnalyzing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse par l\'IA…'**
+  String get livenessAnalyzing;
+
+  /// No description provided for @livenessNoCamera.
+  ///
+  /// In fr, this message translates to:
+  /// **'Caméra indisponible. Autorisez l\'accès à la caméra, puis réessayez.'**
+  String get livenessNoCamera;
+
+  /// No description provided for @livenessPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo de face sert uniquement à cette vérification. Elle est effacée dès la décision.'**
+  String get livenessPrivacy;
+
+  /// No description provided for @livenessSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage vérifié. Vous pouvez envoyer la demande.'**
+  String get livenessSuccess;
+
+  /// No description provided for @identityVerifiedByAi.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité vérifiée par l\'IA'**
+  String get identityVerifiedByAi;
+
+  /// No description provided for @errorNoFaceOnDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun visage détecté sur la pièce. Reprenez la photo à plat, bien éclairée et sans reflet.'**
+  String get errorNoFaceOnDocument;
+
+  /// No description provided for @errorLivenessNoFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage introuvable. Placez votre visage dans l\'ovale, bien éclairé.'**
+  String get errorLivenessNoFace;
+
+  /// No description provided for @errorLivenessManyFaces.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une seule personne doit être devant la caméra.'**
+  String get errorLivenessManyFaces;
+
+  /// No description provided for @errorLivenessNotCentered.
+  ///
+  /// In fr, this message translates to:
+  /// **'Regardez la caméra bien de face pour la première photo.'**
+  String get errorLivenessNotCentered;
+
+  /// No description provided for @errorLivenessNoTurn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournez davantage la tête quand la consigne le demande.'**
+  String get errorLivenessNoTurn;
+
+  /// No description provided for @errorLivenessDifferentFaces.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les photos ne montrent pas la même personne.'**
+  String get errorLivenessDifferentFaces;
+
+  /// No description provided for @errorLivenessExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le défi a expiré. Recommencez la vérification du visage.'**
+  String get errorLivenessExpired;
+
+  /// No description provided for @errorFaceEngine.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'analyse du visage est indisponible. Réessayez dans un instant.'**
+  String get errorFaceEngine;
+
+  /// No description provided for @aiMatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ressemblance IA : {percent} %'**
+  String aiMatch(int percent);
+
+  /// No description provided for @aiNoConclusion.
+  ///
+  /// In fr, this message translates to:
+  /// **'IA : pas de conclusion'**
+  String get aiNoConclusion;
+
+  /// No description provided for @livenessPassed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage vivant vérifié'**
+  String get livenessPassed;
+
+  /// No description provided for @selfieLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo du visage'**
+  String get selfieLabel;
+
+  /// No description provided for @documentNumberLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de la pièce'**
+  String get documentNumberLabel;
+
+  /// No description provided for @rejectReasonFaceMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le visage ne correspond pas à la pièce'**
+  String get rejectReasonFaceMismatch;
+
+  /// No description provided for @dashVerifiedIdsAi.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} vérifiées, dont {ai} par l\'IA'**
+  String dashVerifiedIdsAi(int count, int ai);
+
+  /// No description provided for @readingDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture de la pièce par l\'IA…'**
+  String get readingDocument;
+
+  /// No description provided for @readOnCard.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu sur la pièce par l\'IA'**
+  String get readOnCard;
+
+  /// No description provided for @readNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro'**
+  String get readNumber;
+
+  /// No description provided for @readName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get readName;
+
+  /// No description provided for @readParents.
+  ///
+  /// In fr, this message translates to:
+  /// **'Filiation'**
+  String get readParents;
+
+  /// No description provided for @readBirth.
+  ///
+  /// In fr, this message translates to:
+  /// **'Naissance'**
+  String get readBirth;
+
+  /// No description provided for @readExpiry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Valable jusqu\'au'**
+  String get readExpiry;
+
+  /// No description provided for @readConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez ces informations. Le numéro saisi doit être celui de la pièce.'**
+  String get readConfirm;
+
+  /// No description provided for @readNothing.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'IA n\'a pas pu lire la pièce. Saisissez le numéro : un administrateur vérifiera.'**
+  String get readNothing;
+
+  /// No description provided for @useNumberRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser ce numéro'**
+  String get useNumberRead;
+
+  /// No description provided for @useLicensePhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser la photo du permis de mon profil'**
+  String get useLicensePhoto;
+
+  /// No description provided for @errorBackHasFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette photo montre un recto. Photographiez le verso de la même pièce.'**
+  String get errorBackHasFace;
+
+  /// No description provided for @errorLicensePhotoMissing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune photo de permis dans votre profil.'**
+  String get errorLicensePhotoMissing;
+
+  /// No description provided for @checksTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contrôles de l\'IA'**
+  String get checksTitle;
+
+  /// No description provided for @checkLiveness.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage vivant'**
+  String get checkLiveness;
+
+  /// No description provided for @checkFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage identique à la photo de la pièce'**
+  String get checkFace;
+
+  /// No description provided for @checkNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro saisi = numéro lu ({number})'**
+  String checkNumber(String number);
+
+  /// No description provided for @checkNumberUnread.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro illisible sur la pièce'**
+  String get checkNumberUnread;
+
+  /// No description provided for @checkName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du compte sur la pièce'**
+  String get checkName;
+
+  /// No description provided for @checkExpiry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce en cours de validité'**
+  String get checkExpiry;
+
+  /// No description provided for @scanLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Scanner mon permis'**
+  String get scanLicense;
+
+  /// No description provided for @scanLicenseHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prenez votre permis en photo : l\'IA remplit le numéro, les catégories et la date.'**
+  String get scanLicenseHint;
+
+  /// No description provided for @licenseFilledByAi.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rempli par l\'IA à partir de la photo. Vérifiez avant d\'enregistrer.'**
+  String get licenseFilledByAi;
+
+  /// No description provided for @licenseNotRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo enregistrée, mais l\'IA n\'a pas pu lire le permis. Complétez les champs.'**
+  String get licenseNotRead;
+
+  /// No description provided for @errorBackNotRecognized.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce n\'est pas le verso de la pièce. Sur une CIN, le code-barres doit être net et entier sur la photo.'**
+  String get errorBackNotRecognized;
+
+  /// No description provided for @checkBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Verso reconnu'**
+  String get checkBack;
+
+  /// No description provided for @rejectSevere.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refus définitif : bloquer les nouvelles demandes'**
+  String get rejectSevere;
+
+  /// No description provided for @rejectSevereHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour une fraude probable : visage différent, fausse pièce.'**
+  String get rejectSevereHint;
+
+  /// No description provided for @identityBlockedNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'La vérification de votre identité est bloquée. Contactez le support.'**
+  String get identityBlockedNote;
+
+  /// No description provided for @identityRetryOn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelle demande possible le {date}.'**
+  String identityRetryOn(String date);
+
+  /// No description provided for @identityAttemptsLeft.
+  ///
+  /// In fr, this message translates to:
+  /// **'Essais restants : {count}.'**
+  String identityAttemptsLeft(int count);
+
+  /// No description provided for @errorIdentityBlocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'La vérification de votre identité est bloquée. Contactez le support.'**
+  String get errorIdentityBlocked;
+
+  /// No description provided for @errorIdentityRetryLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attendez 24 h après un refus avant une nouvelle demande.'**
+  String get errorIdentityRetryLater;
+
+  /// No description provided for @unblockIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Débloquer la vérification'**
+  String get unblockIdentity;
+
+  /// No description provided for @identityUnblocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification débloquée'**
+  String get identityUnblocked;
+
+  /// No description provided for @identityBlockedChip.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification bloquée'**
+  String get identityBlockedChip;
+
+  /// No description provided for @attemptsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demandes de ce compte'**
+  String get attemptsTitle;
+
+  /// No description provided for @refusalsCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refus : {count}'**
+  String refusalsCount(int count);
+
+  /// No description provided for @outcomeAuto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Validée par l\'IA'**
+  String get outcomeAuto;
+
+  /// No description provided for @outcomeVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Validée'**
+  String get outcomeVerified;
+
+  /// No description provided for @outcomeRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refusée'**
+  String get outcomeRejected;
+
+  /// No description provided for @outcomePending.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente'**
+  String get outcomePending;
+
+  /// No description provided for @biometricConsentLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte que mon visage soit analysé pour vérifier mon identité. Analyse faite sur les serveurs de Mon Constat, photo effacée dès la décision (loi n° 2004-63).'**
+  String get biometricConsentLabel;
+
+  /// No description provided for @errorAiQuota.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop d\'analyses en peu de temps. Réessayez dans un moment.'**
+  String get errorAiQuota;
+
+  /// No description provided for @livenessHintNoFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Placez votre visage dans l\'ovale'**
+  String get livenessHintNoFace;
+
+  /// No description provided for @livenessHintLookStraight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Regardez la caméra bien en face'**
+  String get livenessHintLookStraight;
+
+  /// No description provided for @livenessHintTurnMore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournez davantage la tête'**
+  String get livenessHintTurnMore;
+
+  /// No description provided for @dashAiTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification par l\'IA'**
+  String get dashAiTitle;
+
+  /// No description provided for @dashAiFooter.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sur la période affichée. Analyse sur nos serveurs, sans service extérieur.'**
+  String get dashAiFooter;
+
+  /// No description provided for @dashAiRequests.
+  ///
+  /// In fr, this message translates to:
+  /// **'demandes'**
+  String get dashAiRequests;
+
+  /// No description provided for @dashAiAutoRate.
+  ///
+  /// In fr, this message translates to:
+  /// **'validées par l\'IA seule'**
+  String get dashAiAutoRate;
+
+  /// No description provided for @dashAiAverageMatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'ressemblance moyenne'**
+  String get dashAiAverageMatch;
+
+  /// No description provided for @dashAiBlocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'comptes bloqués'**
+  String get dashAiBlocked;
+
+  /// No description provided for @checkBirthDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Même date de naissance que le permis'**
+  String get checkBirthDate;
+
+  /// No description provided for @licenseBirthMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : la date de naissance du permis ne correspond pas à votre pièce d\'identité.'**
+  String get licenseBirthMismatch;
+
+  /// No description provided for @licenseNameMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : ce permis n\'est pas à votre nom. Ajoutez votre propre permis.'**
+  String get licenseNameMismatch;
+
+  /// No description provided for @licenseCinMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : le numéro de CIN du permis ne correspond pas à votre pièce d\'identité.'**
+  String get licenseCinMismatch;
+
+  /// No description provided for @errorWrongDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo ne montre pas la pièce choisie. Changez de pièce ou de photo.'**
+  String get errorWrongDocument;
+
+  /// No description provided for @errorNotALicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette photo n\'est pas un permis de conduire.'**
+  String get errorNotALicense;
+
+  /// No description provided for @registerIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un e-mail et un mot de passe. Le reste se fait juste après, en quelques étapes.'**
+  String get registerIntro;
+
+  /// No description provided for @registerStepYou.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous'**
+  String get registerStepYou;
+
+  /// No description provided for @registerStepContact.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos coordonnées'**
+  String get registerStepContact;
+
+  /// No description provided for @registerStepSecurity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sécurité'**
+  String get registerStepSecurity;
+
+  /// No description provided for @registerPhoneHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un code de vérification vous sera envoyé sur WhatsApp.'**
+  String get registerPhoneHint;
+
+  /// No description provided for @passwordWeak.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faible'**
+  String get passwordWeak;
+
+  /// No description provided for @passwordFair.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moyen'**
+  String get passwordFair;
+
+  /// No description provided for @passwordGood.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bon'**
+  String get passwordGood;
+
+  /// No description provided for @passwordStrong.
+  ///
+  /// In fr, this message translates to:
+  /// **'Excellent'**
+  String get passwordStrong;
+
+  /// No description provided for @passwordRuleLength.
+  ///
+  /// In fr, this message translates to:
+  /// **'8 caractères'**
+  String get passwordRuleLength;
+
+  /// No description provided for @passwordRuleUpper.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une majuscule'**
+  String get passwordRuleUpper;
+
+  /// No description provided for @passwordRuleDigit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un chiffre'**
+  String get passwordRuleDigit;
+
+  /// No description provided for @passwordRuleSymbol.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un symbole'**
+  String get passwordRuleSymbol;
+
+  /// No description provided for @identityStepDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce'**
+  String get identityStepDocument;
+
+  /// No description provided for @identityStepReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture'**
+  String get identityStepReading;
+
+  /// No description provided for @identityStepFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage'**
+  String get identityStepFace;
+
+  /// No description provided for @identityStepSend.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoi'**
+  String get identityStepSend;
+
+  /// No description provided for @profileIdentityVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité vérifiée'**
+  String get profileIdentityVerified;
+
+  /// No description provided for @profileIdentityPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité en cours'**
+  String get profileIdentityPending;
+
+  /// No description provided for @profileIdentityTodo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité à vérifier'**
+  String get profileIdentityTodo;
+
+  /// No description provided for @licenseStatusVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis vérifié'**
+  String get licenseStatusVerified;
+
+  /// No description provided for @licenseStatusToReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis en cours de vérification'**
+  String get licenseStatusToReview;
+
+  /// No description provided for @licenseStatusRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis refusé'**
+  String get licenseStatusRejected;
+
+  /// No description provided for @licenseToReviewNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une information du permis ne correspond pas à votre compte : un administrateur le vérifie.'**
+  String get licenseToReviewNote;
+
+  /// No description provided for @licenseRejectedNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre permis a été refusé. Motif : {reason}. Ajoutez votre propre permis.'**
+  String licenseRejectedNote(String reason);
+
+  /// No description provided for @errorLicenseNotYours.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n\'a pas été enregistré.'**
+  String get errorLicenseNotYours;
+
+  /// No description provided for @accountFileTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossier du compte'**
+  String get accountFileTitle;
+
+  /// No description provided for @openAccountFile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir le dossier'**
+  String get openAccountFile;
+
+  /// No description provided for @sectionAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte'**
+  String get sectionAccount;
+
+  /// No description provided for @licenseReviewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis à vérifier'**
+  String get licenseReviewTitle;
+
+  /// No description provided for @licenseReviewSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un contrôle de l\'IA a échoué, ou la photo était illisible'**
+  String get licenseReviewSubtitle;
+
+  /// No description provided for @noLicenseReviews.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun permis à vérifier.'**
+  String get noLicenseReviews;
+
+  /// No description provided for @licensesToReviewCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 permis à vérifier} other{{count} permis à vérifier}}'**
+  String licensesToReviewCount(int count);
+
+  /// No description provided for @approveLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Valider le permis'**
+  String get approveLicense;
+
+  /// No description provided for @rejectLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refuser le permis'**
+  String get rejectLicense;
+
+  /// No description provided for @deleteLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le permis'**
+  String get deleteLicense;
+
+  /// No description provided for @deleteLicenseBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo et les informations du permis de {name} seront effacées.'**
+  String deleteLicenseBody(String name);
+
+  /// No description provided for @licenseApproved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis validé'**
+  String get licenseApproved;
+
+  /// No description provided for @licenseRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis refusé, le conducteur voit le motif'**
+  String get licenseRejected;
+
+  /// No description provided for @licenseDeleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis supprimé'**
+  String get licenseDeleted;
+
+  /// No description provided for @licenseUpdated.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis modifié'**
+  String get licenseUpdated;
+
+  /// No description provided for @noLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun permis enregistré.'**
+  String get noLicense;
+
+  /// No description provided for @noIdentityDocuments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune pièce enregistrée.'**
+  String get noIdentityDocuments;
+
+  /// No description provided for @aiChecksTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contrôles de l\'IA'**
+  String get aiChecksTitle;
+
+  /// No description provided for @checkLicenseName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du titulaire = nom du compte'**
+  String get checkLicenseName;
+
+  /// No description provided for @checkLicenseBirth.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de naissance = pièce d\'identité'**
+  String get checkLicenseBirth;
+
+  /// No description provided for @checkLicenseCin.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de CIN = pièce d\'identité'**
+  String get checkLicenseCin;
+
+  /// No description provided for @checkLicenseNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro saisi = numéro lu sur la photo'**
+  String get checkLicenseNumber;
+
+  /// No description provided for @checkNotCompared.
+  ///
+  /// In fr, this message translates to:
+  /// **'non comparable'**
+  String get checkNotCompared;
+
+  /// No description provided for @licenseRejectReasonNotOwner.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis d\'une autre personne'**
+  String get licenseRejectReasonNotOwner;
+
+  /// No description provided for @licenseRejectReasonExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis expiré'**
+  String get licenseRejectReasonExpired;
+
+  /// No description provided for @revokeIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler la vérification'**
+  String get revokeIdentity;
+
+  /// No description provided for @revokeIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler la vérification d\'identité ?'**
+  String get revokeIdentityTitle;
+
+  /// No description provided for @revokeIdentityBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les photos de la pièce seront effacées. Le conducteur voit le motif et peut refaire une demande tout de suite.'**
+  String get revokeIdentityBody;
+
+  /// No description provided for @identityRevoked.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification annulée'**
+  String get identityRevoked;
+
+  /// No description provided for @reasonLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Motif'**
+  String get reasonLabel;
+
+  /// No description provided for @onbSkip.
+  ///
+  /// In fr, this message translates to:
+  /// **'Passer'**
+  String get onbSkip;
+
+  /// No description provided for @onbLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus tard'**
+  String get onbLater;
+
+  /// No description provided for @onbContinue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer'**
+  String get onbContinue;
+
+  /// No description provided for @onbBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étape précédente'**
+  String get onbBack;
+
+  /// No description provided for @onbProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étape {current} sur {total}'**
+  String onbProgress(int current, int total);
+
+  /// No description provided for @onbWelcomeEyebrow.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte créé'**
+  String get onbWelcomeEyebrow;
+
+  /// No description provided for @onbWelcomeTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue,\n{name}'**
+  String onbWelcomeTitle(String name);
+
+  /// No description provided for @onbWelcomeBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Deux minutes pour préparer votre compte, et vous serez prêt le jour où vous en aurez besoin.'**
+  String get onbWelcomeBody;
+
+  /// No description provided for @onbWelcomeStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Préparer mon compte'**
+  String get onbWelcomeStart;
+
+  /// No description provided for @onbWelcomeSkip.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je le ferai plus tard'**
+  String get onbWelcomeSkip;
+
+  /// No description provided for @onbLicenseTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez votre permis'**
+  String get onbLicenseTitle;
+
+  /// No description provided for @onbLicenseBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une photo suffit : l\'IA lit le numéro, les catégories et la date. Il servira à remplir vos constats.'**
+  String get onbLicenseBody;
+
+  /// No description provided for @onbLicenseScan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photographier mon permis'**
+  String get onbLicenseScan;
+
+  /// No description provided for @onbLicenseRescan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Reprendre la photo'**
+  String get onbLicenseRescan;
+
+  /// No description provided for @onbLicenseReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture du permis…'**
+  String get onbLicenseReading;
+
+  /// No description provided for @onbLicenseRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu par l\'IA'**
+  String get onbLicenseRead;
+
+  /// No description provided for @onbLicenseUnread.
+  ///
+  /// In fr, this message translates to:
+  /// **'La carte n\'a pas pu être lue. Vous compléterez les informations depuis votre profil.'**
+  String get onbLicenseUnread;
+
+  /// No description provided for @onbLicenseTip.
+  ///
+  /// In fr, this message translates to:
+  /// **'À plat, bien éclairé, sans reflet.'**
+  String get onbLicenseTip;
+
+  /// No description provided for @onbIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez votre identité'**
+  String get onbIdentityTitle;
+
+  /// No description provided for @onbIdentityBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour signer vos constats en toute confiance. Comptez deux minutes.'**
+  String get onbIdentityBody;
+
+  /// No description provided for @onbIdentityStep1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une pièce : CIN, permis ou passeport'**
+  String get onbIdentityStep1;
+
+  /// No description provided for @onbIdentityStep2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre visage, en tournant la tête'**
+  String get onbIdentityStep2;
+
+  /// No description provided for @onbIdentityStep3.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'IA compare, en quelques secondes'**
+  String get onbIdentityStep3;
+
+  /// No description provided for @onbIdentityStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifier maintenant'**
+  String get onbIdentityStart;
+
+  /// No description provided for @onbIdentityLicenseHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre permis peut servir de pièce : inutile de le reprendre en photo.'**
+  String get onbIdentityLicenseHint;
+
+  /// No description provided for @onbIdentityPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos photos sont analysées sur nos serveurs, sans service extérieur.'**
+  String get onbIdentityPrivacy;
+
+  /// No description provided for @onbBiometricTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion en un geste'**
+  String get onbBiometricTitle;
+
+  /// No description provided for @onbBiometricBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrez l\'application avec votre empreinte ou votre visage, sans retaper votre mot de passe.'**
+  String get onbBiometricBody;
+
+  /// No description provided for @onbBiometricEnable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer'**
+  String get onbBiometricEnable;
+
+  /// No description provided for @onbDoneTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout est prêt,\n{name}'**
+  String onbDoneTitle(String name);
+
+  /// No description provided for @onbDoneBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous pouvez déclarer un accident à tout moment, même sans réseau.'**
+  String get onbDoneBody;
+
+  /// No description provided for @onbDoneLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le reste se termine depuis votre profil, quand vous voulez.'**
+  String get onbDoneLater;
+
+  /// No description provided for @onbDoneStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accéder à l\'application'**
+  String get onbDoneStart;
+
+  /// No description provided for @onbItemPhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléphone'**
+  String get onbItemPhone;
+
+  /// No description provided for @onbItemLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis de conduire'**
+  String get onbItemLicense;
+
+  /// No description provided for @onbItemIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité'**
+  String get onbItemIdentity;
+
+  /// No description provided for @onbItemBiometric.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion biométrique'**
+  String get onbItemBiometric;
+
+  /// No description provided for @onbStateDone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fait'**
+  String get onbStateDone;
+
+  /// No description provided for @onbStatePending.
+  ///
+  /// In fr, this message translates to:
+  /// **'En vérification'**
+  String get onbStatePending;
+
+  /// No description provided for @onbStateTodo.
+  ///
+  /// In fr, this message translates to:
+  /// **'À faire'**
+  String get onbStateTodo;
+
+  /// No description provided for @registerStepAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre compte'**
+  String get registerStepAccount;
+
+  /// No description provided for @onbWelcomeNewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue sur\nMon Constat'**
+  String get onbWelcomeNewTitle;
+
+  /// No description provided for @onbProfileTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faisons connaissance'**
+  String get onbProfileTitle;
+
+  /// No description provided for @onbProfileBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre nom figure sur vos constats. Votre numéro sert à vous connecter et à suivre vos dossiers.'**
+  String get onbProfileBody;
+
+  /// No description provided for @onbPhoneTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmez votre numéro'**
+  String get onbPhoneTitle;
+
+  /// No description provided for @onbCodeSent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau code envoyé.'**
+  String get onbCodeSent;
+
+  /// No description provided for @onbReadingTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu sur la pièce'**
+  String get onbReadingTitle;
+
+  /// No description provided for @correctReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corriger'**
+  String get correctReading;
+
+  /// No description provided for @correctReadingTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corriger la lecture de la pièce'**
+  String get correctReadingTitle;
+
+  /// No description provided for @correctReadingHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corrigez ce que l\'IA a mal lu, en recopiant la pièce. Dates au format AAAA-MM-JJ.'**
+  String get correctReadingHint;
+
+  /// No description provided for @readingCorrected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture corrigée'**
+  String get readingCorrected;
+
+  /// No description provided for @readLastName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get readLastName;
+
+  /// No description provided for @readFirstName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prénom'**
+  String get readFirstName;
+
+  /// No description provided for @readBirthDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de naissance'**
+  String get readBirthDate;
+
+  /// No description provided for @readBirthPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu de naissance'**
+  String get readBirthPlace;
 }
 
 class _AppLocalizationsDelegate

@@ -83,7 +83,13 @@ class _UserPhotoViewState extends State<UserPhotoView> {
 }
 
 /// Propose l'appareil photo ou la galerie, puis envoie l'image.
-Future<void> changePhoto(BuildContext context, UserPhoto photo) async {
+/// [fields] partent avec l'image ; [busyMessage] s'affiche pendant l'envoi.
+Future<void> changePhoto(
+  BuildContext context,
+  UserPhoto photo, {
+  Map<String, String> fields = const {},
+  String? busyMessage,
+}) async {
   final users = AppScope.of(context).users;
   final messenger = ScaffoldMessenger.of(context);
   final hasPhoto = photo.deletable && photo.idOf(users.currentUser!) != null;
@@ -137,9 +143,65 @@ Future<void> changePhoto(BuildContext context, UserPhoto photo) async {
       imageQuality: 80,
     );
     if (file == null) return;
-    await users.uploadPhoto(photo, await file.readAsBytes(), file.name);
-    messenger.showSnackBar(SnackBar(content: Text(saved)));
+    // Pièce d'identité : l'IA la lit pendant l'envoi, quelques secondes.
+    if (busyMessage != null) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(busyMessage),
+          duration: const Duration(seconds: 30),
+        ),
+      );
+    }
+    await users.uploadPhoto(
+      photo,
+      await file.readAsBytes(),
+      file.name,
+      fields: fields,
+    );
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(saved)));
   } catch (e) {
-    messenger.showSnackBar(SnackBar(content: Text(describe(e))));
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(describe(e))));
   }
+}
+
+/// Appareil photo ou galerie, sans envoi : renvoie l'image choisie, ou null.
+/// Remplaçable dans les tests, où il n'y a ni caméra ni galerie.
+@visibleForTesting
+Future<XFile?> Function(BuildContext context) photoPicker = _pickFromDevice;
+
+Future<XFile?> pickPhoto(BuildContext context) => photoPicker(context);
+
+Future<XFile?> _pickFromDevice(BuildContext context) async {
+  final source = await showModalBottomSheet<ImageSource>(
+    context: context,
+    builder: (sheet) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.photo_camera_outlined),
+            title: Text(context.t.takePhoto),
+            onTap: () => Navigator.pop(sheet, ImageSource.camera),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library_outlined),
+            title: Text(context.t.chooseFromGallery),
+            onTap: () => Navigator.pop(sheet, ImageSource.gallery),
+          ),
+        ],
+      ),
+    ),
+  );
+  if (source == null) return null;
+  // Assez net pour l'OCR, sous la limite de 5 Mo.
+  return ImagePicker().pickImage(
+    source: source,
+    maxWidth: 2000,
+    maxHeight: 2000,
+    imageQuality: 85,
+  );
 }

@@ -1,5 +1,24 @@
 import { HttpError } from '../../lib/errors.js';
 import { prisma } from '../../lib/prisma.js';
+import { assertCompanyExists } from '../../middleware/auth.js';
+
+/**
+ * Données prêtes pour la base : dates « AAAA-MM-JJ » en Date, compagnie
+ * vérifiée, et nom de l'assureur repris de la compagnie s'il manque.
+ */
+async function toRecord(data) {
+  const record = { ...data };
+  for (const field of ['insuranceExpiry', 'technicalExpiry']) {
+    if (typeof record[field] === 'string') record[field] = new Date(record[field]);
+  }
+  if (record.companyId) {
+    const company = await assertCompanyExists(record.companyId);
+    if (!record.insurerName) record.insurerName = company.name;
+  }
+  return record;
+}
+
+const withCompany = { company: { select: { id: true, name: true } } };
 
 // ── Sélection publique d'un véhicule ──────────────────────────────────────────
 
@@ -13,7 +32,8 @@ export function publicVehicle(v) {
     model: v.model,
     year: v.year,
     policy: v.policy,
-    insurerName: v.insurerName,
+    insurerName: v.company?.name ?? v.insurerName,
+    companyId: v.companyId ?? null,
     insuranceExpiry: v.insuranceExpiry?.toISOString().slice(0, 10) ?? null,
     technicalExpiry: v.technicalExpiry?.toISOString().slice(0, 10) ?? null,
     color: v.color ?? null,
@@ -52,6 +72,7 @@ export async function listVehicles(userId, { archived = false, page = 1, pageSiz
     prisma.vehicle.count({ where }),
     prisma.vehicle.findMany({
       where,
+      include: withCompany,
       orderBy: { createdAt: 'desc' },
       skip,
       take: pageSize,
@@ -68,7 +89,17 @@ export async function listVehicles(userId, { archived = false, page = 1, pageSiz
 }
 
 /** Crée un nouveau véhicule pour l'utilisateur. */
-export async function createVehicle(userId, data) {
+export async function createVehicle(userId, input) {
+  const data = await toRecord(input);
+  // Déjà créé (renvoi après une coupure réseau) : rien à refaire.
+  if (data.id) {
+    const same = await prisma.vehicle.findUnique({
+      where: { id: data.id },
+      include: withCompany,
+    });
+    if (same?.userId === userId) return publicVehicle(same);
+    if (same) throw new HttpError(409, 'VEHICLE_ID_TAKEN', 'Identifiant déjà utilisé.');
+  }
   // Vérifier si la plaque est déjà enregistrée pour cet utilisateur.
   const existing = await prisma.vehicle.findUnique({
     where: { userId_plate: { userId, plate: data.plate } },
@@ -76,9 +107,11 @@ export async function createVehicle(userId, data) {
   if (existing) {
     if (existing.archived) {
       // Si archivé, on le désarchive et on met à jour.
+      const { id: _id, ...fields } = data;
       const updated = await prisma.vehicle.update({
         where: { id: existing.id },
-        data: { ...data, archived: false },
+        data: { ...fields, archived: false },
+        include: withCompany,
       });
       return publicVehicle(updated);
     }
@@ -91,6 +124,7 @@ export async function createVehicle(userId, data) {
 
   const vehicle = await prisma.vehicle.create({
     data: { ...data, userId },
+    include: withCompany,
   });
   return publicVehicle(vehicle);
 }
@@ -105,7 +139,8 @@ export async function getVehicle(id, userId) {
 }
 
 /** Met à jour un véhicule existant. */
-export async function updateVehicle(id, userId, data) {
+export async function updateVehicle(id, userId, input) {
+  const data = await toRecord(input);
   const vehicle = await prisma.vehicle.findUnique({ where: { id } });
   if (!vehicle || vehicle.userId !== userId) {
     throw new HttpError(404, 'VEHICLE_NOT_FOUND', 'Véhicule introuvable.');
@@ -128,6 +163,7 @@ export async function updateVehicle(id, userId, data) {
   const updated = await prisma.vehicle.update({
     where: { id },
     data,
+    include: withCompany,
   });
   return publicVehicle(updated);
 }

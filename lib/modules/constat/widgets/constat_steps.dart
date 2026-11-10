@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
@@ -32,8 +33,8 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Card(
-        color: AppColors.primaryTint,
+      Card(
+        color: context.palette.primaryTint,
         child: ListTile(
           leading: Icon(Icons.screen_lock_portrait),
           title: Text('Informations du conducteur B'),
@@ -44,17 +45,17 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       ),
       const SizedBox(height: 10),
       Card(
-        color: AppColors.successBg,
+        color: context.palette.successBg,
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(
                     Icons.document_scanner_outlined,
-                    color: AppColors.successText,
+                    color: context.palette.successText,
                   ),
                   SizedBox(width: 8),
                   Expanded(
@@ -66,9 +67,9 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
                 ],
               ),
               const SizedBox(height: 5),
-              const Text(
+              Text(
                 'La photo est analysée localement. Vérifiez toujours les données détectées.',
-                style: TextStyle(color: AppColors.textMuted),
+                style: TextStyle(color: context.palette.textMuted),
               ),
               const SizedBox(height: 10),
               SizedBox(
@@ -111,13 +112,14 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
         },
       ),
       const SizedBox(height: 12),
-      _DriverField(
-        initialValue: widget.draft.driverBPermitExpiry,
+      DateField(
+        key: const ValueKey('driver-b-permit-expiry'),
+        value: widget.draft.driverBPermitExpiry,
         label: 'Date de validité du permis',
-        icon: Icons.event_available_outlined,
         onChanged: (value) {
           widget.draft.driverBPermitExpiry = value;
           widget.onChanged();
+          setState(() {});
         },
       ),
       const SizedBox(height: 12),
@@ -132,10 +134,10 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
         },
       ),
       const SizedBox(height: 18),
-      const Text(
+      Text(
         'ASSURANCE',
         style: TextStyle(
-          color: AppColors.textMuted,
+          color: context.palette.textMuted,
           fontSize: 12,
           fontWeight: FontWeight.w800,
           letterSpacing: .5,
@@ -223,21 +225,20 @@ class _LicenseReviewDialog extends StatefulWidget {
 class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
   late final TextEditingController _name;
   late final TextEditingController _number;
-  late final TextEditingController _expiry;
+  // Date lue par l'OCR, gardée seulement si c'est une vraie date.
+  late String _expiry = DateField.normalize(widget.data.expiryDate);
 
   @override
   void initState() {
     super.initState();
     _name = TextEditingController(text: widget.data.fullName);
     _number = TextEditingController(text: widget.data.licenseNumber);
-    _expiry = TextEditingController(text: widget.data.expiryDate);
   }
 
   @override
   void dispose() {
     _name.dispose();
     _number.dispose();
-    _expiry.dispose();
     super.dispose();
   }
 
@@ -248,9 +249,9 @@ class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             'L’OCR peut faire des erreurs. Corrigez les champs avant confirmation.',
-            style: TextStyle(color: AppColors.textMuted),
+            style: TextStyle(color: context.palette.textMuted),
           ),
           const SizedBox(height: 14),
           TextField(
@@ -263,9 +264,10 @@ class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
             decoration: const InputDecoration(labelText: 'Numéro du permis'),
           ),
           const SizedBox(height: 10),
-          TextField(
-            controller: _expiry,
-            decoration: const InputDecoration(labelText: 'Date de validité'),
+          DateField(
+            value: _expiry,
+            label: 'Date de validité',
+            onChanged: (value) => setState(() => _expiry = value),
           ),
           const SizedBox(height: 12),
           ExpansionTile(
@@ -274,9 +276,9 @@ class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
             children: [
               SelectableText(
                 widget.data.rawText,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textMuted,
+                  color: context.palette.textMuted,
                 ),
               ),
             ],
@@ -295,13 +297,92 @@ class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
           DrivingLicenseData(
             fullName: _name.text.trim(),
             licenseNumber: _number.text.trim(),
-            expiryDate: _expiry.text.trim(),
+            expiryDate: _expiry,
             rawText: widget.data.rawText,
           ),
         ),
         child: const Text('Utiliser ces données'),
       ),
     ],
+  );
+}
+
+/// Date choisie dans un calendrier (JJ/MM/AAAA) : on ne peut plus y taper
+/// n'importe quoi.
+class DateField extends StatelessWidget {
+  const DateField({
+    required this.value,
+    required this.label,
+    required this.onChanged,
+    super.key,
+  });
+
+  /// Date au format JJ/MM/AAAA, ou vide.
+  final String value;
+  final String label;
+  final ValueChanged<String> onChanged;
+
+  /// « 2031-05-12 », « 12-05-2031 », « 12.05.2031 » → « 12/05/2031 » ; vide
+  /// si ce n'est pas une date (texte mal lu par l'OCR).
+  static String normalize(String raw) {
+    final text = raw.trim();
+    final iso = RegExp(r'^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$').firstMatch(text);
+    final local = RegExp(r'^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$').firstMatch(text);
+    final (day, month, year) = iso != null
+        ? (iso[3]!, iso[2]!, iso[1]!)
+        : local != null
+        ? (local[1]!, local[2]!, local[3]!)
+        : ('', '', '');
+    final date = DateTime.tryParse(
+      '$year-${month.padLeft(2, '0')}-${day.padLeft(2, '0')}',
+    );
+    if (date == null || date.day != int.parse(day)) return '';
+    return format(date);
+  }
+
+  static String format(DateTime date) =>
+      '${date.day.toString().padLeft(2, '0')}/'
+      '${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+  static DateTime? parse(String value) {
+    final parts = value.split('/');
+    if (parts.length != 3) return null;
+    return DateTime.tryParse(
+      '${parts[2]}-${parts[1].padLeft(2, '0')}-${parts[0].padLeft(2, '0')}',
+    );
+  }
+
+  Future<void> _pick(BuildContext context) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: parse(value) ?? now,
+      firstDate: DateTime(1990),
+      lastDate: DateTime(now.year + 30),
+      helpText: label,
+    );
+    if (picked != null) onChanged(format(picked));
+  }
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: () => _pick(context),
+    borderRadius: BorderRadius.circular(12),
+    child: InputDecorator(
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: const Icon(Icons.event_available_outlined),
+        suffixIcon: value.isEmpty
+            ? const Icon(Icons.calendar_month_outlined)
+            : IconButton(
+                tooltip: 'Effacer la date',
+                icon: const Icon(Icons.close),
+                onPressed: () => onChanged(''),
+              ),
+      ),
+      isEmpty: value.isEmpty,
+      child: Text(value),
+    ),
   );
 }
 
@@ -391,14 +472,14 @@ class CircumstancesStep extends StatelessWidget {
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 4),
-      const Text(
+      Text(
         'Sélectionnez les circonstances applicables pour chaque conducteur.',
-        style: TextStyle(color: AppColors.textMuted),
+        style: TextStyle(color: context.palette.textMuted),
       ),
       const SizedBox(height: 16),
-      const Text(
+      Text(
         'Véhicule A (Votre véhicule)',
-        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primary),
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.palette.primaryText),
       ),
       const SizedBox(height: 8),
       for (final choice in choices)
@@ -406,7 +487,7 @@ class CircumstancesStep extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 6),
           child: CheckboxListTile(
             value: draft.circumstancesA.contains(choice),
-            activeColor: AppColors.primary,
+            activeColor: context.palette.primaryText,
             controlAffinity: ListTileControlAffinity.leading,
             title: Text(
               choice,
@@ -476,9 +557,11 @@ class SketchStep extends StatelessWidget {
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 12),
-      DrawingPad(
+      DrawingField(
         strokes: draft.sketchStrokes,
+        title: 'Croquis de l’accident',
         hint: 'Dessinez les voies, les véhicules et leur direction',
+        icon: Icons.draw_outlined,
         onChanged: () {
           draft.sketchConfirmed = draft.sketchStrokes.isNotEmpty;
           onChanged();
@@ -498,8 +581,8 @@ class SketchStep extends StatelessWidget {
               (zone) => FilterChip(
                 label: Text(zone),
                 selected: draft.impactZones.contains(zone),
-                selectedColor: AppColors.primaryTint,
-                checkmarkColor: AppColors.primary,
+                selectedColor: context.palette.primaryTint,
+                checkmarkColor: context.palette.primaryText,
                 onSelected: (selected) {
                   selected
                       ? draft.impactZones.add(zone)

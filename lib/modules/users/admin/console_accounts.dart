@@ -8,8 +8,10 @@ import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/admin/console_widgets.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/agent_form_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/license_review_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/users_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 /// Gestion des comptes en tableau : recherche, filtre par rôle, actions.
 class ConsoleAccounts extends StatefulWidget {
@@ -59,11 +61,13 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
     _debounce = Timer(const Duration(milliseconds: 300), _load);
   }
 
-  Future<void> _run(Future<void> Function() action) async {
+  /// [done] : message affiché quand l'action réussit.
+  Future<void> _run(Future<void> Function() action, {String? done}) async {
     final messenger = ScaffoldMessenger.of(context);
     String describe(Object error) => errorMessage(context, error);
     try {
       await action();
+      if (done != null) messenger.showSnackBar(SnackBar(content: Text(done)));
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(describe(e))));
     }
@@ -84,6 +88,11 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
         ),
       ),
     );
+  }
+
+  Future<void> _openFile(AppUser user) async {
+    await openAccountFile(context, user);
+    if (mounted) await _load();
   }
 
   Future<void> _createAgent() async {
@@ -189,9 +198,9 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
         ConsoleCard(
           padding: EdgeInsets.zero,
           child: _loading && admin.users.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.all(48),
-                  child: Center(child: CircularProgressIndicator()),
+              ? const SizedBox(
+                  height: 380,
+                  child: SkeletonList(count: 6, padding: EdgeInsets.all(20)),
                 )
               : admin.users.isEmpty
               ? ConsoleEmpty(
@@ -247,6 +256,7 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
                 DataRow(
                   cells: [
                     DataCell(
+                      onTap: () => _openFile(user),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -296,9 +306,25 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
                       ),
                     ),
                     DataCell(
-                      user.role == UserRole.driver
-                          ? identityChip(context, user.identity.status)
-                          : Text('—', style: TextStyle(color: p.textMuted)),
+                      user.role != UserRole.driver
+                          ? Text('—', style: TextStyle(color: p.textMuted))
+                          : user.identity.blocked
+                          ? StatusChip(
+                              label: t.identityBlockedChip,
+                              background: p.errorBg,
+                              foreground: p.errorText,
+                              icon: Icons.block,
+                            )
+                          : Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: [
+                                identityChip(context, user.identity.status),
+                                if (user.license.status ==
+                                    LicenseStatus.toReview)
+                                  ?licenseChip(context, user.license.status),
+                              ],
+                            ),
                     ),
                     DataCell(
                       StatusChip(
@@ -315,11 +341,38 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
                               icon: const Icon(Icons.more_horiz),
                               onSelected: (action) => switch (action) {
                                 'role' => _changeRole(user),
+                                'file' => _openFile(user),
+                                'unblock' => _run(
+                                  () => admin.unblockIdentity(user),
+                                  done: t.identityUnblocked,
+                                ),
                                 _ => _run(
                                   () => admin.setActive(user, !user.active),
                                 ),
                               },
                               itemBuilder: (_) => [
+                                PopupMenuItem(
+                                  value: 'file',
+                                  child: ListTile(
+                                    key: const Key('open-account-file'),
+                                    dense: true,
+                                    leading: const Icon(
+                                      Icons.folder_shared_outlined,
+                                    ),
+                                    title: Text(t.openAccountFile),
+                                  ),
+                                ),
+                                if (user.identity.blocked ||
+                                    user.identity.waiting)
+                                  PopupMenuItem(
+                                    value: 'unblock',
+                                    child: ListTile(
+                                      key: const Key('unblock-identity'),
+                                      dense: true,
+                                      leading: const Icon(Icons.lock_open),
+                                      title: Text(t.unblockIdentity),
+                                    ),
+                                  ),
                                 PopupMenuItem(
                                   value: 'role',
                                   child: ListTile(

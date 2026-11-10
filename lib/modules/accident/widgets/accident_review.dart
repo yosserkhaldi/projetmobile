@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
@@ -18,9 +18,9 @@ class AccidentReview extends StatelessWidget {
     children: [
       const Divider(height: 32),
       Text('Constat complété', style: Theme.of(context).textTheme.titleLarge),
-      const Text(
+      Text(
         'Vérifiez toutes les informations avant la transmission.',
-        style: TextStyle(color: AppColors.textMuted),
+        style: TextStyle(color: context.palette.textMuted),
       ),
       const SizedBox(height: 14),
       _PdfActions(draft: draft, service: _pdf),
@@ -140,15 +140,15 @@ class _PdfActionsState extends State<_PdfActions> {
 
   @override
   Widget build(BuildContext context) => Card(
-    color: AppColors.primaryTint,
+    color: context.palette.primaryTint,
     child: Padding(
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.picture_as_pdf_outlined, color: AppColors.primary),
+              Icon(Icons.picture_as_pdf_outlined, color: context.palette.primaryText),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -159,9 +159,9 @@ class _PdfActionsState extends State<_PdfActions> {
             ],
           ),
           const SizedBox(height: 5),
-          const Text(
+          Text(
             'Le document reprend les informations, photos, croquis et signatures.',
-            style: TextStyle(color: AppColors.textMuted),
+            style: TextStyle(color: context.palette.textMuted),
           ),
           const SizedBox(height: 12),
           if (_busy)
@@ -210,7 +210,7 @@ class _Section extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primary),
+              Icon(icon, color: context.palette.primaryText),
               const SizedBox(width: 8),
               Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
             ],
@@ -226,7 +226,7 @@ class _Section extends StatelessWidget {
                     width: 105,
                     child: Text(
                       row.$1,
-                      style: const TextStyle(color: AppColors.textMuted),
+                      style: TextStyle(color: context.palette.textMuted),
                     ),
                   ),
                   Expanded(

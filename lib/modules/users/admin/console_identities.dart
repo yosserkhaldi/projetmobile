@@ -6,7 +6,9 @@ import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/admin/console_widgets.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/models/identity_attempt.dart';
 import 'package:mon_constat_digital/modules/users/screens/identity_review_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/identity_screen.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 
@@ -86,7 +88,7 @@ class _ConsoleIdentitiesState extends State<ConsoleIdentities> {
     final admin = AppScope.of(context).admin;
     final messenger = ScaffoldMessenger.of(context);
     final done = context.t.identityRejected;
-    final reason = await showDialog<String>(
+    final reason = await showDialog<IdentityRejection>(
       context: context,
       builder: (_) => Dialog(
         child: ConstrainedBox(
@@ -246,7 +248,8 @@ class _QueueItem extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'CIN ${user.identity.cinNumber ?? ''}',
+                      '${user.identity.documentType.labelIn(context.t)} · '
+                      '${user.identity.cinNumber ?? ''}',
                       style: TextStyle(
                         color: p.textMuted,
                         fontFamily: AppFonts.mono,
@@ -286,6 +289,7 @@ class _Detail extends StatelessWidget {
     final t = context.t;
     final p = context.palette;
     final submitted = user.identity.submittedAt;
+    final document = user.identity.documentType;
     Widget fact(String label, String value, {bool mono = false}) => Padding(
       padding: const EdgeInsets.only(right: 32),
       child: Column(
@@ -341,11 +345,34 @@ class _Detail extends StatelessWidget {
             identityChip(context, user.identity.status),
           ],
         ),
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            aiMatchChip(context, user.identity),
+            if (user.identity.livenessAt != null)
+              StatusChip(
+                label: t.livenessPassed,
+                background: p.successBg,
+                foreground: p.successText,
+                icon: Icons.check_circle_outline,
+              ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        IdentityChecklist(identity: user.identity),
+        AttemptHistoryButton(user: user),
         const SizedBox(height: 20),
         Wrap(
           runSpacing: 12,
           children: [
-            fact(t.cinNumberLabel, user.identity.cinNumber ?? '—', mono: true),
+            fact(t.documentTypeLabel, document.labelIn(t)),
+            fact(
+              document.numberLabel(t),
+              user.identity.cinNumber ?? '—',
+              mono: true,
+            ),
             fact(t.phoneLabel, ltr(user.phone)),
             if (submitted != null)
               fact(
@@ -359,9 +386,13 @@ class _Detail extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // La pièce et le visage côte à côte, pour comparer.
               for (final (index, (photo, label)) in [
-                (UserPhoto.cinFront, t.cinFront),
-                (UserPhoto.cinBack, t.cinBack),
+                (UserPhoto.cinFront, document.frontLabel(t)),
+                if (user.identity.selfieId != null)
+                  (UserPhoto.selfie, t.selfieLabel),
+                if (document.hasBack)
+                  (UserPhoto.cinBack, document.backLabel(t)),
               ].indexed) ...[
                 if (index > 0) const SizedBox(width: 16),
                 Expanded(
@@ -373,7 +404,10 @@ class _Detail extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 8),
-                      IdentityPhotoFrame(user: user, photo: photo),
+                      // Rétrécit si la fenêtre est basse, sans déborder.
+                      Flexible(
+                        child: IdentityPhotoFrame(user: user, photo: photo),
+                      ),
                     ],
                   ),
                 ),

@@ -174,6 +174,67 @@ class Vehicle {
     createdAt: createdAt,
   );
 
+  // ── API (/api/vehicles) ────────────────────────────────────────────────────
+
+  /// Identifiant au format UUID : le serveur garde le même. Les véhicules
+  /// créés par une ancienne version ont un autre format.
+  bool get hasServerId => RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    caseSensitive: false,
+  ).hasMatch(id);
+
+  /// Corps envoyé à l'API. [withId] : création (l'identifiant du téléphone).
+  Map<String, Object?> toApi({bool withId = false}) => {
+    if (withId && hasServerId) 'id': id,
+    'plate': plate,
+    'brand': brand,
+    'model': model,
+    'year': int.tryParse(year) ?? DateTime.now().year,
+    'policy': policy,
+    'insurerName': companyName ?? insurerName,
+    'companyId': companyId,
+    'insuranceExpiry': insuranceExpiry,
+    'technicalExpiry': technicalExpiry,
+    'color': color,
+    'mileage': mileage,
+    'type': type.name.toUpperCase(),
+    'fuel': fuel.name.toUpperCase(),
+    'archived': archived,
+  };
+
+  /// Véhicule renvoyé par l'API. [local] garde ce que seul le téléphone a
+  /// (photo, nombre de sinistres compté sur place).
+  factory Vehicle.fromApi(Map<String, dynamic> json, {Vehicle? local}) =>
+      Vehicle(
+        id: json['id'] as String,
+        plate: json['plate'] as String,
+        brand: json['brand'] as String,
+        model: json['model'] as String,
+        year: '${json['year']}',
+        policy: json['policy'] as String,
+        insurerName: json['insurerName'] as String? ?? '',
+        companyId: json['companyId'] as String?,
+        companyName: json['companyId'] == null
+            ? null
+            : json['insurerName'] as String?,
+        insuranceExpiry: json['insuranceExpiry'] as String,
+        technicalExpiry: json['technicalExpiry'] as String?,
+        color: json['color'] as String?,
+        mileage: json['mileage'] as int?,
+        type: VehicleType.values.firstWhere(
+          (e) => e.name.toUpperCase() == json['type'],
+          orElse: () => VehicleType.car,
+        ),
+        fuel: FuelType.values.firstWhere(
+          (e) => e.name.toUpperCase() == json['fuel'],
+          orElse: () => FuelType.petrol,
+        ),
+        photoPath: local?.photoPath,
+        claimCount: local?.claimCount ?? json['claimCount'] as int? ?? 0,
+        archived: json['archived'] as bool? ?? false,
+        createdAt: DateTime.tryParse(json['createdAt'] as String? ?? ''),
+      );
+
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   /// Nombre de jours avant l'expiration du contrat d'assurance.

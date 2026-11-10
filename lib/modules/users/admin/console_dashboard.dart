@@ -6,8 +6,10 @@ import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/admin/console_widgets.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/screens/license_review_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/dashboard_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 /// Tableau de bord de la console : indicateurs, graphiques, et ce qui attend
 /// une action de l'administrateur.
@@ -69,11 +71,11 @@ class _ConsoleDashboardState extends State<ConsoleDashboard> {
           const SizedBox(height: 16),
         ],
         if (stats == null && _error == null)
-          const Padding(
-            padding: EdgeInsets.all(60),
-            child: Center(child: CircularProgressIndicator()),
-          ),
-        if (stats != null) ..._grid(context, dashboardSections(context, stats)),
+          const SkeletonDashboard(columns: 4),
+        if (stats != null) ...[
+          LicenseReviewAlert(count: stats['licensesToReview'] as int? ?? 0),
+          ..._grid(context, dashboardSections(context, stats)),
+        ],
       ],
     );
   }
@@ -123,7 +125,13 @@ class _ConsoleDashboardState extends State<ConsoleDashboard> {
           children: [
             Expanded(flex: 3, child: _ToHandle(widget: widget)),
             gap,
-            Expanded(flex: 2, child: sections.accidents),
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [sections.ai, sections.accidents],
+              ),
+            ),
           ],
         ),
       ),
