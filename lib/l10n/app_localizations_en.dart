@@ -2114,7 +2114,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get registerIntro =>
-      'Three steps, less than a minute. Your number will then be verified with a code.';
+      'An e-mail and a password. The rest comes right after, in a few steps.';
 
   @override
   String get registerStepYou => 'You';
@@ -2173,4 +2173,310 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileIdentityTodo => 'Verify your identity';
+
+  @override
+  String get licenseStatusVerified => 'Licence verified';
+
+  @override
+  String get licenseStatusToReview => 'Licence being checked';
+
+  @override
+  String get licenseStatusRejected => 'Licence declined';
+
+  @override
+  String get licenseToReviewNote =>
+      'Something on the licence does not match your account: an administrator is checking it.';
+
+  @override
+  String licenseRejectedNote(String reason) {
+    return 'Your licence was declined. Reason: $reason. Add your own licence.';
+  }
+
+  @override
+  String get errorLicenseNotYours =>
+      'This licence does not seem to be yours: the name, date of birth or ID number do not match your account. It was not saved.';
+
+  @override
+  String get accountFileTitle => 'Account file';
+
+  @override
+  String get openAccountFile => 'Open file';
+
+  @override
+  String get sectionAccount => 'Account';
+
+  @override
+  String get licenseReviewTitle => 'Licences to check';
+
+  @override
+  String get licenseReviewSubtitle =>
+      'An AI check failed, or the photo could not be read';
+
+  @override
+  String get noLicenseReviews => 'No licence to check.';
+
+  @override
+  String licensesToReviewCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count licences to check',
+      one: '1 licence to check',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get approveLicense => 'Approve licence';
+
+  @override
+  String get rejectLicense => 'Decline licence';
+
+  @override
+  String get deleteLicense => 'Delete licence';
+
+  @override
+  String deleteLicenseBody(String name) {
+    return '$name\'s licence photo and details will be erased.';
+  }
+
+  @override
+  String get licenseApproved => 'Licence approved';
+
+  @override
+  String get licenseRejected => 'Licence declined, the driver sees the reason';
+
+  @override
+  String get licenseDeleted => 'Licence deleted';
+
+  @override
+  String get licenseUpdated => 'Licence updated';
+
+  @override
+  String get noLicense => 'No licence saved.';
+
+  @override
+  String get noIdentityDocuments => 'No document saved.';
+
+  @override
+  String get aiChecksTitle => 'AI checks';
+
+  @override
+  String get checkLicenseName => 'Holder name = account name';
+
+  @override
+  String get checkLicenseBirth => 'Date of birth = ID document';
+
+  @override
+  String get checkLicenseCin => 'ID number = ID document';
+
+  @override
+  String get checkLicenseNumber => 'Typed number = number read on the photo';
+
+  @override
+  String get checkNotCompared => 'not comparable';
+
+  @override
+  String get licenseRejectReasonNotOwner => 'Someone else\'s licence';
+
+  @override
+  String get licenseRejectReasonExpired => 'Expired licence';
+
+  @override
+  String get revokeIdentity => 'Cancel verification';
+
+  @override
+  String get revokeIdentityTitle => 'Cancel the identity verification?';
+
+  @override
+  String get revokeIdentityBody =>
+      'The document photos will be erased. The driver sees the reason and can apply again straight away.';
+
+  @override
+  String get identityRevoked => 'Verification cancelled';
+
+  @override
+  String get reasonLabel => 'Reason';
+
+  @override
+  String get onbSkip => 'Skip';
+
+  @override
+  String get onbLater => 'Later';
+
+  @override
+  String get onbContinue => 'Continue';
+
+  @override
+  String get onbBack => 'Previous step';
+
+  @override
+  String onbProgress(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get onbWelcomeEyebrow => 'Account created';
+
+  @override
+  String onbWelcomeTitle(String name) {
+    return 'Welcome,\n$name';
+  }
+
+  @override
+  String get onbWelcomeBody =>
+      'Two minutes to set up your account, and you\'ll be ready the day you need it.';
+
+  @override
+  String get onbWelcomeStart => 'Set up my account';
+
+  @override
+  String get onbWelcomeSkip => 'I\'ll do it later';
+
+  @override
+  String get onbLicenseTitle => 'Add your licence';
+
+  @override
+  String get onbLicenseBody =>
+      'One photo is enough: the AI reads the number, categories and date. It will fill in your accident reports.';
+
+  @override
+  String get onbLicenseScan => 'Take a photo of my licence';
+
+  @override
+  String get onbLicenseRescan => 'Retake the photo';
+
+  @override
+  String get onbLicenseReading => 'Reading the licence…';
+
+  @override
+  String get onbLicenseRead => 'Read by the AI';
+
+  @override
+  String get onbLicenseUnread =>
+      'The card could not be read. You\'ll fill in the details from your profile.';
+
+  @override
+  String get onbLicenseTip => 'Flat, well lit, no glare.';
+
+  @override
+  String get onbIdentityTitle => 'Verify your identity';
+
+  @override
+  String get onbIdentityBody =>
+      'So you can sign your accident reports with confidence. It takes two minutes.';
+
+  @override
+  String get onbIdentityStep1 => 'A document: ID card, licence or passport';
+
+  @override
+  String get onbIdentityStep2 => 'Your face, turning your head';
+
+  @override
+  String get onbIdentityStep3 => 'The AI compares, in a few seconds';
+
+  @override
+  String get onbIdentityStart => 'Verify now';
+
+  @override
+  String get onbIdentityLicenseHint =>
+      'Your licence can be used as the document: no need to photograph it again.';
+
+  @override
+  String get onbIdentityPrivacy =>
+      'Your photos are analysed on our servers, with no outside service.';
+
+  @override
+  String get onbBiometricTitle => 'Sign in with one touch';
+
+  @override
+  String get onbBiometricBody =>
+      'Open the app with your fingerprint or face, without typing your password again.';
+
+  @override
+  String get onbBiometricEnable => 'Turn on';
+
+  @override
+  String onbDoneTitle(String name) {
+    return 'You\'re all set,\n$name';
+  }
+
+  @override
+  String get onbDoneBody =>
+      'You can report an accident at any time, even without signal.';
+
+  @override
+  String get onbDoneLater =>
+      'You can finish the rest from your profile whenever you like.';
+
+  @override
+  String get onbDoneStart => 'Go to the app';
+
+  @override
+  String get onbItemPhone => 'Phone';
+
+  @override
+  String get onbItemLicense => 'Driving licence';
+
+  @override
+  String get onbItemIdentity => 'Identity';
+
+  @override
+  String get onbItemBiometric => 'Biometric sign-in';
+
+  @override
+  String get onbStateDone => 'Done';
+
+  @override
+  String get onbStatePending => 'Being checked';
+
+  @override
+  String get onbStateTodo => 'To do';
+
+  @override
+  String get registerStepAccount => 'Your account';
+
+  @override
+  String get onbWelcomeNewTitle => 'Welcome to\nMon Constat';
+
+  @override
+  String get onbProfileTitle => 'Let\'s get to know you';
+
+  @override
+  String get onbProfileBody =>
+      'Your name appears on your accident reports. Your number is used to sign in and follow your claims.';
+
+  @override
+  String get onbPhoneTitle => 'Confirm your number';
+
+  @override
+  String get onbCodeSent => 'New code sent.';
+
+  @override
+  String get onbReadingTitle => 'Read on the document';
+
+  @override
+  String get correctReading => 'Correct';
+
+  @override
+  String get correctReadingTitle => 'Correct the document reading';
+
+  @override
+  String get correctReadingHint =>
+      'Fix what the AI misread by copying the document. Dates as YYYY-MM-DD.';
+
+  @override
+  String get readingCorrected => 'Reading corrected';
+
+  @override
+  String get readLastName => 'Surname';
+
+  @override
+  String get readFirstName => 'Given name';
+
+  @override
+  String get readBirthDate => 'Date of birth';
+
+  @override
+  String get readBirthPlace => 'Place of birth';
 }

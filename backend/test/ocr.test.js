@@ -13,7 +13,9 @@ import {
   parseLicenseDates,
   parseLicenseNumber,
   parseMrz,
+  rasm,
   sameName,
+  snapPlace,
 } from '../src/lib/ocr.js';
 
 // Données fictives uniquement. MRZ : exemple officiel de la norme OACI 9303.
@@ -124,4 +126,24 @@ test('nom arabe et nom latin : comparés par leurs consonnes', () => {
   assert.equal(arabicMatchesLatin('الطرابلسي', 'Ben Ali'), false);
   assert.equal(arabicMatchesLatin('سامي', 'Mouna'), false);
   assert.equal(arabicMatchesLatin(null, 'Sami'), null);
+});
+
+test('MRZ : remplissage « < » mal lu en K, L, C, retiré des prénoms', () => {
+  // Même ligne que l'exemple OACI, remplissage lu « CCCKLLLL » et un « < »
+  // isolé lu « C » devant le prénom.
+  const line1 = 'P<UTOERIKSSON<<C<ANNACCCKLLLLLLLLLLLLKLKKLLL';
+  const mrz = parseMrz(`${line1}
+${ICAO_LINE2}`);
+  assert.equal(mrz.lastName, 'ERIKSSON');
+  assert.equal(mrz.firstName, 'ANNA');
+});
+
+test('lieu de naissance : lettres confondues par leurs points corrigées', () => {
+  // ي lu à la place de ب : même forme sans les points.
+  assert.equal(rasm('قايس'), rasm('قابس'));
+  assert.equal(snapPlace('قايس'), 'قابس');
+  assert.equal(snapPlace('صفافس'), 'صفاقس');
+  assert.equal(snapPlace('سيدي بوريد'), 'سيدي بوزيد');
+  // Lieu inconnu : laissé tel quel.
+  assert.equal(snapPlace('مكان'), 'مكان');
 });

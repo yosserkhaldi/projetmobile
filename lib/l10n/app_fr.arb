@@ -775,7 +775,7 @@
   "themeSystem": "Comme le téléphone",
   "themeLight": "Clair",
   "themeDark": "Sombre",
-  "navDeclarations": "Déclarations",
+  "navDeclarations": "Constats",
   "securityDevicesTitle": "Appareils connectés",
   "securityDevicesSubtitle": "Où votre compte est ouvert",
   "thisDevice": "Cet appareil",
@@ -1143,7 +1143,7 @@
   "licenseCinMismatch": "Attention : le numéro de CIN du permis ne correspond pas à votre pièce d'identité.",
   "errorWrongDocument": "La photo ne montre pas la pièce choisie. Changez de pièce ou de photo.",
   "errorNotALicense": "Cette photo n'est pas un permis de conduire.",
-  "registerIntro": "Trois étapes, moins d'une minute. Votre numéro sera ensuite vérifié par un code.",
+  "registerIntro": "Un e-mail et un mot de passe. Le reste se fait juste après, en quelques étapes.",
   "registerStepYou": "Vous",
   "registerStepContact": "Vos coordonnées",
   "registerStepSecurity": "Sécurité",
@@ -1162,5 +1162,141 @@
   "identityStepSend": "Envoi",
   "profileIdentityVerified": "Identité vérifiée",
   "profileIdentityPending": "Identité en cours",
-  "profileIdentityTodo": "Identité à vérifier"
+  "profileIdentityTodo": "Identité à vérifier",
+  "licenseStatusVerified": "Permis vérifié",
+  "licenseStatusToReview": "Permis en cours de vérification",
+  "licenseStatusRejected": "Permis refusé",
+  "licenseToReviewNote": "Une information du permis ne correspond pas à votre compte : un administrateur le vérifie.",
+  "licenseRejectedNote": "Votre permis a été refusé. Motif : {reason}. Ajoutez votre propre permis.",
+  "@licenseRejectedNote": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLicenseNotYours": "Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n'a pas été enregistré.",
+  "accountFileTitle": "Dossier du compte",
+  "openAccountFile": "Voir le dossier",
+  "sectionAccount": "Compte",
+  "licenseReviewTitle": "Permis à vérifier",
+  "licenseReviewSubtitle": "Un contrôle de l'IA a échoué, ou la photo était illisible",
+  "noLicenseReviews": "Aucun permis à vérifier.",
+  "licensesToReviewCount": "{count, plural, =1{1 permis à vérifier} other{{count} permis à vérifier}}",
+  "@licensesToReviewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "approveLicense": "Valider le permis",
+  "rejectLicense": "Refuser le permis",
+  "deleteLicense": "Supprimer le permis",
+  "deleteLicenseBody": "La photo et les informations du permis de {name} seront effacées.",
+  "@deleteLicenseBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "licenseApproved": "Permis validé",
+  "licenseRejected": "Permis refusé, le conducteur voit le motif",
+  "licenseDeleted": "Permis supprimé",
+  "licenseUpdated": "Permis modifié",
+  "noLicense": "Aucun permis enregistré.",
+  "noIdentityDocuments": "Aucune pièce enregistrée.",
+  "aiChecksTitle": "Contrôles de l'IA",
+  "checkLicenseName": "Nom du titulaire = nom du compte",
+  "checkLicenseBirth": "Date de naissance = pièce d'identité",
+  "checkLicenseCin": "N° de CIN = pièce d'identité",
+  "checkLicenseNumber": "Numéro saisi = numéro lu sur la photo",
+  "checkNotCompared": "non comparable",
+  "licenseRejectReasonNotOwner": "Permis d'une autre personne",
+  "licenseRejectReasonExpired": "Permis expiré",
+  "revokeIdentity": "Annuler la vérification",
+  "revokeIdentityTitle": "Annuler la vérification d'identité ?",
+  "revokeIdentityBody": "Les photos de la pièce seront effacées. Le conducteur voit le motif et peut refaire une demande tout de suite.",
+  "identityRevoked": "Vérification annulée",
+  "reasonLabel": "Motif",
+  "onbSkip": "Passer",
+  "onbLater": "Plus tard",
+  "onbContinue": "Continuer",
+  "onbBack": "Étape précédente",
+  "onbProgress": "Étape {current} sur {total}",
+  "@onbProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onbWelcomeEyebrow": "Compte créé",
+  "onbWelcomeTitle": "Bienvenue,\n{name}",
+  "@onbWelcomeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "onbWelcomeBody": "Deux minutes pour préparer votre compte, et vous serez prêt le jour où vous en aurez besoin.",
+  "onbWelcomeStart": "Préparer mon compte",
+  "onbWelcomeSkip": "Je le ferai plus tard",
+  "onbLicenseTitle": "Ajoutez votre permis",
+  "onbLicenseBody": "Une photo suffit : l'IA lit le numéro, les catégories et la date. Il servira à remplir vos constats.",
+  "onbLicenseScan": "Photographier mon permis",
+  "onbLicenseRescan": "Reprendre la photo",
+  "onbLicenseReading": "Lecture du permis…",
+  "onbLicenseRead": "Lu par l'IA",
+  "onbLicenseUnread": "La carte n'a pas pu être lue. Vous compléterez les informations depuis votre profil.",
+  "onbLicenseTip": "À plat, bien éclairé, sans reflet.",
+  "onbIdentityTitle": "Vérifiez votre identité",
+  "onbIdentityBody": "Pour signer vos constats en toute confiance. Comptez deux minutes.",
+  "onbIdentityStep1": "Une pièce : CIN, permis ou passeport",
+  "onbIdentityStep2": "Votre visage, en tournant la tête",
+  "onbIdentityStep3": "L'IA compare, en quelques secondes",
+  "onbIdentityStart": "Vérifier maintenant",
+  "onbIdentityLicenseHint": "Votre permis peut servir de pièce : inutile de le reprendre en photo.",
+  "onbIdentityPrivacy": "Vos photos sont analysées sur nos serveurs, sans service extérieur.",
+  "onbBiometricTitle": "Connexion en un geste",
+  "onbBiometricBody": "Ouvrez l'application avec votre empreinte ou votre visage, sans retaper votre mot de passe.",
+  "onbBiometricEnable": "Activer",
+  "onbDoneTitle": "Tout est prêt,\n{name}",
+  "@onbDoneTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "onbDoneBody": "Vous pouvez déclarer un accident à tout moment, même sans réseau.",
+  "onbDoneLater": "Le reste se termine depuis votre profil, quand vous voulez.",
+  "onbDoneStart": "Accéder à l'application",
+  "onbItemPhone": "Téléphone",
+  "onbItemLicense": "Permis de conduire",
+  "onbItemIdentity": "Identité",
+  "onbItemBiometric": "Connexion biométrique",
+  "onbStateDone": "Fait",
+  "onbStatePending": "En vérification",
+  "onbStateTodo": "À faire",
+  "registerStepAccount": "Votre compte",
+  "onbWelcomeNewTitle": "Bienvenue sur\nMon Constat",
+  "onbProfileTitle": "Faisons connaissance",
+  "onbProfileBody": "Votre nom figure sur vos constats. Votre numéro sert à vous connecter et à suivre vos dossiers.",
+  "onbPhoneTitle": "Confirmez votre numéro",
+  "onbCodeSent": "Nouveau code envoyé.",
+  "onbReadingTitle": "Lu sur la pièce",
+  "correctReading": "Corriger",
+  "correctReadingTitle": "Corriger la lecture de la pièce",
+  "correctReadingHint": "Corrigez ce que l'IA a mal lu, en recopiant la pièce. Dates au format AAAA-MM-JJ.",
+  "readingCorrected": "Lecture corrigée",
+  "readLastName": "Nom",
+  "readFirstName": "Prénom",
+  "readBirthDate": "Date de naissance",
+  "readBirthPlace": "Lieu de naissance"
 }

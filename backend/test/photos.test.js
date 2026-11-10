@@ -72,9 +72,11 @@ test('photo du permis : champ séparé de la photo de profil', async (t) => {
   const { call } = await startApi(t);
   const { body } = await call('POST', '/auth/register', { body: driver() });
   const token = body.accessToken;
+  // Image reconnue comme un permis par l'IA simulée.
+  const license = image('license');
   const sent = await call('PUT', '/users/me/license-photo', {
     token,
-    form: form(PNG),
+    form: form(license),
   });
   assert.equal(sent.status, 200);
   assert.ok(sent.body.user.licensePhotoId);
@@ -82,7 +84,7 @@ test('photo du permis : champ séparé de la photo de profil', async (t) => {
   const read = await call('GET', `/users/${body.user.id}/license-photo`, {
     token,
   });
-  assert.deepEqual(read.bytes, PNG);
+  assert.deepEqual(read.bytes, license);
 });
 
 test('photos : refuse ce qui n est pas une image, quel que soit le type annoncé', async (t) => {
@@ -120,7 +122,7 @@ test('photos : visibles par le titulaire et les administrateurs seulement', asyn
   });
   await call('PUT', '/users/me/license-photo', {
     token: owner.accessToken,
-    form: form(PNG),
+    form: form(image('license')),
   });
   const { body: other } = await call('POST', '/auth/register', {
     body: driver({ email: 'autre@example.com', phone: '20777000' }),

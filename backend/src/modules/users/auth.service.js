@@ -41,7 +41,8 @@ export function publicUser(user) {
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
-    phone: user.phone,
+    // Pas encore donné (inscription en deux temps) : chaîne vide.
+    phone: user.phone ?? '',
     phoneVerified: user.phoneVerifiedAt !== null,
     role: user.role,
     active: user.active,
@@ -53,6 +54,14 @@ export function publicUser(user) {
     // Identifiants opaques : changent à chaque nouvelle photo (cache côté app).
     photoId: user.photoFile ?? null,
     licensePhotoId: user.licensePhotoFile ?? null,
+    // Permis : lu par l'IA, contrôles croisés et décision.
+    license: {
+      status: user.licenseStatus ?? null,
+      reading: user.licenseReading ?? null,
+      checks: user.licenseChecks ?? null,
+      rejectionReason: user.licenseRejectionReason ?? null,
+      reviewedAt: user.licenseReviewedAt?.toISOString() ?? null,
+    },
     identity: {
       status: user.identityStatus,
       documentType: user.identityDocument,
@@ -299,10 +308,14 @@ export async function register(
     }
     throw err;
   }
-  // Le compte reste créé si le SMS échoue : l'utilisateur peut redemander un code.
-  await sendPhoneCode(user).catch((err) =>
-    console.error('Envoi du SMS impossible', err),
-  );
+  // Téléphone donné dès l'inscription : le code part tout de suite. Sinon il
+  // partira quand le numéro sera saisi dans l'accueil. Le compte reste créé
+  // si le SMS échoue : l'utilisateur peut redemander un code.
+  if (user.phone) {
+    await sendPhoneCode(user).catch((err) =>
+      console.error('Envoi du SMS impossible', err),
+    );
+  }
   await recordLogin(user.id, 'register', device, true);
   return openSession(user, device);
 }
@@ -407,6 +420,9 @@ export async function logout(token) {
 }
 
 export async function resendPhoneCode(user) {
+  if (!user.phone) {
+    throw new HttpError(400, 'PHONE_REQUIRED', 'Ajoutez d’abord votre numéro de téléphone.');
+  }
   if (user.phoneVerifiedAt) {
     throw new HttpError(409, 'ALREADY_VERIFIED', 'Ce numéro est déjà vérifié.');
   }

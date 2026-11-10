@@ -110,6 +110,7 @@ class ProfileScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        _LicenseStatusNote(license: user.license),
                         _LicenseCard(user: user),
                         const SizedBox(height: 12),
                         _LicensePhoto(user: user),
@@ -738,6 +739,68 @@ class _LicenseCard extends StatelessWidget {
                   ),
                 ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Décision sur le permis : validé, en cours de vérification (un contrôle de
+/// l'IA a échoué), ou refusé avec le motif de l'administrateur.
+class _LicenseStatusNote extends StatelessWidget {
+  const _LicenseStatusNote({required this.license});
+  final LicenseReview license;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final p = context.palette;
+    final (text, icon, bg, fg) = switch (license.status) {
+      LicenseStatus.verified => (
+        t.licenseStatusVerified,
+        Icons.verified_outlined,
+        p.successBg,
+        p.successText,
+      ),
+      LicenseStatus.toReview => (
+        t.licenseToReviewNote,
+        Icons.hourglass_top_rounded,
+        p.warningBg,
+        p.warningText,
+      ),
+      LicenseStatus.rejected => (
+        t.licenseRejectedNote(license.rejectionReason ?? ''),
+        Icons.block,
+        p.errorBg,
+        p.errorText,
+      ),
+      null => (null, null, null, null),
+    };
+    if (text == null) return const SizedBox.shrink();
+    return Container(
+      key: Key('license-status-${license.status!.apiValue}'),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(AppRadius.input),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: fg),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: fg,
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
           ),
         ],
       ),

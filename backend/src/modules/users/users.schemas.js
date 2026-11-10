@@ -37,11 +37,14 @@ const code = z
 
 const language = z.enum(['FR', 'AR', 'EN'], { error: 'Langue invalide.' });
 
+// Inscription en deux temps : e-mail et mot de passe ici, puis le nom et le
+// téléphone dans l'accueil de l'application (PATCH /users/me). Encore
+// acceptés ici, pour les clients qui les envoient d'un coup.
 export const registerSchema = z.object({
-  firstName: name('Prénom'),
-  lastName: name('Nom'),
+  firstName: name('Prénom').optional(),
+  lastName: name('Nom').optional(),
   email,
-  phone,
+  phone: phone.optional(),
   password,
   // Langue choisie sur l'écran de connexion, avant l'inscription.
   language: language.optional(),
@@ -131,7 +134,12 @@ export const updateStatusSchema = z.object({
 // Le compte agent est créé par un administrateur : pas de case à cocher.
 export const createAgentSchema = registerSchema
   .omit({ consent: true })
-  .extend({ companyId: id });
+  .extend({
+    firstName: name('Prénom'),
+    lastName: name('Nom'),
+    phone,
+    companyId: id,
+  });
 
 export const agencyParams = z.object({ id, agencyId: id });
 
@@ -211,6 +219,41 @@ export const rejectIdentitySchema = z.object({
   // Refus grave (visage différent, pièce non valable) : plus de nouvelle demande.
   severe: z.boolean().default(false),
 });
+
+// Permis : correction par un administrateur, et motif de refus.
+export const adminLicenseSchema = updateProfileSchema.pick({
+  licenseNumber: true,
+  licenseCategory: true,
+  licenseIssuedAt: true,
+});
+
+export const rejectLicenseSchema = rejectIdentitySchema.pick({ reason: true });
+
+// Correction par un administrateur de ce que l'IA a lu sur la pièce.
+const readText = z.preprocess(
+  emptyToNull,
+  z.string().trim().max(120).nullable(),
+);
+const readDate = z.preprocess(
+  emptyToNull,
+  z.iso.date('Date invalide.').nullable(),
+);
+export const identityReadingSchema = z
+  .object({
+    number: z.preprocess(
+      (v) => (typeof v === 'string' ? v.replace(/\s/g, '').toUpperCase() : v),
+      z.string().min(6, 'Numéro invalide.').max(20),
+    ),
+    lastName: readText,
+    firstName: readText,
+    lastNameAr: readText,
+    firstNameAr: readText,
+    parentsAr: readText,
+    birthPlaceAr: readText,
+    birthDate: readDate,
+    expiresAt: readDate,
+  })
+  .partial();
 
 export const deleteAccountSchema = z.object({
   password: z

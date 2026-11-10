@@ -135,6 +135,7 @@ export const FACES = {
   'passport-other': { faces: 1, descriptor: vector(0), yaw: 0 },
   license: { faces: 1, descriptor: vector(0), yaw: 0 },
   'license-other': { faces: 1, descriptor: vector(0), yaw: 0 },
+  'license-stranger': { faces: 1, descriptor: vector(0), yaw: 0 },
   crowd: { faces: 2, descriptor: vector(0), yaw: 0 },
 };
 
@@ -175,6 +176,14 @@ export const READINGS = {
     number: '12/345678',
     lastName: 'BEN ALI',
     firstName: 'MOUNA',
+  },
+  // Permis d'une autre personne : autre nom, autre date de naissance, autre CIN.
+  'license-stranger': {
+    number: '08/821570',
+    lastName: 'TRABELSI',
+    firstName: 'MOUNA',
+    birthDate: '2001-07-04',
+    cinNumber: '87654321',
   },
 };
 

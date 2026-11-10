@@ -29,6 +29,8 @@ tags:
     description: Module 1 — compagnies d'assurance et agences
   - name: Sécurité
     description: Module 1 — appareils connectés et historique des connexions
+  - name: Permis
+    description: Module 1 — contrôle du permis par l'IA et décision d'un administrateur
   - name: Identité
     description: Module 1 — vérification de la CIN par un administrateur
   - name: Données personnelles
@@ -55,7 +57,10 @@ paths:
     post:
       tags: [Authentification]
       summary: Créer un compte conducteur
-      description: Le rôle est toujours DRIVER. Un code OTP part par SMS.
+      description: >-
+        Le rôle est toujours DRIVER. Si le téléphone est fourni, un code OTP
+        part tout de suite ; sinon il part avec POST /auth/phone/send une fois
+        le numéro ajouté.
       security: []
       requestBody:
         required: true
@@ -645,6 +650,136 @@ paths:
         '200': { $ref: '#/components/responses/UserResponse' }
         '404': { $ref: '#/components/responses/Error' }
 
+  /users/{id}/identity/reading:
+    patch:
+      tags: [Identité]
+      summary: Corriger ce que l'IA a lu sur la pièce (administrateurs)
+      description: Seuls les champs envoyés changent ; le numéro met aussi à jour la pièce du compte.
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                number: { type: string }
+                lastName: { type: [string, 'null'] }
+                firstName: { type: [string, 'null'] }
+                lastNameAr: { type: [string, 'null'] }
+                firstNameAr: { type: [string, 'null'] }
+                parentsAr: { type: [string, 'null'] }
+                birthPlaceAr: { type: [string, 'null'] }
+                birthDate: { type: [string, 'null'], format: date }
+                expiresAt: { type: [string, 'null'], format: date }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/identity/revoke:
+    post:
+      tags: [Identité]
+      summary: Annuler une vérification, même validée par l'IA (administrateurs)
+      description: >-
+        Efface les photos de la pièce et montre le motif au conducteur, qui
+        peut refaire une demande tout de suite (ce n'est pas un refus compté).
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 3, maxLength: 300 }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /users/licenses/review:
+    get:
+      tags: [Permis]
+      summary: Permis à vérifier (administrateurs)
+      description: Un contrôle croisé de l'IA a échoué, ou la photo était illisible.
+      responses:
+        '200':
+          description: Comptes dont le permis attend un administrateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/User' }
+
+  /users/{id}:
+    get:
+      tags: [Administration]
+      summary: Dossier complet d'un compte (administrateurs)
+      description: Identité et permis, avec leurs photos, même validés par l'IA.
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/license:
+    patch:
+      tags: [Permis]
+      summary: Corriger le permis d'un compte (administrateurs)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                licenseNumber: { type: [string, 'null'] }
+                licenseCategory: { type: [string, 'null'] }
+                licenseIssuedAt: { type: [string, 'null'], format: date }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '404': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [Permis]
+      summary: Supprimer le permis d'un compte (administrateurs)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/license/approve:
+    post:
+      tags: [Permis]
+      summary: Valider un permis signalé (administrateurs)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/license/reject:
+    post:
+      tags: [Permis]
+      summary: Refuser un permis (administrateurs)
+      description: Photo et informations effacées ; le conducteur voit le motif.
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 3, maxLength: 300 }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '404': { $ref: '#/components/responses/Error' }
+
   /users/{id}/identity/attempts:
     get:
       tags: [Identité]
@@ -1106,6 +1241,24 @@ components:
         licensePhotoId:
           type: [string, 'null']
           description: Image servie par GET /users/{id}/license-photo.
+        license:
+          type: object
+          description: >-
+            Contrôle du permis par l'IA. Deux contrôles croisés en échec (nom,
+            date de naissance, CIN) : refusé à l'envoi (422 LICENSE_NOT_YOURS).
+            Un seul, ou rien de comparable : TO_REVIEW.
+          properties:
+            status: { type: [string, 'null'], enum: [VERIFIED, TO_REVIEW, REJECTED, null] }
+            reading: { type: [object, 'null'] }
+            checks:
+              type: [object, 'null']
+              properties:
+                nameMatchesAccount: { type: [boolean, 'null'] }
+                birthDateMatchesIdentity: { type: [boolean, 'null'] }
+                cinMatchesIdentity: { type: [boolean, 'null'] }
+                numberMatchesReading: { type: [boolean, 'null'] }
+            rejectionReason: { type: [string, 'null'] }
+            reviewedAt: { type: [string, 'null'], format: date-time }
         identity:
           type: object
           properties:
@@ -1176,7 +1329,10 @@ components:
         expiresAt: { type: string, format: date-time }
     RegisterInput:
       type: object
-      required: [firstName, lastName, email, phone, password, consent]
+      description: >-
+        Inscription en deux temps : e-mail et mot de passe suffisent ; le nom
+        et le téléphone sont donnés ensuite dans l'accueil (PATCH /users/me).
+      required: [email, password, consent]
       properties:
         firstName: { type: string }
         lastName: { type: string }

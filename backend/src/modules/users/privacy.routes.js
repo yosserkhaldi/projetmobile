@@ -198,6 +198,7 @@ router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
     agencies,
     autoVerified,
     aiStats,
+    licensesToReview,
   ] = await Promise.all([
     prisma.user.groupBy({ by: ['role'], where: live, _count: true }),
     prisma.user.groupBy({
@@ -222,6 +223,7 @@ router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
       where: { ...live, identityStatus: 'VERIFIED', identityAutoVerified: true },
     }),
     identityAiStats(since),
+    prisma.user.count({ where: { ...live, licenseStatus: 'TO_REVIEW' } }),
   ]);
 
   const count = (rows, key, value) =>
@@ -259,6 +261,8 @@ router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
     // Identités validées par la reconnaissance faciale, sans administrateur.
     identityAutoVerified: autoVerified,
     identityAi: aiStats,
+    // Permis dont un contrôle croisé a échoué : à vérifier.
+    licensesToReview,
     signIns7Days: {
       success: count(logins, 'success', true),
       failed: count(logins, 'success', false),

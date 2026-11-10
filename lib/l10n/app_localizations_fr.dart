@@ -1357,7 +1357,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeDark => 'Sombre';
 
   @override
-  String get navDeclarations => 'Déclarations';
+  String get navDeclarations => 'Constats';
 
   @override
   String get securityDevicesTitle => 'Appareils connectés';
@@ -2133,7 +2133,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get registerIntro =>
-      'Trois étapes, moins d\'une minute. Votre numéro sera ensuite vérifié par un code.';
+      'Un e-mail et un mot de passe. Le reste se fait juste après, en quelques étapes.';
 
   @override
   String get registerStepYou => 'Vous';
@@ -2192,4 +2192,310 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profileIdentityTodo => 'Identité à vérifier';
+
+  @override
+  String get licenseStatusVerified => 'Permis vérifié';
+
+  @override
+  String get licenseStatusToReview => 'Permis en cours de vérification';
+
+  @override
+  String get licenseStatusRejected => 'Permis refusé';
+
+  @override
+  String get licenseToReviewNote =>
+      'Une information du permis ne correspond pas à votre compte : un administrateur le vérifie.';
+
+  @override
+  String licenseRejectedNote(String reason) {
+    return 'Votre permis a été refusé. Motif : $reason. Ajoutez votre propre permis.';
+  }
+
+  @override
+  String get errorLicenseNotYours =>
+      'Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n\'a pas été enregistré.';
+
+  @override
+  String get accountFileTitle => 'Dossier du compte';
+
+  @override
+  String get openAccountFile => 'Voir le dossier';
+
+  @override
+  String get sectionAccount => 'Compte';
+
+  @override
+  String get licenseReviewTitle => 'Permis à vérifier';
+
+  @override
+  String get licenseReviewSubtitle =>
+      'Un contrôle de l\'IA a échoué, ou la photo était illisible';
+
+  @override
+  String get noLicenseReviews => 'Aucun permis à vérifier.';
+
+  @override
+  String licensesToReviewCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count permis à vérifier',
+      one: '1 permis à vérifier',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get approveLicense => 'Valider le permis';
+
+  @override
+  String get rejectLicense => 'Refuser le permis';
+
+  @override
+  String get deleteLicense => 'Supprimer le permis';
+
+  @override
+  String deleteLicenseBody(String name) {
+    return 'La photo et les informations du permis de $name seront effacées.';
+  }
+
+  @override
+  String get licenseApproved => 'Permis validé';
+
+  @override
+  String get licenseRejected => 'Permis refusé, le conducteur voit le motif';
+
+  @override
+  String get licenseDeleted => 'Permis supprimé';
+
+  @override
+  String get licenseUpdated => 'Permis modifié';
+
+  @override
+  String get noLicense => 'Aucun permis enregistré.';
+
+  @override
+  String get noIdentityDocuments => 'Aucune pièce enregistrée.';
+
+  @override
+  String get aiChecksTitle => 'Contrôles de l\'IA';
+
+  @override
+  String get checkLicenseName => 'Nom du titulaire = nom du compte';
+
+  @override
+  String get checkLicenseBirth => 'Date de naissance = pièce d\'identité';
+
+  @override
+  String get checkLicenseCin => 'N° de CIN = pièce d\'identité';
+
+  @override
+  String get checkLicenseNumber => 'Numéro saisi = numéro lu sur la photo';
+
+  @override
+  String get checkNotCompared => 'non comparable';
+
+  @override
+  String get licenseRejectReasonNotOwner => 'Permis d\'une autre personne';
+
+  @override
+  String get licenseRejectReasonExpired => 'Permis expiré';
+
+  @override
+  String get revokeIdentity => 'Annuler la vérification';
+
+  @override
+  String get revokeIdentityTitle => 'Annuler la vérification d\'identité ?';
+
+  @override
+  String get revokeIdentityBody =>
+      'Les photos de la pièce seront effacées. Le conducteur voit le motif et peut refaire une demande tout de suite.';
+
+  @override
+  String get identityRevoked => 'Vérification annulée';
+
+  @override
+  String get reasonLabel => 'Motif';
+
+  @override
+  String get onbSkip => 'Passer';
+
+  @override
+  String get onbLater => 'Plus tard';
+
+  @override
+  String get onbContinue => 'Continuer';
+
+  @override
+  String get onbBack => 'Étape précédente';
+
+  @override
+  String onbProgress(int current, int total) {
+    return 'Étape $current sur $total';
+  }
+
+  @override
+  String get onbWelcomeEyebrow => 'Compte créé';
+
+  @override
+  String onbWelcomeTitle(String name) {
+    return 'Bienvenue,\n$name';
+  }
+
+  @override
+  String get onbWelcomeBody =>
+      'Deux minutes pour préparer votre compte, et vous serez prêt le jour où vous en aurez besoin.';
+
+  @override
+  String get onbWelcomeStart => 'Préparer mon compte';
+
+  @override
+  String get onbWelcomeSkip => 'Je le ferai plus tard';
+
+  @override
+  String get onbLicenseTitle => 'Ajoutez votre permis';
+
+  @override
+  String get onbLicenseBody =>
+      'Une photo suffit : l\'IA lit le numéro, les catégories et la date. Il servira à remplir vos constats.';
+
+  @override
+  String get onbLicenseScan => 'Photographier mon permis';
+
+  @override
+  String get onbLicenseRescan => 'Reprendre la photo';
+
+  @override
+  String get onbLicenseReading => 'Lecture du permis…';
+
+  @override
+  String get onbLicenseRead => 'Lu par l\'IA';
+
+  @override
+  String get onbLicenseUnread =>
+      'La carte n\'a pas pu être lue. Vous compléterez les informations depuis votre profil.';
+
+  @override
+  String get onbLicenseTip => 'À plat, bien éclairé, sans reflet.';
+
+  @override
+  String get onbIdentityTitle => 'Vérifiez votre identité';
+
+  @override
+  String get onbIdentityBody =>
+      'Pour signer vos constats en toute confiance. Comptez deux minutes.';
+
+  @override
+  String get onbIdentityStep1 => 'Une pièce : CIN, permis ou passeport';
+
+  @override
+  String get onbIdentityStep2 => 'Votre visage, en tournant la tête';
+
+  @override
+  String get onbIdentityStep3 => 'L\'IA compare, en quelques secondes';
+
+  @override
+  String get onbIdentityStart => 'Vérifier maintenant';
+
+  @override
+  String get onbIdentityLicenseHint =>
+      'Votre permis peut servir de pièce : inutile de le reprendre en photo.';
+
+  @override
+  String get onbIdentityPrivacy =>
+      'Vos photos sont analysées sur nos serveurs, sans service extérieur.';
+
+  @override
+  String get onbBiometricTitle => 'Connexion en un geste';
+
+  @override
+  String get onbBiometricBody =>
+      'Ouvrez l\'application avec votre empreinte ou votre visage, sans retaper votre mot de passe.';
+
+  @override
+  String get onbBiometricEnable => 'Activer';
+
+  @override
+  String onbDoneTitle(String name) {
+    return 'Tout est prêt,\n$name';
+  }
+
+  @override
+  String get onbDoneBody =>
+      'Vous pouvez déclarer un accident à tout moment, même sans réseau.';
+
+  @override
+  String get onbDoneLater =>
+      'Le reste se termine depuis votre profil, quand vous voulez.';
+
+  @override
+  String get onbDoneStart => 'Accéder à l\'application';
+
+  @override
+  String get onbItemPhone => 'Téléphone';
+
+  @override
+  String get onbItemLicense => 'Permis de conduire';
+
+  @override
+  String get onbItemIdentity => 'Identité';
+
+  @override
+  String get onbItemBiometric => 'Connexion biométrique';
+
+  @override
+  String get onbStateDone => 'Fait';
+
+  @override
+  String get onbStatePending => 'En vérification';
+
+  @override
+  String get onbStateTodo => 'À faire';
+
+  @override
+  String get registerStepAccount => 'Votre compte';
+
+  @override
+  String get onbWelcomeNewTitle => 'Bienvenue sur\nMon Constat';
+
+  @override
+  String get onbProfileTitle => 'Faisons connaissance';
+
+  @override
+  String get onbProfileBody =>
+      'Votre nom figure sur vos constats. Votre numéro sert à vous connecter et à suivre vos dossiers.';
+
+  @override
+  String get onbPhoneTitle => 'Confirmez votre numéro';
+
+  @override
+  String get onbCodeSent => 'Nouveau code envoyé.';
+
+  @override
+  String get onbReadingTitle => 'Lu sur la pièce';
+
+  @override
+  String get correctReading => 'Corriger';
+
+  @override
+  String get correctReadingTitle => 'Corriger la lecture de la pièce';
+
+  @override
+  String get correctReadingHint =>
+      'Corrigez ce que l\'IA a mal lu, en recopiant la pièce. Dates au format AAAA-MM-JJ.';
+
+  @override
+  String get readingCorrected => 'Lecture corrigée';
+
+  @override
+  String get readLastName => 'Nom';
+
+  @override
+  String get readFirstName => 'Prénom';
+
+  @override
+  String get readBirthDate => 'Date de naissance';
+
+  @override
+  String get readBirthPlace => 'Lieu de naissance';
 }

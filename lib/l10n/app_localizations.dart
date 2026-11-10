@@ -2527,7 +2527,7 @@ abstract class AppLocalizations {
   /// No description provided for @navDeclarations.
   ///
   /// In fr, this message translates to:
-  /// **'Déclarations'**
+  /// **'Constats'**
   String get navDeclarations;
 
   /// No description provided for @securityDevicesTitle.
@@ -3841,7 +3841,7 @@ abstract class AppLocalizations {
   /// No description provided for @registerIntro.
   ///
   /// In fr, this message translates to:
-  /// **'Trois étapes, moins d\'une minute. Votre numéro sera ensuite vérifié par un code.'**
+  /// **'Un e-mail et un mot de passe. Le reste se fait juste après, en quelques étapes.'**
   String get registerIntro;
 
   /// No description provided for @registerStepYou.
@@ -3957,6 +3957,552 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Identité à vérifier'**
   String get profileIdentityTodo;
+
+  /// No description provided for @licenseStatusVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis vérifié'**
+  String get licenseStatusVerified;
+
+  /// No description provided for @licenseStatusToReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis en cours de vérification'**
+  String get licenseStatusToReview;
+
+  /// No description provided for @licenseStatusRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis refusé'**
+  String get licenseStatusRejected;
+
+  /// No description provided for @licenseToReviewNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une information du permis ne correspond pas à votre compte : un administrateur le vérifie.'**
+  String get licenseToReviewNote;
+
+  /// No description provided for @licenseRejectedNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre permis a été refusé. Motif : {reason}. Ajoutez votre propre permis.'**
+  String licenseRejectedNote(String reason);
+
+  /// No description provided for @errorLicenseNotYours.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n\'a pas été enregistré.'**
+  String get errorLicenseNotYours;
+
+  /// No description provided for @accountFileTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossier du compte'**
+  String get accountFileTitle;
+
+  /// No description provided for @openAccountFile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir le dossier'**
+  String get openAccountFile;
+
+  /// No description provided for @sectionAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte'**
+  String get sectionAccount;
+
+  /// No description provided for @licenseReviewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis à vérifier'**
+  String get licenseReviewTitle;
+
+  /// No description provided for @licenseReviewSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un contrôle de l\'IA a échoué, ou la photo était illisible'**
+  String get licenseReviewSubtitle;
+
+  /// No description provided for @noLicenseReviews.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun permis à vérifier.'**
+  String get noLicenseReviews;
+
+  /// No description provided for @licensesToReviewCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 permis à vérifier} other{{count} permis à vérifier}}'**
+  String licensesToReviewCount(int count);
+
+  /// No description provided for @approveLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Valider le permis'**
+  String get approveLicense;
+
+  /// No description provided for @rejectLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refuser le permis'**
+  String get rejectLicense;
+
+  /// No description provided for @deleteLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le permis'**
+  String get deleteLicense;
+
+  /// No description provided for @deleteLicenseBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo et les informations du permis de {name} seront effacées.'**
+  String deleteLicenseBody(String name);
+
+  /// No description provided for @licenseApproved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis validé'**
+  String get licenseApproved;
+
+  /// No description provided for @licenseRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis refusé, le conducteur voit le motif'**
+  String get licenseRejected;
+
+  /// No description provided for @licenseDeleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis supprimé'**
+  String get licenseDeleted;
+
+  /// No description provided for @licenseUpdated.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis modifié'**
+  String get licenseUpdated;
+
+  /// No description provided for @noLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun permis enregistré.'**
+  String get noLicense;
+
+  /// No description provided for @noIdentityDocuments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune pièce enregistrée.'**
+  String get noIdentityDocuments;
+
+  /// No description provided for @aiChecksTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contrôles de l\'IA'**
+  String get aiChecksTitle;
+
+  /// No description provided for @checkLicenseName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du titulaire = nom du compte'**
+  String get checkLicenseName;
+
+  /// No description provided for @checkLicenseBirth.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de naissance = pièce d\'identité'**
+  String get checkLicenseBirth;
+
+  /// No description provided for @checkLicenseCin.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de CIN = pièce d\'identité'**
+  String get checkLicenseCin;
+
+  /// No description provided for @checkLicenseNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro saisi = numéro lu sur la photo'**
+  String get checkLicenseNumber;
+
+  /// No description provided for @checkNotCompared.
+  ///
+  /// In fr, this message translates to:
+  /// **'non comparable'**
+  String get checkNotCompared;
+
+  /// No description provided for @licenseRejectReasonNotOwner.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis d\'une autre personne'**
+  String get licenseRejectReasonNotOwner;
+
+  /// No description provided for @licenseRejectReasonExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis expiré'**
+  String get licenseRejectReasonExpired;
+
+  /// No description provided for @revokeIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler la vérification'**
+  String get revokeIdentity;
+
+  /// No description provided for @revokeIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler la vérification d\'identité ?'**
+  String get revokeIdentityTitle;
+
+  /// No description provided for @revokeIdentityBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les photos de la pièce seront effacées. Le conducteur voit le motif et peut refaire une demande tout de suite.'**
+  String get revokeIdentityBody;
+
+  /// No description provided for @identityRevoked.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification annulée'**
+  String get identityRevoked;
+
+  /// No description provided for @reasonLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Motif'**
+  String get reasonLabel;
+
+  /// No description provided for @onbSkip.
+  ///
+  /// In fr, this message translates to:
+  /// **'Passer'**
+  String get onbSkip;
+
+  /// No description provided for @onbLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus tard'**
+  String get onbLater;
+
+  /// No description provided for @onbContinue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer'**
+  String get onbContinue;
+
+  /// No description provided for @onbBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étape précédente'**
+  String get onbBack;
+
+  /// No description provided for @onbProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étape {current} sur {total}'**
+  String onbProgress(int current, int total);
+
+  /// No description provided for @onbWelcomeEyebrow.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte créé'**
+  String get onbWelcomeEyebrow;
+
+  /// No description provided for @onbWelcomeTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue,\n{name}'**
+  String onbWelcomeTitle(String name);
+
+  /// No description provided for @onbWelcomeBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Deux minutes pour préparer votre compte, et vous serez prêt le jour où vous en aurez besoin.'**
+  String get onbWelcomeBody;
+
+  /// No description provided for @onbWelcomeStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Préparer mon compte'**
+  String get onbWelcomeStart;
+
+  /// No description provided for @onbWelcomeSkip.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je le ferai plus tard'**
+  String get onbWelcomeSkip;
+
+  /// No description provided for @onbLicenseTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez votre permis'**
+  String get onbLicenseTitle;
+
+  /// No description provided for @onbLicenseBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une photo suffit : l\'IA lit le numéro, les catégories et la date. Il servira à remplir vos constats.'**
+  String get onbLicenseBody;
+
+  /// No description provided for @onbLicenseScan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photographier mon permis'**
+  String get onbLicenseScan;
+
+  /// No description provided for @onbLicenseRescan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Reprendre la photo'**
+  String get onbLicenseRescan;
+
+  /// No description provided for @onbLicenseReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture du permis…'**
+  String get onbLicenseReading;
+
+  /// No description provided for @onbLicenseRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu par l\'IA'**
+  String get onbLicenseRead;
+
+  /// No description provided for @onbLicenseUnread.
+  ///
+  /// In fr, this message translates to:
+  /// **'La carte n\'a pas pu être lue. Vous compléterez les informations depuis votre profil.'**
+  String get onbLicenseUnread;
+
+  /// No description provided for @onbLicenseTip.
+  ///
+  /// In fr, this message translates to:
+  /// **'À plat, bien éclairé, sans reflet.'**
+  String get onbLicenseTip;
+
+  /// No description provided for @onbIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez votre identité'**
+  String get onbIdentityTitle;
+
+  /// No description provided for @onbIdentityBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour signer vos constats en toute confiance. Comptez deux minutes.'**
+  String get onbIdentityBody;
+
+  /// No description provided for @onbIdentityStep1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une pièce : CIN, permis ou passeport'**
+  String get onbIdentityStep1;
+
+  /// No description provided for @onbIdentityStep2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre visage, en tournant la tête'**
+  String get onbIdentityStep2;
+
+  /// No description provided for @onbIdentityStep3.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'IA compare, en quelques secondes'**
+  String get onbIdentityStep3;
+
+  /// No description provided for @onbIdentityStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifier maintenant'**
+  String get onbIdentityStart;
+
+  /// No description provided for @onbIdentityLicenseHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre permis peut servir de pièce : inutile de le reprendre en photo.'**
+  String get onbIdentityLicenseHint;
+
+  /// No description provided for @onbIdentityPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos photos sont analysées sur nos serveurs, sans service extérieur.'**
+  String get onbIdentityPrivacy;
+
+  /// No description provided for @onbBiometricTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion en un geste'**
+  String get onbBiometricTitle;
+
+  /// No description provided for @onbBiometricBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrez l\'application avec votre empreinte ou votre visage, sans retaper votre mot de passe.'**
+  String get onbBiometricBody;
+
+  /// No description provided for @onbBiometricEnable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer'**
+  String get onbBiometricEnable;
+
+  /// No description provided for @onbDoneTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout est prêt,\n{name}'**
+  String onbDoneTitle(String name);
+
+  /// No description provided for @onbDoneBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous pouvez déclarer un accident à tout moment, même sans réseau.'**
+  String get onbDoneBody;
+
+  /// No description provided for @onbDoneLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le reste se termine depuis votre profil, quand vous voulez.'**
+  String get onbDoneLater;
+
+  /// No description provided for @onbDoneStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accéder à l\'application'**
+  String get onbDoneStart;
+
+  /// No description provided for @onbItemPhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléphone'**
+  String get onbItemPhone;
+
+  /// No description provided for @onbItemLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis de conduire'**
+  String get onbItemLicense;
+
+  /// No description provided for @onbItemIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité'**
+  String get onbItemIdentity;
+
+  /// No description provided for @onbItemBiometric.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion biométrique'**
+  String get onbItemBiometric;
+
+  /// No description provided for @onbStateDone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fait'**
+  String get onbStateDone;
+
+  /// No description provided for @onbStatePending.
+  ///
+  /// In fr, this message translates to:
+  /// **'En vérification'**
+  String get onbStatePending;
+
+  /// No description provided for @onbStateTodo.
+  ///
+  /// In fr, this message translates to:
+  /// **'À faire'**
+  String get onbStateTodo;
+
+  /// No description provided for @registerStepAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre compte'**
+  String get registerStepAccount;
+
+  /// No description provided for @onbWelcomeNewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue sur\nMon Constat'**
+  String get onbWelcomeNewTitle;
+
+  /// No description provided for @onbProfileTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faisons connaissance'**
+  String get onbProfileTitle;
+
+  /// No description provided for @onbProfileBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre nom figure sur vos constats. Votre numéro sert à vous connecter et à suivre vos dossiers.'**
+  String get onbProfileBody;
+
+  /// No description provided for @onbPhoneTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmez votre numéro'**
+  String get onbPhoneTitle;
+
+  /// No description provided for @onbCodeSent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau code envoyé.'**
+  String get onbCodeSent;
+
+  /// No description provided for @onbReadingTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu sur la pièce'**
+  String get onbReadingTitle;
+
+  /// No description provided for @correctReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corriger'**
+  String get correctReading;
+
+  /// No description provided for @correctReadingTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corriger la lecture de la pièce'**
+  String get correctReadingTitle;
+
+  /// No description provided for @correctReadingHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corrigez ce que l\'IA a mal lu, en recopiant la pièce. Dates au format AAAA-MM-JJ.'**
+  String get correctReadingHint;
+
+  /// No description provided for @readingCorrected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture corrigée'**
+  String get readingCorrected;
+
+  /// No description provided for @readLastName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get readLastName;
+
+  /// No description provided for @readFirstName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prénom'**
+  String get readFirstName;
+
+  /// No description provided for @readBirthDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de naissance'**
+  String get readBirthDate;
+
+  /// No description provided for @readBirthPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu de naissance'**
+  String get readBirthPlace;
 }
 
 class _AppLocalizationsDelegate

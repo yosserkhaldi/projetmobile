@@ -249,8 +249,13 @@ class _FloatingNavBar extends StatelessWidget {
                   onDestinationSelected: onSelect,
                   backgroundColor: p.surface,
                   elevation: 0,
-                  labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+                  labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
                   indicatorShape: const StadiumBorder(),
+                  // Le bouton central est déjà un cercle plein : pas de
+                  // pastille claire derrière lui.
+                  indicatorColor: tabs[index].primary
+                      ? Colors.transparent
+                      : null,
                   destinations: [
                     for (final (i, tab) in tabs.indexed)
                       tab.primary
@@ -289,37 +294,34 @@ class _FloatingNavBar extends StatelessWidget {
     _Tab tab,
     bool selected,
   ) {
-    // Le bouton déborde vers le haut sans prendre plus de place qu'une icône :
-    // son libellé reste aligné sur ceux des autres onglets.
+    // Le cercle tient dans la barre (pas de débordement rogné par les coins
+    // arrondis) ; son libellé reste aligné sur ceux des autres onglets.
     Widget button(bool active) => SizedBox(
-      width: 44,
-      height: 24,
+      width: 40,
+      height: 32,
       child: OverflowBox(
-        maxWidth: 44,
-        maxHeight: 44,
-        child: Transform.translate(
-          offset: const Offset(0, -2),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: active ? AppColors.primaryDark : AppColors.primary,
-              shape: BoxShape.circle,
-              border: Border.all(color: context.palette.surface, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.30),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Icon(
-              active ? tab.activeIcon : Icons.add_rounded,
-              color: Colors.white,
-              size: 24,
-            ),
+        maxWidth: 40,
+        maxHeight: 40,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: active ? AppColors.primaryDark : AppColors.primary,
+            shape: BoxShape.circle,
+            border: Border.all(color: context.palette.surface, width: 3),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.30),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(
+            active ? tab.activeIcon : Icons.add_rounded,
+            color: Colors.white,
+            size: 22,
           ),
         ),
       ),

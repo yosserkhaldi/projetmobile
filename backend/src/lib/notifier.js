@@ -38,6 +38,8 @@ export const notifier = {
    * les logs en développement, pour ne jamais bloquer une inscription.
    */
   async sendToPhone(to, text) {
+    // Compte sans téléphone (inscription pas terminée) : rien à envoyer.
+    if (!to) return;
     if (!whatsappConfigured()) {
       logForDevelopment('SMS', to, text);
       return;

@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
-import 'package:mon_constat_digital/modules/users/screens/otp_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 
-/// Inscription en trois blocs : qui vous êtes, comment vous joindre, et un
-/// mot de passe guidé par une jauge de robustesse.
+/// Inscription : un e-mail et un mot de passe, rien de plus. Le nom, le
+/// téléphone (vérifié par un code), le permis et l'identité sont demandés
+/// juste après, dans l'accueil (OnboardingScreen).
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
   @override
@@ -15,23 +15,13 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> with FormActions {
-  final _firstName = TextEditingController();
-  final _lastName = TextEditingController();
   final _email = TextEditingController();
-  final _phone = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
 
   @override
   void dispose() {
-    for (final controller in [
-      _firstName,
-      _lastName,
-      _email,
-      _phone,
-      _password,
-      _confirm,
-    ]) {
+    for (final controller in [_email, _password, _confirm]) {
       controller.dispose();
     }
     super.dispose();
@@ -41,16 +31,9 @@ class _RegisterScreenState extends State<RegisterScreen> with FormActions {
     final users = AppScope.of(context).users;
     final navigator = Navigator.of(context);
     submit(() async {
-      await users.register(
-        firstName: _firstName.text.trim(),
-        lastName: _lastName.text.trim(),
-        email: _email.text.trim(),
-        phone: _phone.text.trim(),
-        password: _password.text,
-      );
-      navigator.pushReplacement(
-        MaterialPageRoute(builder: (_) => const OtpScreen()),
-      );
+      await users.register(email: _email.text.trim(), password: _password.text);
+      // Compte ouvert : l'accueil s'affiche sous cet écran, qu'on referme.
+      navigator.popUntil((route) => route.isFirst);
     });
   }
 
@@ -82,29 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> with FormActions {
                       if (error != null) ...[ErrorBanner(error!), gap],
                       FormStepCard(
                         number: 1,
-                        title: t.registerStepYou,
-                        children: [
-                          LabeledField(
-                            label: t.firstNameLabel,
-                            controller: _firstName,
-                            validator: v.required,
-                            prefixIcon: Icons.person_outline,
-                            autofillHints: const [AutofillHints.givenName],
-                          ),
-                          gap,
-                          LabeledField(
-                            label: t.lastNameLabel,
-                            controller: _lastName,
-                            validator: v.required,
-                            prefixIcon: Icons.badge_outlined,
-                            autofillHints: const [AutofillHints.familyName],
-                          ),
-                        ],
-                      ),
-                      gap,
-                      FormStepCard(
-                        number: 2,
-                        title: t.registerStepContact,
+                        title: t.registerStepAccount,
                         children: [
                           LabeledField(
                             label: t.emailLabel,
@@ -116,34 +77,11 @@ class _RegisterScreenState extends State<RegisterScreen> with FormActions {
                             textDirection: TextDirection.ltr,
                             autofillHints: const [AutofillHints.email],
                           ),
-                          gap,
-                          LabeledField(
-                            label: t.phoneLabel,
-                            controller: _phone,
-                            keyboardType: TextInputType.phone,
-                            validator: v.phone,
-                            hint: '20 123 456',
-                            prefixIcon: Icons.phone_outlined,
-                            prefixText: '+216',
-                            textDirection: TextDirection.ltr,
-                            autofillHints: const [
-                              AutofillHints.telephoneNumber,
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            t.registerPhoneHint,
-                            style: TextStyle(
-                              color: p.textMuted,
-                              fontSize: 12.5,
-                              height: 1.35,
-                            ),
-                          ),
                         ],
                       ),
                       gap,
                       FormStepCard(
-                        number: 3,
+                        number: 2,
                         title: t.registerStepSecurity,
                         children: [
                           PasswordField(

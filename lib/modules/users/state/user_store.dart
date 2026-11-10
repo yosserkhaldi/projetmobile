@@ -60,6 +60,9 @@ class UserStore extends ChangeNotifier {
   static const _languageKey = 'app_language';
   static const _themeKey = 'theme_mode';
 
+  /// Compte qui vient d'être créé sur ce téléphone et n'a pas fini l'accueil.
+  static const _onboardingKey = 'onboarding_user';
+
   final ApiClient _api;
   final SessionStorage _storage;
   final BiometricAuth _biometric;
@@ -102,6 +105,37 @@ class UserStore extends ChangeNotifier {
   /// La connexion biométrique est activée sur ce téléphone.
   bool biometricEnabled = false;
 
+  String? _onboardingUserId;
+
+  /// Accueil après l'inscription (permis, identité, empreinte) pas encore
+  /// terminé : repris au prochain lancement s'il est interrompu.
+  ///
+  /// Aussi tant que le nom ou le téléphone manquent, même sur un autre
+  /// téléphone : un conducteur sans nom ne peut pas remplir de constat.
+  bool get needsOnboarding {
+    final user = currentUser;
+    if (status != AuthStatus.signedIn || user == null) return false;
+    if (user.id == _onboardingUserId) return true;
+    return user.role == UserRole.driver && !user.profileComplete;
+  }
+
+  /// L'accueil est ouvert : il reste affiché jusqu'au bout, même une fois le
+  /// nom et le téléphone donnés (sinon il disparaîtrait à la première étape
+  /// quand il s'est ouvert pour un profil incomplet).
+  void keepOnboarding() {
+    final id = currentUser?.id;
+    if (id == null || id == _onboardingUserId) return;
+    _onboardingUserId = id;
+    unawaited(_storage.write(_onboardingKey, id));
+  }
+
+  /// Fin de l'accueil, terminé ou passé : l'application s'ouvre normalement.
+  Future<void> finishOnboarding() async {
+    _onboardingUserId = null;
+    notifyListeners();
+    await _storage.delete(_onboardingKey);
+  }
+
   // Photos déjà téléchargées, par identifiant de photo.
   final _photoCache = <String, Uint8List>{};
 
@@ -127,6 +161,7 @@ class UserStore extends ChangeNotifier {
       biometricAvailable = await _biometric.isAvailable();
       biometricEnabled =
           biometricAvailable && await _storage.read(_deviceKey) != null;
+      _onboardingUserId = await _storage.read(_onboardingKey);
       if (await _api.hasStoredSession()) {
         await _restoreSession();
       } else {
@@ -167,28 +202,28 @@ class UserStore extends ChangeNotifier {
     await _startSession(session as Map<String, dynamic>);
   }
 
+  /// Inscription : e-mail et mot de passe. Le nom et le téléphone sont
+  /// demandés dans l'accueil, juste après.
   Future<void> register({
-    required String firstName,
-    required String lastName,
     required String email,
-    required String phone,
     required String password,
   }) async {
     final session = await _api.post(
       '/auth/register',
       auth: false,
       body: {
-        'firstName': firstName,
-        'lastName': lastName,
         'email': email,
-        'phone': phone,
         'password': password,
         'language': language.apiValue,
         // Case cochée à l'inscription (loi n° 2004-63).
         'consent': true,
       },
     );
-    await _startSession(session as Map<String, dynamic>);
+    // Nouveau compte : l'accueil s'ouvre tout de suite.
+    final user = (session as Map<String, dynamic>)['user'] as Map;
+    _onboardingUserId = user['id'] as String;
+    await _storage.write(_onboardingKey, _onboardingUserId!);
+    await _startSession(session);
   }
 
   Future<void> logout() async {
