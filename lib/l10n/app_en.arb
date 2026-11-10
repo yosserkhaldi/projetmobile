@@ -620,5 +620,7 @@
   "checkBirthDate": "Same birth date as the licence",
   "licenseBirthMismatch": "Warning: the birth date on the licence does not match your identity document.",
   "licenseNameMismatch": "Warning: this licence is not in your name. Add your own licence.",
-  "licenseCinMismatch": "Warning: the ID number on the licence does not match your identity document."
+  "licenseCinMismatch": "Warning: the ID number on the licence does not match your identity document.",
+  "errorWrongDocument": "The photo does not show the chosen document. Change the document or the photo.",
+  "errorNotALicense": "This photo is not a driving licence."
 }

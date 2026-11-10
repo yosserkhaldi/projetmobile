@@ -180,3 +180,18 @@ test('photo du permis : un permis à un autre nom est signalé', async (t) => {
   // Même nom de famille (un frère, une sœur), autre prénom.
   assert.equal(res.body.extracted.nameMatchesAccount, false);
 });
+
+test('photo du permis : un passeport est refusé, rien n est enregistré', async (t) => {
+  const { call } = await startApi(t);
+  const { body } = await call('POST', '/auth/register', { body: driver() });
+  const data = new FormData();
+  data.append('photo', new Blob([image('passport')], { type: 'image/png' }), 'p.png');
+  const res = await call('PUT', '/users/me/license-photo', {
+    token: body.accessToken,
+    form: data,
+  });
+  assert.equal(res.status, 422);
+  assert.equal(res.body.error.code, 'NOT_A_LICENSE');
+  const me = await call('GET', '/users/me', { token: body.accessToken });
+  assert.equal(me.body.user.licensePhotoId, null);
+});

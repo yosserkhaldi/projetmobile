@@ -64,6 +64,8 @@ String errorMessage(BuildContext context, Object error) {
     'IDENTITY_NOT_PENDING' => t.errorIdentityNotPending,
     'NO_FACE_ON_DOCUMENT' => t.errorNoFaceOnDocument,
     'BACK_HAS_FACE' => t.errorBackHasFace,
+    'WRONG_DOCUMENT' => t.errorWrongDocument,
+    'NOT_A_LICENSE' => t.errorNotALicense,
     'BACK_NOT_RECOGNIZED' => t.errorBackNotRecognized,
     'IDENTITY_BLOCKED' => t.errorIdentityBlocked,
     'AI_QUOTA_EXCEEDED' => t.errorAiQuota,

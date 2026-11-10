@@ -100,7 +100,18 @@ async function readLicense(buffer) {
     const face = await faceEngine.analyze(buffer);
     const read = await documentReader.read(buffer, 'LICENSE', face);
     const { number, categories, issuedAt, expiresAt, birthDate } = read;
-    const { lastName, firstName, cinNumber } = read;
+    const { lastName, firstName, cinNumber, kind } = read;
+    // Un passeport ou une CIN n'est pas un permis : refusé, rien n'est
+    // enregistré. Dans le doute (kind null), on laisse passer.
+    if (kind && kind !== 'LICENSE') {
+      throw new HttpError(
+        422,
+        'NOT_A_LICENSE',
+        kind === 'PASSPORT'
+          ? 'Cette photo montre un passeport, pas un permis de conduire.'
+          : "Cette photo montre une carte d'identité, pas un permis de conduire.",
+      );
+    }
     return {
       number,
       categories,
@@ -112,6 +123,7 @@ async function readLicense(buffer) {
       cinNumber,
     };
   } catch (err) {
+    if (err instanceof HttpError) throw err;
     console.error('Lecture du permis', err);
     return null;
   }

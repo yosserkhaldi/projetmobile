@@ -659,3 +659,21 @@ test('contrôle croisé : date de naissance de la CIN et du permis', async (t) =
   const scan = await call('PUT', '/users/me/license-photo', { token, form: again });
   assert.equal(scan.body.extracted.birthDateMatchesIdentity, true);
 });
+
+test('pièce choisie : un passeport envoyé comme CIN est refusé', async (t) => {
+  const { call } = await startApi(t);
+  const { token } = await register(call);
+  const res = await call('PUT', '/users/me/identity/front', {
+    token,
+    form: photo('passport', 'CIN'),
+  });
+  assert.equal(res.status, 422);
+  assert.equal(res.body.error.code, 'WRONG_DOCUMENT');
+  assert.match(res.body.error.message, /un passeport/);
+  // Le bon choix passe.
+  const ok = await call('PUT', '/users/me/identity/front', {
+    token,
+    form: photo('passport', 'PASSPORT'),
+  });
+  assert.equal(ok.status, 200);
+});

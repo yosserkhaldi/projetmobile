@@ -1140,5 +1140,7 @@
   "checkBirthDate": "Même date de naissance que le permis",
   "licenseBirthMismatch": "Attention : la date de naissance du permis ne correspond pas à votre pièce d'identité.",
   "licenseNameMismatch": "Attention : ce permis n'est pas à votre nom. Ajoutez votre propre permis.",
-  "licenseCinMismatch": "Attention : le numéro de CIN du permis ne correspond pas à votre pièce d'identité."
+  "licenseCinMismatch": "Attention : le numéro de CIN du permis ne correspond pas à votre pièce d'identité.",
+  "errorWrongDocument": "La photo ne montre pas la pièce choisie. Changez de pièce ou de photo.",
+  "errorNotALicense": "Cette photo n'est pas un permis de conduire."
 }

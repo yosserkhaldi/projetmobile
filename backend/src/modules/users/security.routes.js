@@ -193,8 +193,24 @@ async function checkFront(buffer, documentType) {
       'Aucun visage détecté sur la pièce. Reprenez la photo à plat, bien éclairée et sans reflet.',
     );
   }
-  return readDocument(buffer, documentType, face);
+  const extracted = await readDocument(buffer, documentType, face);
+  // L'IA a reconnu une autre pièce que celle choisie (un passeport envoyé
+  // comme CIN…). Dans le doute (kind null), on laisse passer.
+  if (extracted?.kind && extracted.kind !== documentType) {
+    throw new HttpError(
+      422,
+      'WRONG_DOCUMENT',
+      `Vous avez choisi ${DOCUMENT_NAMES[documentType]}, mais la photo montre ${DOCUMENT_NAMES[extracted.kind]}.`,
+    );
+  }
+  return extracted;
 }
+
+const DOCUMENT_NAMES = {
+  CIN: 'une CIN',
+  LICENSE: 'un permis de conduire',
+  PASSPORT: 'un passeport',
+};
 
 /**
  * Verso. Une seule règle bloquante : aucun visage (sinon c'est un recto,

@@ -2122,4 +2122,12 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get licenseCinMismatch =>
       'Attention : le numéro de CIN du permis ne correspond pas à votre pièce d\'identité.';
+
+  @override
+  String get errorWrongDocument =>
+      'La photo ne montre pas la pièce choisie. Changez de pièce ou de photo.';
+
+  @override
+  String get errorNotALicense =>
+      'Cette photo n\'est pas un permis de conduire.';
 }

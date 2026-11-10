@@ -178,4 +178,12 @@ export const READINGS = {
   },
 };
 
-const fakeReading = (buffer) => READINGS[tagOf(buffer)] ?? READINGS.me;
+const fakeReading = (buffer) => ({
+  // Pièce reconnue sur la photo, comme le fait l'OCR (null : on ne sait pas).
+  kind: tagOf(buffer).startsWith('passport')
+    ? 'PASSPORT'
+    : tagOf(buffer).startsWith('license')
+      ? 'LICENSE'
+      : null,
+  ...(READINGS[tagOf(buffer)] ?? READINGS.me),
+});

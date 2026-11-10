@@ -2104,4 +2104,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get licenseCinMismatch =>
       'Warning: the ID number on the licence does not match your identity document.';
+
+  @override
+  String get errorWrongDocument =>
+      'The photo does not show the chosen document. Change the document or the photo.';
+
+  @override
+  String get errorNotALicense => 'This photo is not a driving licence.';
 }

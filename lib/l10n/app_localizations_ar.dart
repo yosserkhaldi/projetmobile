@@ -2095,4 +2095,11 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get licenseCinMismatch =>
       'تنبيه: رقم بطاقة التعريف في الرخصة لا يطابق وثيقة هويتك.';
+
+  @override
+  String get errorWrongDocument =>
+      'الصورة لا تُظهر الوثيقة المختارة. غيّر الوثيقة أو الصورة.';
+
+  @override
+  String get errorNotALicense => 'هذه الصورة ليست رخصة سياقة.';
 }

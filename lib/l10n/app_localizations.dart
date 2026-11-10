@@ -3825,6 +3825,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Attention : le numéro de CIN du permis ne correspond pas à votre pièce d\'identité.'**
   String get licenseCinMismatch;
+
+  /// No description provided for @errorWrongDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo ne montre pas la pièce choisie. Changez de pièce ou de photo.'**
+  String get errorWrongDocument;
+
+  /// No description provided for @errorNotALicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette photo n\'est pas un permis de conduire.'**
+  String get errorNotALicense;
 }
 
 class _AppLocalizationsDelegate

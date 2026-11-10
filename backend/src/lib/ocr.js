@@ -20,6 +20,14 @@ const ENGINES = {
       tessedit_pageseg_mode: '6',
     },
   },
+  // Numéro du permis : chiffres et barre seulement.
+  digits: {
+    lang: 'eng',
+    params: {
+      tessedit_char_whitelist: '0123456789/.- ',
+      tessedit_pageseg_mode: '6',
+    },
+  },
 };
 
 const workers = {};
@@ -459,6 +467,95 @@ async function cinFieldsImage(upright, box) {
     .toBuffer();
 }
 
+/**
+ * Numéro du permis lu de près : sur la carte de 2017, il est juste à droite
+ * de la photo, au-dessus du nom. Trop petit pour la lecture de toute la
+ * carte sur une photo de téléphone : on agrandit cette zone et on ne lit que
+ * des chiffres. Deux découpes ; le numéro trouvé le plus souvent l'emporte.
+ */
+async function licenseNumberNearPhoto(upright, box) {
+  const { width, height } = await sharp(upright).metadata();
+  const left = Math.min(0.95, box.x + box.width * 1.05);
+  const votes = new Map();
+  for (const [from, to] of [[-0.3, 0.5], [-0.2, 0.8], [-0.25, 0.6]]) {
+    const top = Math.max(0, box.y + box.height * from);
+    const bottom = Math.min(1, box.y + box.height * to);
+    const zone = await sharp(upright)
+      .extract({
+        left: Math.round(left * width),
+        top: Math.round(top * height),
+        width: Math.max(1, Math.round((1 - left) * width)),
+        height: Math.max(1, Math.round((bottom - top) * height)),
+      })
+      .greyscale()
+      .resize({ width: 1800 })
+      .normalise()
+      .threshold(140)
+      .png()
+      .toBuffer();
+    const match = (await recognize('digits', zone)).match(
+      /(?<!\d)(\d{2})\s*\/\s*(\d{5,8})(?!\d)/,
+    );
+    if (match) {
+      const number = `${match[1]}/${match[2]}`;
+      votes.set(number, (votes.get(number) ?? 0) + 1);
+    }
+  }
+  return [...votes].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+}
+
+/**
+ * Quelle pièce montre la photo ? PASSPORT (ligne MRZ « P<TUN… »), LICENSE
+ * (« PERMIS DE CONDUIRE », « رخصة سياقة »), CIN (« بطاقة التعريف »), ou null
+ * si rien ne permet de le dire. Sert à refuser une pièce prise pour une
+ * autre ; dans le doute, on laisse passer.
+ */
+export async function kindOf(upright, text) {
+  const upper = text.toUpperCase();
+  const fromLatin = documentKindFromText(upper);
+  if (fromLatin) return fromLatin;
+  // Rien en lettres latines : l'en-tête en arabe, en haut de la carte,
+  // contrasté (lettres violettes sur fond clair).
+  const { width, height } = await sharp(upright).metadata();
+  const header = await sharp(upright)
+    .extract({ left: 0, top: 0, width, height: Math.round(height * 0.25) })
+    .greyscale()
+    .resize({ width: 1600 })
+    .normalise()
+    .threshold(150)
+    .png()
+    .toBuffer();
+  return arabicKind(await recognize('ara', header));
+}
+
+// Mots arabes qui désignent la pièce. Une lettre de différence est tolérée :
+// l'en-tête calligraphié se lit mal (« التعيف » pour « التعريف »).
+const ARABIC_KINDS = [
+  ['CIN', ['بطاقه', 'التعريف']],
+  ['LICENSE', ['رخصه', 'سياقه']],
+  ['PASSPORT', ['جواز', 'السفر']],
+];
+
+export function arabicKind(text) {
+  const words = (text.match(/[؀-ۿ]{3,}/g) ?? []).map(simplify);
+  for (const [kind, keys] of ARABIC_KINDS) {
+    if (words.some((word) => keys.some((key) => distance(word, key) <= 1))) {
+      return kind;
+    }
+  }
+  return null;
+}
+
+/** Mots qui désignent la pièce, en lettres latines ou en arabe. */
+export function documentKindFromText(text) {
+  if (/P<[A-Z]{3}/.test(text) || /PASS[EP]?PORT|جواز/.test(text)) {
+    return 'PASSPORT';
+  }
+  if (/PERMIS|CONDUIRE|DRIVING|رخصه|سياقه/.test(text)) return 'LICENSE';
+  if (/التعريف|بطاقه/.test(text)) return 'CIN';
+  return null;
+}
+
 /** Champs de la MRZ dont le chiffre de contrôle est bon. */
 const mrzScore = (mrz) =>
   mrz
@@ -604,16 +701,28 @@ export const documentReader = {
       ? await sharp(exif).rotate(rotation).toBuffer()
       : exif;
     if (documentType === 'PASSPORT') {
-      return { type: documentType, ...((await readMrz(upright)) ?? { number: null }) };
+      const mrz = await readMrz(upright);
+      // Pas de MRZ : on regarde quelle pièce c'est vraiment.
+      const kind = mrz
+        ? 'PASSPORT'
+        : await kindOf(upright, await recognize('eng', await prepare(upright)));
+      return { type: documentType, kind, ...(mrz ?? { number: null }) };
     }
     const text = await recognize('eng', await prepare(upright));
+    const kind = await kindOf(upright, text);
     if (documentType === 'LICENSE') {
       // Le numéro de CIN (case 6 de la carte de 2017) est une suite de
       // 8 chiffres ; le numéro du permis, lui, porte une barre.
       const withoutNumber = text.replace(/\d{2}\s*\/\s*\d{5,8}/g, ' ');
       return {
         type: documentType,
-        number: parseLicenseNumber(text),
+        kind,
+        // Numéro avec sa barre lu sur toute la carte, sinon de près, à côté
+        // de la photo, sinon un autre format de numéro.
+        number:
+          (/\d{2}\s*\/\s*\d{5,8}/.test(text) ? parseLicenseNumber(text) : null) ??
+          (box ? await licenseNumberNearPhoto(upright, box) : null) ??
+          parseLicenseNumber(text),
         categories: parseLicenseCategories(text),
         ...parseLicenseDates(text),
         ...parseLicenseHolder(text),
@@ -625,7 +734,7 @@ export const documentReader = {
           await recognize('ara', await cinFieldsImage(upright, box)),
         )
       : {};
-    return { type: documentType, number: parseCinNumber(text), ...fields };
+    return { type: documentType, kind, number: parseCinNumber(text), ...fields };
   },
 };
 
