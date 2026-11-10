@@ -147,3 +147,13 @@ test('lieu de naissance : lettres confondues par leurs points corrigées', () =>
   // Lieu inconnu : laissé tel quel.
   assert.equal(snapPlace('مكان'), 'مكان');
 });
+
+test('MRZ : deux lectures possibles, celle au format passeport retenue', () => {
+  // Numéro fictif « I100000 » lu « 1100000 » : deux corrections passent le
+  // contrôle (I100000 et 1100D00) ; seule la première a la forme d'un numéro.
+  const line2 = '1100000<<9UTO7408122F1204159ZE184226B<<<<<10';
+  const mrz = parseMrz(`${ICAO_LINE1}
+${line2}`);
+  assert.deepEqual(mrz.numberCandidates.sort(), ['1100D00', 'I100000']);
+  assert.equal(mrz.number, 'I100000');
+});

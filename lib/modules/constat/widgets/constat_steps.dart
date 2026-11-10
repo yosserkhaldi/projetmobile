@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
@@ -32,8 +33,8 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Card(
-        color: AppColors.primaryTint,
+      Card(
+        color: context.palette.primaryTint,
         child: ListTile(
           leading: Icon(Icons.screen_lock_portrait),
           title: Text('Informations du conducteur B'),
@@ -44,17 +45,17 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       ),
       const SizedBox(height: 10),
       Card(
-        color: AppColors.successBg,
+        color: context.palette.successBg,
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(
                     Icons.document_scanner_outlined,
-                    color: AppColors.successText,
+                    color: context.palette.successText,
                   ),
                   SizedBox(width: 8),
                   Expanded(
@@ -66,9 +67,9 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
                 ],
               ),
               const SizedBox(height: 5),
-              const Text(
+              Text(
                 'La photo est analysée localement. Vérifiez toujours les données détectées.',
-                style: TextStyle(color: AppColors.textMuted),
+                style: TextStyle(color: context.palette.textMuted),
               ),
               const SizedBox(height: 10),
               SizedBox(
@@ -133,10 +134,10 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
         },
       ),
       const SizedBox(height: 18),
-      const Text(
+      Text(
         'ASSURANCE',
         style: TextStyle(
-          color: AppColors.textMuted,
+          color: context.palette.textMuted,
           fontSize: 12,
           fontWeight: FontWeight.w800,
           letterSpacing: .5,
@@ -248,9 +249,9 @@ class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             'L’OCR peut faire des erreurs. Corrigez les champs avant confirmation.',
-            style: TextStyle(color: AppColors.textMuted),
+            style: TextStyle(color: context.palette.textMuted),
           ),
           const SizedBox(height: 14),
           TextField(
@@ -275,9 +276,9 @@ class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
             children: [
               SelectableText(
                 widget.data.rawText,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textMuted,
+                  color: context.palette.textMuted,
                 ),
               ),
             ],
@@ -471,14 +472,14 @@ class CircumstancesStep extends StatelessWidget {
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 4),
-      const Text(
+      Text(
         'Sélectionnez les circonstances applicables pour chaque conducteur.',
-        style: TextStyle(color: AppColors.textMuted),
+        style: TextStyle(color: context.palette.textMuted),
       ),
       const SizedBox(height: 16),
-      const Text(
+      Text(
         'Véhicule A (Votre véhicule)',
-        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primary),
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.palette.primaryText),
       ),
       const SizedBox(height: 8),
       for (final choice in choices)
@@ -486,7 +487,7 @@ class CircumstancesStep extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 6),
           child: CheckboxListTile(
             value: draft.circumstancesA.contains(choice),
-            activeColor: AppColors.primary,
+            activeColor: context.palette.primaryText,
             controlAffinity: ListTileControlAffinity.leading,
             title: Text(
               choice,
@@ -580,8 +581,8 @@ class SketchStep extends StatelessWidget {
               (zone) => FilterChip(
                 label: Text(zone),
                 selected: draft.impactZones.contains(zone),
-                selectedColor: AppColors.primaryTint,
-                checkmarkColor: AppColors.primary,
+                selectedColor: context.palette.primaryTint,
+                checkmarkColor: context.palette.primaryText,
                 onSelected: (selected) {
                   selected
                       ? draft.impactZones.add(zone)

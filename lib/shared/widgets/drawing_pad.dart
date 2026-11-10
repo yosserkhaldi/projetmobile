@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:flutter/services.dart';
 
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 
 class DrawingPad extends StatefulWidget {
   const DrawingPad({
@@ -38,19 +38,19 @@ class DrawingPreview extends StatelessWidget {
     height: height,
     width: double.infinity,
     decoration: BoxDecoration(
-      color: AppColors.surface,
-      border: Border.all(color: AppColors.border),
+      color: context.palette.surface,
+      border: Border.all(color: context.palette.border),
       borderRadius: BorderRadius.circular(12),
     ),
     child: ClipRRect(
       borderRadius: BorderRadius.circular(11),
       child: CustomPaint(
-        painter: _StrokePainter(strokes),
+        painter: _StrokePainter(strokes, context.palette.text),
         child: strokes.isEmpty
             ? Center(
                 child: Text(
                   emptyLabel,
-                  style: const TextStyle(color: AppColors.textMuted),
+                  style: TextStyle(color: context.palette.textMuted),
                 ),
               )
             : null,
@@ -85,11 +85,11 @@ class _DrawingPadState extends State<DrawingPad> {
               height: widget.height,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.palette.surface,
                 border: Border.all(
                   color: widget.strokes.isEmpty
-                      ? AppColors.border
-                      : AppColors.primary,
+                      ? context.palette.border
+                      : context.palette.primaryText,
                   width: widget.strokes.isEmpty ? 1.5 : 2,
                 ),
                 borderRadius: BorderRadius.circular(16),
@@ -97,23 +97,23 @@ class _DrawingPadState extends State<DrawingPad> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: CustomPaint(
-                  painter: _StrokePainter(widget.strokes),
+                  painter: _StrokePainter(widget.strokes, context.palette.text),
                   child: widget.strokes.isEmpty
                       ? Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.gesture_rounded,
                                 size: 42,
-                                color: AppColors.primary,
+                                color: context.palette.primaryText,
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 widget.hint,
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: AppColors.textMuted,
+                                style: TextStyle(
+                                  color: context.palette.textMuted,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -200,11 +200,11 @@ class DrawingField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Material(
-          color: AppColors.surface,
+          color: context.palette.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
             side: BorderSide(
-              color: empty ? AppColors.border : AppColors.primary,
+              color: empty ? context.palette.border : context.palette.primaryText,
               width: empty ? 1.5 : 2,
             ),
           ),
@@ -219,24 +219,24 @@ class DrawingField extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(icon, size: 40, color: AppColors.primary),
+                          Icon(icon, size: 40, color: context.palette.primaryText),
                           const SizedBox(height: 8),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
                               hint,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: AppColors.textMuted,
+                              style: TextStyle(
+                                color: context.palette.textMuted,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                           const SizedBox(height: 6),
-                          const Text(
+                          Text(
                             'Touchez pour dessiner en plein écran',
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: context.palette.primaryText,
                               fontSize: 12.5,
                               fontWeight: FontWeight.w800,
                             ),
@@ -244,7 +244,7 @@ class DrawingField extends StatelessWidget {
                         ],
                       ),
                     )
-                  : CustomPaint(painter: _StrokePainter(strokes)),
+                  : CustomPaint(painter: _StrokePainter(strokes, context.palette.text)),
             ),
           ),
         ),
@@ -313,7 +313,7 @@ class _FullscreenDrawingPageState extends State<FullscreenDrawingPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.surfaceAlt,
+    backgroundColor: context.palette.surfaceAlt,
     appBar: AppBar(
       leading: IconButton(
         tooltip: 'Fermer sans enregistrer',
@@ -368,21 +368,21 @@ class _FullscreenDrawingPageState extends State<FullscreenDrawingPage> {
                   },
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      border: Border.all(color: AppColors.primary, width: 2),
+                      color: context.palette.surface,
+                      border: Border.all(color: context.palette.primaryText, width: 2),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(14),
                       child: CustomPaint(
-                        painter: _StrokePainter(_strokes),
+                        painter: _StrokePainter(_strokes, context.palette.text),
                         child: _strokes.isEmpty
                             ? Center(
                                 child: Text(
                                   widget.hint,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: AppColors.textMuted,
+                                  style: TextStyle(
+                                    color: context.palette.textMuted,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -402,13 +402,16 @@ class _FullscreenDrawingPageState extends State<FullscreenDrawingPage> {
 }
 
 class _StrokePainter extends CustomPainter {
-  const _StrokePainter(this.strokes);
+  /// [color] : encre du thème, visible en clair comme en sombre (le PDF,
+  /// lui, reste noir sur blanc).
+  const _StrokePainter(this.strokes, this.color);
+  final Color color;
   final List<List<Map<String, double>>> strokes;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.ink
+      ..color = color
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round

@@ -140,5 +140,11 @@ class AppPalette extends ThemeExtension<AppPalette> {
 }
 
 extension PaletteContext on BuildContext {
-  AppPalette get palette => Theme.of(this).extension<AppPalette>()!;
+  /// Palette du thème de l'application ; hors de ce thème (widget testé
+  /// seul, par exemple), la palette claire ou sombre par défaut.
+  AppPalette get palette {
+    final theme = Theme.of(this);
+    return theme.extension<AppPalette>() ??
+        (theme.brightness == Brightness.dark ? AppPalette.dark : AppPalette.light);
+  }
 }

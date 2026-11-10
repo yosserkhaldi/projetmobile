@@ -71,7 +71,7 @@ class GuestQrScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: context.palette.border),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withAlpha(15),
@@ -92,18 +92,18 @@ class GuestQrScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryTint,
+                        color: context.palette.primaryTint,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.wifi_off_outlined, color: AppColors.primary, size: 20),
+                          Icon(Icons.wifi_off_outlined, color: context.palette.primaryText, size: 20),
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               'Aucune installation d’application requise pour le conducteur B.',
                               style: TextStyle(
-                                color: AppColors.primary,
+                                color: context.palette.primaryText,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),

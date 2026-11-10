@@ -57,6 +57,9 @@ class _MonConstatAppState extends State<MonConstatApp>
       stores.users.refreshBiometricAvailability();
       // Le réseau est peut-être revenu : envoyer la file hors ligne.
       stores.users.syncPending();
+      if (stores.users.status == AuthStatus.signedIn) {
+        unawaited(stores.vehicles.syncWithServer());
+      }
     }
   }
 

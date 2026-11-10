@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
@@ -61,10 +62,14 @@ class _AccidentWizardState extends State<AccidentWizard> {
     witnessName.text = draft.witnessName;
     witnessPhone.text = draft.witnessPhone;
     observations.text = draft.observations;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      VehicleChoice.preselect(draft, AppScope.of(context).vehicles.vehicles);
+      final vehicles = AppScope.of(context).vehicles;
       _persistDraft();
+      // Véhicules à jour avant de choisir (ajoutés ailleurs, par exemple).
+      await vehicles.syncWithServer();
+      if (!mounted) return;
+      VehicleChoice.preselect(draft, vehicles.vehicles);
       setState(() {});
     });
   }
@@ -200,7 +205,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(
+      builder: (_) => Center(
         child: Card(
           child: Padding(
             padding: EdgeInsets.all(24),
@@ -216,7 +221,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
                 SizedBox(height: 4),
                 Text(
                   'Calcul du hash SHA-256 et transmission',
-                  style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  style: TextStyle(fontSize: 12, color: context.palette.textMuted),
                 ),
               ],
             ),
@@ -516,7 +521,7 @@ class _ProgressHeader extends StatelessWidget {
   final List<(String, String)> steps;
   @override
   Widget build(BuildContext context) => Container(
-    color: AppColors.surface,
+    color: context.palette.surface,
     padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,8 +531,8 @@ class _ProgressHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 'Étape ${step + 1} sur ${steps.length}',
-                style: const TextStyle(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  color: context.palette.primaryText,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -544,7 +549,7 @@ class _ProgressHeader extends StatelessWidget {
         Text(steps[step].$1, style: Theme.of(context).textTheme.headlineSmall),
         Text(
           steps[step].$2,
-          style: const TextStyle(color: AppColors.textMuted),
+          style: TextStyle(color: context.palette.textMuted),
         ),
         const SizedBox(height: 14),
         Row(
@@ -558,10 +563,10 @@ class _ProgressHeader extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: index < step
-                      ? AppColors.primary
+                      ? context.palette.primaryText
                       : index == step
                       ? AppColors.accent
-                      : AppColors.border,
+                      : context.palette.border,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -586,9 +591,9 @@ class _BottomActions extends StatelessWidget {
   final VoidCallback onBack, onContinue;
   @override
   Widget build(BuildContext context) => Container(
-    decoration: const BoxDecoration(
-      color: AppColors.surface,
-      border: Border(top: BorderSide(color: AppColors.borderSoft)),
+    decoration: BoxDecoration(
+      color: context.palette.surface,
+      border: Border(top: BorderSide(color: context.palette.borderSoft)),
     ),
     padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
     child: Row(
