@@ -1,7 +1,7 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
@@ -9,26 +9,24 @@ import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/constat/models/constat.dart';
-import 'package:mon_constat_digital/modules/constat/services/constat_crypto_service.dart';
 
 class ConstatSealedScreen extends StatelessWidget {
   const ConstatSealedScreen({
     required this.constat,
     required this.draft,
     this.pdfBytes,
+    this.driverA,
     super.key,
   });
 
   final Constat constat;
   final AccidentDraft draft;
   final Uint8List? pdfBytes;
-
-  static const _crypto = ConstatCryptoService();
+  final ConstatDriverAData? driverA;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final formattedHash = _crypto.formatHash(constat.sha256Hash);
 
     return Scaffold(
       backgroundColor: palette.canvas,
@@ -151,9 +149,10 @@ class ConstatSealedScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                               child: Image.memory(
                                 base64Decode(constat.qrCodeBase64!),
-                                width: 200,
-                                height: 200,
+                                width: 220,
+                                height: 220,
                                 fit: BoxFit.contain,
+                                filterQuality: FilterQuality.none,
                               ),
                             )
                           : Container(
@@ -211,78 +210,6 @@ class ConstatSealedScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Empreinte SHA-256
-            Card(
-              color: AppColors.ink,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.fingerprint,
-                          color: Color(0xFF7FE0CC),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text(
-                            'EMPREINTE DE SÉCURITÉ (SHA-256)',
-                            style: TextStyle(
-                              color: Color(0xFF7FE0CC),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12,
-                              letterSpacing: .8,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.copy, color: Colors.white, size: 18),
-                          tooltip: 'Copier l’empreinte',
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: constat.sha256Hash));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Empreinte SHA-256 copiée !')),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.navy800,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: SelectableText(
-                        formattedHash,
-                        style: const TextStyle(
-                          color: AppColors.onDarkStrong,
-                          fontFamily: 'JetBrains Mono',
-                          fontSize: 12,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Cette signature cryptographique certifie que le constat PDF n’a subi aucune modification depuis sa double signature.',
-                      style: TextStyle(color: AppColors.onDarkBody, fontSize: 11),
                     ),
                   ],
                 ),
@@ -353,6 +280,15 @@ class ConstatSealedScreen extends StatelessWidget {
                               : 'Assurance A',
                           style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                         ),
+                        if (constat.driverAPolicy != null &&
+                            constat.driverAPolicy!.isNotEmpty)
+                          Text(
+                            'Police : ${constat.driverAPolicy}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -419,6 +355,15 @@ class ConstatSealedScreen extends StatelessWidget {
                               : 'Assurance B',
                           style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                         ),
+                        if (constat.driverBPolicy != null &&
+                            constat.driverBPolicy!.isNotEmpty)
+                          Text(
+                            'Police : ${constat.driverBPolicy}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -450,9 +395,38 @@ class ConstatSealedScreen extends StatelessWidget {
     );
   }
 
+  Uint8List? _getQrBytes() {
+    if (constat.qrCodeBase64 != null && constat.qrCodeBase64!.isNotEmpty) {
+      try {
+        return base64Decode(constat.qrCodeBase64!);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  Future<Uint8List> _resolveOfficialPdfBytes() async {
+    if (pdfBytes != null && pdfBytes!.isNotEmpty) {
+      return pdfBytes!;
+    }
+    final resolvedA = driverA ?? ConstatDriverAData.fromConstat(constat);
+    final qrBytes = _getQrBytes();
+    return AccidentPdfService().build(
+      draft,
+      qrCodeBytes: qrBytes,
+      verifierUrl: constat.verifierUrl,
+      driverA: resolvedA,
+      constatRef: constat.id.length >= 8
+          ? constat.id.substring(0, 8).toUpperCase()
+          : constat.id,
+      sha256Hex: constat.sha256Hash,
+    );
+  }
+
   Future<void> _viewPdf(BuildContext context) async {
     try {
-      final bytes = pdfBytes ?? await AccidentPdfService().build(draft);
+      final bytes = await _resolveOfficialPdfBytes();
       await Printing.layoutPdf(
         name: 'constat-${constat.sha256Hash.substring(0, 8)}.pdf',
         onLayout: (_) async => bytes,
@@ -468,7 +442,7 @@ class ConstatSealedScreen extends StatelessWidget {
 
   Future<void> _sharePdf(BuildContext context) async {
     try {
-      final bytes = pdfBytes ?? await AccidentPdfService().build(draft);
+      final bytes = await _resolveOfficialPdfBytes();
       await Printing.sharePdf(
         bytes: bytes,
         filename: 'constat-${constat.sha256Hash.substring(0, 8)}.pdf',

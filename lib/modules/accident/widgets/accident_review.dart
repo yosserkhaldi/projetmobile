@@ -2,18 +2,33 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
 
 class AccidentReview extends StatelessWidget {
-  const AccidentReview({required this.draft, super.key});
+  const AccidentReview({required this.draft, this.driverA, super.key});
   final AccidentDraft draft;
+  final ConstatDriverAData? driverA;
   static final _pdf = AccidentPdfService();
 
+  ConstatDriverAData _resolveDriverA(BuildContext context) {
+    if (driverA != null) return driverA!;
+    final scope = context.dependOnInheritedWidgetOfExactType<AppScope>();
+    if (scope == null) return const ConstatDriverAData();
+    final stores = scope.stores;
+    return ConstatDriverAData.fromUserAndVehicle(
+      user: stores.users.currentUser,
+      vehicle: stores.vehicles.vehicles.firstOrNull,
+    );
+  }
+
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) {
+    final resolvedA = _resolveDriverA(context);
+    return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Divider(height: 32),
@@ -23,7 +38,7 @@ class AccidentReview extends StatelessWidget {
         style: TextStyle(color: AppColors.textMuted),
       ),
       const SizedBox(height: 14),
-      _PdfActions(draft: draft, service: _pdf),
+      _PdfActions(draft: draft, service: _pdf, driverA: resolvedA),
       const SizedBox(height: 14),
       _Section(
         title: 'Accident',
@@ -42,6 +57,23 @@ class AccidentReview extends StatelessWidget {
         ],
       ),
       _Section(
+        title: 'Conducteur & Véhicule A',
+        icon: Icons.directions_car_filled_outlined,
+        rows: [
+          if (resolvedA.fullName.isNotEmpty) ('Nom', resolvedA.fullName),
+          if (resolvedA.phone.isNotEmpty) ('Téléphone', resolvedA.phone),
+          if (resolvedA.licenseNumber.isNotEmpty)
+            ('Permis', resolvedA.licenseNumber),
+          if (resolvedA.vehicleLabel.isNotEmpty)
+            ('Véhicule', resolvedA.vehicleLabel),
+          if (resolvedA.plate.isNotEmpty) ('Immatriculation', resolvedA.plate),
+          if (resolvedA.insurerName.isNotEmpty)
+            ('Assurance', resolvedA.insurerName),
+          if (resolvedA.policyNumber.isNotEmpty)
+            ('N° de police', resolvedA.policyNumber),
+        ],
+      ),
+      _Section(
         title: 'Conducteur B',
         icon: Icons.person_outline,
         rows: [
@@ -51,6 +83,8 @@ class AccidentReview extends StatelessWidget {
             ('Validité du permis', draft.driverBPermitExpiry),
           ('Immatriculation', draft.driverBPlate),
           ('Assurance', draft.driverBInsurer),
+          if (draft.driverBPolicy.isNotEmpty)
+            ('N° de police', draft.driverBPolicy),
         ],
       ),
       _Section(
@@ -100,6 +134,7 @@ class AccidentReview extends StatelessWidget {
       ),
     ],
   );
+  }
 
   static String _dateTime(DateTime value) =>
       '${value.day.toString().padLeft(2, '0')}/'
@@ -109,9 +144,14 @@ class AccidentReview extends StatelessWidget {
 }
 
 class _PdfActions extends StatefulWidget {
-  const _PdfActions({required this.draft, required this.service});
+  const _PdfActions({
+    required this.draft,
+    required this.service,
+    required this.driverA,
+  });
   final AccidentDraft draft;
   final AccidentPdfService service;
+  final ConstatDriverAData driverA;
 
   @override
   State<_PdfActions> createState() => _PdfActionsState();
@@ -160,7 +200,7 @@ class _PdfActionsState extends State<_PdfActions> {
           ),
           const SizedBox(height: 5),
           const Text(
-            'Le document reprend les informations, photos, croquis et signatures.',
+            'Le document reprend les informations officielles, photos, croquis et signatures.',
             style: TextStyle(color: AppColors.textMuted),
           ),
           const SizedBox(height: 12),
@@ -171,8 +211,12 @@ class _PdfActionsState extends State<_PdfActions> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () =>
-                        _run(() => widget.service.preview(widget.draft)),
+                    onPressed: () => _run(
+                      () => widget.service.preview(
+                        widget.draft,
+                        driverA: widget.driverA,
+                      ),
+                    ),
                     icon: const Icon(Icons.visibility_outlined),
                     label: const Text('Aperçu'),
                   ),
@@ -180,8 +224,12 @@ class _PdfActionsState extends State<_PdfActions> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: () =>
-                        _run(() => widget.service.share(widget.draft)),
+                    onPressed: () => _run(
+                      () => widget.service.share(
+                        widget.draft,
+                        driverA: widget.driverA,
+                      ),
+                    ),
                     icon: const Icon(Icons.share_outlined),
                     label: const Text('Partager'),
                   ),

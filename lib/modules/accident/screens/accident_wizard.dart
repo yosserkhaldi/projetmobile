@@ -9,6 +9,7 @@ import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/constat/models/constat.dart';
 import 'package:mon_constat_digital/modules/constat/screens/constat_sealed_screen.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/constat_steps.dart';
+import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 
 /// Parcours en 7 étapes : les 3 premières relèvent du module 3 (déclaration),
 /// les 4 suivantes du module 4 (constat).
@@ -27,6 +28,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
   final witnessName = TextEditingController();
   final witnessPhone = TextEditingController();
   final observations = TextEditingController();
+  String? _selectedVehicleAId;
   int step = 0;
 
   static const steps = [
@@ -104,24 +106,62 @@ class _AccidentWizardState extends State<AccidentWizard> {
     ),
   );
 
-  Widget _content() => switch (step) {
-    0 => ContextStep(draft: draft, place: place, onChanged: _touch),
-    1 => DescriptionStep(
-      draft: draft,
-      witnessName: witnessName,
-      witnessPhone: witnessPhone,
-      onChanged: _touch,
-    ),
-    2 => EvidenceStep(draft: draft, onChanged: _touch),
-    3 => GuestDriverStep(draft: draft, onChanged: _touch),
-    4 => CircumstancesStep(
-      draft: draft,
-      observations: observations,
-      onChanged: _touch,
-    ),
-    5 => SketchStep(draft: draft, onChanged: _touch),
-    _ => SignatureStep(draft: draft, onChanged: _touch),
-  };
+  Vehicle? _resolveVehicleA(AppStores stores) {
+    final active = stores.vehicles.vehicles;
+    if (active.isEmpty) return null;
+    if (_selectedVehicleAId != null) {
+      for (final v in active) {
+        if (v.id == _selectedVehicleAId) return v;
+      }
+    }
+    return active.first;
+  }
+
+  ConstatDriverAData _buildDriverA(AppStores stores) =>
+      ConstatDriverAData.fromUserAndVehicle(
+        user: stores.users.currentUser,
+        vehicle: _resolveVehicleA(stores),
+      );
+
+  Widget _content() {
+    final stores = AppScope.of(context);
+    final driverA = _buildDriverA(stores);
+    return switch (step) {
+      0 => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _VehicleASelectorCard(
+            vehicles: stores.vehicles.vehicles,
+            selected: _resolveVehicleA(stores),
+            driverName: stores.users.userName,
+            onChanged: (vehicleId) =>
+                setState(() => _selectedVehicleAId = vehicleId),
+          ),
+          const SizedBox(height: 14),
+          ContextStep(draft: draft, place: place, onChanged: _touch),
+        ],
+      ),
+      1 => DescriptionStep(
+        draft: draft,
+        witnessName: witnessName,
+        witnessPhone: witnessPhone,
+        onChanged: _touch,
+      ),
+      2 => EvidenceStep(draft: draft, onChanged: _touch),
+      3 => GuestDriverStep(draft: draft, onChanged: _touch),
+      4 => CircumstancesStep(
+        draft: draft,
+        observations: observations,
+        onChanged: _touch,
+      ),
+      5 => SketchStep(draft: draft, onChanged: _touch),
+      _ => SignatureStep(
+        draft: draft,
+        driverA: driverA,
+        onChanged: _touch,
+      ),
+    };
+  }
 
   void _touch() {
     draft.touch();
@@ -179,14 +219,29 @@ class _AccidentWizardState extends State<AccidentWizard> {
       ),
     );
 
+    final vehicleA = _resolveVehicleA(stores);
+    final driverA = _buildDriverA(stores);
+    final resolvedDriverAName =
+        driverA.fullName.isNotEmpty ? driverA.fullName : stores.users.userName;
+    final resolvedDriverAPlate =
+        driverA.plate.isNotEmpty ? driverA.plate : 'Véhicule A';
+    final resolvedDriverAInsurer =
+        driverA.insurerName.isNotEmpty ? driverA.insurerName : 'Assureur A';
+    final resolvedDriverAPolicy =
+        driverA.policyNumber.isNotEmpty ? driverA.policyNumber : null;
+    final resolvedCompanyAId =
+        vehicleA?.companyId ?? stores.users.currentUser?.companyId;
+
     try {
       final sealed = await stores.constats.sealAndSubmit(
         draft: draft,
-        driverAName: stores.users.userName,
-        driverAPlate: 'Véhicule A',
-        driverAInsurer: stores.users.currentUser?.companyName ?? 'Assureur A',
-        companyAId: stores.users.currentUser?.companyId,
+        driverAName: resolvedDriverAName,
+        driverAPlate: resolvedDriverAPlate,
+        driverAInsurer: resolvedDriverAInsurer,
+        driverAPolicy: resolvedDriverAPolicy,
+        companyAId: resolvedCompanyAId,
         companyBId: draft.driverBCompanyId,
+        driverA: driverA,
       );
 
       final claim = Claim(
@@ -218,12 +273,19 @@ class _AccidentWizardState extends State<AccidentWizard> {
             constat: sealed,
             draft: draft,
             pdfBytes: stores.constats.lastSealedPdfBytes,
+            driverA: driverA,
           ),
         ),
       );
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('[ConstatWizard] Scellement serveur échoué, bascule hors-ligne : $e\n$st');
       // En cas de mode déconnecté (hors-ligne), scellement local garanti
-      final pdfBytes = await AccidentPdfService().build(draft);
+      final offlineAt = DateTime.now().toUtc();
+      final pdfBytes = await AccidentPdfService().build(
+        draft,
+        driverA: driverA,
+        generatedAt: offlineAt,
+      );
       final hash = stores.constats.crypto.computeSha256(pdfBytes);
       final localConstat = Constat(
         id: 'local-${DateTime.now().millisecondsSinceEpoch}',
@@ -231,12 +293,14 @@ class _AccidentWizardState extends State<AccidentWizard> {
         status: 'SIGNED',
         sha256Hash: hash,
         pdfUrl: '',
-        driverAName: stores.users.userName,
-        driverAPlate: 'Véhicule A',
-        driverAInsurer: stores.users.currentUser?.companyName ?? 'Assureur A',
+        driverAName: resolvedDriverAName,
+        driverAPlate: resolvedDriverAPlate,
+        driverAInsurer: resolvedDriverAInsurer,
+        driverAPolicy: resolvedDriverAPolicy,
         driverBName: draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
         driverBPlate: draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'Véhicule B',
         driverBInsurer: draft.driverBInsurer.isNotEmpty ? draft.driverBInsurer : 'Assureur B',
+        driverBPolicy: draft.driverBPolicy.isNotEmpty ? draft.driverBPolicy : null,
         place: draft.place,
         occurredAt: draft.occurredAt,
         circumstancesA: draft.circumstancesA.toList(),
@@ -273,6 +337,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
             constat: localConstat,
             draft: draft,
             pdfBytes: pdfBytes,
+            driverA: driverA,
           ),
         ),
       );
@@ -473,4 +538,82 @@ class _BottomActions extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _VehicleASelectorCard extends StatelessWidget {
+  const _VehicleASelectorCard({
+    required this.vehicles,
+    required this.selected,
+    required this.driverName,
+    required this.onChanged,
+  });
+
+  final List<Vehicle> vehicles;
+  final Vehicle? selected;
+  final String driverName;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (vehicles.isEmpty) {
+      return Card(
+        color: AppColors.primaryTint,
+        child: ListTile(
+          leading: const Icon(Icons.directions_car_outlined, color: AppColors.primary),
+          title: const Text(
+            'Véhicule A — Profil conducteur',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+          ),
+          subtitle: Text(
+            '$driverName • Enregistrez un véhicule dans Mes véhicules pour pré-remplir plaque et N° police.',
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+      );
+    }
+
+    if (vehicles.length == 1 && selected != null) {
+      final v = selected!;
+      final insurer = (v.companyName ?? '').isNotEmpty
+          ? v.companyName!
+          : v.insurerName;
+      return Card(
+        color: AppColors.primaryTint,
+        child: ListTile(
+          leading: const CircleAvatar(
+            backgroundColor: AppColors.primary,
+            child: Text(
+              'A',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+            ),
+          ),
+          title: Text(
+            '${v.brand} ${v.model} • ${v.plate}',
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+          ),
+          subtitle: Text(
+            '${insurer.isNotEmpty ? insurer : 'Assurance'} • Police ${v.policy.isNotEmpty ? v.policy : 'non renseignée'}',
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+      );
+    }
+
+    return DropdownButtonFormField<String>(
+      initialValue: selected?.id,
+      decoration: const InputDecoration(
+        labelText: 'Votre véhicule impliqué (Véhicule A)',
+        prefixIcon: Icon(Icons.directions_car_outlined),
+      ),
+      items: vehicles
+          .map(
+            (v) => DropdownMenuItem<String>(
+              value: v.id,
+              child: Text('${v.brand} ${v.model} • ${v.plate}'),
+            ),
+          )
+          .toList(),
+      onChanged: onChanged,
+    );
+  }
 }

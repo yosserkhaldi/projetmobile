@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Router } from 'express';
 import { z } from 'zod';
@@ -8,15 +9,32 @@ import { constatSealedEmail } from '../../lib/emails.js';
 import { HttpError } from '../../lib/errors.js';
 import { CONSTAT_PUBLIC_JWK, generateConstatQr, signConstatJws } from '../../lib/jws.js';
 import { notifier } from '../../lib/notifier.js';
+import { hasPdfSignature, signPdfBuffer } from '../../lib/pdf-signature.js';
 import { prisma } from '../../lib/prisma.js';
 import { filePath, savePdf, singlePdf } from '../../lib/uploads.js';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 
 const router = Router();
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const FINALIZATION_WINDOW_MS = 120_000;
+const pendingFinalizations = new Map();
+
+function rememberPendingSignaturesHash(constatId, signaturesHash) {
+  const cutoff = Date.now() - 10 * 60_000;
+  for (const [key, entry] of pendingFinalizations.entries()) {
+    if (entry.createdAtMs < cutoff) pendingFinalizations.delete(key);
+  }
+  pendingFinalizations.set(constatId, {
+    signaturesHash: signaturesHash || null,
+    createdAtMs: Date.now(),
+  });
+}
 
 const constatSchema = z.object({
   accidentId: z.string().uuid().optional(),
   sha256Hash: z.string().length(64).regex(/^[a-f0-9]{64}$/i),
+  signaturesHash: z.string().length(64).regex(/^[a-f0-9]{64}$/i).optional(),
+  deferEmail: z.boolean().optional().default(false),
   driverAName: z.string().trim().min(2).max(100),
   driverAPlate: z.string().trim().min(2).max(20),
   driverAInsurer: z.string().trim().min(2).max(100),
@@ -109,6 +127,7 @@ router.get('/verify/:hash', async (req, res) => {
     where: { sha256Hash: hash },
     select: {
       id: true,
+      accidentId: true,
       sha256Hash: true,
       status: true,
       place: true,
@@ -119,6 +138,11 @@ router.get('/verify/:hash', async (req, res) => {
       driverBName: true,
       driverBPlate: true,
       driverBInsurer: true,
+      circumstancesA: true,
+      circumstancesB: true,
+      impactZones: true,
+      observations: true,
+      sketchData: true,
       driverASignedAt: true,
       driverBSignedAt: true,
       createdAt: true,
@@ -219,17 +243,15 @@ function verifyBufferHash(buffer, expectedHash) {
   }
 }
 
-async function extractAndVerifyPdf(req, data, bodyData) {
+async function extractVerifiedPdfBuffer(req, data, bodyData) {
   if (req.file) {
     verifyBufferHash(req.file.buffer, data.sha256Hash);
-    const pdfFileName = await savePdf(req.file, 'constats');
-    return { fileBuffer: req.file.buffer, pdfFileName };
+    return { buffer: req.file.buffer, fileForSave: req.file };
   }
   if (bodyData.pdfBase64) {
     const fileBuffer = Buffer.from(bodyData.pdfBase64, 'base64');
     verifyBufferHash(fileBuffer, data.sha256Hash);
-    const pdfFileName = await savePdf({ buffer: fileBuffer }, 'constats');
-    return { fileBuffer, pdfFileName };
+    return { buffer: fileBuffer, fileForSave: { buffer: fileBuffer } };
   }
   throw new HttpError(400, 'PDF_REQUIRED', 'Le document PDF signé est requis.');
 }
@@ -289,11 +311,16 @@ function sendSealedNotifications(constat, data, fileBuffer, user) {
 router.post('/', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
   const bodyData = parseBodyData(req);
   const data = constatSchema.parse(bodyData);
+  const normalizedSha256 = data.sha256Hash.toLowerCase();
 
-  const { fileBuffer, pdfFileName } = await extractAndVerifyPdf(req, data, bodyData);
+  const { buffer: rawPdfBuffer, fileForSave } = await extractVerifiedPdfBuffer(
+    req,
+    data,
+    bodyData,
+  );
 
   const existingWithHash = await prisma.constat.findUnique({
-    where: { sha256Hash: data.sha256Hash },
+    where: { sha256Hash: normalizedSha256 },
   });
   if (existingWithHash) {
     throw new HttpError(
@@ -303,13 +330,14 @@ router.post('/', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
     );
   }
 
+  const pdfFileName = await savePdf(fileForSave, 'constats');
   await linkAccident(data.accidentId, req.user.id);
 
   const constat = await prisma.constat.create({
     data: {
       userId: req.user.id,
       accidentId: data.accidentId,
-      sha256Hash: data.sha256Hash.toLowerCase(),
+      sha256Hash: normalizedSha256,
       pdfFile: pdfFileName,
       driverAName: data.driverAName,
       driverAPlate: data.driverAPlate,
@@ -335,9 +363,24 @@ router.post('/', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
     },
   });
 
-  sendSealedNotifications(constat, data, fileBuffer, req.user);
+  const pdfDiskPath = resolve(filePath(pdfFileName, 'constats'));
+  if (data.deferEmail) {
+    rememberPendingSignaturesHash(constat.id, data.signaturesHash);
+  } else {
+    const signedPdfBuffer = signPdfBuffer(rawPdfBuffer, {
+      constatId: constat.id,
+      contentSha256: constat.sha256Hash,
+      signaturesSha256: data.signaturesHash || null,
+      signedAt: constat.createdAt,
+    });
+    await writeFile(pdfDiskPath, signedPdfBuffer);
+    sendSealedNotifications(constat, data, signedPdfBuffer, req.user);
+  }
 
-  const { jws } = signConstatJws(constat);
+  const { jws } = signConstatJws({
+    ...constat,
+    signaturesHash: data.signaturesHash || null,
+  });
   const { qrCodeBase64, verifierUrl } = await generateConstatQr(jws);
 
   res.status(201).json({
@@ -351,6 +394,69 @@ router.post('/', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
     qrCodeBase64,
     verifierUrl,
   });
+});
+
+// ── 6. Finalisation unique : scellement ECDSA du PDF avec QR Code intégré ───
+router.post('/:id/finalize-pdf', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
+  const { id } = req.params;
+  if (!UUID_REGEX.test(id)) {
+    throw new HttpError(400, 'INVALID_ID', 'Identifiant de constat invalide.');
+  }
+
+  const constat = await findAuthorizedConstat(id, req.user);
+  if (constat.userId !== req.user.id) {
+    throw new HttpError(403, 'FORBIDDEN', 'Seul le conducteur déclarant peut finaliser ce PDF.');
+  }
+
+  if (!req.file) {
+    throw new HttpError(400, 'PDF_REQUIRED', 'Le document PDF estampillé est requis.');
+  }
+  const uploaded = req.file.buffer;
+  if (uploaded.length < 4 || uploaded.subarray(0, 4).toString('ascii') !== '%PDF') {
+    throw new HttpError(415, 'UNSUPPORTED_FILE', 'Format accepté : PDF uniquement.');
+  }
+
+  const pdfDiskPath = resolve(filePath(constat.pdfFile, 'constats'));
+  if (!existsSync(pdfDiskPath)) {
+    throw new HttpError(404, 'PDF_NOT_FOUND', 'Fichier PDF introuvable sur le serveur.');
+  }
+
+  const existingDiskPdf = await readFile(pdfDiskPath);
+  if (hasPdfSignature(existingDiskPdf)) {
+    throw new HttpError(
+      409,
+      'PDF_ALREADY_FINALIZED',
+      'Le PDF scellé de ce constat est déjà signé et verrouillé.',
+    );
+  }
+
+  if (Date.now() - constat.createdAt.getTime() > FINALIZATION_WINDOW_MS) {
+    throw new HttpError(
+      409,
+      'FINALIZATION_WINDOW_EXPIRED',
+      'La fenêtre de finalisation du PDF est expirée.',
+    );
+  }
+
+  const pending = pendingFinalizations.get(constat.id);
+  pendingFinalizations.delete(constat.id);
+
+  const signedPdfBuffer = signPdfBuffer(uploaded, {
+    constatId: constat.id,
+    contentSha256: constat.sha256Hash,
+    signaturesSha256: pending?.signaturesHash || null,
+    signedAt: constat.createdAt,
+  });
+
+  await writeFile(pdfDiskPath, signedPdfBuffer);
+  sendSealedNotifications(constat, constat, signedPdfBuffer, req.user);
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader(
+    'Content-Disposition',
+    `inline; filename="constat-${constat.sha256Hash.slice(0, 10)}.pdf"`,
+  );
+  res.status(200).send(signedPdfBuffer);
 });
 
 export default router;

@@ -15,33 +15,46 @@ class ConstatService {
     required AccidentDraft draft,
     required Uint8List pdfBytes,
     required String sha256Hash,
+    String? signaturesHash,
+    DateTime? signedAt,
+    bool deferEmail = false,
     String? accidentId,
+    String? driverAName,
+    String? driverAPlate,
+    String? driverAInsurer,
     String? driverAPolicy,
     String? companyAId,
     String? companyBId,
   }) async {
+    final signedIso = (signedAt ?? DateTime.now()).toUtc().toIso8601String();
     final payload = {
-      if (accidentId != null) 'accidentId': accidentId,
+      if (accidentId != null && accidentId.isNotEmpty) 'accidentId': accidentId,
       'sha256Hash': sha256Hash,
-      'driverAName': 'Conducteur A',
-      'driverAPlate': 'A-Plate',
-      'driverAInsurer': 'Assureur A',
-      if (driverAPolicy != null) 'driverAPolicy': driverAPolicy,
-      if (companyAId != null) 'companyAId': companyAId,
+      if (signaturesHash != null && signaturesHash.isNotEmpty)
+        'signaturesHash': signaturesHash,
+      if (deferEmail) 'deferEmail': true,
+      'driverAName':
+          (driverAName != null && driverAName.isNotEmpty) ? driverAName : 'Conducteur A',
+      'driverAPlate':
+          (driverAPlate != null && driverAPlate.isNotEmpty) ? driverAPlate : 'A-Plate',
+      'driverAInsurer':
+          (driverAInsurer != null && driverAInsurer.isNotEmpty) ? driverAInsurer : 'Assureur A',
+      if (driverAPolicy != null && driverAPolicy.isNotEmpty) 'driverAPolicy': driverAPolicy,
+      if (companyAId != null && companyAId.isNotEmpty) 'companyAId': companyAId,
       'driverBName': draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
       'driverBPlate': draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'B-Plate',
       'driverBInsurer': draft.driverBInsurer.isNotEmpty ? draft.driverBInsurer : 'Assureur B',
       if (draft.driverBPolicy.isNotEmpty) 'driverBPolicy': draft.driverBPolicy,
-      if (companyBId != null) 'companyBId': companyBId,
+      if (companyBId != null && companyBId.isNotEmpty) 'companyBId': companyBId,
       'place': draft.place,
-      'occurredAt': draft.occurredAt.toIso8601String(),
-      'circumstancesA': draft.circumstancesA,
-      'circumstancesB': draft.circumstancesB,
-      'impactZones': draft.impactZones,
+      'occurredAt': draft.occurredAt.toUtc().toIso8601String(),
+      'circumstancesA': draft.circumstancesA.toList(),
+      'circumstancesB': draft.circumstancesB.toList(),
+      'impactZones': draft.impactZones.toList(),
       'observations': draft.observations,
       'sketchData': draft.sketchStrokes,
-      'driverASignedAt': DateTime.now().toIso8601String(),
-      'driverBSignedAt': DateTime.now().toIso8601String(),
+      'driverASignedAt': signedIso,
+      'driverBSignedAt': signedIso,
     };
 
     final response = await _api.upload(
@@ -55,6 +68,16 @@ class ConstatService {
 
     return Constat.fromJson(response['constat'] as Map<String, dynamic>);
   }
+
+  /// Envoie l'exemplaire PDF contenant le QR Code pour signature ECDSA P-256 finale.
+  Future<Uint8List> finalizePdf(String constatId, Uint8List stampedPdfBytes) =>
+      _api.uploadForBytes(
+        '/constats/$constatId/finalize-pdf',
+        method: 'POST',
+        field: 'pdf',
+        bytes: stampedPdfBytes,
+        filename: 'constat-signed.pdf',
+      );
 
   /// Liste les constats scellés pour l'utilisateur connecté.
   Future<List<Constat>> listConstats() async {

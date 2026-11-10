@@ -791,6 +791,38 @@ paths:
         '403': { $ref: '#/components/responses/Error' }
         '404': { $ref: '#/components/responses/Error' }
 
+  /constats/{id}/finalize-pdf:
+    post:
+      tags: [Constats]
+      summary: Finaliser et signer ECDSA le PDF officiel contenant le QR Code
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [pdf]
+              properties:
+                pdf:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Document PDF signé ECDSA P-256
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
   /constats/verify/{hash}:
     get:
       tags: [Constats]
