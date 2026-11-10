@@ -392,6 +392,59 @@ void main() {
       );
     });
 
+    testWidgets('scanner le permis d un proche : « pas à votre nom »', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend()
+        ..licenseReading = {
+          'number': '08/12345',
+          'categories': <String>[],
+          'issuedAt': '2017-08-18',
+          'nameMatchesAccount': false,
+        };
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('scan-license')));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining("ce permis n'est pas à votre nom"),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('photo du permis : ouvre le permis pour la remplacer', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: {...userJson(), 'licensePhotoId': 'permis.jpg'},
+      );
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('license-photo')));
+      await tester.tap(find.byKey(const Key('license-photo')));
+      await tester.pumpAndSettle();
+      // La photo actuelle, et le scan qui la remplace en relisant la carte.
+      expect(find.byKey(const Key('license-sheet-photo')), findsOneWidget);
+      expect(find.byKey(const Key('scan-license')), findsOneWidget);
+    });
+
+    testWidgets('administrateur : pas de section permis dans le profil', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: userJson(role: 'ADMIN'));
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      // Le profil est bien affiché, sans la section permis.
+      await scrollProfileTo(tester, find.byKey(const Key('export-data')));
+      expect(find.byKey(const Key('edit-license')), findsNothing);
+      expect(find.byKey(const Key('license-photo')), findsNothing);
+    });
+
     testWidgets('scanner le permis illisible : formulaire à compléter', (
       tester,
     ) async {

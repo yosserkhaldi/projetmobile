@@ -134,6 +134,7 @@ export const FACES = {
   'passport-expired': { faces: 1, descriptor: vector(0), yaw: 0 },
   'passport-other': { faces: 1, descriptor: vector(0), yaw: 0 },
   license: { faces: 1, descriptor: vector(0), yaw: 0 },
+  'license-other': { faces: 1, descriptor: vector(0), yaw: 0 },
   crowd: { faces: 2, descriptor: vector(0), yaw: 0 },
 };
 
@@ -165,6 +166,15 @@ export const READINGS = {
     categories: ['B', 'B+E'],
     issuedAt: '2020-05-10',
     expiresAt: '2030-05-10',
+    lastName: 'BEN ALI',
+    firstName: 'SAMI',
+    cinNumber: '12345678',
+  },
+  // Permis d'une autre personne de la famille : même nom, autre prénom.
+  'license-other': {
+    number: '12/345678',
+    lastName: 'BEN ALI',
+    firstName: 'MOUNA',
   },
 };
 

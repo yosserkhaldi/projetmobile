@@ -618,5 +618,7 @@
   "dashAiAverageMatch": "متوسط التطابق",
   "dashAiBlocked": "حسابات محظورة",
   "checkBirthDate": "نفس تاريخ الولادة في الرخصة",
-  "licenseBirthMismatch": "تنبيه: تاريخ الولادة في الرخصة لا يطابق وثيقة هويتك."
+  "licenseBirthMismatch": "تنبيه: تاريخ الولادة في الرخصة لا يطابق وثيقة هويتك.",
+  "licenseNameMismatch": "تنبيه: هذه الرخصة ليست باسمك. أضف رخصتك أنت.",
+  "licenseCinMismatch": "تنبيه: رقم بطاقة التعريف في الرخصة لا يطابق وثيقة هويتك."
 }

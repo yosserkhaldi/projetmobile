@@ -2096,4 +2096,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get licenseBirthMismatch =>
       'Warning: the birth date on the licence does not match your identity document.';
+
+  @override
+  String get licenseNameMismatch =>
+      'Warning: this licence is not in your name. Add your own licence.';
+
+  @override
+  String get licenseCinMismatch =>
+      'Warning: the ID number on the licence does not match your identity document.';
 }

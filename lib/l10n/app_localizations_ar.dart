@@ -2087,4 +2087,12 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get licenseBirthMismatch =>
       'تنبيه: تاريخ الولادة في الرخصة لا يطابق وثيقة هويتك.';
+
+  @override
+  String get licenseNameMismatch =>
+      'تنبيه: هذه الرخصة ليست باسمك. أضف رخصتك أنت.';
+
+  @override
+  String get licenseCinMismatch =>
+      'تنبيه: رقم بطاقة التعريف في الرخصة لا يطابق وثيقة هويتك.';
 }

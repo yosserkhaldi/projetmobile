@@ -3813,6 +3813,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Attention : la date de naissance du permis ne correspond pas à votre pièce d\'identité.'**
   String get licenseBirthMismatch;
+
+  /// No description provided for @licenseNameMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : ce permis n\'est pas à votre nom. Ajoutez votre propre permis.'**
+  String get licenseNameMismatch;
+
+  /// No description provided for @licenseCinMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : le numéro de CIN du permis ne correspond pas à votre pièce d\'identité.'**
+  String get licenseCinMismatch;
 }
 
 class _AppLocalizationsDelegate

@@ -618,5 +618,7 @@
   "dashAiAverageMatch": "average match",
   "dashAiBlocked": "blocked accounts",
   "checkBirthDate": "Same birth date as the licence",
-  "licenseBirthMismatch": "Warning: the birth date on the licence does not match your identity document."
+  "licenseBirthMismatch": "Warning: the birth date on the licence does not match your identity document.",
+  "licenseNameMismatch": "Warning: this licence is not in your name. Add your own licence.",
+  "licenseCinMismatch": "Warning: the ID number on the licence does not match your identity document."
 }

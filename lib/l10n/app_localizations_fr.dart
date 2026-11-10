@@ -2114,4 +2114,12 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get licenseBirthMismatch =>
       'Attention : la date de naissance du permis ne correspond pas à votre pièce d\'identité.';
+
+  @override
+  String get licenseNameMismatch =>
+      'Attention : ce permis n\'est pas à votre nom. Ajoutez votre propre permis.';
+
+  @override
+  String get licenseCinMismatch =>
+      'Attention : le numéro de CIN du permis ne correspond pas à votre pièce d\'identité.';
 }

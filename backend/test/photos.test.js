@@ -153,8 +153,30 @@ test('photo du permis : l IA lit numéro, catégories et dates', async (t) => {
     issuedAt: '2020-05-10',
     expiresAt: '2030-05-10',
     birthDate: '1999-03-12',
+    lastName: 'BEN ALI',
+    firstName: 'SAMI',
+    cinNumber: '12345678',
+    nameMatchesAccount: true,
     birthDateMatchesIdentity: null,
+    cinMatchesIdentity: null,
   });
   // Rien n'est enregistré sans confirmation de l'utilisateur.
   assert.equal(res.body.user.licenseNumber, null);
+});
+
+test('photo du permis : un permis à un autre nom est signalé', async (t) => {
+  const { call } = await startApi(t);
+  const { body } = await call('POST', '/auth/register', { body: driver() });
+  const data = new FormData();
+  data.append(
+    'photo',
+    new Blob([image('license-other')], { type: 'image/png' }),
+    'permis.png',
+  );
+  const res = await call('PUT', '/users/me/license-photo', {
+    token: body.accessToken,
+    form: data,
+  });
+  // Même nom de famille (un frère, une sœur), autre prénom.
+  assert.equal(res.body.extracted.nameMatchesAccount, false);
 });
