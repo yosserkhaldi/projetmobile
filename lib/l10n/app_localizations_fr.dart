@@ -2192,4 +2192,128 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profileIdentityTodo => 'Identité à vérifier';
+
+  @override
+  String get licenseStatusVerified => 'Permis vérifié';
+
+  @override
+  String get licenseStatusToReview => 'Permis en cours de vérification';
+
+  @override
+  String get licenseStatusRejected => 'Permis refusé';
+
+  @override
+  String get licenseToReviewNote =>
+      'Une information du permis ne correspond pas à votre compte : un administrateur le vérifie.';
+
+  @override
+  String licenseRejectedNote(String reason) {
+    return 'Votre permis a été refusé. Motif : $reason. Ajoutez votre propre permis.';
+  }
+
+  @override
+  String get errorLicenseNotYours =>
+      'Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n\'a pas été enregistré.';
+
+  @override
+  String get accountFileTitle => 'Dossier du compte';
+
+  @override
+  String get openAccountFile => 'Voir le dossier';
+
+  @override
+  String get sectionAccount => 'Compte';
+
+  @override
+  String get licenseReviewTitle => 'Permis à vérifier';
+
+  @override
+  String get licenseReviewSubtitle =>
+      'Un contrôle de l\'IA a échoué, ou la photo était illisible';
+
+  @override
+  String get noLicenseReviews => 'Aucun permis à vérifier.';
+
+  @override
+  String licensesToReviewCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count permis à vérifier',
+      one: '1 permis à vérifier',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get approveLicense => 'Valider le permis';
+
+  @override
+  String get rejectLicense => 'Refuser le permis';
+
+  @override
+  String get deleteLicense => 'Supprimer le permis';
+
+  @override
+  String deleteLicenseBody(String name) {
+    return 'La photo et les informations du permis de $name seront effacées.';
+  }
+
+  @override
+  String get licenseApproved => 'Permis validé';
+
+  @override
+  String get licenseRejected => 'Permis refusé, le conducteur voit le motif';
+
+  @override
+  String get licenseDeleted => 'Permis supprimé';
+
+  @override
+  String get licenseUpdated => 'Permis modifié';
+
+  @override
+  String get noLicense => 'Aucun permis enregistré.';
+
+  @override
+  String get noIdentityDocuments => 'Aucune pièce enregistrée.';
+
+  @override
+  String get aiChecksTitle => 'Contrôles de l\'IA';
+
+  @override
+  String get checkLicenseName => 'Nom du titulaire = nom du compte';
+
+  @override
+  String get checkLicenseBirth => 'Date de naissance = pièce d\'identité';
+
+  @override
+  String get checkLicenseCin => 'N° de CIN = pièce d\'identité';
+
+  @override
+  String get checkLicenseNumber => 'Numéro saisi = numéro lu sur la photo';
+
+  @override
+  String get checkNotCompared => 'non comparable';
+
+  @override
+  String get licenseRejectReasonNotOwner => 'Permis d\'une autre personne';
+
+  @override
+  String get licenseRejectReasonExpired => 'Permis expiré';
+
+  @override
+  String get revokeIdentity => 'Annuler la vérification';
+
+  @override
+  String get revokeIdentityTitle => 'Annuler la vérification d\'identité ?';
+
+  @override
+  String get revokeIdentityBody =>
+      'Les photos de la pièce seront effacées. Le conducteur voit le motif et peut refaire une demande tout de suite.';
+
+  @override
+  String get identityRevoked => 'Vérification annulée';
+
+  @override
+  String get reasonLabel => 'Motif';
 }

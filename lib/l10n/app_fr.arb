@@ -1162,5 +1162,62 @@
   "identityStepSend": "Envoi",
   "profileIdentityVerified": "Identité vérifiée",
   "profileIdentityPending": "Identité en cours",
-  "profileIdentityTodo": "Identité à vérifier"
+  "profileIdentityTodo": "Identité à vérifier",
+  "licenseStatusVerified": "Permis vérifié",
+  "licenseStatusToReview": "Permis en cours de vérification",
+  "licenseStatusRejected": "Permis refusé",
+  "licenseToReviewNote": "Une information du permis ne correspond pas à votre compte : un administrateur le vérifie.",
+  "licenseRejectedNote": "Votre permis a été refusé. Motif : {reason}. Ajoutez votre propre permis.",
+  "@licenseRejectedNote": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLicenseNotYours": "Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n'a pas été enregistré.",
+  "accountFileTitle": "Dossier du compte",
+  "openAccountFile": "Voir le dossier",
+  "sectionAccount": "Compte",
+  "licenseReviewTitle": "Permis à vérifier",
+  "licenseReviewSubtitle": "Un contrôle de l'IA a échoué, ou la photo était illisible",
+  "noLicenseReviews": "Aucun permis à vérifier.",
+  "licensesToReviewCount": "{count, plural, =1{1 permis à vérifier} other{{count} permis à vérifier}}",
+  "@licensesToReviewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "approveLicense": "Valider le permis",
+  "rejectLicense": "Refuser le permis",
+  "deleteLicense": "Supprimer le permis",
+  "deleteLicenseBody": "La photo et les informations du permis de {name} seront effacées.",
+  "@deleteLicenseBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "licenseApproved": "Permis validé",
+  "licenseRejected": "Permis refusé, le conducteur voit le motif",
+  "licenseDeleted": "Permis supprimé",
+  "licenseUpdated": "Permis modifié",
+  "noLicense": "Aucun permis enregistré.",
+  "noIdentityDocuments": "Aucune pièce enregistrée.",
+  "aiChecksTitle": "Contrôles de l'IA",
+  "checkLicenseName": "Nom du titulaire = nom du compte",
+  "checkLicenseBirth": "Date de naissance = pièce d'identité",
+  "checkLicenseCin": "N° de CIN = pièce d'identité",
+  "checkLicenseNumber": "Numéro saisi = numéro lu sur la photo",
+  "checkNotCompared": "non comparable",
+  "licenseRejectReasonNotOwner": "Permis d'une autre personne",
+  "licenseRejectReasonExpired": "Permis expiré",
+  "revokeIdentity": "Annuler la vérification",
+  "revokeIdentityTitle": "Annuler la vérification d'identité ?",
+  "revokeIdentityBody": "Les photos de la pièce seront effacées. Le conducteur voit le motif et peut refaire une demande tout de suite.",
+  "identityRevoked": "Vérification annulée",
+  "reasonLabel": "Motif"
 }

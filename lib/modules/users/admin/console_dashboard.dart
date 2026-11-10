@@ -6,6 +6,7 @@ import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/admin/console_widgets.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/screens/license_review_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/dashboard_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
@@ -71,7 +72,10 @@ class _ConsoleDashboardState extends State<ConsoleDashboard> {
         ],
         if (stats == null && _error == null)
           const SkeletonDashboard(columns: 4),
-        if (stats != null) ..._grid(context, dashboardSections(context, stats)),
+        if (stats != null) ...[
+          LicenseReviewAlert(count: stats['licensesToReview'] as int? ?? 0),
+          ..._grid(context, dashboardSections(context, stats)),
+        ],
       ],
     );
   }

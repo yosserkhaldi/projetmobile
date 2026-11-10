@@ -759,6 +759,59 @@ router.post('/:id/identity/unblock', requireAuth, requireRole('ADMIN'), async (r
   res.json({ user: publicUser(user) });
 });
 
+/**
+ * Annulation d'une vérification, même validée par l'IA (pièce douteuse vue
+ * après coup, compte signalé). Les photos sont effacées et le motif est
+ * montré au conducteur, qui peut refaire une demande tout de suite : ce
+ * n'est pas un refus compté.
+ */
+router.post('/:id/identity/revoke', requireAuth, requireRole('ADMIN'), async (req, res) => {
+  const { id } = idParams.parse(req.params);
+  const { reason } = rejectIdentitySchema.parse(req.body);
+  const before = await prisma.user.findUnique({ where: { id } });
+  if (!before || before.deletedAt) {
+    throw new HttpError(404, 'NOT_FOUND', 'Compte introuvable.');
+  }
+  if (before.identityStatus === 'UNVERIFIED' || before.identityStatus === 'REJECTED') {
+    throw new HttpError(409, 'IDENTITY_NOT_VERIFIED', "Aucune vérification à annuler.");
+  }
+  const user = await prisma.user.update({
+    where: { id },
+    data: {
+      identityStatus: 'REJECTED',
+      identityRejectionReason: reason,
+      identityReviewedAt: new Date(),
+      identityReviewerId: req.user.id,
+      identityAutoVerified: false,
+      identityRetryAt: null,
+      cinNumber: null,
+      cinFrontFile: null,
+      cinBackFile: null,
+      identitySelfieFile: null,
+      identityExtracted: Prisma.DbNull,
+      identityChecks: Prisma.DbNull,
+      identityFaceMatch: null,
+      identityLivenessAt: null,
+    },
+    include: withCompany,
+  });
+  for (const file of [before.cinFrontFile, before.cinBackFile, before.identitySelfieFile]) {
+    await deleteImage(file, IDENTITY_FOLDER);
+  }
+  // La dernière demande validée garde la trace de l'annulation.
+  const last = await prisma.identityAttempt.findFirst({
+    where: { userId: id },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (last) {
+    await prisma.identityAttempt.update({
+      where: { id: last.id },
+      data: { reason: `Annulée : ${reason}` },
+    });
+  }
+  res.json({ user: publicUser(user) });
+});
+
 // Historique des demandes d'un compte (administrateurs).
 router.get('/:id/identity/attempts', requireAuth, requireRole('ADMIN'), async (req, res) => {
   const { id } = idParams.parse(req.params);

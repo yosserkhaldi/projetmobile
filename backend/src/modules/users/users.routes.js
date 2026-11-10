@@ -24,8 +24,10 @@ import {
   withCompany,
 } from './auth.service.js';
 import {
+  adminLicenseSchema,
   createAgentSchema,
   idParams,
+  rejectLicenseSchema,
   listUsersQuery,
   updateProfileSchema,
   updateRoleSchema,
@@ -74,6 +76,17 @@ router.patch('/me', async (req, res) => {
   }
   // Un nouveau numéro doit être vérifié à nouveau.
   if (data.phone && data.phone !== req.user.phone) data.phoneVerifiedAt = null;
+  // Numéro de permis tapé à la main, différent de celui lu sur la photo :
+  // un administrateur vérifie.
+  const read = req.user.licenseReading?.number;
+  const compact = (value) => value?.replace(/[\s/]/g, '');
+  if (data.licenseNumber && read && compact(data.licenseNumber) !== compact(read)) {
+    data.licenseStatus = 'TO_REVIEW';
+    data.licenseChecks = {
+      ...(req.user.licenseChecks ?? {}),
+      numberMatchesReading: false,
+    };
+  }
 
   const user = await prisma.user
     .update({ where: { id: req.user.id }, data, include: withCompany })
@@ -151,37 +164,76 @@ function licenseChecks(user, extracted) {
   };
 }
 
+/**
+ * Décision sur le permis selon les contrôles croisés :
+ * - deux contrôles ou plus en échec : ce n'est pas le permis du titulaire
+ *   (celui d'un proche, par exemple), refusé, rien n'est enregistré ;
+ * - un seul en échec, ou rien de comparable (photo illisible, identité pas
+ *   encore vérifiée) : enregistré, à vérifier par un administrateur ;
+ * - sinon : validé par l'IA.
+ * Un seul écart peut venir d'une erreur de lecture, deux ne le peuvent pas.
+ */
+function licenseDecision(checks) {
+  const results = Object.values(checks);
+  const failed = results.filter((result) => result === false).length;
+  if (failed >= 2) {
+    throw new HttpError(
+      422,
+      'LICENSE_NOT_YOURS',
+      "Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n'a pas été enregistré.",
+    );
+  }
+  const confirmed = results.some((result) => result === true);
+  return failed === 0 && confirmed ? 'VERIFIED' : 'TO_REVIEW';
+}
+
+// Ce qui part avec le permis : photo, lecture, contrôles et décision.
+const LICENSE_CLEARED = {
+  licensePhotoFile: null,
+  licenseReading: Prisma.DbNull,
+  licenseChecks: Prisma.DbNull,
+  licenseStatus: null,
+  licenseRejectionReason: null,
+  licenseReviewedAt: null,
+};
+
 for (const [route, column] of Object.entries(PHOTOS)) {
   router.put(`/me/${route}`, ocrQuota, singleImage('photo'), async (req, res) => {
     const isLicense = route === 'license-photo';
     // Permis : l'IA lit la carte (numéro, catégories, dates) pour remplir le
     // formulaire. L'utilisateur vérifie avant d'enregistrer.
     const extracted = isLicense ? await readLicense(req.file.buffer) : undefined;
+    // Contrôles croisés : le permis doit être au nom du compte, avec la date
+    // de naissance et le numéro de CIN de la pièce d'identité. Refusé avant
+    // d'enregistrer quoi que ce soit si ce n'est clairement pas le sien.
+    const checks = isLicense ? licenseChecks(req.user, extracted) : undefined;
+    const status = isLicense ? licenseDecision(checks) : undefined;
     const name = await saveImage(req.file, PHOTO_FOLDER);
     const user = await prisma.user.update({
       where: { id: req.user.id },
       data: {
         [column]: name,
-        ...(isLicense && { licenseReading: extracted ?? Prisma.DbNull }),
+        ...(isLicense && {
+          licenseReading: extracted ?? Prisma.DbNull,
+          licenseChecks: checks,
+          licenseStatus: status,
+          licenseRejectionReason: null,
+          licenseReviewedAt: status === 'VERIFIED' ? new Date() : null,
+        }),
       },
       include: withCompany,
     });
     await deleteImage(req.user[column], PHOTO_FOLDER);
-    // Contrôles croisés : le permis doit être au nom du compte, avec la date
-    // de naissance et le numéro de CIN de la pièce d'identité.
     res.json({
       user: publicUser(user),
-      extracted: extracted && {
-        ...extracted,
-        ...licenseChecks(req.user, extracted),
-      },
+      extracted: extracted && { ...extracted, ...checks },
     });
   });
 
   router.delete(`/me/${route}`, async (req, res) => {
     const user = await prisma.user.update({
       where: { id: req.user.id },
-      data: { [column]: null },
+      data: route === 'license-photo' ? LICENSE_CLEARED : { [column]: null },
       include: withCompany,
     });
     await deleteImage(req.user[column], PHOTO_FOLDER);
@@ -230,6 +282,92 @@ router.get('/', async (req, res) => {
     prisma.user.count({ where }),
   ]);
   res.json({ items: items.map(publicUser), total, page, pageSize });
+});
+
+// Permis à vérifier : un contrôle croisé a échoué, ou rien n'a pu être lu.
+router.get('/licenses/review', async (_req, res) => {
+  const users = await prisma.user.findMany({
+    where: { licenseStatus: 'TO_REVIEW', deletedAt: null },
+    include: withCompany,
+    orderBy: { updatedAt: 'asc' },
+  });
+  res.json({ items: users.map(publicUser) });
+});
+
+// Dossier complet d'un compte : identité et permis, même validés par l'IA.
+router.get('/:id', async (req, res) => {
+  const { id } = idParams.parse(req.params);
+  const user = await prisma.user.findUnique({
+    where: { id },
+    include: withCompany,
+  });
+  if (!user || user.deletedAt) {
+    throw new HttpError(404, 'NOT_FOUND', 'Compte introuvable.');
+  }
+  res.json({ user: publicUser(user) });
+});
+
+/** Met à jour le permis d'un compte ; renvoie aussi l'ancienne photo. */
+async function updateLicense(req, data) {
+  const { id } = idParams.parse(req.params);
+  const before = await prisma.user.findUnique({ where: { id } });
+  if (!before || before.deletedAt) {
+    throw new HttpError(404, 'NOT_FOUND', 'Compte introuvable.');
+  }
+  const user = await prisma.user.update({
+    where: { id },
+    data,
+    include: withCompany,
+  });
+  return { user, oldPhoto: before.licensePhotoFile };
+}
+
+router.post('/:id/license/approve', async (req, res) => {
+  const { user } = await updateLicense(req, {
+    licenseStatus: 'VERIFIED',
+    licenseRejectionReason: null,
+    licenseReviewedAt: new Date(),
+  });
+  res.json({ user: publicUser(user) });
+});
+
+// Refus : la photo et les informations du permis sont effacées ; le
+// conducteur voit le motif et en ajoute un autre depuis son profil.
+router.post('/:id/license/reject', async (req, res) => {
+  const { reason } = rejectLicenseSchema.parse(req.body);
+  const { user, oldPhoto } = await updateLicense(req, {
+    ...LICENSE_CLEARED,
+    licenseNumber: null,
+    licenseCategory: null,
+    licenseIssuedAt: null,
+    licenseStatus: 'REJECTED',
+    licenseRejectionReason: reason,
+    licenseReviewedAt: new Date(),
+  });
+  await deleteImage(oldPhoto, PHOTO_FOLDER);
+  res.json({ user: publicUser(user) });
+});
+
+// Correction par un administrateur (numéro mal lu, catégorie oubliée).
+router.patch('/:id/license', async (req, res) => {
+  const { licenseIssuedAt, ...data } = adminLicenseSchema.parse(req.body);
+  if (licenseIssuedAt !== undefined) {
+    data.licenseIssuedAt = licenseIssuedAt ? new Date(licenseIssuedAt) : null;
+  }
+  const { user } = await updateLicense(req, data);
+  res.json({ user: publicUser(user) });
+});
+
+// Suppression complète du permis d'un compte.
+router.delete('/:id/license', async (req, res) => {
+  const { user, oldPhoto } = await updateLicense(req, {
+    ...LICENSE_CLEARED,
+    licenseNumber: null,
+    licenseCategory: null,
+    licenseIssuedAt: null,
+  });
+  await deleteImage(oldPhoto, PHOTO_FOLDER);
+  res.json({ user: publicUser(user) });
 });
 
 router.post('/agents', async (req, res) => {

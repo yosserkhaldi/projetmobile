@@ -8,6 +8,7 @@ class LicenseReading {
     this.birthDateMatchesIdentity,
     this.nameMatchesAccount,
     this.cinMatchesIdentity,
+    this.numberMatchesReading,
   });
 
   factory LicenseReading.fromJson(Map<String, dynamic> json) => LicenseReading(
@@ -20,6 +21,7 @@ class LicenseReading {
     birthDateMatchesIdentity: json['birthDateMatchesIdentity'] as bool?,
     nameMatchesAccount: json['nameMatchesAccount'] as bool?,
     cinMatchesIdentity: json['cinMatchesIdentity'] as bool?,
+    numberMatchesReading: json['numberMatchesReading'] as bool?,
   );
 
   final String? number;
@@ -41,6 +43,28 @@ class LicenseReading {
   /// Numéro de CIN imprimé sur le permis (carte de 2017) = celui de la pièce
   /// d'identité du compte.
   final bool? cinMatchesIdentity;
+
+  /// Numéro tapé à la main = numéro lu sur la photo (false : modifié).
+  final bool? numberMatchesReading;
+
+  /// Contrôles croisés en échec : nom, CIN, date de naissance, numéro.
+  int get failedChecks => [
+    nameMatchesAccount,
+    cinMatchesIdentity,
+    birthDateMatchesIdentity,
+    numberMatchesReading,
+  ].where((check) => check == false).length;
+
+  Map<String, dynamic> toJson() => {
+    'number': number,
+    'categories': categories,
+    'issuedAt': issuedAt,
+    'expiresAt': expiresAt,
+    'birthDateMatchesIdentity': birthDateMatchesIdentity,
+    'nameMatchesAccount': nameMatchesAccount,
+    'cinMatchesIdentity': cinMatchesIdentity,
+    'numberMatchesReading': numberMatchesReading,
+  };
 
   bool get isEmpty => number == null && categories.isEmpty && issuedAt == null;
 }

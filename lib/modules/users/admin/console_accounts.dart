@@ -8,6 +8,7 @@ import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/admin/console_widgets.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/agent_form_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/license_review_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/users_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
@@ -87,6 +88,11 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
         ),
       ),
     );
+  }
+
+  Future<void> _openFile(AppUser user) async {
+    await openAccountFile(context, user);
+    if (mounted) await _load();
   }
 
   Future<void> _createAgent() async {
@@ -250,6 +256,7 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
                 DataRow(
                   cells: [
                     DataCell(
+                      onTap: () => _openFile(user),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -308,7 +315,16 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
                               foreground: p.errorText,
                               icon: Icons.block,
                             )
-                          : identityChip(context, user.identity.status),
+                          : Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: [
+                                identityChip(context, user.identity.status),
+                                if (user.license.status ==
+                                    LicenseStatus.toReview)
+                                  ?licenseChip(context, user.license.status),
+                              ],
+                            ),
                     ),
                     DataCell(
                       StatusChip(
@@ -325,6 +341,7 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
                               icon: const Icon(Icons.more_horiz),
                               onSelected: (action) => switch (action) {
                                 'role' => _changeRole(user),
+                                'file' => _openFile(user),
                                 'unblock' => _run(
                                   () => admin.unblockIdentity(user),
                                   done: t.identityUnblocked,
@@ -334,6 +351,17 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
                                 ),
                               },
                               itemBuilder: (_) => [
+                                PopupMenuItem(
+                                  value: 'file',
+                                  child: ListTile(
+                                    key: const Key('open-account-file'),
+                                    dense: true,
+                                    leading: const Icon(
+                                      Icons.folder_shared_outlined,
+                                    ),
+                                    title: Text(t.openAccountFile),
+                                  ),
+                                ),
                                 if (user.identity.blocked ||
                                     user.identity.waiting)
                                   PopupMenuItem(

@@ -2173,4 +2173,128 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileIdentityTodo => 'Verify your identity';
+
+  @override
+  String get licenseStatusVerified => 'Licence verified';
+
+  @override
+  String get licenseStatusToReview => 'Licence being checked';
+
+  @override
+  String get licenseStatusRejected => 'Licence declined';
+
+  @override
+  String get licenseToReviewNote =>
+      'Something on the licence does not match your account: an administrator is checking it.';
+
+  @override
+  String licenseRejectedNote(String reason) {
+    return 'Your licence was declined. Reason: $reason. Add your own licence.';
+  }
+
+  @override
+  String get errorLicenseNotYours =>
+      'This licence does not seem to be yours: the name, date of birth or ID number do not match your account. It was not saved.';
+
+  @override
+  String get accountFileTitle => 'Account file';
+
+  @override
+  String get openAccountFile => 'Open file';
+
+  @override
+  String get sectionAccount => 'Account';
+
+  @override
+  String get licenseReviewTitle => 'Licences to check';
+
+  @override
+  String get licenseReviewSubtitle =>
+      'An AI check failed, or the photo could not be read';
+
+  @override
+  String get noLicenseReviews => 'No licence to check.';
+
+  @override
+  String licensesToReviewCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count licences to check',
+      one: '1 licence to check',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get approveLicense => 'Approve licence';
+
+  @override
+  String get rejectLicense => 'Decline licence';
+
+  @override
+  String get deleteLicense => 'Delete licence';
+
+  @override
+  String deleteLicenseBody(String name) {
+    return '$name\'s licence photo and details will be erased.';
+  }
+
+  @override
+  String get licenseApproved => 'Licence approved';
+
+  @override
+  String get licenseRejected => 'Licence declined, the driver sees the reason';
+
+  @override
+  String get licenseDeleted => 'Licence deleted';
+
+  @override
+  String get licenseUpdated => 'Licence updated';
+
+  @override
+  String get noLicense => 'No licence saved.';
+
+  @override
+  String get noIdentityDocuments => 'No document saved.';
+
+  @override
+  String get aiChecksTitle => 'AI checks';
+
+  @override
+  String get checkLicenseName => 'Holder name = account name';
+
+  @override
+  String get checkLicenseBirth => 'Date of birth = ID document';
+
+  @override
+  String get checkLicenseCin => 'ID number = ID document';
+
+  @override
+  String get checkLicenseNumber => 'Typed number = number read on the photo';
+
+  @override
+  String get checkNotCompared => 'not comparable';
+
+  @override
+  String get licenseRejectReasonNotOwner => 'Someone else\'s licence';
+
+  @override
+  String get licenseRejectReasonExpired => 'Expired licence';
+
+  @override
+  String get revokeIdentity => 'Cancel verification';
+
+  @override
+  String get revokeIdentityTitle => 'Cancel the identity verification?';
+
+  @override
+  String get revokeIdentityBody =>
+      'The document photos will be erased. The driver sees the reason and can apply again straight away.';
+
+  @override
+  String get identityRevoked => 'Verification cancelled';
+
+  @override
+  String get reasonLabel => 'Reason';
 }

@@ -53,6 +53,14 @@ export function publicUser(user) {
     // Identifiants opaques : changent à chaque nouvelle photo (cache côté app).
     photoId: user.photoFile ?? null,
     licensePhotoId: user.licensePhotoFile ?? null,
+    // Permis : lu par l'IA, contrôles croisés et décision.
+    license: {
+      status: user.licenseStatus ?? null,
+      reading: user.licenseReading ?? null,
+      checks: user.licenseChecks ?? null,
+      rejectionReason: user.licenseRejectionReason ?? null,
+      reviewedAt: user.licenseReviewedAt?.toISOString() ?? null,
+    },
     identity: {
       status: user.identityStatus,
       documentType: user.identityDocument,

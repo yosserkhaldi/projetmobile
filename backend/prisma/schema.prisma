@@ -28,6 +28,14 @@ enum IdentityDocument {
   PASSPORT
 }
 
+// Permis du profil : validé par l'IA ou un administrateur, à vérifier par un
+// administrateur (un contrôle croisé a échoué), ou refusé.
+enum LicenseStatus {
+  VERIFIED
+  TO_REVIEW
+  REJECTED
+}
+
 enum IdentityStatus {
   UNVERIFIED
   PENDING
@@ -67,6 +75,11 @@ model User {
   licensePhotoFile String?
   // Lu sur la photo du permis par l'OCR (numéro, catégories, dates).
   licenseReading   Json?
+  // Contrôles croisés avec le compte (nom, date de naissance, CIN) et décision.
+  licenseStatus          LicenseStatus?
+  licenseChecks          Json?
+  licenseRejectionReason String?
+  licenseReviewedAt      DateTime?
   // Vérification d'identité : pièce (CIN, permis ou passeport) et visage
   // comparés par l'IA, sinon décision d'un administrateur.
   identityStatus          IdentityStatus @default(UNVERIFIED)

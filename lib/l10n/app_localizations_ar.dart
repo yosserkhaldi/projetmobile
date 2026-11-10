@@ -2163,4 +2163,128 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get profileIdentityTodo => 'تحقّق من هويتك';
+
+  @override
+  String get licenseStatusVerified => 'رخصة موثقة';
+
+  @override
+  String get licenseStatusToReview => 'الرخصة قيد التحقق';
+
+  @override
+  String get licenseStatusRejected => 'الرخصة مرفوضة';
+
+  @override
+  String get licenseToReviewNote =>
+      'معلومة في الرخصة لا تطابق حسابك: يقوم مشرف بالتحقق منها.';
+
+  @override
+  String licenseRejectedNote(String reason) {
+    return 'تم رفض رخصتك. السبب: $reason. أضف رخصتك الخاصة.';
+  }
+
+  @override
+  String get errorLicenseNotYours =>
+      'يبدو أن هذه الرخصة ليست لك: الاسم أو تاريخ الميلاد أو رقم بطاقة التعريف لا يطابق حسابك. لم يتم حفظها.';
+
+  @override
+  String get accountFileTitle => 'ملف الحساب';
+
+  @override
+  String get openAccountFile => 'عرض الملف';
+
+  @override
+  String get sectionAccount => 'الحساب';
+
+  @override
+  String get licenseReviewTitle => 'رخص للتحقق';
+
+  @override
+  String get licenseReviewSubtitle =>
+      'فشل أحد فحوص الذكاء الاصطناعي، أو تعذرت قراءة الصورة';
+
+  @override
+  String get noLicenseReviews => 'لا توجد رخص للتحقق.';
+
+  @override
+  String licensesToReviewCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count رخص للتحقق',
+      one: 'رخصة واحدة للتحقق',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get approveLicense => 'قبول الرخصة';
+
+  @override
+  String get rejectLicense => 'رفض الرخصة';
+
+  @override
+  String get deleteLicense => 'حذف الرخصة';
+
+  @override
+  String deleteLicenseBody(String name) {
+    return 'سيتم حذف صورة ومعلومات رخصة $name.';
+  }
+
+  @override
+  String get licenseApproved => 'تم قبول الرخصة';
+
+  @override
+  String get licenseRejected => 'تم رفض الرخصة، يرى السائق السبب';
+
+  @override
+  String get licenseDeleted => 'تم حذف الرخصة';
+
+  @override
+  String get licenseUpdated => 'تم تعديل الرخصة';
+
+  @override
+  String get noLicense => 'لا توجد رخصة مسجلة.';
+
+  @override
+  String get noIdentityDocuments => 'لا توجد وثيقة مسجلة.';
+
+  @override
+  String get aiChecksTitle => 'فحوص الذكاء الاصطناعي';
+
+  @override
+  String get checkLicenseName => 'اسم صاحب الرخصة = اسم الحساب';
+
+  @override
+  String get checkLicenseBirth => 'تاريخ الميلاد = وثيقة الهوية';
+
+  @override
+  String get checkLicenseCin => 'رقم بطاقة التعريف = وثيقة الهوية';
+
+  @override
+  String get checkLicenseNumber => 'الرقم المدخل = الرقم المقروء من الصورة';
+
+  @override
+  String get checkNotCompared => 'غير قابل للمقارنة';
+
+  @override
+  String get licenseRejectReasonNotOwner => 'رخصة شخص آخر';
+
+  @override
+  String get licenseRejectReasonExpired => 'رخصة منتهية الصلاحية';
+
+  @override
+  String get revokeIdentity => 'إلغاء التحقق';
+
+  @override
+  String get revokeIdentityTitle => 'إلغاء التحقق من الهوية؟';
+
+  @override
+  String get revokeIdentityBody =>
+      'سيتم حذف صور الوثيقة. يرى السائق السبب ويمكنه إعادة الطلب فورا.';
+
+  @override
+  String get identityRevoked => 'تم إلغاء التحقق';
+
+  @override
+  String get reasonLabel => 'السبب';
 }

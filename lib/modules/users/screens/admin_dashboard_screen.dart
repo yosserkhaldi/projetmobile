@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/users/screens/license_review_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/dashboard_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
@@ -51,7 +52,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
               TextButton(onPressed: _load, child: Text(t.retry)),
             ],
             if (stats == null && _error == null) const SkeletonDashboard(),
-            if (stats != null) ...dashboardSections(context, stats).phone,
+            if (stats != null) ...[
+              // Permis signalés par l'IA : à traiter avant le reste.
+              LicenseReviewAlert(count: stats['licensesToReview'] as int? ?? 0),
+              ...dashboardSections(context, stats).phone,
+            ],
           ],
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/agent_form_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/license_review_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
@@ -57,19 +58,6 @@ class _UsersScreenState extends State<UsersScreen> {
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(describe(e))));
     }
-  }
-
-  Future<void> _changeRole(AppUser user) async {
-    final admin = AppScope.of(context).admin;
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => RoleSheet(
-        user: user,
-        onSave: (role, companyId) =>
-            admin.setRole(user, role, companyId: companyId),
-      ),
-    );
   }
 
   @override
@@ -150,8 +138,11 @@ class _UsersScreenState extends State<UsersScreen> {
               style: TextStyle(color: context.palette.textMuted),
             ),
             isThreeLine: true,
-            // Un administrateur ne peut pas modifier son propre compte ici.
-            onTap: isMe ? null : () => _changeRole(user),
+            // Dossier du compte : identité, permis, rôle, suspension.
+            onTap: () async {
+              await openAccountFile(context, user);
+              if (mounted) await _load();
+            },
             trailing: Switch(
               value: user.active,
               onChanged: isMe

@@ -3957,6 +3957,222 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Identité à vérifier'**
   String get profileIdentityTodo;
+
+  /// No description provided for @licenseStatusVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis vérifié'**
+  String get licenseStatusVerified;
+
+  /// No description provided for @licenseStatusToReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis en cours de vérification'**
+  String get licenseStatusToReview;
+
+  /// No description provided for @licenseStatusRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis refusé'**
+  String get licenseStatusRejected;
+
+  /// No description provided for @licenseToReviewNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une information du permis ne correspond pas à votre compte : un administrateur le vérifie.'**
+  String get licenseToReviewNote;
+
+  /// No description provided for @licenseRejectedNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre permis a été refusé. Motif : {reason}. Ajoutez votre propre permis.'**
+  String licenseRejectedNote(String reason);
+
+  /// No description provided for @errorLicenseNotYours.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n\'a pas été enregistré.'**
+  String get errorLicenseNotYours;
+
+  /// No description provided for @accountFileTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossier du compte'**
+  String get accountFileTitle;
+
+  /// No description provided for @openAccountFile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir le dossier'**
+  String get openAccountFile;
+
+  /// No description provided for @sectionAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte'**
+  String get sectionAccount;
+
+  /// No description provided for @licenseReviewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis à vérifier'**
+  String get licenseReviewTitle;
+
+  /// No description provided for @licenseReviewSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un contrôle de l\'IA a échoué, ou la photo était illisible'**
+  String get licenseReviewSubtitle;
+
+  /// No description provided for @noLicenseReviews.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun permis à vérifier.'**
+  String get noLicenseReviews;
+
+  /// No description provided for @licensesToReviewCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 permis à vérifier} other{{count} permis à vérifier}}'**
+  String licensesToReviewCount(int count);
+
+  /// No description provided for @approveLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Valider le permis'**
+  String get approveLicense;
+
+  /// No description provided for @rejectLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refuser le permis'**
+  String get rejectLicense;
+
+  /// No description provided for @deleteLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le permis'**
+  String get deleteLicense;
+
+  /// No description provided for @deleteLicenseBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo et les informations du permis de {name} seront effacées.'**
+  String deleteLicenseBody(String name);
+
+  /// No description provided for @licenseApproved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis validé'**
+  String get licenseApproved;
+
+  /// No description provided for @licenseRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis refusé, le conducteur voit le motif'**
+  String get licenseRejected;
+
+  /// No description provided for @licenseDeleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis supprimé'**
+  String get licenseDeleted;
+
+  /// No description provided for @licenseUpdated.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis modifié'**
+  String get licenseUpdated;
+
+  /// No description provided for @noLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun permis enregistré.'**
+  String get noLicense;
+
+  /// No description provided for @noIdentityDocuments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune pièce enregistrée.'**
+  String get noIdentityDocuments;
+
+  /// No description provided for @aiChecksTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contrôles de l\'IA'**
+  String get aiChecksTitle;
+
+  /// No description provided for @checkLicenseName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du titulaire = nom du compte'**
+  String get checkLicenseName;
+
+  /// No description provided for @checkLicenseBirth.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de naissance = pièce d\'identité'**
+  String get checkLicenseBirth;
+
+  /// No description provided for @checkLicenseCin.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de CIN = pièce d\'identité'**
+  String get checkLicenseCin;
+
+  /// No description provided for @checkLicenseNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro saisi = numéro lu sur la photo'**
+  String get checkLicenseNumber;
+
+  /// No description provided for @checkNotCompared.
+  ///
+  /// In fr, this message translates to:
+  /// **'non comparable'**
+  String get checkNotCompared;
+
+  /// No description provided for @licenseRejectReasonNotOwner.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis d\'une autre personne'**
+  String get licenseRejectReasonNotOwner;
+
+  /// No description provided for @licenseRejectReasonExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis expiré'**
+  String get licenseRejectReasonExpired;
+
+  /// No description provided for @revokeIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler la vérification'**
+  String get revokeIdentity;
+
+  /// No description provided for @revokeIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler la vérification d\'identité ?'**
+  String get revokeIdentityTitle;
+
+  /// No description provided for @revokeIdentityBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les photos de la pièce seront effacées. Le conducteur voit le motif et peut refaire une demande tout de suite.'**
+  String get revokeIdentityBody;
+
+  /// No description provided for @identityRevoked.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification annulée'**
+  String get identityRevoked;
+
+  /// No description provided for @reasonLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Motif'**
+  String get reasonLabel;
 }
 
 class _AppLocalizationsDelegate

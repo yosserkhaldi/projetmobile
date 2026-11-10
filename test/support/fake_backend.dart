@@ -150,6 +150,12 @@ class FakeBackend {
   ];
   List<Map<String, dynamic>> pendingIdentities = [];
 
+  /// Permis signalés par l'IA, en attente d'un administrateur.
+  List<Map<String, dynamic>> licenseReviews = [];
+
+  /// Décision de l'IA simulée sur le prochain permis scanné.
+  String licenseStatusAfterScan = 'VERIFIED';
+
   /// Ressemblance pièce / visage que l'IA du serveur simulé renvoie.
   double aiMatch = 0.9;
 
@@ -260,7 +266,11 @@ class FakeBackend {
     }
     // Photo du permis : l'IA simulée lit la carte, sans rien enregistrer.
     if (route == 'PUT /users/me/license-photo') {
-      user = {...user, 'licensePhotoId': 'permis-${requests.length}.jpg'};
+      user = {
+        ...user,
+        'licensePhotoId': 'permis-${requests.length}.jpg',
+        'license': {'status': licenseStatusAfterScan},
+      };
       return _json(200, {'user': user, 'extracted': licenseReading});
     }
     // Recto de la pièce : l'IA simulée « lit » la carte.
@@ -324,6 +334,7 @@ class FakeBackend {
           'VERIFIED': 3,
           'REJECTED': 0,
         },
+        'licensesToReview': licenseReviews.length,
         'signIns7Days': {'success': 25, 'failed': 3},
         'companies': 3,
         'agencies': 5,
@@ -433,6 +444,60 @@ class FakeBackend {
       };
       return _json(200, {'user': decided});
     }
+    // Administration du permis et de l'identité d'un compte.
+    if (route == 'GET /users/licenses/review') {
+      return _json(200, {'items': licenseReviews});
+    }
+    final photo = RegExp(
+      r'^/users/([^/]+)/(license-photo|identity/front|identity/back)$',
+    ).firstMatch(path);
+    if (photo != null && request.method == 'GET') {
+      return http.Response.bytes(tinyPng, 200);
+    }
+    final account = RegExp(
+      r'^/users/([^/]+)(/license(?:/(approve|reject))?|/identity/revoke)?$',
+    ).firstMatch(path);
+    if (account != null) {
+      final found = _account(account[1]!);
+      if (found == null) {
+        return _json(404, {
+          'error': {'code': 'NOT_FOUND', 'message': 'Compte introuvable.'},
+        });
+      }
+      final body = bodies[route];
+      final cleared = {
+        'licenseNumber': null,
+        'licenseCategory': null,
+        'licenseIssuedAt': null,
+        'licensePhotoId': null,
+      };
+      final updated = switch ((request.method, account[2], account[3])) {
+        ('GET', null, _) => found,
+        ('POST', _, 'approve') => {
+          ...found,
+          'license': {..._map(found['license']), 'status': 'VERIFIED'},
+        },
+        ('POST', _, 'reject') => {
+          ...found,
+          ...cleared,
+          'license': {'status': 'REJECTED', 'rejectionReason': body?['reason']},
+        },
+        ('PATCH', '/license', _) => {...found, ...?body},
+        ('DELETE', '/license', _) => {...found, ...cleared, 'license': null},
+        ('POST', '/identity/revoke', _) => {
+          ...found,
+          'identity': {
+            'status': 'REJECTED',
+            'rejectionReason': body?['reason'],
+          },
+        },
+        _ => null,
+      };
+      if (updated != null) {
+        _saveAccount(updated);
+        return _json(200, {'user': updated});
+      }
+    }
     if (route == 'GET /companies') return _json(200, {'items': companies});
     if (route == 'POST /companies') {
       companies = [
@@ -444,6 +509,29 @@ class FakeBackend {
     return _json(404, {
       'error': {'code': 'NOT_FOUND', 'message': 'Route inconnue : $route'},
     });
+  }
+
+  static Map<String, dynamic> _map(Object? value) =>
+      Map<String, dynamic>.from(value as Map? ?? {});
+
+  /// Compte connu du serveur simulé : liste des comptes ou file des permis.
+  Map<String, dynamic>? _account(String id) {
+    for (final account in [...users, ...licenseReviews]) {
+      if (account['id'] == id) return account;
+    }
+    return null;
+  }
+
+  /// Remplace le compte partout ; décidé, son permis quitte la file.
+  void _saveAccount(Map<String, dynamic> account) {
+    users = [for (final u in users) u['id'] == account['id'] ? account : u];
+    licenseReviews = [
+      for (final u in licenseReviews)
+        if (u['id'] != account['id'])
+          u
+        else if (_map(account['license'])['status'] == 'TO_REVIEW')
+          account,
+    ];
   }
 
   http.Response _json(int status, Object body) => http.Response(

@@ -212,6 +212,15 @@ export const rejectIdentitySchema = z.object({
   severe: z.boolean().default(false),
 });
 
+// Permis : correction par un administrateur, et motif de refus.
+export const adminLicenseSchema = updateProfileSchema.pick({
+  licenseNumber: true,
+  licenseCategory: true,
+  licenseIssuedAt: true,
+});
+
+export const rejectLicenseSchema = rejectIdentitySchema.pick({ reason: true });
+
 export const deleteAccountSchema = z.object({
   password: z
     .string({ error: 'Mot de passe obligatoire.' })

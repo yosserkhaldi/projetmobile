@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/models/identity_attempt.dart';
+import 'package:mon_constat_digital/modules/users/models/license_reading.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 
 /// Texte des boutons de la console : plus discret que sur téléphone.
@@ -154,12 +155,17 @@ class StatusChip extends StatelessWidget {
           Icon(icon, size: 13, color: foreground),
           const SizedBox(width: 5),
         ],
-        Text(
-          label,
-          style: TextStyle(
-            color: foreground,
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
+        // Coupé par « … » plutôt que de déborder sur un petit écran.
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: foreground,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
       ],
@@ -256,6 +262,95 @@ class IdentityChecklist extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(child: Text(label)),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// État du permis : validé, à vérifier, refusé. null : aucun permis contrôlé.
+StatusChip? licenseChip(BuildContext context, LicenseStatus? status) {
+  final t = context.t;
+  final p = context.palette;
+  return switch (status) {
+    LicenseStatus.verified => StatusChip(
+      label: t.licenseStatusVerified,
+      background: p.successBg,
+      foreground: p.successText,
+      icon: Icons.verified_outlined,
+    ),
+    LicenseStatus.toReview => StatusChip(
+      label: t.licenseStatusToReview,
+      background: p.warningBg,
+      foreground: p.warningText,
+      icon: Icons.report_problem_outlined,
+    ),
+    LicenseStatus.rejected => StatusChip(
+      label: t.licenseStatusRejected,
+      background: p.errorBg,
+      foreground: p.errorText,
+      icon: Icons.block,
+    ),
+    null => null,
+  };
+}
+
+/// Contrôles croisés du permis avec le compte : ce qui a fait douter l'IA.
+class LicenseChecklist extends StatelessWidget {
+  const LicenseChecklist({required this.reading, super.key});
+  final LicenseReading reading;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final p = context.palette;
+    final items = <(String, bool?)>[
+      (t.checkLicenseName, reading.nameMatchesAccount),
+      (t.checkLicenseBirth, reading.birthDateMatchesIdentity),
+      (t.checkLicenseCin, reading.cinMatchesIdentity),
+      if (reading.numberMatchesReading != null)
+        (t.checkLicenseNumber, reading.numberMatchesReading),
+    ];
+    return Column(
+      key: const Key('license-checklist'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          t.aiChecksTitle.toUpperCase(),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+            color: p.textMuted,
+          ),
+        ),
+        for (final (label, ok) in items)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Row(
+              children: [
+                Icon(
+                  switch (ok) {
+                    true => Icons.check_circle,
+                    false => Icons.cancel,
+                    null => Icons.help_outline,
+                  },
+                  size: 18,
+                  color: switch (ok) {
+                    true => p.successText,
+                    false => p.errorText,
+                    null => p.textMuted,
+                  },
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    ok == null ? '$label · ${t.checkNotCompared}' : label,
+                    style: TextStyle(color: ok == null ? p.textMuted : null),
+                  ),
+                ),
               ],
             ),
           ),

@@ -67,6 +67,7 @@ String errorMessage(BuildContext context, Object error) {
     'BACK_HAS_FACE' => t.errorBackHasFace,
     'WRONG_DOCUMENT' => t.errorWrongDocument,
     'NOT_A_LICENSE' => t.errorNotALicense,
+    'LICENSE_NOT_YOURS' => t.errorLicenseNotYours,
     'BACK_NOT_RECOGNIZED' => t.errorBackNotRecognized,
     'IDENTITY_BLOCKED' => t.errorIdentityBlocked,
     'AI_QUOTA_EXCEEDED' => t.errorAiQuota,

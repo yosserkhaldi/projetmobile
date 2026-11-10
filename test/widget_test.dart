@@ -8,6 +8,8 @@ import 'package:mon_constat_digital/main.dart';
 import 'package:mon_constat_digital/modules/users/screens/liveness_screen.dart';
 import 'package:mon_constat_digital/modules/users/models/liveness.dart';
 import 'package:mon_constat_digital/modules/users/screens/profile_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/identity_review_screen.dart'
+    show IdentityPhotoFrame;
 import 'package:mon_constat_digital/modules/users/services/face_guide.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
@@ -448,6 +450,78 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         find.textContaining("ce permis n'est pas à votre nom"),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('permis d une autre personne : refusé, message clair', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend()
+        ..failures['PUT /users/me/license-photo'] = (
+          422,
+          'LICENSE_NOT_YOURS',
+          "Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n'a pas été enregistré.",
+        );
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('scan-license')));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Ce permis ne semble pas être le vôtre'),
+        findsOneWidget,
+      );
+      expect(find.textContaining("Il n'a pas été enregistré"), findsOneWidget);
+    });
+
+    testWidgets('permis signalé : « en cours de vérification » au profil', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: {
+          ...userJson(),
+          'licenseNumber': '08/12345',
+          'licensePhotoId': 'permis.jpg',
+          'license': {
+            'status': 'TO_REVIEW',
+            'checks': {'nameMatchesAccount': false},
+          },
+        },
+      );
+      await openProfile(tester, backend);
+      await scrollProfileTo(
+        tester,
+        find.byKey(const Key('license-status-TO_REVIEW')),
+      );
+      expect(
+        find.textContaining('un administrateur le vérifie'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('permis refusé par l administrateur : le motif est affiché', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: {
+          ...userJson(),
+          'license': {
+            'status': 'REJECTED',
+            'rejectionReason': "Permis d'une autre personne",
+          },
+        },
+      );
+      await openProfile(tester, backend);
+      await scrollProfileTo(
+        tester,
+        find.byKey(const Key('license-status-REJECTED')),
+      );
+      expect(
+        find.textContaining("Motif : Permis d'une autre personne"),
         findsOneWidget,
       );
     });
@@ -1565,6 +1639,154 @@ void main() {
       await tester.pumpAndSettle();
       expect(backend.bodies['POST /companies'], {'name': 'COMAR'});
       expect(find.text('COMAR'), findsOneWidget);
+    });
+
+    /// Fait défiler le dossier du compte jusqu'à [target].
+    Future<void> scrollFileTo(WidgetTester tester, Finder target) async {
+      await tester.scrollUntilVisible(
+        target,
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const Key('account-file')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.pumpAndSettle();
+    }
+
+    Map<String, dynamic> flaggedDriver() => {
+      ...userJson(id: 'u3', firstName: 'Mouna', lastName: 'Trabelsi'),
+      'licenseNumber': '08/82157',
+      'licensePhotoId': 'permis.jpg',
+      'license': {
+        'status': 'TO_REVIEW',
+        'reading': {'number': '08/82157'},
+        'checks': {
+          'nameMatchesAccount': false,
+          'birthDateMatchesIdentity': null,
+          'cinMatchesIdentity': null,
+        },
+      },
+    };
+
+    testWidgets('permis signalé : alerte, file, dossier, validation', (
+      tester,
+    ) async {
+      final backend = adminBackend()..licenseReviews = [flaggedDriver()];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      // Le tableau de bord signale le permis.
+      expect(find.text('1 permis à vérifier'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('license-review-alert')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mouna Trabelsi'));
+      await tester.pumpAndSettle();
+
+      // Le dossier montre ce qui a fait douter l'IA.
+      expect(find.byKey(const Key('license-checklist')), findsOneWidget);
+      expect(find.text('Nom du titulaire = nom du compte'), findsOneWidget);
+      await scrollFileTo(tester, find.byKey(const Key('approve-license')));
+      await tester.tap(find.byKey(const Key('approve-license')));
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('POST /users/u3/license/approve'));
+      expect(find.text('Permis validé'), findsWidgets);
+
+      // De retour dans la file : plus rien à vérifier.
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Aucun permis à vérifier.'), findsOneWidget);
+    });
+
+    testWidgets('permis refusé avec un motif, puis supprimé', (tester) async {
+      final backend = adminBackend()..licenseReviews = [flaggedDriver()];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.byKey(const Key('license-review-alert')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mouna Trabelsi'));
+      await tester.pumpAndSettle();
+
+      await scrollFileTo(tester, find.byKey(const Key('delete-license')));
+      await tester.tap(find.byKey(const Key('delete-license')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('confirm-delete-license')));
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('DELETE /users/u3/license'));
+      expect(find.text('Aucun permis enregistré.'), findsOneWidget);
+    });
+
+    testWidgets('refus du permis : motif obligatoire, envoyé au serveur', (
+      tester,
+    ) async {
+      final backend = adminBackend()..licenseReviews = [flaggedDriver()];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.byKey(const Key('license-review-alert')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mouna Trabelsi'));
+      await tester.pumpAndSettle();
+
+      await scrollFileTo(tester, find.byKey(const Key('reject-license')));
+      await tester.tap(find.byKey(const Key('reject-license')));
+      await tester.pumpAndSettle();
+      // Sans motif, pas de refus.
+      final confirm = find.byKey(const Key('confirm-reason'));
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+      await tester.tap(find.text("Permis d'une autre personne"));
+      await tester.pumpAndSettle();
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+      expect(backend.bodies['POST /users/u3/license/reject'], {
+        'reason': "Permis d'une autre personne",
+      });
+      expect(find.text('Permis refusé'), findsOneWidget);
+    });
+
+    testWidgets('dossier : identité validée par l IA, visible et annulable', (
+      tester,
+    ) async {
+      final backend = adminBackend()
+        ..users = [
+          userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+          {
+            ...userJson(id: 'u2'),
+            'identity': {
+              'status': 'VERIFIED',
+              'documentType': 'CIN',
+              'cinNumber': '12345678',
+              'frontId': 'front.jpg',
+              'backId': 'back.jpg',
+              'faceMatch': 0.92,
+              'autoVerified': true,
+            },
+          },
+        ];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Comptes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sami Ben Ali'));
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('GET /users/u2'));
+
+      // Les photos de la pièce restent consultables après la validation.
+      await scrollFileTo(tester, find.byKey(const Key('revoke-identity')));
+      expect(find.text("Identité vérifiée par l'IA"), findsOneWidget);
+      expect(find.byType(IdentityPhotoFrame), findsNWidgets(2));
+
+      await tester.tap(find.byKey(const Key('revoke-identity')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Photo floue'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('confirm-reason')));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['POST /users/u2/identity/revoke'], {
+        'reason': 'Photo floue',
+      });
+      await scrollFileTo(tester, find.text('Vérification refusée'));
+      expect(find.text('Vérification refusée'), findsOneWidget);
     });
   });
 

@@ -1,3 +1,5 @@
+import 'package:mon_constat_digital/modules/users/models/license_reading.dart';
+
 /// Libellés traduits : `role.labelIn(context.t)` (lib/l10n/l10n.dart).
 enum UserRole {
   driver('DRIVER'),
@@ -37,6 +39,76 @@ enum IdentityStatus {
 
   static IdentityStatus fromApi(String value) =>
       values.firstWhere((status) => status.apiValue == value);
+}
+
+/// Permis du profil : validé (par l'IA ou un administrateur), à vérifier par
+/// un administrateur (un contrôle croisé a échoué), ou refusé.
+enum LicenseStatus {
+  verified('VERIFIED'),
+  toReview('TO_REVIEW'),
+  rejected('REJECTED');
+
+  const LicenseStatus(this.apiValue);
+  final String apiValue;
+
+  static LicenseStatus? fromApi(String? value) => value == null
+      ? null
+      : values.firstWhere((status) => status.apiValue == value);
+}
+
+/// Contrôle du permis : ce que l'IA a lu, contrôles croisés avec le compte
+/// et décision.
+class LicenseReview {
+  const LicenseReview({
+    this.status,
+    this.reading,
+    this.rejectionReason,
+    this.reviewedAt,
+  });
+
+  factory LicenseReview.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return const LicenseReview();
+    final reading = json['reading'] as Map<String, dynamic>?;
+    final checks = json['checks'] as Map<String, dynamic>?;
+    return LicenseReview(
+      status: LicenseStatus.fromApi(json['status'] as String?),
+      // Lecture et contrôles réunis : même forme que la réponse au scan.
+      reading: reading == null && checks == null
+          ? null
+          : LicenseReading.fromJson({...?reading, ...?checks}),
+      rejectionReason: json['rejectionReason'] as String?,
+      reviewedAt: DateTime.tryParse(
+        json['reviewedAt'] as String? ?? '',
+      )?.toLocal(),
+    );
+  }
+
+  /// null : aucun permis contrôlé.
+  final LicenseStatus? status;
+  final LicenseReading? reading;
+  final String? rejectionReason;
+  final DateTime? reviewedAt;
+
+  Map<String, dynamic> toJson() {
+    final json = reading?.toJson();
+    return {
+      'status': status?.apiValue,
+      'reading': json,
+      'checks': json == null
+          ? null
+          : {
+              for (final key in const [
+                'nameMatchesAccount',
+                'birthDateMatchesIdentity',
+                'cinMatchesIdentity',
+                'numberMatchesReading',
+              ])
+                key: json[key],
+            },
+      'rejectionReason': rejectionReason,
+      'reviewedAt': reviewedAt?.toUtc().toIso8601String(),
+    };
+  }
 }
 
 /// Pièce présentée pour la vérification d'identité.
@@ -309,6 +381,7 @@ class AppUser {
     this.photoId,
     this.licensePhotoId,
     this.identity = const Identity(),
+    this.license = const LicenseReview(),
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -331,6 +404,7 @@ class AppUser {
       photoId: json['photoId'] as String?,
       licensePhotoId: json['licensePhotoId'] as String?,
       identity: Identity.fromJson(json['identity'] as Map<String, dynamic>?),
+      license: LicenseReview.fromJson(json['license'] as Map<String, dynamic>?),
     );
   }
 
@@ -347,6 +421,7 @@ class AppUser {
   /// Changent à chaque nouvelle photo. `null` : pas de photo.
   final String? photoId, licensePhotoId;
   final Identity identity;
+  final LicenseReview license;
 
   String get name => '$firstName $lastName';
 
@@ -369,5 +444,6 @@ class AppUser {
     'photoId': photoId,
     'licensePhotoId': licensePhotoId,
     'identity': identity.toJson(),
+    'license': license.toJson(),
   };
 }
