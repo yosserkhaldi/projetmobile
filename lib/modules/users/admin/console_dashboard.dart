@@ -8,6 +8,7 @@ import 'package:mon_constat_digital/modules/users/admin/console_widgets.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/widgets/dashboard_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 /// Tableau de bord de la console : indicateurs, graphiques, et ce qui attend
 /// une action de l'administrateur.
@@ -69,10 +70,7 @@ class _ConsoleDashboardState extends State<ConsoleDashboard> {
           const SizedBox(height: 16),
         ],
         if (stats == null && _error == null)
-          const Padding(
-            padding: EdgeInsets.all(60),
-            child: Center(child: CircularProgressIndicator()),
-          ),
+          const SkeletonDashboard(columns: 4),
         if (stats != null) ..._grid(context, dashboardSections(context, stats)),
       ],
     );

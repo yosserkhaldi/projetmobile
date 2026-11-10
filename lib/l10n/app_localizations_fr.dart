@@ -2114,4 +2114,82 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get licenseBirthMismatch =>
       'Attention : la date de naissance du permis ne correspond pas à votre pièce d\'identité.';
+
+  @override
+  String get licenseNameMismatch =>
+      'Attention : ce permis n\'est pas à votre nom. Ajoutez votre propre permis.';
+
+  @override
+  String get licenseCinMismatch =>
+      'Attention : le numéro de CIN du permis ne correspond pas à votre pièce d\'identité.';
+
+  @override
+  String get errorWrongDocument =>
+      'La photo ne montre pas la pièce choisie. Changez de pièce ou de photo.';
+
+  @override
+  String get errorNotALicense =>
+      'Cette photo n\'est pas un permis de conduire.';
+
+  @override
+  String get registerIntro =>
+      'Trois étapes, moins d\'une minute. Votre numéro sera ensuite vérifié par un code.';
+
+  @override
+  String get registerStepYou => 'Vous';
+
+  @override
+  String get registerStepContact => 'Vos coordonnées';
+
+  @override
+  String get registerStepSecurity => 'Sécurité';
+
+  @override
+  String get registerPhoneHint =>
+      'Un code de vérification vous sera envoyé sur WhatsApp.';
+
+  @override
+  String get passwordWeak => 'Faible';
+
+  @override
+  String get passwordFair => 'Moyen';
+
+  @override
+  String get passwordGood => 'Bon';
+
+  @override
+  String get passwordStrong => 'Excellent';
+
+  @override
+  String get passwordRuleLength => '8 caractères';
+
+  @override
+  String get passwordRuleUpper => 'Une majuscule';
+
+  @override
+  String get passwordRuleDigit => 'Un chiffre';
+
+  @override
+  String get passwordRuleSymbol => 'Un symbole';
+
+  @override
+  String get identityStepDocument => 'Pièce';
+
+  @override
+  String get identityStepReading => 'Lecture';
+
+  @override
+  String get identityStepFace => 'Visage';
+
+  @override
+  String get identityStepSend => 'Envoi';
+
+  @override
+  String get profileIdentityVerified => 'Identité vérifiée';
+
+  @override
+  String get profileIdentityPending => 'Identité en cours';
+
+  @override
+  String get profileIdentityTodo => 'Identité à vérifier';
 }

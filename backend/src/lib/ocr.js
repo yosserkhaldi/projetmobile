@@ -20,6 +20,14 @@ const ENGINES = {
       tessedit_pageseg_mode: '6',
     },
   },
+  // Numéro du permis : chiffres et barre seulement.
+  digits: {
+    lang: 'eng',
+    params: {
+      tessedit_char_whitelist: '0123456789/.- ',
+      tessedit_pageseg_mode: '6',
+    },
+  },
 };
 
 const workers = {};
@@ -175,17 +183,77 @@ export function parseCinNumber(text) {
   return text.match(/(?<!\d)\d{8}(?!\d)/)?.[0] ?? null;
 }
 
+// Dates des permis : « 15/06/2015 » (JJ/MM/AAAA) ou « 2017-08-18 » (AAAA-MM-JJ,
+// carte de 2017).
 const DATE = /(?<!\d)(\d{2})[./-](\d{2})[./-]((?:19|20)\d{2})(?!\d)/g;
+const ISO_DATE = /(?<!\d)((?:19|20)\d{2})[./-](\d{2})[./-](\d{2})(?!\d)/g;
 
-/** Permis tunisien : ancien format « 12/345678 », sinon le numéro de la
- * case 5 du modèle international (2023), sinon 6 à 10 chiffres d'un tenant. */
+/** Toutes les dates du texte, au format AAAA-MM-JJ, valides seulement. */
+function datesIn(text) {
+  return [
+    ...[...text.matchAll(DATE)].map(([, d, m, y]) => `${y}-${m}-${d}`),
+    ...[...text.matchAll(ISO_DATE)].map(([, y, m, d]) => `${y}-${m}-${d}`),
+  ].filter((d) => {
+    const month = Number(d.slice(5, 7));
+    const day = Number(d.slice(8, 10));
+    return month >= 1 && month <= 12 && day >= 1 && day <= 31;
+  });
+}
+
+/** Permis tunisien : « 12/345678 » (avec ou sans espaces), sinon le numéro
+ * de la case 5 du modèle international (2023), sinon 6, 7, 9 ou 10 chiffres.
+ * Jamais 8 chiffres seuls : c'est la forme du numéro de CIN, imprimé aussi
+ * sur la carte de 2017. Mieux vaut un champ vide qu'un mauvais numéro. */
 export function parseLicenseNumber(text) {
   const old = text.match(/(?<!\d)(\d{2})\s*\/\s*(\d{5,8})(?!\d)/);
   if (old) return `${old[1]}/${old[2]}`;
-  const field5 = text.match(/(?:^|\s)5\s*[.:]\s*([A-Z0-9]{6,12})\b/m);
-  if (field5) return field5[1];
-  const withoutDates = text.replace(DATE, ' ');
-  return withoutDates.match(/(?<!\d)\d{6,10}(?!\d)/)?.[0] ?? null;
+  // Case 5 : un numéro (au moins un chiffre), pas une ville.
+  const field5 = text.match(/(?:^|\s)5\s*[.:]\s*([A-Z0-9]*\d[A-Z0-9]*)\b/m);
+  if (field5 && field5[1].length >= 6) return field5[1];
+  const withoutDates = text.replace(DATE, ' ').replace(ISO_DATE, ' ');
+  return (
+    [...withoutDates.matchAll(/(?<!\d)\d{6,10}(?!\d)/g)]
+      .map((m) => m[0])
+      .find((digits) => digits.length !== 8) ?? null
+  );
+}
+
+// Mots imprimés sur toutes les cartes, jamais un nom.
+const LICENSE_WORDS = new Set([
+  'REPUBLIQUE', 'TUNISIENNE', 'PERMIS', 'CONDUIRE', 'DRIVING', 'LICENCE',
+  'LICENSE', 'TUNISIA', 'TUNISIE',
+]);
+
+/**
+ * Titulaire du permis (carte de 2017) : nom (case 3), prénom (case 4), en
+ * lettres latines. Si les numéros de case ne sont pas lus, les deux lignes
+ * en majuscules juste avant celle du lieu de naissance (qui porte une date).
+ * Les lignes de légende, en minuscules, sont écartées.
+ */
+export function parseLicenseHolder(text) {
+  const upperWords = (line) =>
+    (line.match(/\b[A-Z][A-Z'-]{2,}\b/g) ?? []).filter(
+      (word) => !LICENSE_WORDS.has(word),
+    );
+  const labelled = (field) =>
+    text
+      .match(new RegExp(`(?:^|\\s)${field}\\s*[.,:]\\s*([A-Z][A-Z' -]{2,40})`, 'm'))?.[1]
+      .trim()
+      .split(/\s{2,}/)[0] ?? null;
+  let lastName = labelled(3);
+  let firstName = labelled(4);
+  if (!lastName || !firstName) {
+    const lines = text
+      .split('\n')
+      .filter((line) => !/[a-zé]{4,}/.test(line) && upperWords(line).length);
+    const place = lines.findIndex((line) => datesIn(line).length);
+    const names = lines
+      .slice(0, place === -1 ? lines.length : place)
+      .map((line) => upperWords(line).join(' '));
+    lastName ??= names.at(-2) ?? null;
+    firstName ??= names.at(-1) ?? null;
+  }
+  return { lastName, firstName };
 }
 
 // Catégories du permis tunisien (décret 2021-510), dans l'ordre officiel.
@@ -194,8 +262,9 @@ export const LICENSE_CATEGORIES = ['A1', 'A', 'B', 'B+E', 'C', 'C+E', 'D', 'D1',
 /** Catégories lues : codes seuls sur la carte (« BE » ou « B+E » = B+E).
  * De préférence dans les lignes du tableau, qui en portent plusieurs. */
 export function parseLicenseCategories(text) {
+  // Majuscules seulement : « de » (dans « Date de délivrance ») n'est pas D+E.
   const codeOf = (token) => {
-    const code = token.toUpperCase().replace(/^([BCD])\+?E$/, '$1+E');
+    const code = token.replace(/^([BCD])\+?E$/, '$1+E');
     return LICENSE_CATEGORIES.includes(code) ? code : null;
   };
   const codesIn = (line) =>
@@ -203,34 +272,35 @@ export function parseLicenseCategories(text) {
       .split(/[\s|,;:()[\]]+/)
       .map(codeOf)
       .filter(Boolean);
-  const lines = text.split('\n').map(codesIn);
-  const table = lines.filter((codes) => codes.length >= 2).flat();
-  const found = new Set(table.length ? table : lines.flat());
+  // Seulement les lignes du tableau des catégories, qui en portent au moins
+  // deux : un mot isolé (« PERMIS DE CONDUIRE ») ne compte pas.
+  const table = text
+    .split('\n')
+    .map(codesIn)
+    .filter((codes) => codes.length >= 2)
+    .flat();
+  const found = new Set(table);
   return LICENSE_CATEGORIES.filter((code) => found.has(code));
 }
 
-const isoDate = ([, dd, mm, yyyy]) => `${yyyy}-${mm}-${dd}`;
-
 /**
- * Dates du permis. Cases 4a (délivrance) et 4b (expiration) si l'IA les
+ * Dates du permis. Cases 4a ou 2 (délivrance) et 4b (expiration) si l'IA les
  * trouve ; sinon : la plus ancienne est la naissance, la plus récente avant
  * aujourd'hui la délivrance, une date future l'expiration.
  */
 export function parseLicenseDates(text, today = new Date().toISOString().slice(0, 10)) {
   const labelled = (label) => {
-    const match = text.match(
-      new RegExp(`${label}\\s*[.:]?\\s*(\\d{2})[./-](\\d{2})[./-]((?:19|20)\\d{2})`, 'i'),
+    const after = text.match(
+      new RegExp(`(?:^|\\s)${label}\\s*[.:]\\s*([0-9./ -]{10,12})`, 'im'),
     );
-    return match ? isoDate(match) : null;
+    return after ? (datesIn(after[1])[0] ?? null) : null;
   };
-  const dates = [...text.matchAll(DATE)]
-    .map(isoDate)
-    .filter((d) => Number(d.slice(5, 7)) <= 12 && Number(d.slice(8, 10)) <= 31)
-    .sort();
+  const dates = datesIn(text).sort();
   const past = dates.filter((d) => d <= today);
   return {
     birthDate: past.length > 1 ? past[0] : null,
-    issuedAt: labelled('4a') ?? past.at(-1) ?? null,
+    // Case 4a (modèle international) ou 2 (carte de 2017).
+    issuedAt: labelled('4a') ?? labelled('2') ?? past.at(-1) ?? null,
     expiresAt: labelled('4b') ?? dates.find((d) => d > today) ?? null,
   };
 }
@@ -397,6 +467,95 @@ async function cinFieldsImage(upright, box) {
     .toBuffer();
 }
 
+/**
+ * Numéro du permis lu de près : sur la carte de 2017, il est juste à droite
+ * de la photo, au-dessus du nom. Trop petit pour la lecture de toute la
+ * carte sur une photo de téléphone : on agrandit cette zone et on ne lit que
+ * des chiffres. Deux découpes ; le numéro trouvé le plus souvent l'emporte.
+ */
+async function licenseNumberNearPhoto(upright, box) {
+  const { width, height } = await sharp(upright).metadata();
+  const left = Math.min(0.95, box.x + box.width * 1.05);
+  const votes = new Map();
+  for (const [from, to] of [[-0.3, 0.5], [-0.2, 0.8], [-0.25, 0.6]]) {
+    const top = Math.max(0, box.y + box.height * from);
+    const bottom = Math.min(1, box.y + box.height * to);
+    const zone = await sharp(upright)
+      .extract({
+        left: Math.round(left * width),
+        top: Math.round(top * height),
+        width: Math.max(1, Math.round((1 - left) * width)),
+        height: Math.max(1, Math.round((bottom - top) * height)),
+      })
+      .greyscale()
+      .resize({ width: 1800 })
+      .normalise()
+      .threshold(140)
+      .png()
+      .toBuffer();
+    const match = (await recognize('digits', zone)).match(
+      /(?<!\d)(\d{2})\s*\/\s*(\d{5,8})(?!\d)/,
+    );
+    if (match) {
+      const number = `${match[1]}/${match[2]}`;
+      votes.set(number, (votes.get(number) ?? 0) + 1);
+    }
+  }
+  return [...votes].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+}
+
+/**
+ * Quelle pièce montre la photo ? PASSPORT (ligne MRZ « P<TUN… »), LICENSE
+ * (« PERMIS DE CONDUIRE », « رخصة سياقة »), CIN (« بطاقة التعريف »), ou null
+ * si rien ne permet de le dire. Sert à refuser une pièce prise pour une
+ * autre ; dans le doute, on laisse passer.
+ */
+export async function kindOf(upright, text) {
+  const upper = text.toUpperCase();
+  const fromLatin = documentKindFromText(upper);
+  if (fromLatin) return fromLatin;
+  // Rien en lettres latines : l'en-tête en arabe, en haut de la carte,
+  // contrasté (lettres violettes sur fond clair).
+  const { width, height } = await sharp(upright).metadata();
+  const header = await sharp(upright)
+    .extract({ left: 0, top: 0, width, height: Math.round(height * 0.25) })
+    .greyscale()
+    .resize({ width: 1600 })
+    .normalise()
+    .threshold(150)
+    .png()
+    .toBuffer();
+  return arabicKind(await recognize('ara', header));
+}
+
+// Mots arabes qui désignent la pièce. Une lettre de différence est tolérée :
+// l'en-tête calligraphié se lit mal (« التعيف » pour « التعريف »).
+const ARABIC_KINDS = [
+  ['CIN', ['بطاقه', 'التعريف']],
+  ['LICENSE', ['رخصه', 'سياقه']],
+  ['PASSPORT', ['جواز', 'السفر']],
+];
+
+export function arabicKind(text) {
+  const words = (text.match(/[؀-ۿ]{3,}/g) ?? []).map(simplify);
+  for (const [kind, keys] of ARABIC_KINDS) {
+    if (words.some((word) => keys.some((key) => distance(word, key) <= 1))) {
+      return kind;
+    }
+  }
+  return null;
+}
+
+/** Mots qui désignent la pièce, en lettres latines ou en arabe. */
+export function documentKindFromText(text) {
+  if (/P<[A-Z]{3}/.test(text) || /PASS[EP]?PORT|جواز/.test(text)) {
+    return 'PASSPORT';
+  }
+  if (/PERMIS|CONDUIRE|DRIVING|رخصه|سياقه/.test(text)) return 'LICENSE';
+  if (/التعريف|بطاقه/.test(text)) return 'CIN';
+  return null;
+}
+
 /** Champs de la MRZ dont le chiffre de contrôle est bon. */
 const mrzScore = (mrz) =>
   mrz
@@ -542,15 +701,32 @@ export const documentReader = {
       ? await sharp(exif).rotate(rotation).toBuffer()
       : exif;
     if (documentType === 'PASSPORT') {
-      return { type: documentType, ...((await readMrz(upright)) ?? { number: null }) };
+      const mrz = await readMrz(upright);
+      // Pas de MRZ : on regarde quelle pièce c'est vraiment.
+      const kind = mrz
+        ? 'PASSPORT'
+        : await kindOf(upright, await recognize('eng', await prepare(upright)));
+      return { type: documentType, kind, ...(mrz ?? { number: null }) };
     }
     const text = await recognize('eng', await prepare(upright));
+    const kind = await kindOf(upright, text);
     if (documentType === 'LICENSE') {
+      // Le numéro de CIN (case 6 de la carte de 2017) est une suite de
+      // 8 chiffres ; le numéro du permis, lui, porte une barre.
+      const withoutNumber = text.replace(/\d{2}\s*\/\s*\d{5,8}/g, ' ');
       return {
         type: documentType,
-        number: parseLicenseNumber(text),
+        kind,
+        // Numéro avec sa barre lu sur toute la carte, sinon de près, à côté
+        // de la photo, sinon un autre format de numéro.
+        number:
+          (/\d{2}\s*\/\s*\d{5,8}/.test(text) ? parseLicenseNumber(text) : null) ??
+          (box ? await licenseNumberNearPhoto(upright, box) : null) ??
+          parseLicenseNumber(text),
         categories: parseLicenseCategories(text),
         ...parseLicenseDates(text),
+        ...parseLicenseHolder(text),
+        cinNumber: parseCinNumber(withoutNumber.replace(ISO_DATE, ' ')),
       };
     }
     const fields = box
@@ -558,7 +734,7 @@ export const documentReader = {
           await recognize('ara', await cinFieldsImage(upright, box)),
         )
       : {};
-    return { type: documentType, number: parseCinNumber(text), ...fields };
+    return { type: documentType, kind, number: parseCinNumber(text), ...fields };
   },
 };
 

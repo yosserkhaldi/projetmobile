@@ -3813,6 +3813,150 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Attention : la date de naissance du permis ne correspond pas à votre pièce d\'identité.'**
   String get licenseBirthMismatch;
+
+  /// No description provided for @licenseNameMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : ce permis n\'est pas à votre nom. Ajoutez votre propre permis.'**
+  String get licenseNameMismatch;
+
+  /// No description provided for @licenseCinMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : le numéro de CIN du permis ne correspond pas à votre pièce d\'identité.'**
+  String get licenseCinMismatch;
+
+  /// No description provided for @errorWrongDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo ne montre pas la pièce choisie. Changez de pièce ou de photo.'**
+  String get errorWrongDocument;
+
+  /// No description provided for @errorNotALicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette photo n\'est pas un permis de conduire.'**
+  String get errorNotALicense;
+
+  /// No description provided for @registerIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trois étapes, moins d\'une minute. Votre numéro sera ensuite vérifié par un code.'**
+  String get registerIntro;
+
+  /// No description provided for @registerStepYou.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous'**
+  String get registerStepYou;
+
+  /// No description provided for @registerStepContact.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos coordonnées'**
+  String get registerStepContact;
+
+  /// No description provided for @registerStepSecurity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sécurité'**
+  String get registerStepSecurity;
+
+  /// No description provided for @registerPhoneHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un code de vérification vous sera envoyé sur WhatsApp.'**
+  String get registerPhoneHint;
+
+  /// No description provided for @passwordWeak.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faible'**
+  String get passwordWeak;
+
+  /// No description provided for @passwordFair.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moyen'**
+  String get passwordFair;
+
+  /// No description provided for @passwordGood.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bon'**
+  String get passwordGood;
+
+  /// No description provided for @passwordStrong.
+  ///
+  /// In fr, this message translates to:
+  /// **'Excellent'**
+  String get passwordStrong;
+
+  /// No description provided for @passwordRuleLength.
+  ///
+  /// In fr, this message translates to:
+  /// **'8 caractères'**
+  String get passwordRuleLength;
+
+  /// No description provided for @passwordRuleUpper.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une majuscule'**
+  String get passwordRuleUpper;
+
+  /// No description provided for @passwordRuleDigit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un chiffre'**
+  String get passwordRuleDigit;
+
+  /// No description provided for @passwordRuleSymbol.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un symbole'**
+  String get passwordRuleSymbol;
+
+  /// No description provided for @identityStepDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce'**
+  String get identityStepDocument;
+
+  /// No description provided for @identityStepReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture'**
+  String get identityStepReading;
+
+  /// No description provided for @identityStepFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage'**
+  String get identityStepFace;
+
+  /// No description provided for @identityStepSend.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoi'**
+  String get identityStepSend;
+
+  /// No description provided for @profileIdentityVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité vérifiée'**
+  String get profileIdentityVerified;
+
+  /// No description provided for @profileIdentityPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité en cours'**
+  String get profileIdentityPending;
+
+  /// No description provided for @profileIdentityTodo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité à vérifier'**
+  String get profileIdentityTodo;
 }
 
 class _AppLocalizationsDelegate

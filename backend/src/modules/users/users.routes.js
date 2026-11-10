@@ -6,7 +6,8 @@ import {
   isForeignKeyViolation,
   isUniqueViolation,
 } from '../../lib/errors.js';
-import { documentReader } from '../../lib/ocr.js';
+import { faceEngine } from '../../lib/face.js';
+import { documentReader, sameName } from '../../lib/ocr.js';
 import { prisma } from '../../lib/prisma.js';
 import {
   deleteImage,
@@ -89,16 +90,65 @@ const PHOTO_FOLDER = 'users';
 // La photo du permis passe par l'OCR : même quota que la vérification d'identité.
 const ocrQuota = aiQuota({ max: 30 });
 
-/** Lecture du permis par l'OCR. En panne : null, le formulaire reste à remplir. */
+/**
+ * Lecture du permis par l'OCR. La photo du titulaire donne le sens de la
+ * carte : une photo prise de travers est remise à l'endroit. En panne :
+ * null, le formulaire reste à remplir.
+ */
 async function readLicense(buffer) {
   try {
-    const { number, categories, issuedAt, expiresAt, birthDate } =
-      await documentReader.read(buffer, 'LICENSE');
-    return { number, categories, issuedAt, expiresAt, birthDate };
+    const face = await faceEngine.analyze(buffer);
+    const read = await documentReader.read(buffer, 'LICENSE', face);
+    const { number, categories, issuedAt, expiresAt, birthDate } = read;
+    const { lastName, firstName, cinNumber, kind } = read;
+    // Un passeport ou une CIN n'est pas un permis : refusé, rien n'est
+    // enregistré. Dans le doute (kind null), on laisse passer.
+    if (kind && kind !== 'LICENSE') {
+      throw new HttpError(
+        422,
+        'NOT_A_LICENSE',
+        kind === 'PASSPORT'
+          ? 'Cette photo montre un passeport, pas un permis de conduire.'
+          : "Cette photo montre une carte d'identité, pas un permis de conduire.",
+      );
+    }
+    return {
+      number,
+      categories,
+      issuedAt,
+      expiresAt,
+      birthDate,
+      lastName,
+      firstName,
+      cinNumber,
+    };
   } catch (err) {
+    if (err instanceof HttpError) throw err;
     console.error('Lecture du permis', err);
     return null;
   }
+}
+
+/**
+ * Contrôles croisés du permis avec le compte : nom du titulaire, et date de
+ * naissance et numéro de CIN de la pièce d'identité. null : pas comparable.
+ */
+function licenseChecks(user, extracted) {
+  const identity = user.identityExtracted;
+  const compare = (a, b) => (a && b ? a === b : null);
+  const names = [
+    extracted?.lastName && sameName(extracted.lastName, user.lastName),
+    extracted?.firstName &&
+      sameName(extracted.firstName.split(' ')[0], user.firstName.split(' ')[0]),
+  ].filter((result) => result !== undefined && result !== null && result !== '');
+  return {
+    nameMatchesAccount: names.length ? names.every(Boolean) : null,
+    birthDateMatchesIdentity: compare(extracted?.birthDate, identity?.birthDate),
+    cinMatchesIdentity:
+      user.identityDocument === 'CIN'
+        ? compare(extracted?.cinNumber, user.cinNumber)
+        : null,
+  };
 }
 
 for (const [route, column] of Object.entries(PHOTOS)) {
@@ -117,16 +167,14 @@ for (const [route, column] of Object.entries(PHOTOS)) {
       include: withCompany,
     });
     await deleteImage(req.user[column], PHOTO_FOLDER);
-    // Contrôle croisé : la date de naissance du permis et celle de la pièce
-    // d'identité doivent être les mêmes.
-    const identityBirth = req.user.identityExtracted?.birthDate;
-    const birthDateMatchesIdentity =
-      isLicense && extracted?.birthDate && identityBirth
-        ? extracted.birthDate === identityBirth
-        : null;
+    // Contrôles croisés : le permis doit être au nom du compte, avec la date
+    // de naissance et le numéro de CIN de la pièce d'identité.
     res.json({
       user: publicUser(user),
-      extracted: extracted && { ...extracted, birthDateMatchesIdentity },
+      extracted: extracted && {
+        ...extracted,
+        ...licenseChecks(req.user, extracted),
+      },
     });
   });
 

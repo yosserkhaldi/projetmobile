@@ -13,6 +13,7 @@ import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 /// File des identités à vérifier (administrateurs).
 class IdentityReviewScreen extends StatefulWidget {
@@ -63,9 +64,9 @@ class _IdentityReviewScreenState extends State<IdentityReviewScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_loading && pending.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(child: CircularProgressIndicator()),
+                    const SizedBox(
+                      height: 300,
+                      child: SkeletonList(count: 4, padding: EdgeInsets.zero),
                     ),
                   if (_error != null) ...[
                     ErrorBanner(_error!),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/modules/users/admin/console_widgets.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
@@ -8,6 +9,7 @@ import 'package:mon_constat_digital/modules/users/screens/agent_form_screen.dart
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -108,7 +110,7 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Widget _body(List<AppUser> users, String? myId) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return const SkeletonList();
     if (_error != null) {
       return Padding(
         padding: const EdgeInsets.all(16),
@@ -121,7 +123,10 @@ class _UsersScreenState extends State<UsersScreen> {
       );
     }
     if (users.isEmpty) {
-      return Center(child: Text(context.t.noAccounts));
+      return ConsoleEmpty(
+        icon: Icons.people_outline,
+        text: context.t.noAccounts,
+      );
     }
     final admin = AppScope.of(context).admin;
     return ListView.builder(

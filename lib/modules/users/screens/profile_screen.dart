@@ -98,24 +98,26 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
-            _Section(
-              title: t.sectionLicense,
-              editKey: const Key('edit-license'),
-              onEdit: () => _showSheet(context, _LicenseSheet(user: user)),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _LicenseCard(user: user),
-                      const SizedBox(height: 12),
-                      _LicensePhoto(user: user),
-                    ],
+            // Le permis sert à remplir le constat : conducteurs seulement.
+            if (user.role == UserRole.driver)
+              _Section(
+                title: t.sectionLicense,
+                editKey: const Key('edit-license'),
+                onEdit: () => _showSheet(context, _LicenseSheet(user: user)),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _LicenseCard(user: user),
+                        const SizedBox(height: 12),
+                        _LicensePhoto(user: user),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
             if (user.role == UserRole.driver)
               _Section(
                 title: t.identityTitle,
@@ -343,16 +345,26 @@ class _ProfileHeader extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          _Pill(
-                            icon: user.phoneVerified
-                                ? Icons.verified_outlined
-                                : Icons.error_outline,
-                            label: user.phoneVerified
-                                ? t.phoneVerified
-                                : t.phoneNotVerified,
-                            color: user.phoneVerified
-                                ? const Color(0xFF7FE0CC)
-                                : AppColors.accent,
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              _Pill(
+                                icon: user.phoneVerified
+                                    ? Icons.verified_outlined
+                                    : Icons.error_outline,
+                                label: user.phoneVerified
+                                    ? t.phoneVerified
+                                    : t.phoneNotVerified,
+                                color: user.phoneVerified
+                                    ? const Color(0xFF7FE0CC)
+                                    : AppColors.accent,
+                              ),
+                              // Conducteur : l'état de son identité, d'un
+                              // coup d'œil (exigée pour signer un constat).
+                              if (user.role == UserRole.driver)
+                                _identityPill(t, user.identity.status),
+                            ],
                           ),
                         ],
                       ),
@@ -456,8 +468,35 @@ class _Avatar extends StatelessWidget {
   );
 }
 
+_Pill _identityPill(AppLocalizations t, IdentityStatus status) =>
+    switch (status) {
+      IdentityStatus.verified => _Pill(
+        key: const Key('identity-pill'),
+        icon: Icons.verified_user_outlined,
+        label: t.profileIdentityVerified,
+        color: const Color(0xFF7FE0CC),
+      ),
+      IdentityStatus.pending => _Pill(
+        key: const Key('identity-pill'),
+        icon: Icons.hourglass_top_rounded,
+        label: t.profileIdentityPending,
+        color: AppColors.onDarkStrong,
+      ),
+      _ => _Pill(
+        key: const Key('identity-pill'),
+        icon: Icons.badge_outlined,
+        label: t.profileIdentityTodo,
+        color: AppColors.accent,
+      ),
+    };
+
 class _Pill extends StatelessWidget {
-  const _Pill({required this.icon, required this.label, required this.color});
+  const _Pill({
+    required this.icon,
+    required this.label,
+    required this.color,
+    super.key,
+  });
   final IconData icon;
   final String label;
   final Color color;
@@ -715,7 +754,10 @@ class _LicensePhoto extends StatelessWidget {
     final t = context.t;
     final hasPhoto = user.licensePhotoId != null;
     return InkWell(
-      onTap: () => changePhoto(context, UserPhoto.license),
+      key: const Key('license-photo'),
+      // Ouvre le permis : « Scanner mon permis » remplace la photo et relit la
+      // carte (permis refait, nouvelles catégories).
+      onTap: () => _showSheet(context, _LicenseSheet(user: user)),
       borderRadius: BorderRadius.circular(AppRadius.input),
       child: Container(
         height: hasPhoto ? 170 : 52,
@@ -1000,8 +1042,8 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
   bool? _filledByAi;
   bool _scanning = false;
 
-  /// Date de naissance du permis différente de celle de la pièce d'identité.
-  bool _birthMismatch = false;
+  /// Contrôles croisés en échec : messages à afficher sous le résultat.
+  List<String> _crossCheckWarnings = const [];
 
   @override
   void dispose() {
@@ -1026,7 +1068,13 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
       );
       if (!mounted) return;
       setState(() {
-        _birthMismatch = reading?.birthDateMatchesIdentity == false;
+        final t = context.t;
+        _crossCheckWarnings = [
+          if (reading?.nameMatchesAccount == false) t.licenseNameMismatch,
+          if (reading?.cinMatchesIdentity == false) t.licenseCinMismatch,
+          if (reading?.birthDateMatchesIdentity == false)
+            t.licenseBirthMismatch,
+        ];
         if (reading == null || reading.isEmpty) {
           _filledByAi = false;
           return;
@@ -1082,6 +1130,8 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
+    // Compte à jour : la photo change dès qu'un nouveau scan est envoyé.
+    final user = AppScope.of(context).users.currentUser ?? widget.user;
     return _SheetFrame(
       title: t.editLicenseTitle,
       child: Form(
@@ -1092,6 +1142,23 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
             if (error != null) ...[
               ErrorBanner(error!),
               const SizedBox(height: 14),
+            ],
+            // Photo enregistrée : un nouveau scan la remplace.
+            if (user.licensePhotoId != null) ...[
+              ClipRRect(
+                key: const Key('license-sheet-photo'),
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                child: SizedBox(
+                  height: 150,
+                  child: UserPhotoView(
+                    user: user,
+                    photo: UserPhoto.license,
+                    fit: BoxFit.contain,
+                    placeholder: const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
             ],
             // Le plus simple : une photo, l'IA remplit le reste.
             FilledButton.icon(
@@ -1152,9 +1219,9 @@ class _LicenseSheetState extends State<_LicenseSheet> with FormActions {
                 ),
               ),
             // Contrôle croisé avec la pièce d'identité.
-            if (_birthMismatch) ...[
+            for (final warning in _crossCheckWarnings) ...[
               const SizedBox(height: 8),
-              ErrorBanner(t.licenseBirthMismatch),
+              ErrorBanner(warning),
             ],
             const SizedBox(height: 16),
             LabeledField(

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/modules/users/admin/console_widgets.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/models/company.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 class CompaniesScreen extends StatefulWidget {
   const CompaniesScreen({super.key});
@@ -133,7 +135,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
   }
 
   Widget _body(List<Company> companies) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return const SkeletonList();
     if (_error != null) {
       return Padding(
         padding: const EdgeInsets.all(16),
@@ -146,7 +148,10 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
       );
     }
     if (companies.isEmpty) {
-      return Center(child: Text(context.t.noCompanies));
+      return ConsoleEmpty(
+        icon: Icons.apartment_outlined,
+        text: context.t.noCompanies,
+      );
     }
     final admin = AppScope.of(context).admin;
     return ListView(
