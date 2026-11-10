@@ -28,6 +28,9 @@ class Constat {
     DateTime? driverASignedAt,
     DateTime? driverBSignedAt,
     DateTime? createdAt,
+    this.qrCodeBase64,
+    this.jwsToken,
+    this.verifierUrl,
   })  : driverASignedAt = driverASignedAt ?? DateTime.now(),
         driverBSignedAt = driverBSignedAt ?? DateTime.now(),
         createdAt = createdAt ?? DateTime.now();
@@ -38,6 +41,9 @@ class Constat {
   final String status;
   final String sha256Hash;
   final String pdfUrl;
+  final String? qrCodeBase64;
+  final String? jwsToken;
+  final String? verifierUrl;
 
   final String driverAName;
   final String driverAPlate;
@@ -111,6 +117,9 @@ class Constat {
         createdAt: json['createdAt'] != null
             ? DateTime.parse(json['createdAt'] as String)
             : null,
+        qrCodeBase64: json['qrCodeBase64'] as String?,
+        jwsToken: json['jwsToken'] as String?,
+        verifierUrl: json['verifierUrl'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -120,6 +129,9 @@ class Constat {
         'status': status,
         'sha256Hash': sha256Hash,
         'pdfUrl': pdfUrl,
+        'qrCodeBase64': qrCodeBase64,
+        'jwsToken': jwsToken,
+        'verifierUrl': verifierUrl,
         'driverAName': driverAName,
         'driverAPlate': driverAPlate,
         'driverAInsurer': driverAInsurer,

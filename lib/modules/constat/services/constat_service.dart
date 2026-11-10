@@ -17,35 +17,51 @@ class ConstatService {
     required AccidentDraft draft,
     required Uint8List pdfBytes,
     required String sha256Hash,
+    String? signaturesHash,
+    DateTime? signedAt,
+    bool deferEmail = false,
     String? accidentId,
+    String? driverAName,
+    String? driverAPlate,
+    String? driverAInsurer,
     String? driverAPolicy,
     String? companyAId,
     String? companyBId,
   }) async {
+    final signedIso = (signedAt ?? DateTime.now()).toUtc().toIso8601String();
+    final resolvedDriverAName =
+        _firstNonEmpty(driverAName, draft.driverAName) ?? 'Conducteur A';
+    final resolvedDriverAPlate =
+        _firstNonEmpty(driverAPlate, draft.driverAPlate) ?? 'Non renseignée';
+    final resolvedDriverAInsurer =
+        _firstNonEmpty(driverAInsurer, draft.driverAInsurer) ?? 'Non renseigné';
+    final resolvedDriverAPolicy = _firstNonEmpty(driverAPolicy, draft.driverAPolicy);
+    final resolvedCompanyAId = _firstNonEmpty(companyAId, draft.driverACompanyId);
     final payload = {
-      if (accidentId != null) 'accidentId': accidentId,
+      if (accidentId != null && accidentId.isNotEmpty) 'accidentId': accidentId,
       'sha256Hash': sha256Hash,
-      'driverAName': _or(draft.driverAName, 'Conducteur A'),
-      'driverAPlate': _or(draft.driverAPlate, 'Non renseignée'),
-      'driverAInsurer': _or(draft.driverAInsurer, 'Non renseigné'),
-      if ((driverAPolicy ?? draft.driverAPolicy).isNotEmpty)
-        'driverAPolicy': driverAPolicy ?? draft.driverAPolicy,
-      if ((companyAId ?? draft.driverACompanyId) != null)
-        'companyAId': companyAId ?? draft.driverACompanyId,
+      if (signaturesHash != null && signaturesHash.isNotEmpty)
+        'signaturesHash': signaturesHash,
+      if (deferEmail) 'deferEmail': true,
+      'driverAName': resolvedDriverAName,
+      'driverAPlate': resolvedDriverAPlate,
+      'driverAInsurer': resolvedDriverAInsurer,
+      'driverAPolicy': ?resolvedDriverAPolicy,
+      'companyAId': ?resolvedCompanyAId,
       'driverBName': draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
       'driverBPlate': draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'B-Plate',
       'driverBInsurer': draft.driverBInsurer.isNotEmpty ? draft.driverBInsurer : 'Assureur B',
       if (draft.driverBPolicy.isNotEmpty) 'driverBPolicy': draft.driverBPolicy,
-      if (companyBId != null) 'companyBId': companyBId,
+      if (companyBId != null && companyBId.isNotEmpty) 'companyBId': companyBId,
       'place': draft.place,
-      'occurredAt': draft.occurredAt.toIso8601String(),
-      'circumstancesA': draft.circumstancesA,
-      'circumstancesB': draft.circumstancesB,
-      'impactZones': draft.impactZones,
+      'occurredAt': draft.occurredAt.toUtc().toIso8601String(),
+      'circumstancesA': draft.circumstancesA.toList(),
+      'circumstancesB': draft.circumstancesB.toList(),
+      'impactZones': draft.impactZones.toList(),
       'observations': draft.observations,
       'sketchData': draft.sketchStrokes,
-      'driverASignedAt': DateTime.now().toIso8601String(),
-      'driverBSignedAt': DateTime.now().toIso8601String(),
+      'driverASignedAt': signedIso,
+      'driverBSignedAt': signedIso,
     };
 
     final response = await _api.upload(
@@ -60,8 +76,21 @@ class ConstatService {
     return Constat.fromJson(response['constat'] as Map<String, dynamic>);
   }
 
-  static String _or(String value, String fallback) =>
-      value.trim().isEmpty ? fallback : value.trim();
+  /// Envoie l'exemplaire PDF contenant le QR Code pour signature ECDSA P-256 finale.
+  Future<Uint8List> finalizePdf(String constatId, Uint8List stampedPdfBytes) =>
+      _api.uploadForBytes(
+        '/constats/$constatId/finalize-pdf',
+        method: 'POST',
+        field: 'pdf',
+        bytes: stampedPdfBytes,
+        filename: 'constat-signed.pdf',
+      );
+
+  static String? _firstNonEmpty(String? primary, String? fallback) {
+    if (primary != null && primary.trim().isNotEmpty) return primary.trim();
+    if (fallback != null && fallback.trim().isNotEmpty) return fallback.trim();
+    return null;
+  }
 
   /// Liste les constats scellés pour l'utilisateur connecté.
   Future<List<Constat>> listConstats() async {

@@ -4,6 +4,7 @@ import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_media_service.dart';
+import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/accident/services/driving_license_ocr_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_review.dart';
 import 'package:mon_constat_digital/modules/constat/screens/guest_qr_screen.dart';
@@ -155,6 +156,17 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
           widget.draft.driverBCompanyId = company?.id;
           // On garde aussi le nom lisible dans driverBInsurer pour l'affichage
           widget.draft.driverBInsurer = company?.name ?? '';
+          widget.onChanged();
+        },
+      ),
+      const SizedBox(height: 12),
+      _DriverField(
+        initialValue: widget.draft.driverBPolicy,
+        label: 'N° de police / attestation d’assurance',
+        icon: Icons.verified_user_outlined,
+        capitalization: TextCapitalization.characters,
+        onChanged: (value) {
+          widget.draft.driverBPolicy = value;
           widget.onChanged();
         },
       ),
@@ -454,79 +466,206 @@ class CircumstancesStep extends StatelessWidget {
   final VoidCallback onChanged;
 
   static const choices = [
-    'En stationnement',
-    'Quittait un stationnement',
-    'Changeait de file',
-    'Doublait',
-    'Virait à droite',
-    'Virait à gauche',
-    'Reculait',
+    '1 - En stationnement / À l’arrêt',
+    '2 - Quittait un stationnement / ouvrait une portière',
+    '3 - Prenait un stationnement',
+    '4 - Sortait d’un parking, lieu privé ou chemin',
+    '5 - S’engageait dans un parking, lieu privé ou chemin',
+    '6 - S’engageait sur une place à sens giratoire',
+    '7 - Circulait sur une place à sens giratoire',
+    '8 - Heurtait à l’arrière (même sens, même file)',
+    '9 - Roulait dans le même sens sur une file différente',
+    '10 - Changeait de file',
+    '11 - Doublait',
+    '12 - Virait à droite',
+    '13 - Virait à gauche',
+    '14 - Reculait',
+    '15 - Empiétait sur la chaussée en sens inverse',
+    '16 - Venait de droite (dans un carrefour)',
+    '17 - N’avait pas observé un signal de priorité',
   ];
+
+  bool _isSelected(Set<String> selected, int index, String fullLabel) {
+    if (selected.contains(fullLabel)) return true;
+    final prefix = '${index + 1} - ';
+    final shortText = fullLabel.substring(prefix.length).toLowerCase();
+    for (final entry in selected) {
+      final norm = entry.trim().toLowerCase();
+      if (norm.startsWith('${index + 1} ') || norm.startsWith('${index + 1}-')) {
+        return true;
+      }
+      if (shortText.startsWith(norm) && norm.length >= 6) return true;
+    }
+    return false;
+  }
+
+  void _toggle(Set<String> target, int index, String fullLabel, bool checked) {
+    final prefix = '${index + 1} ';
+    final shortText = fullLabel.substring('${index + 1} - '.length).toLowerCase();
+    target.removeWhere((entry) {
+      final norm = entry.trim().toLowerCase();
+      return entry == fullLabel ||
+          norm.startsWith(prefix) ||
+          norm.startsWith('${index + 1}-') ||
+          (shortText.startsWith(norm) && norm.length >= 6);
+    });
+    if (checked) {
+      target.add(fullLabel);
+    }
+    onChanged();
+  }
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Text(
-        'Circonstances de l’accident',
+        'Circonstances de l’accident (FTUSA)',
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 4),
       Text(
-        'Sélectionnez les circonstances applicables pour chaque conducteur.',
+        'Cochez la ou les cases utiles pour le véhicule A (bleu) et le véhicule B (ambre).',
         style: TextStyle(color: context.palette.textMuted),
       ),
-      const SizedBox(height: 16),
-      Text(
-        'Véhicule A (Votre véhicule)',
-        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: context.palette.primaryText),
-      ),
-      const SizedBox(height: 8),
-      for (final choice in choices)
-        Card(
-          margin: const EdgeInsets.only(bottom: 6),
-          child: CheckboxListTile(
-            value: draft.circumstancesA.contains(choice),
-            activeColor: context.palette.primaryText,
-            controlAffinity: ListTileControlAffinity.leading,
-            title: Text(
-              choice,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: context.palette.primaryTint,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Véhicule A : ${draft.circumstancesA.length} case(s)',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: context.palette.primaryText,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                ),
+              ),
             ),
-            onChanged: (selected) {
-              selected ?? false
-                  ? draft.circumstancesA.add(choice)
-                  : draft.circumstancesA.remove(choice);
-              onChanged();
-            },
           ),
-        ),
-      const SizedBox(height: 16),
-      const Text(
-        'Véhicule B (Autre conducteur)',
-        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.accent),
-      ),
-      const SizedBox(height: 8),
-      for (final choice in choices)
-        Card(
-          margin: const EdgeInsets.only(bottom: 6),
-          child: CheckboxListTile(
-            value: draft.circumstancesB.contains(choice),
-            activeColor: AppColors.accent,
-            controlAffinity: ListTileControlAffinity.leading,
-            title: Text(
-              choice,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: context.palette.warningBg,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Véhicule B : ${draft.circumstancesB.length} case(s)',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: context.palette.warningText,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                ),
+              ),
             ),
-            onChanged: (selected) {
-              selected ?? false
-                  ? draft.circumstancesB.add(choice)
-                  : draft.circumstancesB.remove(choice);
-              onChanged();
-            },
           ),
-        ),
+        ],
+      ),
       const SizedBox(height: 10),
+      Card(
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            Container(
+              color: context.palette.hero,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              child: const Row(
+                children: [
+                  SizedBox(
+                    width: 42,
+                    child: Text(
+                      'A',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF93C5FD),
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '12. Circonstances',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 42,
+                    child: Text(
+                      'B',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFFFCD34D),
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            for (int i = 0; i < choices.length; i++) ...[
+              if (i > 0) const Divider(height: 1),
+              Container(
+                color: (_isSelected(draft.circumstancesA, i, choices[i]) ||
+                        _isSelected(draft.circumstancesB, i, choices[i]))
+                    ? context.palette.primaryTint.withAlpha(70)
+                    : null,
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: _isSelected(draft.circumstancesA, i, choices[i]),
+                      activeColor: context.palette.primaryText,
+                      onChanged: (selected) => _toggle(
+                        draft.circumstancesA,
+                        i,
+                        choices[i],
+                        selected ?? false,
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          choices[i],
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Checkbox(
+                      value: _isSelected(draft.circumstancesB, i, choices[i]),
+                      activeColor: AppColors.accent,
+                      onChanged: (selected) => _toggle(
+                        draft.circumstancesB,
+                        i,
+                        choices[i],
+                        selected ?? false,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      const SizedBox(height: 14),
       TextField(
         controller: observations,
         maxLines: 3,
@@ -601,10 +740,12 @@ class SignatureStep extends StatelessWidget {
   const SignatureStep({
     required this.draft,
     required this.onChanged,
+    this.driverA,
     super.key,
   });
   final AccidentDraft draft;
   final VoidCallback onChanged;
+  final ConstatDriverAData? driverA;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -629,7 +770,7 @@ class SignatureStep extends StatelessWidget {
         },
       ),
       const SizedBox(height: 14),
-      AccidentReview(draft: draft),
+      AccidentReview(draft: draft, driverA: driverA),
       const SizedBox(height: 14),
       const Card(
         child: ListTile(

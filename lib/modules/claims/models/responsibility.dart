@@ -38,6 +38,17 @@ class ResponsibilityProposal {
   static const _shared = ['Virait à droite', 'Virait à gauche'];
   static const _parked = 'En stationnement';
 
+  static String _canonical(String raw) {
+    final stripped = raw
+        .replaceFirst(RegExp(r'^\d{1,2}\s*[-–.)]\s*'), '')
+        .trim();
+    if (stripped.startsWith('En stationnement')) return 'En stationnement';
+    if (stripped.startsWith('Quittait un stationnement')) {
+      return 'Quittait un stationnement';
+    }
+    return stripped;
+  }
+
   /// Le barème, identique à `responsibilityProposal` côté serveur :
   /// - une manœuvre à risque d'un seul côté : ce conducteur à 100 % ;
   /// - des deux côtés : partage ;
@@ -47,6 +58,9 @@ class ResponsibilityProposal {
     List<String> boxesA, [
     List<String> boxesB = const [],
   ]) {
+    final normA = boxesA.map(_canonical).toList(growable: false);
+    final normB = boxesB.map(_canonical).toList(growable: false);
+
     String? first(List<String> boxes, List<String> among) {
       for (final box in among) {
         if (boxes.contains(box)) return box;
@@ -54,10 +68,10 @@ class ResponsibilityProposal {
       return null;
     }
 
-    final riskyA = first(boxesA, _atFault);
-    final riskyB = first(boxesB, _atFault);
-    final parkedA = boxesA.contains(_parked);
-    final parkedB = boxesB.contains(_parked);
+    final riskyA = first(normA, _atFault);
+    final riskyB = first(normB, _atFault);
+    final parkedA = normA.contains(_parked);
+    final parkedB = normB.contains(_parked);
     if (riskyA != null && riskyB != null) {
       return ResponsibilityProposal(50, ProposalBasis.both, riskyA, riskyB);
     }
@@ -73,7 +87,7 @@ class ResponsibilityProposal {
     if (parkedB && !parkedA) {
       return const ResponsibilityProposal(100, ProposalBasis.parkedB);
     }
-    final turn = first(boxesA, _shared) ?? first(boxesB, _shared);
+    final turn = first(normA, _shared) ?? first(normB, _shared);
     if (turn != null) {
       return ResponsibilityProposal(50, ProposalBasis.turn, turn);
     }

@@ -98,7 +98,19 @@ const values = {
 };
 
 /** Traduit une valeur enregistrée en français ; inconnue, elle reste telle quelle. */
-export const valueIn = (lang, value) => values[lang]?.[value] ?? value;
+export const valueIn = (lang, value) => {
+  const table = values[lang];
+  if (!table) return value;
+  if (table[value] !== undefined) return table[value];
+  const stripped = String(value ?? '')
+    .replace(/^\d{1,2}\s*[-–.)]\s*/, '')
+    .trim();
+  if (stripped.startsWith('En stationnement')) return table['En stationnement'];
+  if (stripped.startsWith('Quittait un stationnement')) {
+    return table['Quittait un stationnement'];
+  }
+  return table[stripped] ?? value;
+};
 
 const fr = {
   value: (v) => v,
