@@ -17,9 +17,13 @@ TextStyle _muted(BuildContext context) =>
 
 /// Aide à la décision de l'agent : rien ne s'applique sans son action.
 class AnalysisCard extends StatefulWidget {
-  const AnalysisCard(this.claim, this.insight, {super.key});
+  const AnalysisCard(this.claim, this.insight, {this.titled = true, super.key});
   final Claim claim;
   final ClaimInsight insight;
+
+  /// Faux dans le panneau latéral, qui porte déjà le titre : la carte
+  /// affiche alors le numéro du dossier.
+  final bool titled;
 
   @override
   State<AnalysisCard> createState() => _AnalysisCardState();
@@ -65,16 +69,27 @@ class _AnalysisCardState extends State<AnalysisCard> {
         children: [
           Row(
             children: [
-              Icon(Icons.insights, size: 18, color: p.textMuted),
-              const SizedBox(width: 8),
+              if (widget.titled) ...[
+                Icon(Icons.insights, size: 18, color: p.textMuted),
+                const SizedBox(width: 8),
+              ],
               Expanded(
-                child: Text(
-                  t.claimsDecisionHelp,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: widget.titled
+                    ? Text(
+                        t.claimsDecisionHelp,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )
+                    : Text(
+                        widget.claim.id,
+                        style: TextStyle(
+                          fontFamily: 'JetBrainsMono',
+                          fontSize: 13,
+                          color: p.textMuted,
+                        ),
+                      ),
               ),
               if (insight.overdueDays > 0)
                 QuietTag(

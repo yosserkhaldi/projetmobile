@@ -8,6 +8,8 @@ import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
 import 'package:mon_constat_digital/modules/claims/screens/claim_detail_screen.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/appointment_alerts.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/claim_timeline.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/expertise_card.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 
@@ -204,6 +206,140 @@ void main() {
       expect(claim.status, ClaimStatus.inReview);
       expect(claim.indemnity, isNull);
       expect(claim.timeline.last, 'Rouvert : Montant erroné');
+    });
+  });
+
+  group('chronologie', () {
+    testWidgets('au-delà de 4 étapes, trois points en haut', (tester) async {
+      final claim = inExpertise()
+        ..timeline.insertAll(0, ['Brouillon créé', 'Transmis'])
+        ..timeline.addAll(['Rendez-vous confirmé', 'Autre créneau proposé']);
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('fr'),
+          home: Scaffold(
+            body: SingleChildScrollView(child: ClaimTimeline(claim)),
+          ),
+        ),
+      );
+      await tester.pump();
+      // Les quatre dernières étapes, les précédentes repliées.
+      final more = '${claim.timeline.length - 4} étapes précédentes';
+      expect(claim.timeline.length, greaterThan(5));
+      expect(find.text(more), findsOneWidget);
+      expect(find.text('Brouillon créé'), findsNothing);
+      expect(find.text('Autre créneau proposé'), findsOneWidget);
+      expect(find.text('En instruction'), findsOneWidget);
+
+      await tester.tap(find.text(more));
+      await tester.pumpAndSettle();
+      expect(find.text('Brouillon créé'), findsWidgets);
+      expect(find.text('Transmis'), findsWidgets);
+      expect(find.text(more), findsNothing);
+    });
+  });
+
+  group('alertes de rendez-vous', () {
+    late AppStores stores;
+    final navigator = GlobalKey<NavigatorState>();
+
+    Future<Claim> pumpApp(WidgetTester tester, UserRole role) async {
+      tester.view.physicalSize = const Size(430, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      stores = AppStores(storage: MemoryStorage(), biometric: FakeBiometric());
+      stores.users.currentUser = AppUser.fromJson(
+        userJson(role: role == UserRole.agent ? 'AGENT' : 'DRIVER'),
+      );
+      final claim = inExpertise(
+        by: role == UserRole.agent ? 'agent' : 'driver',
+      );
+      stores.claims.claims.add(claim);
+      await tester.pumpWidget(
+        AppScope(
+          stores: stores,
+          child: MaterialApp(
+            navigatorKey: navigator,
+            theme: AppTheme.light,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('fr'),
+            builder: (context, child) => AppointmentAlerts(
+              navigator: navigator,
+              visibleFor: const Duration(seconds: 3),
+              child: child!,
+            ),
+            home: const Scaffold(body: Text('Accueil')),
+          ),
+        ),
+      );
+      await tester.pump();
+      return claim;
+    }
+
+    testWidgets('le conducteur confirme : l’agent voit une alerte', (
+      tester,
+    ) async {
+      final claim = await pumpApp(tester, UserRole.agent);
+      // L'autre partie (le conducteur) accepte le créneau de l'agent.
+      stores.claims.acceptAppointment(claim, UserRole.driver);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        find.textContaining('rendez-vous d’expertise confirmé'),
+        findsOneWidget,
+      );
+      // Elle disparaît seule.
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        find.textContaining('rendez-vous d’expertise confirmé'),
+        findsNothing,
+      );
+    });
+
+    testWidgets('l’agent propose un créneau : le conducteur y est mené', (
+      tester,
+    ) async {
+      final claim = await pumpApp(tester, UserRole.driver);
+      stores.claims.proposeAppointment(
+        claim,
+        UserRole.agent,
+        DateTime(2026, 11, 13, 14, 30),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        find.textContaining('autre créneau proposé pour l’expertise'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Voir'));
+      await settle(tester);
+      expect(find.byType(ClaimDetail), findsOneWidget);
+      expect(find.text('Accepter'), findsOneWidget);
+      expect(
+        stores.claims
+            .notificationsFor(UserRole.driver)
+            .firstWhere((n) => n.body.contains('autre créneau'))
+            .read,
+        isTrue,
+      );
+      expect(
+        find.textContaining('autre créneau proposé pour l’expertise'),
+        findsNothing,
+      );
+    });
+
+    testWidgets('ma propre action ne m’alerte pas', (tester) async {
+      final claim = await pumpApp(tester, UserRole.driver);
+      stores.claims.acceptAppointment(claim, UserRole.driver);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.textContaining('confirmé'), findsNothing);
     });
   });
 }

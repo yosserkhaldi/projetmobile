@@ -4503,6 +4503,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Lieu de naissance'**
   String get readBirthPlace;
+
+  /// No description provided for @claimsDecisionHelpGuide.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aide à la décision : priorité, estimation, risque et pièces manquantes de ce dossier. Touchez l’icône pour l’ouvrir.'**
+  String get claimsDecisionHelpGuide;
+
+  /// No description provided for @claimsTimelineEarlier.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 étape précédente} other{{count} étapes précédentes}}'**
+  String claimsTimelineEarlier(int count);
+
+  /// No description provided for @claimsAlertOpen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir'**
+  String get claimsAlertOpen;
 }
 
 class _AppLocalizationsDelegate

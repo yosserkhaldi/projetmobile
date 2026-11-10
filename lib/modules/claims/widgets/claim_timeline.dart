@@ -10,24 +10,102 @@ import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
 /// Chronologie du dossier. Style des points : DESIGN.md, section 6.
-class ClaimTimeline extends StatelessWidget {
-  const ClaimTimeline(this.claim, {super.key});
+///
+/// Au-delà de [visible] étapes, seules les dernières restent affichées ; trois
+/// points en haut déplient les précédentes.
+class ClaimTimeline extends StatefulWidget {
+  const ClaimTimeline(this.claim, {this.visible = 4, super.key});
   final Claim claim;
+  final int visible;
+
+  @override
+  State<ClaimTimeline> createState() => _ClaimTimelineState();
+}
+
+class _ClaimTimelineState extends State<ClaimTimeline> {
+  bool expanded = false;
 
   @override
   Widget build(BuildContext context) {
+    final claim = widget.claim;
     final last = claim.timeline.length - 1;
     final finished = ClaimStatus.isFinal(claim.status);
-    return Column(
-      children: [
-        for (final (index, label) in claim.timeline.indexed)
-          _Step(
-            label: context.t.claimEvent(label),
-            date: claim.timelineDates[index],
-            current: index == last && !finished,
-            showConnector: index != last,
+    final hidden = expanded
+        ? 0
+        : (claim.timeline.length - widget.visible).clamp(0, last + 1);
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: Column(
+        children: [
+          if (hidden > 0) _More(hidden, () => setState(() => expanded = true)),
+          for (final (index, label) in claim.timeline.indexed)
+            if (index >= hidden)
+              _Step(
+                label: context.t.claimEvent(label),
+                date: claim.timelineDates[index],
+                current: index == last && !finished,
+                showConnector: index != last,
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Trois points à la place des étapes repliées, reliés à la suite.
+class _More extends StatelessWidget {
+  const _More(this.count, this.onTap);
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Semantics(
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Column(
+                children: [
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: p.surface,
+                      border: Border.all(color: p.border),
+                    ),
+                    child: Icon(Icons.more_horiz, size: 16, color: p.textMuted),
+                  ),
+                  Expanded(
+                    child: Container(width: 2, color: AppColors.primary),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 2, bottom: 16),
+                  child: Text(
+                    context.t.claimsTimelineEarlier(count),
+                    style: TextStyle(
+                      color: p.primaryText,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-      ],
+        ),
+      ),
     );
   }
 }

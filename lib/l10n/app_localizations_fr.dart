@@ -2498,4 +2498,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get readBirthPlace => 'Lieu de naissance';
+
+  @override
+  String get claimsDecisionHelpGuide =>
+      'Aide à la décision : priorité, estimation, risque et pièces manquantes de ce dossier. Touchez l’icône pour l’ouvrir.';
+
+  @override
+  String claimsTimelineEarlier(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count étapes précédentes',
+      one: '1 étape précédente',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get claimsAlertOpen => 'Voir';
 }
