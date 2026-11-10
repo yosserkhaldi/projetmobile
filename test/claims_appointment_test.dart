@@ -238,6 +238,12 @@ void main() {
       expect(find.text('Brouillon créé'), findsWidgets);
       expect(find.text('Transmis'), findsWidgets);
       expect(find.text(more), findsNothing);
+
+      // Et l'inverse : replier revient aux quatre dernières.
+      await tester.tap(find.text('Afficher moins'));
+      await tester.pumpAndSettle();
+      expect(find.text(more), findsOneWidget);
+      expect(find.text('Afficher moins'), findsNothing);
     });
   });
 

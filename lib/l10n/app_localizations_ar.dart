@@ -2486,4 +2486,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get claimsAlertOpen => 'عرض';
+
+  @override
+  String get claimsTimelineCollapse => 'عرض أقل';
 }

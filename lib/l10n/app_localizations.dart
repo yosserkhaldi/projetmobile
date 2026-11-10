@@ -4521,6 +4521,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Voir'**
   String get claimsAlertOpen;
+
+  /// No description provided for @claimsTimelineCollapse.
+  ///
+  /// In fr, this message translates to:
+  /// **'Afficher moins'**
+  String get claimsTimelineCollapse;
 }
 
 class _AppLocalizationsDelegate

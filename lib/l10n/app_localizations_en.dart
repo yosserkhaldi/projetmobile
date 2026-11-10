@@ -2497,4 +2497,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get claimsAlertOpen => 'View';
+
+  @override
+  String get claimsTimelineCollapse => 'Show less';
 }

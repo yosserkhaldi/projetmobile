@@ -1308,5 +1308,6 @@
       }
     }
   },
-  "claimsAlertOpen": "Voir"
+  "claimsAlertOpen": "Voir",
+  "claimsTimelineCollapse": "Afficher moins"
 }

@@ -39,7 +39,19 @@ class _ClaimTimelineState extends State<ClaimTimeline> {
       alignment: Alignment.topCenter,
       child: Column(
         children: [
-          if (hidden > 0) _More(hidden, () => setState(() => expanded = true)),
+          if (hidden > 0)
+            _Toggle(
+              label: context.t.claimsTimelineEarlier(hidden),
+              icon: Icons.more_horiz,
+              onTap: () => setState(() => expanded = true),
+            )
+          // Dépliée : le même rang replie les premières étapes.
+          else if (expanded && claim.timeline.length > widget.visible)
+            _Toggle(
+              label: context.t.claimsTimelineCollapse,
+              icon: Icons.unfold_less,
+              onTap: () => setState(() => expanded = false),
+            ),
           for (final (index, label) in claim.timeline.indexed)
             if (index >= hidden)
               _Step(
@@ -54,10 +66,12 @@ class _ClaimTimelineState extends State<ClaimTimeline> {
   }
 }
 
-/// Trois points à la place des étapes repliées, reliés à la suite.
-class _More extends StatelessWidget {
-  const _More(this.count, this.onTap);
-  final int count;
+/// Rang en tête de la chronologie : trois points pour déplier les étapes
+/// repliées, ou une flèche pour les replier.
+class _Toggle extends StatelessWidget {
+  const _Toggle({required this.label, required this.icon, required this.onTap});
+  final String label;
+  final IconData icon;
   final VoidCallback onTap;
 
   @override
@@ -82,7 +96,7 @@ class _More extends StatelessWidget {
                       color: p.surface,
                       border: Border.all(color: p.border),
                     ),
-                    child: Icon(Icons.more_horiz, size: 16, color: p.textMuted),
+                    child: Icon(icon, size: 16, color: p.textMuted),
                   ),
                   Expanded(
                     child: Container(width: 2, color: AppColors.primary),
@@ -94,7 +108,7 @@ class _More extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 2, bottom: 16),
                   child: Text(
-                    context.t.claimsTimelineEarlier(count),
+                    label,
                     style: TextStyle(
                       color: p.primaryText,
                       fontWeight: FontWeight.w500,
