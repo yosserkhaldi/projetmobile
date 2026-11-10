@@ -1357,7 +1357,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeDark => 'Sombre';
 
   @override
-  String get navDeclarations => 'Déclarations';
+  String get navDeclarations => 'Constats';
 
   @override
   String get securityDevicesTitle => 'Appareils connectés';

@@ -2527,7 +2527,7 @@ abstract class AppLocalizations {
   /// No description provided for @navDeclarations.
   ///
   /// In fr, this message translates to:
-  /// **'Déclarations'**
+  /// **'Constats'**
   String get navDeclarations;
 
   /// No description provided for @securityDevicesTitle.

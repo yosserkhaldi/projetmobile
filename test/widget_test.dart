@@ -55,7 +55,7 @@ void main() {
       await signIn(tester);
       expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
       expect(find.text('Véhicules'), findsOneWidget);
-      expect(find.text('Déclarations'), findsOneWidget);
+      expect(find.text('Constats'), findsOneWidget);
       expect(find.text('Messages'), findsOneWidget);
       expect(find.text('Profil'), findsOneWidget);
     });
@@ -1135,7 +1135,7 @@ void main() {
             ];
       await pumpApp(tester, backend);
       await signIn(tester);
-      await tester.tap(find.text('Identités'));
+      await tester.tap(find.byTooltip('Identités'));
       await tester.pumpAndSettle();
       expect(find.text('Mouna Trabelsi'), findsOneWidget);
 
@@ -1168,7 +1168,7 @@ void main() {
             ];
       await pumpApp(tester, backend);
       await signIn(tester);
-      await tester.tap(find.text('Identités'));
+      await tester.tap(find.byTooltip('Identités'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Mouna Trabelsi'));
       await tester.pumpAndSettle();
@@ -1212,7 +1212,7 @@ void main() {
             ];
       await pumpApp(tester, backend);
       await signIn(tester);
-      await tester.tap(find.text('Identités'));
+      await tester.tap(find.byTooltip('Identités'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Mouna Trabelsi'));
       await tester.pumpAndSettle();
@@ -1554,7 +1554,7 @@ void main() {
       final backend = adminBackend();
       await pumpApp(tester, backend);
       await signIn(tester);
-      await tester.tap(find.text('Compagnies'));
+      await tester.tap(find.byTooltip('Compagnies'));
       await tester.pumpAndSettle();
       expect(find.text('STAR Assurances'), findsOneWidget);
 
