@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import cors from 'cors';
 import express from 'express';
@@ -39,6 +40,21 @@ export function createApp() {
 
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apiDocs));
+  app.use(
+    '/verifier',
+    express.static(fileURLToPath(new URL('../../verifier-pwa', import.meta.url)), {
+      setHeaders: (res) => {
+        res.setHeader(
+          'Content-Security-Policy',
+          "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' mediastream:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';",
+        );
+        res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('X-Frame-Options', 'DENY');
+        res.setHeader('Referrer-Policy', 'no-referrer');
+      },
+    }),
+  );
 
   // Chaque module ajoute ses endpoints dans son propre fichier de routes.
   app.use('/api/auth', authRoutes);

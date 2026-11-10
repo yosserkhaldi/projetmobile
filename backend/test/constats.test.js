@@ -3,6 +3,9 @@ import { createHash } from 'node:crypto';
 import { after, before, beforeEach, test } from 'node:test';
 
 import { driver, migrate, prisma, resetDatabase, startApi } from './helpers.js';
+import { verifyPdfBuffer } from '../src/lib/pdf-signature.js';
+import { responsibilityProposal } from '../src/modules/claims/ai/rules.js';
+import { valueIn } from '../src/modules/claims/ai/i18n.js';
 
 before(migrate);
 beforeEach(resetDatabase);
@@ -204,5 +207,119 @@ test('un agent d’assurance ne peut voir que les constats de sa compagnie', asy
     token: agentComarAuth.accessToken,
   });
   assert.equal(comarView.status, 403);
+});
+
+test('scellement en 2 étapes : diffère l’e-mail, finalise le PDF avec signature ECDSA et verrouille une 2e finalisation', async (t) => {
+  const { call, sent } = await startApi(t);
+  const owner = await register(call);
+  const stranger = await register(call, {
+    email: 'stranger@example.com',
+    phone: '29888777',
+  });
+
+  const signaturesHash = 'd'.repeat(64);
+  const signedIso = '2026-11-10T15:00:00.000Z';
+
+  // 1. Scellement initial avec deferEmail: true + signaturesHash + circonstances/croquis
+  const created = await call('POST', '/constats', {
+    token: owner.accessToken,
+    body: sampleConstatInput({
+      deferEmail: true,
+      signaturesHash,
+      sketchData: [[{ x: 0.2, y: 0.3 }, { x: 0.7, y: 0.8 }]],
+      driverASignedAt: signedIso,
+      driverBSignedAt: signedIso,
+    }),
+  });
+  assert.equal(created.status, 201);
+  const constatId = created.body.constat.id;
+
+  // L'e-mail ne doit PAS encore être parti avant la finalisation du PDF estampillé
+  assert.equal(sent.mail.length, 0);
+
+  // Le JWS embarque le format compact (v: 2) avec codes circonstances, chocs, observations et empreintes
+  const parts = created.body.jwsToken.split('.');
+  const jwsPayload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+  const b64 = (hex) => Buffer.from(hex, 'hex').toString('base64url');
+  assert.deepEqual(jwsPayload.data.cA, [1]);
+  assert.deepEqual(jwsPayload.data.cB, [2]);
+  assert.deepEqual(jwsPayload.data.im, ['Arrière droit']);
+  assert.equal(jwsPayload.data.ob, 'Choc arrière lors d’une manœuvre.');
+  assert.equal(jwsPayload.data.sg, b64(signaturesHash));
+  assert.match(jwsPayload.data.sk, /^[A-Za-z0-9_-]{43}$/);
+  assert.match(jwsPayload.data.fh, /^[A-Za-z0-9_-]{43}$/);
+
+  // 2. Un autre conducteur ne peut pas finaliser ce constat
+  const stampedPdf = Buffer.from('%PDF-1.4 stamped-with-qr-code-content\n%%EOF\n', 'latin1');
+  const forbiddenForm = new FormData();
+  forbiddenForm.append('pdf', new Blob([stampedPdf], { type: 'application/pdf' }), 'stamped.pdf');
+  const forbiddenRes = await call('POST', `/constats/${constatId}/finalize-pdf`, {
+    token: stranger.accessToken,
+    form: forbiddenForm,
+  });
+  assert.equal(forbiddenRes.status, 403);
+
+  // 3. Refuse un fichier non-PDF
+  const badFileForm = new FormData();
+  badFileForm.append('pdf', new Blob([Buffer.from('NOT A PDF')], { type: 'application/pdf' }), 'bad.pdf');
+  const badFileRes = await call('POST', `/constats/${constatId}/finalize-pdf`, {
+    token: owner.accessToken,
+    form: badFileForm,
+  });
+  assert.equal(badFileRes.status, 415);
+
+  // 4. Finalisation légitime : retourne le PDF signé ECDSA P-256 (/ByteRange)
+  const finalizeForm = new FormData();
+  finalizeForm.append('pdf', new Blob([stampedPdf], { type: 'application/pdf' }), 'stamped.pdf');
+  const finalized = await call('POST', `/constats/${constatId}/finalize-pdf`, {
+    token: owner.accessToken,
+    form: finalizeForm,
+  });
+  assert.equal(finalized.status, 200);
+  assert.equal(finalized.type, 'application/pdf');
+
+  const verifySigned = await verifyPdfBuffer(finalized.bytes);
+  assert.equal(verifySigned.valid, true);
+  assert.equal(verifySigned.metadata.constatId, constatId);
+  assert.equal(verifySigned.metadata.contentSha256, dummyPdfHash);
+  assert.equal(verifySigned.metadata.signaturesSha256, signaturesHash);
+
+  // Toute modification d'1 octet du PDF téléchargé doit invalider la signature
+  const tamperedPdf = Buffer.from(finalized.bytes);
+  tamperedPdf[12] ^= 0xff;
+  assert.equal((await verifyPdfBuffer(tamperedPdf)).valid, false);
+
+  // Les e-mails scellés ont bien été envoyés après finalisation (Conducteur A + Conducteur B)
+  assert.ok(sent.mail.length >= 2);
+
+  // GET /constats/:id/pdf retourne exactement le PDF finalisé signé
+  const fetchedPdf = await call('GET', `/constats/${constatId}/pdf`, {
+    token: owner.accessToken,
+  });
+  assert.equal(fetchedPdf.status, 200);
+  assert.equal(Buffer.compare(fetchedPdf.bytes, finalized.bytes), 0);
+
+  // 5. Deuxième tentative de finalisation bloquée (verrou unique)
+  const replayForm = new FormData();
+  replayForm.append('pdf', new Blob([stampedPdf], { type: 'application/pdf' }), 'stamped.pdf');
+  const replayRes = await call('POST', `/constats/${constatId}/finalize-pdf`, {
+    token: owner.accessToken,
+    form: replayForm,
+  });
+  assert.equal(replayRes.status, 409);
+  assert.equal(replayRes.body.error.code, 'PDF_ALREADY_FINALIZED');
+});
+
+test('compatibilité circonstances FTUSA numérotées avec les règles et i18n du module 5', () => {
+  const proposal = responsibilityProposal(
+    ['1 - En stationnement / À l’arrêt'],
+    ['14 - Reculait'],
+    'EN',
+  );
+  assert.equal(proposal.driverA, 0);
+  assert.equal(proposal.basis, 'fault-b');
+  assert.equal(valueIn('EN', '1 - En stationnement / À l’arrêt'), 'Parked');
+  assert.equal(valueIn('EN', '10 - Changeait de file'), 'Changing lanes');
+  assert.equal(valueIn('AR', '14 - Reculait'), 'ترجع إلى الخلف');
 });
 

@@ -11,7 +11,22 @@ import 'package:mon_constat_digital/modules/claims/models/responsibility.dart';
 /// saisi par l'agent, s'affiche telle quelle.
 extension ClaimsText on AppLocalizations {
   /// Statut, type, gravité, circonstance, point de choc ou nature de pièce.
-  String claimValue(String value) => switch (value) {
+  String claimValue(String value) {
+    final direct = _claimValueExact(value);
+    if (direct != null) return direct;
+    final stripped = value
+        .replaceFirst(RegExp(r'^\d{1,2}\s*[-–.)]\s*'), '')
+        .trim();
+    if (stripped.startsWith('En stationnement')) {
+      return claimsValueParked;
+    }
+    if (stripped.startsWith('Quittait un stationnement')) {
+      return claimsValueLeavingParking;
+    }
+    return _claimValueExact(stripped) ?? value;
+  }
+
+  String? _claimValueExact(String value) => switch (value) {
     'Brouillon' => claimsValueDraft,
     'Déclaré' => claimsValueDeclared,
     'Constat signé' => claimsValueSigned,
@@ -52,7 +67,7 @@ extension ClaimsText on AppLocalizations {
     'Véhicule' => claimsValueVehicle,
     'Corporelle' => claimsValueBodily,
     'Rouvert' => claimsValueReopened,
-    _ => value,
+    _ => null,
   };
 
   String claimValues(Iterable<String> values) =>

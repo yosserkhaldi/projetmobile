@@ -37,17 +37,17 @@ class ClaimStatusChip extends StatelessWidget {
       _ => (context.palette.primaryTint, context.palette.primaryText),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(99),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         context.t.claimValue(status),
         style: TextStyle(
           color: text,
           fontSize: 12,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

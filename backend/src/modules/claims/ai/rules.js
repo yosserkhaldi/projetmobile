@@ -25,6 +25,15 @@ const atFault = [
 const shared = ['Virait à droite', 'Virait à gauche'];
 const moving = [...atFault, ...shared];
 
+function canonicalBox(raw) {
+  const stripped = String(raw ?? '')
+    .replace(/^\d{1,2}\s*[-–.)]\s*/, '')
+    .trim();
+  if (stripped.startsWith('En stationnement')) return 'En stationnement';
+  if (stripped.startsWith('Quittait un stationnement')) return 'Quittait un stationnement';
+  return stripped;
+}
+
 // Même barème que ResponsibilityProposal côté Flutter, avec les cases des
 // deux conducteurs (module 4) :
 // - une manœuvre à risque d'un seul côté : ce conducteur à 100 % ;
@@ -34,10 +43,12 @@ const moving = [...atFault, ...shared];
 // `basis` est un code stable ; `reason` est rédigée dans la langue demandée.
 export function responsibilityProposal(boxesA = [], boxesB = [], lang = 'FR') {
   const t = textsIn(lang);
-  const riskyA = atFault.find((box) => boxesA.includes(box));
-  const riskyB = atFault.find((box) => boxesB.includes(box));
-  const parkedA = boxesA.includes('En stationnement');
-  const parkedB = boxesB.includes('En stationnement');
+  const normA = boxesA.map(canonicalBox);
+  const normB = boxesB.map(canonicalBox);
+  const riskyA = atFault.find((box) => normA.includes(box));
+  const riskyB = atFault.find((box) => normB.includes(box));
+  const parkedA = normA.includes('En stationnement');
+  const parkedB = normB.includes('En stationnement');
   const share = (driverA, basis, reason) => ({ driverA, basis, reason });
   if (riskyA && riskyB) {
     return share(50, 'both', t.proposal.both(t.value(riskyA), t.value(riskyB)));
@@ -46,7 +57,7 @@ export function responsibilityProposal(boxesA = [], boxesB = [], lang = 'FR') {
   if (riskyB) return share(0, 'fault-b', t.proposal.faultB(t.value(riskyB)));
   if (parkedA && !parkedB) return share(0, 'parked-a', t.proposal.parked);
   if (parkedB && !parkedA) return share(100, 'parked-b', t.proposal.parkedB);
-  const turn = shared.find((box) => boxesA.includes(box) || boxesB.includes(box));
+  const turn = shared.find((box) => normA.includes(box) || normB.includes(box));
   if (turn) return share(50, 'turn', t.proposal.turn(t.value(turn)));
   return share(50, 'unknown', t.proposal.unknown);
 }
@@ -87,9 +98,13 @@ const vigilanceRules = [
   },
   {
     id: 'contradictory-boxes',
-    when: ({ claim }) =>
-      claim.circumstances.includes('En stationnement') &&
-      claim.circumstances.some((box) => moving.includes(box)),
+    when: ({ claim }) => {
+      const boxes = claim.circumstances.map(canonicalBox);
+      return (
+        boxes.includes('En stationnement') &&
+        boxes.some((box) => moving.includes(box))
+      );
+    },
   },
   {
     id: 'severe-without-impact',

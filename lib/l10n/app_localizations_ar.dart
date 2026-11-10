@@ -2465,4 +2465,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get readBirthPlace => 'مكان الولادة';
+
+  @override
+  String get claimsDecisionHelpGuide =>
+      'مساعدة القرار: الأولوية والتقدير والمخاطر والوثائق الناقصة لهذا الملف. اضغط على الأيقونة لفتحها.';
+
+  @override
+  String claimsTimelineEarlier(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مرحلة سابقة',
+      many: '$count مرحلة سابقة',
+      few: '$count مراحل سابقة',
+      two: 'مرحلتان سابقتان',
+      one: 'مرحلة سابقة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get claimsAlertOpen => 'عرض';
+
+  @override
+  String get claimsTimelineCollapse => 'عرض أقل';
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
@@ -54,29 +56,80 @@ class ConstatStore extends ChangeNotifier {
     String? driverAPolicy,
     String? companyAId,
     String? companyBId,
+    ConstatDriverAData? driverA,
   }) async {
     isSealing = true;
     error = null;
     notifyListeners();
 
     try {
-      // 1. Génération du PDF
-      final pdfBytes = await _pdf.build(draft);
+      final sealedAt = DateTime.now().toUtc();
+      final effectiveDriverA = driverA ??
+          ConstatDriverAData(
+            fullName: driverAName ?? '',
+            plate: driverAPlate ?? '',
+            insurerName: driverAInsurer ?? '',
+            policyNumber: driverAPolicy ?? '',
+          );
+
+      // 1. Génération du PDF canonique avec horodatage local figé + hash SHA-256 des signatures
+      final localSealedAt = sealedAt.toLocal();
+      final pdfBytes = await _pdf.build(
+        draft,
+        generatedAt: localSealedAt,
+        driverA: effectiveDriverA,
+      );
       lastSealedPdfBytes = pdfBytes;
 
-      // 2. Calcul du hash SHA-256
       final hash = _crypto.computeSha256(pdfBytes);
+      final signaturesHash = _crypto.computeSignaturesHash(
+        draft.driverASignature,
+        draft.driverBSignature,
+      );
 
-      // 3. Soumission sécurisée à l'API
+      // 2. Enregistrement serveur + génération du jeton JWS et du QR Code certifié
       final sealed = await _service.sealConstat(
         draft: draft,
         pdfBytes: pdfBytes,
         sha256Hash: hash,
+        signaturesHash: signaturesHash,
+        signedAt: sealedAt,
+        deferEmail: true,
         accidentId: accidentId,
+        driverAName: driverAName,
+        driverAPlate: driverAPlate,
+        driverAInsurer: driverAInsurer,
         driverAPolicy: driverAPolicy,
         companyAId: companyAId,
         companyBId: companyBId,
       );
+
+      // 3. Reconstruit l'exemplaire visuel unique avec QR Code, puis le fait
+      //    signer ECDSA P-256 (/ByteRange) côté serveur : un seul fichier PDF officiel.
+      if ((sealed.verifierUrl != null && sealed.verifierUrl!.isNotEmpty) ||
+          (sealed.qrCodeBase64 != null && sealed.qrCodeBase64!.isNotEmpty)) {
+        try {
+          final qrBytes = (sealed.qrCodeBase64 != null &&
+                  sealed.qrCodeBase64!.isNotEmpty)
+              ? base64Decode(sealed.qrCodeBase64!)
+              : null;
+          final stampedPdf = await _pdf.build(
+            draft,
+            qrCodeBytes: qrBytes,
+            verifierUrl: sealed.verifierUrl,
+            generatedAt: localSealedAt,
+            driverA: effectiveDriverA,
+            constatRef: sealed.id.substring(0, 8).toUpperCase(),
+            sha256Hex: hash,
+          );
+          lastSealedPdfBytes = await _service.finalizePdf(sealed.id, stampedPdf);
+        } catch (err) {
+          debugPrint('[ConstatStore] Finalisation PDF ECDSA repliée : $err');
+          try {
+            lastSealedPdfBytes = await _service.getPdf(sealed.id);
+          } catch (_) {}
+        }
+      }
 
       lastSealedConstat = sealed;
       constats.insert(0, sealed);

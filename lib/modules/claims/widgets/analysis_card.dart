@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
@@ -10,15 +11,19 @@ import 'package:mon_constat_digital/modules/claims/widgets/motion.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
-const _heading = TextStyle(fontWeight: FontWeight.w800);
+const _heading = TextStyle(fontWeight: FontWeight.w600);
 TextStyle _muted(BuildContext context) =>
     TextStyle(color: context.palette.textMuted, fontSize: 13);
 
 /// Aide à la décision de l'agent : rien ne s'applique sans son action.
 class AnalysisCard extends StatefulWidget {
-  const AnalysisCard(this.claim, this.insight, {super.key});
+  const AnalysisCard(this.claim, this.insight, {this.titled = true, super.key});
   final Claim claim;
   final ClaimInsight insight;
+
+  /// Faux dans le panneau latéral, qui porte déjà le titre : la carte
+  /// affiche alors le numéro du dossier.
+  final bool titled;
 
   @override
   State<AnalysisCard> createState() => _AnalysisCardState();
@@ -57,156 +62,188 @@ class _AnalysisCardState extends State<AnalysisCard> {
     final canRequest =
         widget.claim.status == ClaimStatus.inReview ||
         widget.claim.status == ClaimStatus.documentRequested;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.insights, color: ClaimsColors.violet),
+    final p = context.palette;
+    return InkPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (widget.titled) ...[
+                Icon(Icons.insights, size: 18, color: p.textMuted),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    t.claimsDecisionHelp,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                  ),
-                ),
-                if (insight.overdueDays > 0)
-                  _Tag(
-                    t.claimsOverdue('${insight.overdueDays}'),
-                    context.palette.errorBg,
-                    context.palette.errorText,
-                  ),
               ],
-            ),
-            const SizedBox(height: 8),
-            if (insight.nextAction != null)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: ClaimsColors.indigo.withValues(alpha: .14),
-                  borderRadius: BorderRadius.circular(10),
+              Expanded(
+                child: widget.titled
+                    ? Text(
+                        t.claimsDecisionHelp,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )
+                    : Text(
+                        widget.claim.id,
+                        style: TextStyle(
+                          fontFamily: 'JetBrainsMono',
+                          fontSize: 13,
+                          color: p.textMuted,
+                        ),
+                      ),
+              ),
+              if (insight.overdueDays > 0)
+                QuietTag(
+                  t.claimsOverdue('${insight.overdueDays}'),
+                  color: p.errorText,
                 ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.arrow_circle_right,
-                      color: ClaimsColors.indigo,
-                      size: 20,
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (insight.nextAction != null)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              decoration: BoxDecoration(
+                color: p.primaryTint,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.arrow_forward, color: p.primaryText, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      insight.nextAction!,
+                      style: _heading.copyWith(color: p.primaryText),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(insight.nextAction!, style: _heading)),
+                  ),
+                ],
+              ),
+            ),
+          if (insight.reasons.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(insight.reasons.join(' • '), style: _muted(context)),
+          ],
+          const SizedBox(height: 12),
+          // Les chiffres côte à côte, en bande horizontale : la carte
+          // reste courte même quand tout est rempli.
+          XStrip(
+            children: [
+              if (insight.estimateLow != null)
+                _Fact(
+                  t.claimsEstimate,
+                  t.claimsRange(
+                    '${insight.estimateLow!.round()}',
+                    '${insight.estimateHigh!.round()}',
+                  ),
+                ),
+              if (insight.totalDays != null)
+                _Fact(
+                  t.claimsUsualDuration,
+                  t.claimsDays('${insight.totalDays}'),
+                ),
+              if (insight.riskLevel != null)
+                _Fact(
+                  t.claimsRejectionRisk,
+                  t.claimRisk(insight.riskLevel!),
+                  dot: switch (insight.riskLevel) {
+                    'élevé' => ClaimsColors.critical,
+                    'moyen' => ClaimsColors.warn,
+                    _ => ClaimsColors.ok,
+                  },
+                ),
+              if (insight.recommendExpert)
+                _Fact(t.claimsExpertiseTitle, t.claimsRecommended),
+            ],
+          ),
+          if (insight.riskFactors.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              '${t.claimsLabelColon(t.claimsRejectionRisk)}'
+              '${insight.riskFactors.join(', ')}',
+              style: _muted(context),
+            ),
+          ],
+          if (insight.signals.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(t.claimsToCheck, style: _heading),
+            const SizedBox(height: 4),
+            for (final signal in insight.signals)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: SeriesDot(ClaimsColors.warn, size: 6),
+                    ),
+                    const SizedBox(width: 4),
+                    const SizedBox(width: 6),
+                    Expanded(child: Text(signal)),
                   ],
                 ),
               ),
-            const SizedBox(height: 6),
-            if (insight.reasons.isNotEmpty)
-              Text(insight.reasons.join(' • '), style: _muted(context)),
-            const Divider(height: 24),
-            if (insight.estimateLow != null)
-              _Fact(
-                t.claimsEstimate,
-                t.claimsRange(
-                  '${insight.estimateLow!.round()}',
-                  '${insight.estimateHigh!.round()}',
-                ),
-              ),
-            if (insight.totalDays != null)
-              _Fact(
-                t.claimsUsualDuration,
-                t.claimsDays('${insight.totalDays}'),
-              ),
-            if (insight.riskLevel != null)
-              _Fact(
-                t.claimsRejectionRisk,
-                insight.riskFactors.isEmpty
-                    ? t.claimRisk(insight.riskLevel!)
-                    : t.claimsRiskWithFactors(
-                        t.claimRisk(insight.riskLevel!),
-                        insight.riskFactors.join(', '),
-                      ),
-              ),
-            if (insight.recommendExpert)
-              _Fact(t.claimsExpertiseTitle, t.claimsRecommended),
-            if (insight.signals.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(t.claimsToCheck, style: _heading),
-              const SizedBox(height: 4),
-              for (final signal in insight.signals)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.flag_outlined,
-                        size: 18,
-                        color: context.palette.warningText,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(child: Text(signal)),
-                    ],
-                  ),
-                ),
-            ],
-            if (insight.missing.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(t.claimsMissingDocuments, style: _heading),
-              for (final document in insight.missing)
-                ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(t.claimValue(document.label)),
-                  subtitle: Text(document.reason),
-                  trailing: canRequest
-                      ? FilledButton.icon(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: ClaimsColors.amber,
-                            foregroundColor: Colors.black,
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          onPressed: () => AppScope.of(context).claims
-                              .requestDocument(widget.claim, document.label),
-                          icon: const Icon(Icons.send, size: 16),
-                          label: Text(t.claimsRequest),
-                        )
-                      : null,
-                ),
-            ],
-            if (insight.similar.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(t.claimsSimilar, style: _heading),
-              const SizedBox(height: 4),
-              for (final past in insight.similar)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Text(
-                    '${past.id} (${past.similarity} %) : ${_outcome(t, past)}',
-                    style: _muted(context),
-                  ),
-                ),
-            ],
-            const SizedBox(height: 12),
-            if (summary case final answer?)
-              _SummaryBox(answer, onRefresh: loading ? null : _summarize)
-            else
-              FilledButton.tonalIcon(
-                onPressed: loading ? null : _summarize,
-                icon: loading
-                    ? const SizedBox.square(
-                        dimension: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.auto_awesome),
-                label: Text(loading ? t.claimsSummarizing : t.claimsSummarize),
-              ),
-            const SizedBox(height: 8),
-            Text(t.claimsModelDisclaimer, style: _muted(context)),
           ],
-        ),
+          if (insight.missing.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(t.claimsMissingDocuments, style: _heading),
+            for (final document in insight.missing)
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(t.claimValue(document.label)),
+                subtitle: Text(document.reason),
+                trailing: canRequest
+                    ? FilledButton.tonalIcon(
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(40, 36),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          textStyle: const TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        onPressed: () => AppScope.of(
+                          context,
+                        ).claims.requestDocument(widget.claim, document.label),
+                        icon: const Icon(Icons.send, size: 16),
+                        label: Text(t.claimsRequest),
+                      )
+                    : null,
+              ),
+          ],
+          if (insight.similar.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(t.claimsSimilar, style: _heading),
+            const SizedBox(height: 4),
+            for (final past in insight.similar)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Text(
+                  '${past.id} (${past.similarity} %) : ${_outcome(t, past)}',
+                  style: _muted(context),
+                ),
+              ),
+          ],
+          const SizedBox(height: 16),
+          if (summary case final answer?)
+            _SummaryBox(answer, onRefresh: loading ? null : _summarize)
+          else
+            FilledButton.tonalIcon(
+              onPressed: loading ? null : _summarize,
+              icon: loading
+                  ? const SizedBox.square(
+                      dimension: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.notes, size: 18),
+              label: Text(loading ? t.claimsSummarizing : t.claimsSummarize),
+            ),
+          const SizedBox(height: 8),
+          Text(t.claimsModelDisclaimer, style: _muted(context)),
+        ],
       ),
     );
   }
@@ -221,8 +258,8 @@ class _AnalysisCardState extends State<AnalysisCard> {
   }
 }
 
-/// Le résumé écrit par le modèle, à part du reste : bordure dégradée violet
-/// vers rose, icône étincelle et nom du modèle qui l'a écrit.
+/// Le résumé écrit par le modèle, à part du reste : fond un cran plus
+/// marqué, filet, et le nom du modèle qui l'a écrit.
 class _SummaryBox extends StatelessWidget {
   const _SummaryBox(this.answer, {this.onRefresh});
   final AiAnswer answer;
@@ -231,103 +268,88 @@ class _SummaryBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
+    final p = context.palette;
     return Appear(
       child: Container(
-        padding: const EdgeInsets.all(1.5),
+        padding: const EdgeInsets.fromLTRB(12, 8, 4, 12),
         decoration: BoxDecoration(
-          gradient: ClaimsColors.ai,
-          borderRadius: BorderRadius.circular(14),
+          color: p.surfaceAlt,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: p.borderSoft),
         ),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Color.alphaBlend(
-              ClaimsColors.violet.withValues(alpha: .10),
-              context.palette.surface,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.notes, size: 16, color: p.textMuted),
+                const SizedBox(width: 8),
+                Expanded(child: Text(t.claimsSummaryTitle, style: _heading)),
+                IconButton(
+                  tooltip: t.claimsSummarize,
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onRefresh,
+                  icon: Icon(Icons.refresh, size: 18, color: p.textMuted),
+                ),
+              ],
             ),
-            borderRadius: BorderRadius.circular(12.5),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.auto_awesome,
-                    size: 18,
-                    color: ClaimsColors.violet,
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      t.claimsSummaryTitle,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: ClaimsColors.violet,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: t.claimsSummarize,
-                    visualDensity: VisualDensity.compact,
-                    onPressed: onRefresh,
-                    icon: const Icon(Icons.refresh, size: 18),
-                  ),
-                ],
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8),
+              child: Text(answer.text, style: const TextStyle(height: 1.45)),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              answer.by != null
+                  ? t.claimsSummaryBy(answer.by!)
+                  : t.claimsSummaryRules,
+              style: TextStyle(
+                color: p.textMuted,
+                fontSize: 12,
+                fontFamily: 'JetBrainsMono',
               ),
-              const SizedBox(height: 4),
-              Text(answer.text, style: const TextStyle(height: 1.4)),
-              const SizedBox(height: 8),
-              Text(
-                answer.by != null
-                    ? t.claimsSummaryBy(answer.by!)
-                    : t.claimsSummaryRules,
-                style: _muted(context).copyWith(fontStyle: FontStyle.italic),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
+/// Un chiffre de l'analyse : libellé discret au-dessus, valeur dessous.
 class _Fact extends StatelessWidget {
-  const _Fact(this.label, this.value);
+  const _Fact(this.label, this.value, {this.dot});
   final String label, value;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(width: 120, child: Text(label, style: _muted(context))),
-        Expanded(child: Text(value)),
-      ],
-    ),
-  );
-}
-
-class _Tag extends StatelessWidget {
-  const _Tag(this.text, this.background, this.foreground);
-  final String text;
-  final Color background, foreground;
+  final Color? dot;
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    constraints: const BoxConstraints(minWidth: 120, maxWidth: 220),
+    padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
     decoration: BoxDecoration(
-      color: background,
-      borderRadius: BorderRadius.circular(6),
+      color: context.palette.surfaceAlt,
+      borderRadius: BorderRadius.circular(10),
     ),
-    child: Text(
-      text,
-      style: TextStyle(
-        color: foreground,
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-      ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: _muted(context).copyWith(fontSize: 12)),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (dot != null) ...[SeriesDot(dot!), const SizedBox(width: 6)],
+            Flexible(
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     ),
   );
 }
@@ -354,7 +376,8 @@ class GuidanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.t;
     const white = Colors.white;
-    final soft = Colors.white.withValues(alpha: .82);
+    final soft = Colors.white.withValues(alpha: .72);
+    final faint = Colors.white.withValues(alpha: .56);
     final steps = [
       t.claimsStepReceived,
       t.claimsStepReview,
@@ -362,42 +385,27 @@ class GuidanceCard extends StatelessWidget {
       t.claimsStepDecision,
     ];
     return Appear(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: ClaimsColors.guidance,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: ClaimsColors.violet.withValues(alpha: .35),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(18),
+      child: InkPanel(
+        ink: true,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Floating(
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .18),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.route, color: white, size: 22),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Icon(Icons.route, color: soft, size: 18),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     insight.headline ?? '',
                     style: const TextStyle(
                       color: white,
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      height: 1.35,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -406,32 +414,28 @@ class GuidanceCard extends StatelessWidget {
             const SizedBox(height: 16),
             _Progress(steps: steps, reached: _step),
             if (insight.todo.isNotEmpty) ...[
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               Text(
                 t.claimsYourTodo,
-                style: const TextStyle(
-                  color: white,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(color: soft, fontSize: 13),
               ),
               for (final (i, task) in insight.todo.indexed)
                 Appear(
                   index: i + 1,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.only(top: 8),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.radio_button_unchecked,
-                          size: 18,
-                          color: ClaimsColors.amber,
+                        const Padding(
+                          padding: EdgeInsets.only(top: 7),
+                          child: SeriesDot(AppColors.accent, size: 6),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             task,
-                            style: const TextStyle(color: white),
+                            style: const TextStyle(color: white, height: 1.35),
                           ),
                         ),
                       ],
@@ -440,37 +444,37 @@ class GuidanceCard extends StatelessWidget {
                 ),
             ],
             if (insight.late) ...[
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               Text(
                 t.claimsTakingLonger,
                 style: const TextStyle(
                   color: white,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
             if (insight.remainingDays != null) ...[
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: .18),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withValues(alpha: .06),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: .10),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.hourglass_bottom, size: 16, color: white),
-                    const SizedBox(width: 6),
+                    Icon(Icons.schedule, size: 16, color: soft),
+                    const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         t.claimsRemainingDays(insight.remainingDays!),
                         style: const TextStyle(
                           color: white,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -480,7 +484,7 @@ class GuidanceCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 t.claimsEstimateNote,
-                style: TextStyle(color: soft, fontSize: 12),
+                style: TextStyle(color: faint, fontSize: 12),
               ),
             ],
           ],
@@ -498,24 +502,32 @@ class _Progress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Étapes franchies pleines, l'étape en cours en ambre, les suivantes en
+    // creux. Rien ne clignote.
     Widget dot(int i) {
-      final done = i <= reached;
+      final done = i < reached;
       final current = i == reached;
-      final circle = Container(
-        width: current ? 26 : 22,
-        height: current ? 26 : 22,
+      return Container(
+        width: 16,
+        height: 16,
         decoration: BoxDecoration(
-          color: done ? Colors.white : Colors.white.withValues(alpha: .2),
+          color: done
+              ? Colors.white
+              : current
+              ? AppColors.accent
+              : Colors.transparent,
           shape: BoxShape.circle,
-          border: current
-              ? Border.all(color: ClaimsColors.amber, width: 3)
-              : null,
+          border: done || current
+              ? null
+              : Border.all(
+                  color: Colors.white.withValues(alpha: .28),
+                  width: 1.5,
+                ),
         ),
-        child: done && !current
-            ? const Icon(Icons.check, size: 14, color: ClaimsColors.violet)
+        child: done
+            ? const Icon(Icons.check, size: 11, color: AppColors.ink)
             : null,
       );
-      return current ? Breathing(child: circle) : circle;
     }
 
     return Column(
@@ -531,8 +543,8 @@ class _Progress extends StatelessWidget {
                     child: GrowingBar(
                       value: i < reached ? 1 : 0,
                       color: Colors.white,
-                      track: Colors.white.withValues(alpha: .2),
-                      height: 4,
+                      track: Colors.white.withValues(alpha: .14),
+                      height: 2,
                     ),
                   ),
                 ),
@@ -553,10 +565,10 @@ class _Progress extends StatelessWidget {
                       : TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withValues(
-                      alpha: i <= reached ? 1 : .6,
+                      alpha: i <= reached ? .92 : .5,
                     ),
                     fontSize: 11,
-                    fontWeight: i == reached ? FontWeight.w800 : null,
+                    fontWeight: i == reached ? FontWeight.w600 : null,
                   ),
                 ),
               ),

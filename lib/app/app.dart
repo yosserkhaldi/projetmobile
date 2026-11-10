@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/widgets/appointment_alerts.dart';
 import 'package:mon_constat_digital/modules/users/screens/auth_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/onboarding_screen.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
@@ -99,6 +100,9 @@ class _MonConstatAppState extends State<MonConstatApp>
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         home: home,
+        // Module 5 : alerte de rendez-vous d'expertise, sur tous les écrans.
+        builder: (context, child) =>
+            AppointmentAlerts(navigator: _navigator, child: child!),
       ),
       child: const _SessionGate(),
     ),

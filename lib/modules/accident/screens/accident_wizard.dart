@@ -126,6 +126,14 @@ class _AccidentWizardState extends State<AccidentWizard> {
     ),
   );
 
+  ConstatDriverAData _buildDriverA(AppStores stores) =>
+      ConstatDriverAData.fromUserAndVehicle(
+        user: stores.users.currentUser,
+        vehicle:
+            _vehicle(stores.vehicles.vehicles) ??
+            stores.vehicles.vehicles.firstOrNull,
+      );
+
   Widget _content() => switch (step) {
     0 => Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -148,7 +156,11 @@ class _AccidentWizardState extends State<AccidentWizard> {
       onChanged: _touch,
     ),
     5 => SketchStep(draft: draft, onChanged: _touch),
-    _ => SignatureStep(draft: draft, onChanged: _touch),
+    _ => SignatureStep(
+      draft: draft,
+      driverA: _buildDriverA(AppScope.of(context)),
+      onChanged: _touch,
+    ),
   };
 
   void _touch() {
@@ -224,6 +236,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
       ),
     );
 
+    final driverA = _buildDriverA(stores);
     // Module 4 : le PDF scellé sur le serveur fait foi. Hors ligne, il est
     // scellé localement et le sinistre reste en attente de synchronisation.
     Constat constat;
@@ -239,9 +252,19 @@ class _AccidentWizardState extends State<AccidentWizard> {
       constat = await stores.constats.sealAndSubmit(
         draft: draft,
         accidentId: accidentId,
+        driverAName: driverA.fullName.isNotEmpty
+            ? driverA.fullName
+            : user.name,
+        driverAPlate: driverA.plate.isNotEmpty
+            ? driverA.plate
+            : vehicle.plate,
+        driverAInsurer: driverA.insurerName.isNotEmpty
+            ? driverA.insurerName
+            : (vehicle.companyName ?? vehicle.insurerName),
         driverAPolicy: vehicle.policy,
-        companyAId: vehicle.companyId,
+        companyAId: vehicle.companyId ?? user.companyId,
         companyBId: draft.driverBCompanyId,
+        driverA: driverA,
       );
       pdfBytes = stores.constats.lastSealedPdfBytes!;
       sealedOnline = true;
@@ -257,38 +280,24 @@ class _AccidentWizardState extends State<AccidentWizard> {
         return;
       }
       // Hors ligne : scellé sur le téléphone, envoyé plus tard.
-      pdfBytes = await AccidentPdfService().build(draft);
+      final offlineAt = DateTime.now();
+      pdfBytes = await AccidentPdfService().build(
+        draft,
+        driverA: driverA,
+        generatedAt: offlineAt,
+      );
       final hash = stores.constats.crypto.computeSha256(pdfBytes);
       constat = _localConstat(stores, hash);
       sealedOnline = false;
     } catch (_) {
-      pdfBytes = await AccidentPdfService().build(draft);
-      final hash = stores.constats.crypto.computeSha256(pdfBytes);
-      constat = Constat(
-        id: 'local-${DateTime.now().millisecondsSinceEpoch}',
-        userId: stores.users.currentUser?.id ?? '',
-        status: 'SIGNED',
-        sha256Hash: hash,
-        pdfUrl: '',
-        driverAName: draft.driverAName,
-        driverAPlate: draft.driverAPlate,
-        driverAInsurer: draft.driverAInsurer,
-        driverBName: draft.driverBName.isNotEmpty
-            ? draft.driverBName
-            : 'Conducteur B',
-        driverBPlate: draft.driverBPlate.isNotEmpty
-            ? draft.driverBPlate
-            : 'Véhicule B',
-        driverBInsurer: draft.driverBInsurer.isNotEmpty
-            ? draft.driverBInsurer
-            : 'Assureur B',
-        place: draft.place,
-        occurredAt: draft.occurredAt,
-        circumstancesA: draft.circumstancesA.toList(),
-        circumstancesB: draft.circumstancesB.toList(),
-        impactZones: draft.impactZones.toList(),
-        observations: draft.observations,
+      final offlineAt = DateTime.now();
+      pdfBytes = await AccidentPdfService().build(
+        draft,
+        driverA: driverA,
+        generatedAt: offlineAt,
       );
+      final hash = stores.constats.crypto.computeSha256(pdfBytes);
+      constat = _localConstat(stores, hash);
       sealedOnline = false;
     }
 
@@ -341,6 +350,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
           constat: constat,
           draft: draft,
           pdfBytes: pdfBytes,
+          driverA: driverA,
         ),
       ),
     );
@@ -381,11 +391,13 @@ class _AccidentWizardState extends State<AccidentWizard> {
     driverAName: draft.driverAName,
     driverAPlate: draft.driverAPlate,
     driverAInsurer: draft.driverAInsurer,
+    driverAPolicy: draft.driverAPolicy.isNotEmpty ? draft.driverAPolicy : null,
     driverBName: draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
     driverBPlate: draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'Véhicule B',
     driverBInsurer: draft.driverBInsurer.isNotEmpty
         ? draft.driverBInsurer
         : 'Assureur B',
+    driverBPolicy: draft.driverBPolicy.isNotEmpty ? draft.driverBPolicy : null,
     place: draft.place,
     occurredAt: draft.occurredAt,
     circumstancesA: draft.circumstancesA.toList(),

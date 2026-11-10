@@ -142,6 +142,28 @@ class ApiClient {
     return _decode(response) as Never;
   }
 
+  /// Envoie un fichier en multipart et récupère une réponse binaire (ex: PDF scellé).
+  Future<Uint8List> uploadForBytes(
+    String path, {
+    required String field,
+    required List<int> bytes,
+    required String filename,
+    String method = 'POST',
+    Map<String, String>? fields,
+  }) async {
+    final response = await _execute(
+      () => http.MultipartRequest(method, _uri(path))
+        ..fields.addAll(fields ?? const {})
+        ..files.add(
+          http.MultipartFile.fromBytes(field, bytes, filename: filename),
+        ),
+    );
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.bodyBytes;
+    }
+    return _decode(response) as Never;
+  }
+
   /// Enregistre la session reçue à la connexion ou à l'inscription.
   Future<void> openSession(Map<String, dynamic> session) async {
     _accessToken = session['accessToken'] as String;

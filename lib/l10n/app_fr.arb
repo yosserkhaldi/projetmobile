@@ -1298,5 +1298,16 @@
   "readLastName": "Nom",
   "readFirstName": "Prénom",
   "readBirthDate": "Date de naissance",
-  "readBirthPlace": "Lieu de naissance"
+  "readBirthPlace": "Lieu de naissance",
+  "claimsDecisionHelpGuide": "Aide à la décision : priorité, estimation, risque et pièces manquantes de ce dossier. Touchez l’icône pour l’ouvrir.",
+  "claimsTimelineEarlier": "{count, plural, =1{1 étape précédente} other{{count} étapes précédentes}}",
+  "@claimsTimelineEarlier": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "claimsAlertOpen": "Voir",
+  "claimsTimelineCollapse": "Afficher moins"
 }

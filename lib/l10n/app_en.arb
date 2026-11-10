@@ -733,5 +733,9 @@
   "readLastName": "Surname",
   "readFirstName": "Given name",
   "readBirthDate": "Date of birth",
-  "readBirthPlace": "Place of birth"
+  "readBirthPlace": "Place of birth",
+  "claimsDecisionHelpGuide": "Decision help: priority, estimate, risk and missing documents for this claim. Tap the icon to open it.",
+  "claimsTimelineEarlier": "{count, plural, =1{1 earlier step} other{{count} earlier steps}}",
+  "claimsAlertOpen": "View",
+  "claimsTimelineCollapse": "Show less"
 }
