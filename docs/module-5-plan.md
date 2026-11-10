@@ -8,6 +8,8 @@ Phases 1 to 4 are done. Phase 4 was tested with simulated providers, and on 2026
 
 Step-by-step test guide, with the Claude CLI setup and every scenario: [module-5-test-guide.md](module-5-test-guide.md).
 
+Full explanation of the module, technical and non-technical: [module-5-explained.md](module-5-explained.md).
+
 ## Run the demo
 
 ```bash
