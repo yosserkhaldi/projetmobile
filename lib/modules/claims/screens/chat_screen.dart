@@ -168,11 +168,13 @@ class _ChatScreenState extends State<ChatScreen> {
                   IconButton.filled(
                     tooltip: t.claimsSend,
                     style: IconButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      foregroundColor: context.palette.text,
+                      minimumSize: const Size(48, 48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     onPressed: _send,
-                    icon: const Icon(Icons.send),
+                    icon: const Icon(Icons.arrow_upward, size: 20),
                   ),
                 ],
               ),

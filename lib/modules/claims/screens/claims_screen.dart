@@ -50,90 +50,92 @@ class _ClaimsScreenState extends State<ClaimsScreen> {
       display: t.claimValue,
     );
     final claims = store.claims.where(filter.matches).toList();
-    return SafeArea(
-      child: Column(
-        children: [
-          const OfflineBanner(),
-          PageHead(
-            widget.agentMode ? t.claimsReceived : t.claimsMyClaims,
-            subtitle: t.claimsCount(
-              '${claims.length}',
-              '${store.claims.length}',
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              onChanged: (value) => setState(() => query = value),
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: t.claimsFilterHint,
+    return ClaimsStyle(
+      child: SafeArea(
+        child: Column(
+          children: [
+            const OfflineBanner(),
+            PageHead(
+              widget.agentMode ? t.claimsReceived : t.claimsMyClaims,
+              subtitle: t.claimsCount(
+                '${claims.length}',
+                '${store.claims.length}',
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                _Menu(
-                  label: t.claimsStatus,
-                  value: status,
-                  values: ClaimStatus.all,
-                  onChanged: (value) => setState(() => status = value),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                onChanged: (value) => setState(() => query = value),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: t.claimsFilterHint,
                 ),
-                const SizedBox(width: 8),
-                _Menu(
-                  label: t.claimsSeverity,
-                  value: severity,
-                  values: ClaimFilter.severities,
-                  onChanged: (value) => setState(() => severity = value),
-                ),
-                const SizedBox(width: 8),
-                InputChip(
-                  label: Text(
-                    dates == null
-                        ? t.claimsDate
-                        : '${formatDay(dates!.start)} – '
-                              '${formatDay(dates!.end)}',
-                  ),
-                  onPressed: _pickDates,
-                  onDeleted: dates == null
-                      ? null
-                      : () => setState(() => dates = null),
-                ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Expanded(
-            child: claims.isEmpty
-                ? Center(
-                    child: Text(
-                      t.claimsNoMatch,
-                      style: TextStyle(color: context.palette.textMuted),
-                    ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: claims.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (_, i) => InkWell(
-                      onTap: () => open(
-                        context,
-                        ClaimDetail(claims[i], agentMode: widget.agentMode),
-                      ),
-                      child: ClaimCard(
-                        claims[i],
-                        insight: widget.agentMode
-                            ? store.insightFor(claims[i].id)
-                            : null,
-                      ),
-                    ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  _Menu(
+                    label: t.claimsStatus,
+                    value: status,
+                    values: ClaimStatus.all,
+                    onChanged: (value) => setState(() => status = value),
                   ),
-          ),
-        ],
+                  const SizedBox(width: 8),
+                  _Menu(
+                    label: t.claimsSeverity,
+                    value: severity,
+                    values: ClaimFilter.severities,
+                    onChanged: (value) => setState(() => severity = value),
+                  ),
+                  const SizedBox(width: 8),
+                  InputChip(
+                    label: Text(
+                      dates == null
+                          ? t.claimsDate
+                          : '${formatDay(dates!.start)} – '
+                                '${formatDay(dates!.end)}',
+                    ),
+                    onPressed: _pickDates,
+                    onDeleted: dates == null
+                        ? null
+                        : () => setState(() => dates = null),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Expanded(
+              child: claims.isEmpty
+                  ? Center(
+                      child: Text(
+                        t.claimsNoMatch,
+                        style: TextStyle(color: context.palette.textMuted),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: claims.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      itemBuilder: (_, i) => InkWell(
+                        onTap: () => open(
+                          context,
+                          ClaimDetail(claims[i], agentMode: widget.agentMode),
+                        ),
+                        child: ClaimCard(
+                          claims[i],
+                          insight: widget.agentMode
+                              ? store.insightFor(claims[i].id)
+                              : null,
+                        ),
+                      ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -161,27 +163,26 @@ class _Menu extends StatelessWidget {
         (e) => PopupMenuItem(value: e, child: Text(context.t.claimValue(e))),
       ),
     ],
-    child: Chip(
-      label: Text(
-        value == null ? label : '$label: ${context.t.claimValue(value!)}',
-        style: value == null
-            ? null
-            : const TextStyle(
-                color: ClaimsColors.violet,
-                fontWeight: FontWeight.w800,
-              ),
-      ),
-      avatar: Icon(
-        value == null ? Icons.filter_list : Icons.filter_alt,
-        size: 18,
-        color: value == null ? null : ClaimsColors.violet,
-      ),
-      side: value == null
-          ? null
-          : const BorderSide(color: ClaimsColors.violet, width: 1.5),
-      backgroundColor: value == null
-          ? null
-          : ClaimsColors.violet.withValues(alpha: .12),
+    child: Builder(
+      builder: (context) {
+        final p = context.palette;
+        final active = value != null;
+        return Chip(
+          label: Text(
+            active ? '$label: ${context.t.claimValue(value!)}' : label,
+            style: active
+                ? TextStyle(color: p.primaryText, fontWeight: FontWeight.w600)
+                : null,
+          ),
+          avatar: Icon(
+            active ? Icons.filter_alt : Icons.filter_list,
+            size: 16,
+            color: active ? p.primaryText : p.textMuted,
+          ),
+          side: BorderSide(color: active ? p.primaryText : p.borderSoft),
+          backgroundColor: active ? p.primaryTint : null,
+        );
+      },
     ),
   );
 }

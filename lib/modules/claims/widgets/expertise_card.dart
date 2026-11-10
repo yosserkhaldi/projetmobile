@@ -57,164 +57,162 @@ class ExpertiseCard extends StatelessWidget {
     final active = claim.status == ClaimStatus.expertise;
     final myTurn = active && claim.awaitsAnswerFrom(role.name);
     final confirmed = claim.appointmentConfirmed;
-    final color = bodily ? ClaimsColors.pink : ClaimsColors.violet;
+    final color = palette.primaryText;
     final when = claim.expertAppointment;
 
     final (badge, badgeColor) = confirmed
-        ? (t.claimsSlotConfirmed, ClaimsColors.teal)
+        ? (t.claimsSlotConfirmed, ClaimsColors.ok)
         : myTurn
-        ? (t.claimsSlotYourTurn, ClaimsColors.amber)
+        ? (t.claimsSlotYourTurn, ClaimsColors.warn)
         : role == UserRole.driver
-        ? (t.claimsSlotWaitingAgent, ClaimsColors.sky)
-        : (t.claimsSlotWaitingDriver, ClaimsColors.sky);
+        ? (t.claimsSlotWaitingAgent, ClaimsColors.info)
+        : (t.claimsSlotWaitingDriver, ClaimsColors.info);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        decoration: BoxDecoration(
-          border: BorderDirectional(start: BorderSide(color: color, width: 5)),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: color.withValues(alpha: .18),
-                  foregroundColor: color,
-                  child: Icon(
-                    bodily ? Icons.healing_outlined : Icons.directions_car,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        bodily
-                            ? t.claimsExpertiseBody
-                            : t.claimsExpertiseVehicle,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      if (active && claim.appointmentState != null) ...[
-                        const SizedBox(height: 4),
-                        _Badge(badge, badgeColor, pulse: myTurn),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            if (when != null)
-              _Line(
-                Icons.event,
-                formatSlot(context, when),
-                bold: true,
-                color: color,
-              ),
-            _Line(
-              Icons.place_outlined,
-              claim.expertPlace ?? t.claimsPlaceFromExpert,
-              muted: claim.expertPlace == null,
-            ),
-            if (claim.expertName != null)
-              _Line(
-                Icons.badge_outlined,
-                [
-                  claim.expertName!,
-                  if (claim.expertPhone != null) claim.expertPhone!,
-                ].join(' · '),
-              ),
-            if (claim.appointmentNote != null) ...[
-              const SizedBox(height: 6),
+    return InkPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: palette.surfaceAlt,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: t.claimsLabelColon(
-                          claim.appointmentBy == UserRole.driver.name
-                              ? t.claimsFromDriver
-                              : t.claimsFromAgent,
-                        ),
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+                child: Icon(
+                  bodily
+                      ? Icons.healing_outlined
+                      : Icons.directions_car_outlined,
+                  size: 20,
+                  color: palette.textMuted,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      bodily ? t.claimsExpertiseBody : t.claimsExpertiseVehicle,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
-                      TextSpan(text: claim.appointmentNote),
+                    ),
+                    if (active && claim.appointmentState != null) ...[
+                      const SizedBox(height: 4),
+                      QuietTag(badge, color: palette.text, dot: badgeColor),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ],
-            if (role == UserRole.driver && active) ...[
-              const SizedBox(height: 12),
-              Text(
-                t.claimsToBring,
-                style: const TextStyle(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 16),
+          if (when != null)
+            _Line(
+              Icons.event,
+              formatSlot(context, when),
+              bold: true,
+              color: color,
+            ),
+          _Line(
+            Icons.place_outlined,
+            claim.expertPlace ?? t.claimsPlaceFromExpert,
+            muted: claim.expertPlace == null,
+          ),
+          if (claim.expertName != null)
+            _Line(
+              Icons.badge_outlined,
+              [
+                claim.expertName!,
+                if (claim.expertPhone != null) claim.expertPhone!,
+              ].join(' · '),
+            ),
+          if (claim.appointmentNote != null) ...[
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: palette.surfaceAlt,
+                borderRadius: BorderRadius.circular(10),
               ),
-              const SizedBox(height: 4),
-              for (final item
-                  in bodily
-                      ? [
-                          t.claimsBringId,
-                          t.claimsBringCertificates,
-                          t.claimsBringPrescriptions,
-                        ]
-                      : [
-                          t.claimsBringVehicle,
-                          t.claimsBringRegistration,
-                          t.claimsBringLicence,
-                          t.claimsBringInsurance,
-                        ])
-                _Line(Icons.check_circle_outline, item, color: color),
-            ],
-            if (myTurn) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: ClaimsColors.teal,
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: () => AppScope.of(
-                    context,
-                  ).claims.acceptAppointment(claim, role),
-                  icon: const Icon(Icons.check),
-                  label: Text(t.claimsAccept),
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: t.claimsLabelColon(
+                        claim.appointmentBy == UserRole.driver.name
+                            ? t.claimsFromDriver
+                            : t.claimsFromAgent,
+                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    TextSpan(text: claim.appointmentNote),
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => proposeOtherSlot(context, claim, role),
-                  icon: const Icon(Icons.schedule),
-                  label: Text(t.claimsProposeOther),
-                ),
-              ),
-            ] else if (active && role == UserRole.driver && confirmed)
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: TextButton.icon(
-                  onPressed: () => proposeOtherSlot(context, claim, role),
-                  icon: const Icon(Icons.schedule),
-                  label: Text(t.claimsCannotCome),
-                ),
-              ),
+            ),
           ],
-        ),
+          if (role == UserRole.driver && active) ...[
+            const SizedBox(height: 12),
+            Text(
+              t.claimsToBring,
+              style: TextStyle(fontSize: 13, color: palette.textMuted),
+            ),
+            const SizedBox(height: 8),
+            // Une ligne qui défile plutôt qu'une liste de quatre lignes.
+            XStrip(
+              gap: 6,
+              children: [
+                for (final item
+                    in bodily
+                        ? [
+                            t.claimsBringId,
+                            t.claimsBringCertificates,
+                            t.claimsBringPrescriptions,
+                          ]
+                        : [
+                            t.claimsBringVehicle,
+                            t.claimsBringRegistration,
+                            t.claimsBringLicence,
+                            t.claimsBringInsurance,
+                          ])
+                  QuietTag(item, color: palette.text),
+              ],
+            ),
+          ],
+          if (myTurn) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () =>
+                    AppScope.of(context).claims.acceptAppointment(claim, role),
+                icon: const Icon(Icons.check, size: 18),
+                label: Text(t.claimsAccept),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Center(
+              child: TextButton(
+                onPressed: () => proposeOtherSlot(context, claim, role),
+                child: Text(t.claimsProposeOther),
+              ),
+            ),
+          ] else if (active && role == UserRole.driver && confirmed)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                onPressed: () => proposeOtherSlot(context, claim, role),
+                icon: const Icon(Icons.schedule, size: 18),
+                label: Text(t.claimsCannotCome),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -245,7 +243,7 @@ class _Line extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              fontWeight: bold ? FontWeight.w800 : null,
+              fontWeight: bold ? FontWeight.w600 : null,
               fontSize: bold ? 15 : null,
               color: muted ? context.palette.textMuted : null,
             ),
@@ -254,34 +252,6 @@ class _Line extends StatelessWidget {
       ],
     ),
   );
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge(this.text, this.color, {this.pulse = false});
-  final String text;
-  final Color color;
-  final bool pulse;
-
-  @override
-  Widget build(BuildContext context) {
-    final badge = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: .18),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: color.withValues(alpha: .6)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-    return pulse ? Breathing(child: badge) : badge;
-  }
 }
 
 /// Feuille « Proposer un autre créneau » : créneaux suggérés, ou date et
@@ -317,104 +287,110 @@ Future<PickedSlot?> pickSlot(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
-    builder: (sheetContext) => StatefulBuilder(
-      builder: (sheetContext, setState) {
-        final t = sheetContext.t;
-        Future<void> pickCustom() async {
-          final base = chosen ?? initial ?? suggestions.first;
-          final day = await showDatePicker(
-            context: sheetContext,
-            initialDate: base.isBefore(DateTime.now()) ? DateTime.now() : base,
-            firstDate: DateTime.now(),
-            lastDate: DateTime.now().add(const Duration(days: 180)),
-          );
-          if (day == null || !sheetContext.mounted) return;
-          final time = await showTimePicker(
-            context: sheetContext,
-            initialTime: TimeOfDay.fromDateTime(base),
-          );
-          if (time == null) return;
-          setState(
-            () => chosen = DateTime(
-              day.year,
-              day.month,
-              day.day,
-              time.hour,
-              time.minute,
-            ),
-          );
-        }
+    builder: (sheetContext) => ClaimsStyle(
+      child: StatefulBuilder(
+        builder: (sheetContext, setState) {
+          final t = sheetContext.t;
+          Future<void> pickCustom() async {
+            final base = chosen ?? initial ?? suggestions.first;
+            final day = await showDatePicker(
+              context: sheetContext,
+              initialDate: base.isBefore(DateTime.now())
+                  ? DateTime.now()
+                  : base,
+              firstDate: DateTime.now(),
+              lastDate: DateTime.now().add(const Duration(days: 180)),
+            );
+            if (day == null || !sheetContext.mounted) return;
+            final time = await showTimePicker(
+              context: sheetContext,
+              initialTime: TimeOfDay.fromDateTime(base),
+            );
+            if (time == null) return;
+            setState(
+              () => chosen = DateTime(
+                day.year,
+                day.month,
+                day.day,
+                time.hour,
+                time.minute,
+              ),
+            );
+          }
 
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            0,
-            20,
-            20 + MediaQuery.viewInsetsOf(sheetContext).bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              0,
+              20,
+              20 + MediaQuery.viewInsetsOf(sheetContext).bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                t.claimsSuggestedSlots,
-                style: TextStyle(color: sheetContext.palette.textMuted),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final slot in suggestions)
-                    ChoiceChip(
-                      label: Text(formatSlot(sheetContext, slot)),
-                      selected: chosen == slot,
-                      selectedColor: ClaimsColors.violet.withValues(alpha: .25),
-                      onSelected: (_) => setState(() => chosen = slot),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: pickCustom,
-                icon: const Icon(Icons.edit_calendar),
-                label: Text(
-                  chosen != null && !suggestions.contains(chosen)
-                      ? formatSlot(sheetContext, chosen!)
-                      : t.claimsOtherDateTime,
-                ),
-              ),
-              if (withNote) ...[
                 const SizedBox(height: 12),
-                TextField(
-                  controller: note,
-                  maxLines: 2,
-                  decoration: InputDecoration(labelText: t.claimsNoteOptional),
+                Text(
+                  t.claimsSuggestedSlots,
+                  style: TextStyle(color: sheetContext.palette.textMuted),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final slot in suggestions)
+                      ChoiceChip(
+                        label: Text(formatSlot(sheetContext, slot)),
+                        selected: chosen == slot,
+                        selectedColor: sheetContext.palette.primaryTint,
+                        onSelected: (_) => setState(() => chosen = slot),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: pickCustom,
+                  icon: const Icon(Icons.edit_calendar),
+                  label: Text(
+                    chosen != null && !suggestions.contains(chosen)
+                        ? formatSlot(sheetContext, chosen!)
+                        : t.claimsOtherDateTime,
+                  ),
+                ),
+                if (withNote) ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: note,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: t.claimsNoteOptional,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: chosen == null
+                      ? null
+                      : () => Navigator.pop(sheetContext, (
+                          at: chosen!,
+                          note: note.text,
+                        )),
+                  icon: const Icon(Icons.send),
+                  label: Text(t.claimsSendProposal),
                 ),
               ],
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: chosen == null
-                    ? null
-                    : () => Navigator.pop(sheetContext, (
-                        at: chosen!,
-                        note: note.text,
-                      )),
-                icon: const Icon(Icons.send),
-                label: Text(t.claimsSendProposal),
-              ),
-            ],
-          ),
-        );
-      },
+            ),
+          );
+        },
+      ),
     ),
   );
 }

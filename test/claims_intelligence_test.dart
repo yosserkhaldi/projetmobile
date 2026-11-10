@@ -436,7 +436,15 @@ void main() {
           ..claims.add(claim)
           ..insights['SIN-1'] = ClaimInsight.fromJson(agentJson()),
       );
-      expect(find.text('Aide à la décision'), findsOneWidget);
+      // L'analyse vit dans un panneau latéral ; une bulle désigne l'icône.
+      expect(find.text('400 à 900 TND'), findsNothing);
+      expect(find.textContaining('Touchez l’icône'), findsOneWidget);
+      await tester.tap(find.byTooltip('Fermer'));
+      await tester.pump();
+      expect(find.textContaining('Touchez l’icône'), findsNothing);
+
+      await tester.tap(find.byTooltip('Aide à la décision'));
+      await tester.pumpAndSettle();
       expect(find.text('400 à 900 TND'), findsOneWidget);
       expect(find.text('Retard 3 j'), findsOneWidget);
       expect(find.text('Cases contradictoires.'), findsOneWidget);
@@ -464,6 +472,7 @@ void main() {
       expect(find.text('Déposer : Facture'), findsOneWidget);
       expect(find.textContaining('environ 9 jours'), findsOneWidget);
       expect(find.text('Aide à la décision'), findsNothing);
+      expect(find.byTooltip('Aide à la décision'), findsNothing);
     });
 
     testWidgets(

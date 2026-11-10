@@ -85,43 +85,42 @@ class _AssistantScreenState extends State<AssistantScreen> {
       for (final turn in turns)
         if (turn.role == 'user') turn.content,
     };
-    return Scaffold(
-      appBar: AppBar(title: Text(t.claimsAssistantTitle(widget.claim.id))),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  if (turns.isEmpty) ...[
-                    Floating(
-                      child: Icon(
+    return ClaimsStyle(
+      child: Scaffold(
+        appBar: AppBar(title: Text(t.claimsAssistantTitle(widget.claim.id))),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    if (turns.isEmpty) ...[
+                      Icon(
                         Icons.support_agent,
-                        size: 44,
-                        color: ClaimsColors.violet.withValues(alpha: .8),
+                        size: 32,
+                        color: context.palette.textMuted,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      t.claimsAssistantIntro,
-                      style: TextStyle(color: context.palette.textMuted),
-                    ),
-                  ],
-                  for (final (i, turn) in turns.indexed)
-                    Appear(key: ValueKey(i), child: _Turn(turn)),
-                  if (waiting)
-                    Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Breathing(
+                      const SizedBox(height: 12),
+                      Text(
+                        t.claimsAssistantIntro,
+                        style: TextStyle(color: context.palette.textMuted),
+                      ),
+                    ],
+                    for (final (i, turn) in turns.indexed)
+                      Appear(key: ValueKey(i), child: _Turn(turn)),
+                    if (waiting)
+                      Padding(
+                        padding: const EdgeInsets.all(8),
                         child: Row(
                           children: [
-                            const Icon(
-                              Icons.auto_awesome,
-                              size: 16,
-                              color: ClaimsColors.violet,
+                            const SizedBox.square(
+                              dimension: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                              ),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 10),
                             Text(
                               t.claimsAssistantReading,
                               style: TextStyle(
@@ -131,64 +130,62 @@ class _AssistantScreenState extends State<AssistantScreen> {
                           ],
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            // Les questions suggérées restent là : celles déjà posées
-            // passent à la fin.
-            SizedBox(
-              height: 44,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                children: [
-                  for (final (i, idea) in [
-                    ...ideas.where((idea) => !asked.contains(idea)),
-                    ...ideas.where(asked.contains),
-                  ].indexed)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(end: 8),
-                      child: ActionChip(
-                        avatar: Icon(
-                          Icons.lightbulb_outline,
-                          size: 16,
-                          color: ClaimsColors.series[i % 4],
+              // Les questions suggérées restent là : celles déjà posées
+              // passent à la fin.
+              SizedBox(
+                height: 44,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  children: [
+                    for (final idea in [
+                      ...ideas.where((idea) => !asked.contains(idea)),
+                      ...ideas.where(asked.contains),
+                    ])
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(end: 8),
+                        child: ActionChip(
+                          avatar: const Icon(Icons.subdirectory_arrow_right),
+                          label: Text(idea),
+                          onPressed: waiting ? null : () => _send(idea),
                         ),
-                        label: Text(idea),
-                        onPressed: waiting ? null : () => _send(idea),
+                      ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: input,
+                        onSubmitted: _send,
+                        decoration: InputDecoration(
+                          hintText: t.claimsYourQuestion,
+                        ),
                       ),
                     ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: input,
-                      onSubmitted: _send,
-                      decoration: InputDecoration(
-                        hintText: t.claimsYourQuestion,
+                    const SizedBox(width: 8),
+                    IconButton.filled(
+                      tooltip: t.claimsSend,
+                      style: IconButton.styleFrom(
+                        minimumSize: const Size(48, 48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
+                      onPressed: () => _send(input.text),
+                      icon: const Icon(Icons.arrow_upward, size: 20),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    tooltip: t.claimsSend,
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      foregroundColor: context.palette.text,
-                    ),
-                    onPressed: () => _send(input.text),
-                    icon: const Icon(Icons.send),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -214,7 +211,7 @@ class _Turn extends StatelessWidget {
         decoration: BoxDecoration(
           color: mine ? AppColors.primary : context.palette.surface,
           border: mine ? null : Border.all(color: context.palette.border),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,6 +227,7 @@ class _Turn extends StatelessWidget {
               Text(
                 turn.by ?? context.t.claimsAutomaticAnswer,
                 style: TextStyle(
+                  fontFamily: 'JetBrainsMono',
                   fontSize: 11,
                   color: context.palette.textMuted,
                 ),
