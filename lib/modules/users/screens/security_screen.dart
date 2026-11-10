@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/models/security.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 /// Appareils connectés et historique des connexions.
 class SecurityScreen extends StatefulWidget {
@@ -119,9 +120,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
               const SizedBox(height: 18),
               _Title(t.securityDevicesSubtitle),
               if (sessions == null && _error == null)
-                const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Center(child: CircularProgressIndicator()),
+                const SizedBox(
+                  height: 190,
+                  child: SkeletonList(count: 3, padding: EdgeInsets.all(8)),
                 ),
               if (sessions != null)
                 Card(

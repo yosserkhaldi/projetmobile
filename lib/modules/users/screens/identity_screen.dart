@@ -148,6 +148,19 @@ class _IdentityScreenState extends State<IdentityScreen> with FormActions {
             padding: const EdgeInsets.all(20),
             children: [
               IdentityStatusBanner(identity: identity),
+              if (editable) ...[
+                const SizedBox(height: 16),
+                _IdentityProgress(
+                  steps: [
+                    // Pièce : recto, et verso sauf pour le passeport.
+                    identity.frontId != null &&
+                        (!_document.hasBack || identity.backId != null),
+                    reading != null && !reading.isEmpty,
+                    identity.livenessValid,
+                    false,
+                  ],
+                ),
+              ],
               const SizedBox(height: 16),
               Text(
                 t.identityIntro,
@@ -267,6 +280,135 @@ class _IdentityScreenState extends State<IdentityScreen> with FormActions {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Avancement de la demande : Pièce → Lecture → Visage → Envoi. Étape faite
+/// cochée en vert, étape en cours en bleu, les suivantes en gris.
+class _IdentityProgress extends StatelessWidget {
+  const _IdentityProgress({required this.steps});
+
+  /// Une valeur par étape : faite ou non.
+  final List<bool> steps;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final p = context.palette;
+    final labels = [
+      t.identityStepDocument,
+      t.identityStepReading,
+      t.identityStepFace,
+      t.identityStepSend,
+    ];
+    final current = steps.indexWhere((done) => !done);
+    return Container(
+      key: const Key('identity-progress'),
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+      decoration: BoxDecoration(
+        color: p.surface,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: p.borderSoft),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final (i, label) in labels.indexed) ...[
+            Expanded(
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      // Trait vers l'étape précédente.
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: i == 0
+                              ? Colors.transparent
+                              : steps[i - 1]
+                              ? p.successText
+                              : p.borderSoft,
+                        ),
+                      ),
+                      _StepDot(
+                        number: i + 1,
+                        done: steps[i],
+                        current: i == current,
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: i == labels.length - 1
+                              ? Colors.transparent
+                              : steps[i]
+                              ? p.successText
+                              : p.borderSoft,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: i == current
+                          ? FontWeight.w800
+                          : FontWeight.w700,
+                      color: steps[i]
+                          ? p.successText
+                          : i == current
+                          ? p.primaryText
+                          : p.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StepDot extends StatelessWidget {
+  const _StepDot({
+    required this.number,
+    required this.done,
+    required this.current,
+  });
+  final int number;
+  final bool done, current;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 28,
+      height: 28,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: done
+            ? p.successText
+            : current
+            ? p.primaryText
+            : p.surfaceAlt,
+      ),
+      child: done
+          ? Icon(Icons.check_rounded, size: 18, color: p.surface)
+          : Text(
+              '$number',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: current ? p.surface : p.textMuted,
+              ),
+            ),
     );
   }
 }

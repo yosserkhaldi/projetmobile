@@ -345,16 +345,26 @@ class _ProfileHeader extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          _Pill(
-                            icon: user.phoneVerified
-                                ? Icons.verified_outlined
-                                : Icons.error_outline,
-                            label: user.phoneVerified
-                                ? t.phoneVerified
-                                : t.phoneNotVerified,
-                            color: user.phoneVerified
-                                ? const Color(0xFF7FE0CC)
-                                : AppColors.accent,
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              _Pill(
+                                icon: user.phoneVerified
+                                    ? Icons.verified_outlined
+                                    : Icons.error_outline,
+                                label: user.phoneVerified
+                                    ? t.phoneVerified
+                                    : t.phoneNotVerified,
+                                color: user.phoneVerified
+                                    ? const Color(0xFF7FE0CC)
+                                    : AppColors.accent,
+                              ),
+                              // Conducteur : l'état de son identité, d'un
+                              // coup d'œil (exigée pour signer un constat).
+                              if (user.role == UserRole.driver)
+                                _identityPill(t, user.identity.status),
+                            ],
                           ),
                         ],
                       ),
@@ -458,8 +468,35 @@ class _Avatar extends StatelessWidget {
   );
 }
 
+_Pill _identityPill(AppLocalizations t, IdentityStatus status) =>
+    switch (status) {
+      IdentityStatus.verified => _Pill(
+        key: const Key('identity-pill'),
+        icon: Icons.verified_user_outlined,
+        label: t.profileIdentityVerified,
+        color: const Color(0xFF7FE0CC),
+      ),
+      IdentityStatus.pending => _Pill(
+        key: const Key('identity-pill'),
+        icon: Icons.hourglass_top_rounded,
+        label: t.profileIdentityPending,
+        color: AppColors.onDarkStrong,
+      ),
+      _ => _Pill(
+        key: const Key('identity-pill'),
+        icon: Icons.badge_outlined,
+        label: t.profileIdentityTodo,
+        color: AppColors.accent,
+      ),
+    };
+
 class _Pill extends StatelessWidget {
-  const _Pill({required this.icon, required this.label, required this.color});
+  const _Pill({
+    required this.icon,
+    required this.label,
+    required this.color,
+    super.key,
+  });
   final IconData icon;
   final String label;
   final Color color;

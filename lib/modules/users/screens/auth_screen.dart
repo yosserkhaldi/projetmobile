@@ -177,6 +177,7 @@ class _AuthScreenState extends State<AuthScreen> with FormActions {
         if (error != null) ...[ErrorBanner(error!), const SizedBox(height: 16)],
         LabeledField(
           label: t.identifierLabel,
+          prefixIcon: Icons.alternate_email,
           controller: _identifier,
           keyboardType: TextInputType.emailAddress,
           validator: validators.required,

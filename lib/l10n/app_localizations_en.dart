@@ -2111,4 +2111,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorNotALicense => 'This photo is not a driving licence.';
+
+  @override
+  String get registerIntro =>
+      'Three steps, less than a minute. Your number will then be verified with a code.';
+
+  @override
+  String get registerStepYou => 'You';
+
+  @override
+  String get registerStepContact => 'Your contact details';
+
+  @override
+  String get registerStepSecurity => 'Security';
+
+  @override
+  String get registerPhoneHint =>
+      'A verification code will be sent to you on WhatsApp.';
+
+  @override
+  String get passwordWeak => 'Weak';
+
+  @override
+  String get passwordFair => 'Fair';
+
+  @override
+  String get passwordGood => 'Good';
+
+  @override
+  String get passwordStrong => 'Strong';
+
+  @override
+  String get passwordRuleLength => '8 characters';
+
+  @override
+  String get passwordRuleUpper => 'A capital letter';
+
+  @override
+  String get passwordRuleDigit => 'A digit';
+
+  @override
+  String get passwordRuleSymbol => 'A symbol';
+
+  @override
+  String get identityStepDocument => 'Document';
+
+  @override
+  String get identityStepReading => 'Reading';
+
+  @override
+  String get identityStepFace => 'Face';
+
+  @override
+  String get identityStepSend => 'Send';
+
+  @override
+  String get profileIdentityVerified => 'Identity verified';
+
+  @override
+  String get profileIdentityPending => 'Identity in review';
+
+  @override
+  String get profileIdentityTodo => 'Verify your identity';
 }

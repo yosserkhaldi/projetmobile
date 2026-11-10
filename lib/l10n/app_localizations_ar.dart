@@ -2102,4 +2102,65 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get errorNotALicense => 'هذه الصورة ليست رخصة سياقة.';
+
+  @override
+  String get registerIntro =>
+      'ثلاث خطوات، أقل من دقيقة. سيتم بعدها التحقق من رقمك برمز.';
+
+  @override
+  String get registerStepYou => 'أنت';
+
+  @override
+  String get registerStepContact => 'بيانات الاتصال';
+
+  @override
+  String get registerStepSecurity => 'الأمان';
+
+  @override
+  String get registerPhoneHint => 'سيصلك رمز التحقق على واتساب.';
+
+  @override
+  String get passwordWeak => 'ضعيفة';
+
+  @override
+  String get passwordFair => 'متوسطة';
+
+  @override
+  String get passwordGood => 'جيدة';
+
+  @override
+  String get passwordStrong => 'ممتازة';
+
+  @override
+  String get passwordRuleLength => '8 أحرف';
+
+  @override
+  String get passwordRuleUpper => 'حرف كبير';
+
+  @override
+  String get passwordRuleDigit => 'رقم';
+
+  @override
+  String get passwordRuleSymbol => 'رمز';
+
+  @override
+  String get identityStepDocument => 'الوثيقة';
+
+  @override
+  String get identityStepReading => 'القراءة';
+
+  @override
+  String get identityStepFace => 'الوجه';
+
+  @override
+  String get identityStepSend => 'الإرسال';
+
+  @override
+  String get profileIdentityVerified => 'هوية موثّقة';
+
+  @override
+  String get profileIdentityPending => 'الهوية قيد التحقق';
+
+  @override
+  String get profileIdentityTodo => 'تحقّق من هويتك';
 }

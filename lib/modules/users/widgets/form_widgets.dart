@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
+import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
@@ -98,6 +99,8 @@ class LabeledField extends StatelessWidget {
     this.hint,
     this.style,
     this.textDirection,
+    this.prefixIcon,
+    this.prefixText,
     super.key,
   });
 
@@ -114,6 +117,12 @@ class LabeledField extends StatelessWidget {
 
   /// Force le sens d'écriture (numéros, e-mails) quand l'interface est en arabe.
   final TextDirection? textDirection;
+
+  /// Icône à gauche du champ, pour le reconnaître d'un coup d'œil.
+  final IconData? prefixIcon;
+
+  /// Texte fixe avant la saisie (indicatif « +216 »).
+  final String? prefixText;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -140,7 +149,39 @@ class LabeledField extends StatelessWidget {
         textDirection: textDirection,
         style:
             style ?? const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        decoration: InputDecoration(hintText: hint, suffixIcon: suffixIcon),
+        decoration: InputDecoration(
+          hintText: hint,
+          suffixIcon: suffixIcon,
+          // Icône et indicatif toujours visibles, même champ vide.
+          prefixIcon: prefixIcon == null && prefixText == null
+              ? null
+              : Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 12, end: 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (prefixIcon != null)
+                        Icon(
+                          prefixIcon,
+                          size: 20,
+                          color: context.palette.textMuted,
+                        ),
+                      if (prefixText != null) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          prefixText!,
+                          textDirection: TextDirection.ltr,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: context.palette.textMuted,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+        ),
       ),
     ],
   );
@@ -153,6 +194,7 @@ class PasswordField extends StatefulWidget {
     required this.controller,
     this.validator,
     this.autofillHints,
+    this.suffix,
     super.key,
   });
 
@@ -160,6 +202,9 @@ class PasswordField extends StatefulWidget {
   final TextEditingController controller;
   final String? Function(String?)? validator;
   final Iterable<String>? autofillHints;
+
+  /// Affiché avant le bouton afficher / masquer (coche de confirmation).
+  final Widget? suffix;
 
   @override
   State<PasswordField> createState() => _PasswordFieldState();
@@ -175,14 +220,194 @@ class _PasswordFieldState extends State<PasswordField> {
     validator: widget.validator,
     obscureText: _hidden,
     autofillHints: widget.autofillHints,
-    suffixIcon: IconButton(
-      tooltip: _hidden ? context.t.showPassword : context.t.hidePassword,
-      onPressed: () => setState(() => _hidden = !_hidden),
-      icon: Icon(
-        _hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-      ),
+    prefixIcon: Icons.lock_outline,
+    suffixIcon: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ?widget.suffix,
+        IconButton(
+          tooltip: _hidden ? context.t.showPassword : context.t.hidePassword,
+          onPressed: () => setState(() => _hidden = !_hidden),
+          icon: Icon(
+            _hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+          ),
+        ),
+      ],
     ),
   );
+}
+
+/// Règles du mot de passe : 8 caractères (obligatoire), puis une majuscule,
+/// un chiffre et un symbole (recommandés).
+({bool length, bool upper, bool digit, bool symbol}) passwordRules(
+  String value,
+) => (
+  length: value.length >= 8,
+  upper: RegExp('[A-Z]').hasMatch(value),
+  digit: RegExp(r'\d').hasMatch(value),
+  symbol: RegExp(r'[^A-Za-z0-9]').hasMatch(value),
+);
+
+/// Jauge de robustesse et règles du mot de passe, à jour à chaque frappe.
+class PasswordStrength extends StatelessWidget {
+  const PasswordStrength({required this.controller, super.key});
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: controller,
+    builder: (context, _) {
+      final t = context.t;
+      final p = context.palette;
+      final rules = passwordRules(controller.text);
+      final extras = [rules.upper, rules.digit, rules.symbol].where((ok) => ok);
+      final score = controller.text.isEmpty
+          ? 0
+          : rules.length
+          ? 1 + extras.length
+          : 1;
+      final (label, color) = switch (score) {
+        0 => ('', p.border),
+        1 => (t.passwordWeak, p.errorText),
+        2 => (t.passwordFair, AppColors.accent),
+        3 => (t.passwordGood, p.primaryText),
+        _ => (t.passwordStrong, p.successText),
+      };
+      Widget rule(bool ok, String text) => Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              ok ? Icons.check_circle : Icons.radio_button_unchecked,
+              size: 16,
+              color: ok ? p.successText : p.textMuted,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: ok ? FontWeight.w700 : FontWeight.w600,
+                color: ok ? p.successText : p.textMuted,
+              ),
+            ),
+          ],
+        ),
+      );
+      return Column(
+        key: const Key('password-strength'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              for (var i = 0; i < 4; i++) ...[
+                if (i > 0) const SizedBox(width: 4),
+                Expanded(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: i < score ? color : p.borderSoft,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(width: 10),
+              SizedBox(
+                width: 76,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.end,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Wrap(
+            spacing: 14,
+            children: [
+              rule(rules.length, t.passwordRuleLength),
+              rule(rules.upper, t.passwordRuleUpper),
+              rule(rules.digit, t.passwordRuleDigit),
+              rule(rules.symbol, t.passwordRuleSymbol),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+}
+
+/// Bloc numéroté d'un formulaire (« 1 Vous », « 2 Contact »…).
+class FormStepCard extends StatelessWidget {
+  const FormStepCard({
+    required this.number,
+    required this.title,
+    required this.children,
+    super.key,
+  });
+
+  final int number;
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+      decoration: BoxDecoration(
+        color: p.surface,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: p.borderSoft),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: p.primaryTint,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '$number',
+                  style: TextStyle(
+                    color: p.primaryText,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
+    );
+  }
 }
 
 class ErrorBanner extends StatelessWidget {

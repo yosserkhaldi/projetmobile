@@ -237,6 +237,28 @@ void main() {
       expect(backend.bodies['POST /auth/register']!['consent'], isTrue);
     });
 
+    testWidgets('mot de passe : jauge de robustesse et confirmation', (
+      tester,
+    ) async {
+      await pumpApp(tester, FakeBackend());
+      await tester.tap(find.text('Créer un compte'));
+      await tester.pumpAndSettle();
+      await tester.enterText(field('Mot de passe'), 'abc');
+      await tester.pump();
+      expect(find.text('Faible'), findsOneWidget);
+      await tester.enterText(field('Mot de passe'), 'abcdefg1');
+      await tester.pump();
+      expect(find.text('Moyen'), findsOneWidget);
+      await tester.enterText(field('Mot de passe'), 'Abcdefg1!');
+      await tester.pump();
+      expect(find.text('Excellent'), findsOneWidget);
+      // Coche dès que la confirmation correspond.
+      expect(find.byKey(const Key('passwords-match')), findsNothing);
+      await tester.enterText(field('Confirmer le mot de passe'), 'Abcdefg1!');
+      await tester.pump();
+      expect(find.byKey(const Key('passwords-match')), findsOneWidget);
+    });
+
     testWidgets('e-mail déjà utilisé : erreur affichée', (tester) async {
       final backend = FakeBackend()
         ..failures['POST /auth/register'] = (
@@ -302,6 +324,20 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Mon profil'), findsOneWidget);
     }
+
+    testWidgets('en-tête : état de l identité du conducteur', (tester) async {
+      await openProfile(
+        tester,
+        FakeBackend(
+          user: {
+            ...userJson(),
+            'identity': {'status': 'VERIFIED'},
+          },
+        ),
+      );
+      expect(find.text('Identité vérifiée'), findsWidgets);
+      expect(find.byKey(const Key('identity-pill')), findsOneWidget);
+    });
 
     testWidgets('sections, complétion et permis vide', (tester) async {
       final backend = FakeBackend();
@@ -799,6 +835,27 @@ void main() {
       );
     });
 
+    testWidgets('avancement : pièce faite, lecture en cours', (tester) async {
+      final backend = FakeBackend(user: withIdentity());
+      await openIdentity(tester, backend);
+      expect(find.byKey(const Key('identity-progress')), findsOneWidget);
+      // Étape 1 cochée (recto et verso), les autres numérotées.
+      final progress = find.byKey(const Key('identity-progress'));
+      expect(
+        find.descendant(
+          of: progress,
+          matching: find.byIcon(Icons.check_rounded),
+        ),
+        findsOneWidget,
+      );
+      for (final number in ['2', '3', '4']) {
+        expect(
+          find.descendant(of: progress, matching: find.text(number)),
+          findsOneWidget,
+        );
+      }
+    });
+
     testWidgets('sans vérification du visage : demande refusée', (
       tester,
     ) async {
@@ -950,6 +1007,11 @@ void main() {
         expect(find.text("Lu sur la pièce par l'IA"), findsOneWidget);
         expect(find.text('سامي بن علي'), findsOneWidget);
         expect(find.text('بن محمد بن صالح'), findsOneWidget);
+        await tester.scrollUntilVisible(
+          field('N° de CIN'),
+          200,
+          scrollable: identityList,
+        );
         final input = tester.widget<EditableText>(
           find.descendant(
             of: field('N° de CIN'),

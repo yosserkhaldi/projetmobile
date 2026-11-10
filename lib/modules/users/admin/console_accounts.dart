@@ -10,6 +10,7 @@ import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/agent_form_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/users_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 /// Gestion des comptes en tableau : recherche, filtre par rôle, actions.
 class ConsoleAccounts extends StatefulWidget {
@@ -191,9 +192,9 @@ class _ConsoleAccountsState extends State<ConsoleAccounts> {
         ConsoleCard(
           padding: EdgeInsets.zero,
           child: _loading && admin.users.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.all(48),
-                  child: Center(child: CircularProgressIndicator()),
+              ? const SizedBox(
+                  height: 380,
+                  child: SkeletonList(count: 6, padding: EdgeInsets.all(20)),
                 )
               : admin.users.isEmpty
               ? ConsoleEmpty(
