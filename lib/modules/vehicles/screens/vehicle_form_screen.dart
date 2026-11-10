@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_media_service.dart';
 import 'package:mon_constat_digital/modules/users/widgets/company_picker.dart';
@@ -86,6 +85,39 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     } finally {
       if (mounted) setState(() => _scanning = null);
     }
+  }
+
+  /// Bouton « photographier » d'un document ; la carte grise en plein, le
+  /// reste en contour.
+  Widget _scanButton(_Document document, {String? key}) {
+    final busy = _scanning == document;
+    final icon = busy
+        ? const SizedBox.square(
+            dimension: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : Icon(document.icon);
+    final label = Text(
+      busy ? 'Lecture en cours… (jusqu’à 30 s)' : document.label,
+    );
+    final onPressed = _scanning != null ? null : () => _scan(document);
+    final buttonKey = ValueKey(key ?? 'scan-${document.apiValue}');
+    return SizedBox(
+      width: double.infinity,
+      child: document == _Document.registration
+          ? FilledButton.icon(
+              key: buttonKey,
+              onPressed: onPressed,
+              icon: icon,
+              label: label,
+            )
+          : OutlinedButton.icon(
+              key: buttonKey,
+              onPressed: onPressed,
+              icon: icon,
+              label: label,
+            ),
+    );
   }
 
   /// Remplit les champs lus ; renvoie leurs noms pour le message.
@@ -198,20 +230,21 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
           children: [
             Card(
-              color: AppColors.successBg,
+              color: context.palette.successBg,
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(
                           Icons.document_scanner_outlined,
-                          color: AppColors.successText,
+                          color: context.palette.successText,
                         ),
+                        const
                         SizedBox(width: 8),
-                        Expanded(
+                        const Expanded(
                           child: Text(
                             'Scanner vos documents avec l’IA',
                             style: TextStyle(fontWeight: FontWeight.w900),
@@ -220,36 +253,13 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                       ],
                     ),
                     const SizedBox(height: 5),
-                    const Text(
+                    Text(
                       'Une photo de la carte grise ou de l’attestation d’assurance : l’IA remplit le formulaire, vous vérifiez.',
-                      style: TextStyle(color: AppColors.textMuted),
+                      style: TextStyle(color: context.palette.textMuted),
                     ),
                     const SizedBox(height: 10),
                     for (final document in _Document.values) ...[
-                      SizedBox(
-                        width: double.infinity,
-                        child: (document == _Document.registration
-                            ? FilledButton.icon
-                            : OutlinedButton.icon)(
-                          key: ValueKey('scan-${document.apiValue}'),
-                          onPressed: _scanning != null
-                              ? null
-                              : () => _scan(document),
-                          icon: _scanning == document
-                              ? const SizedBox.square(
-                                  dimension: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Icon(document.icon),
-                          label: Text(
-                            _scanning == document
-                                ? 'Lecture en cours… (jusqu’à 30 s)'
-                                : document.label,
-                          ),
-                        ),
-                      ),
+                      _scanButton(document),
                       const SizedBox(height: 8),
                     ],
                   ],
