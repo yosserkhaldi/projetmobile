@@ -405,3 +405,43 @@ test('corps vide ou JSON invalide : erreur 400 propre', async (t) => {
   assert.equal(malformed.status, 400);
   assert.equal((await malformed.json()).error.code, 'BAD_REQUEST');
 });
+
+test('inscription en deux temps : e-mail et mot de passe, puis nom et téléphone', async (t) => {
+  const { call, sent } = await startApi(t);
+  const res = await call('POST', '/auth/register', {
+    body: { email: 'nouveau@example.com', password: 'Password123!', consent: true },
+  });
+  assert.equal(res.status, 201);
+  assert.equal(res.body.user.firstName, '');
+  assert.equal(res.body.user.phone, '');
+  assert.equal(res.body.user.phoneVerified, false);
+  // Pas de numéro : aucun code envoyé.
+  assert.equal(sent.sms.length, 0);
+  const token = res.body.accessToken;
+
+  // Pas de code sans numéro.
+  const early = await call('POST', '/auth/phone/send', { token });
+  assert.equal(early.status, 400);
+  assert.equal(early.body.error.code, 'PHONE_REQUIRED');
+
+  // Un deuxième compte sans téléphone : plusieurs numéros vides possibles.
+  const second = await call('POST', '/auth/register', {
+    body: { email: 'autre@example.com', password: 'Password123!', consent: true },
+  });
+  assert.equal(second.status, 201);
+
+  // Accueil : nom et téléphone, puis le code.
+  const profile = await call('PATCH', '/users/me', {
+    token,
+    body: { firstName: 'Mouna', lastName: 'Trabelsi', phone: '20 555 666' },
+  });
+  assert.equal(profile.status, 200);
+  assert.equal(profile.body.user.phone, '+21620555666');
+  assert.equal((await call('POST', '/auth/phone/send', { token })).status, 204);
+  const code = codeFrom(sent.sms.at(-1));
+  const verified = await call('POST', '/auth/phone/verify', {
+    token,
+    body: { code },
+  });
+  assert.equal(verified.body.user.phoneVerified, true);
+});

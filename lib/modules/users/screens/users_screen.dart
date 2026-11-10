@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/modules/users/admin/console_widgets.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/users/screens/agent_form_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/license_review_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -57,19 +60,6 @@ class _UsersScreenState extends State<UsersScreen> {
     }
   }
 
-  Future<void> _changeRole(AppUser user) async {
-    final admin = AppScope.of(context).admin;
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => _RoleSheet(
-        user: user,
-        onSave: (role, companyId) =>
-            admin.setRole(user, role, companyId: companyId),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final stores = AppScope.of(context);
@@ -108,7 +98,7 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   Widget _body(List<AppUser> users, String? myId) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return const SkeletonList();
     if (_error != null) {
       return Padding(
         padding: const EdgeInsets.all(16),
@@ -121,7 +111,10 @@ class _UsersScreenState extends State<UsersScreen> {
       );
     }
     if (users.isEmpty) {
-      return Center(child: Text(context.t.noAccounts));
+      return ConsoleEmpty(
+        icon: Icons.people_outline,
+        text: context.t.noAccounts,
+      );
     }
     final admin = AppScope.of(context).admin;
     return ListView.builder(
@@ -145,8 +138,11 @@ class _UsersScreenState extends State<UsersScreen> {
               style: TextStyle(color: context.palette.textMuted),
             ),
             isThreeLine: true,
-            // Un administrateur ne peut pas modifier son propre compte ici.
-            onTap: isMe ? null : () => _changeRole(user),
+            // Dossier du compte : identité, permis, rôle, suspension.
+            onTap: () async {
+              await openAccountFile(context, user);
+              if (mounted) await _load();
+            },
             trailing: Switch(
               value: user.active,
               onChanged: isMe
@@ -160,16 +156,16 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 }
 
-class _RoleSheet extends StatefulWidget {
-  const _RoleSheet({required this.user, required this.onSave});
+class RoleSheet extends StatefulWidget {
+  const RoleSheet({required this.user, required this.onSave, super.key});
   final AppUser user;
   final Future<void> Function(UserRole role, String? companyId) onSave;
 
   @override
-  State<_RoleSheet> createState() => _RoleSheetState();
+  State<RoleSheet> createState() => RoleSheetState();
 }
 
-class _RoleSheetState extends State<_RoleSheet> with FormActions {
+class RoleSheetState extends State<RoleSheet> with FormActions {
   late UserRole _role = widget.user.role;
   late String? _companyId = widget.user.companyId;
 

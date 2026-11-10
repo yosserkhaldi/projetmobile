@@ -263,4 +263,19 @@ class VehicleAiService {
 
     return recs;
   }
+
+  /// Estime la prime d'assurance annuelle en fonction du type de véhicule et du score de risque IA (en TND).
+  double estimateAnnualPremium(Vehicle v, RiskScore risk) {
+    var base = switch (v.type) {
+      VehicleType.car => 650.0,
+      VehicleType.moto => 300.0,
+      VehicleType.truck => 1400.0,
+      VehicleType.van => 950.0,
+      VehicleType.other => 700.0,
+    };
+
+    final multiplier = 1.0 + (risk.score - 20) / 100.0;
+    final estimated = base * multiplier.clamp(0.8, 1.8);
+    return estimated.roundToDouble();
+  }
 }

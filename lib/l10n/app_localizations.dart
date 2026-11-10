@@ -100,6 +100,1482 @@ abstract class AppLocalizations {
     Locale('fr'),
   ];
 
+  /// No description provided for @claimsMyClaims.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes dossiers'**
+  String get claimsMyClaims;
+
+  /// No description provided for @claimsReceived.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sinistres reçus'**
+  String get claimsReceived;
+
+  /// No description provided for @claimsCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{shown} sur {total} dossiers'**
+  String claimsCount(String shown, String total);
+
+  /// No description provided for @claimsFilterHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Filtrer par numéro, statut ou gravité'**
+  String get claimsFilterHint;
+
+  /// No description provided for @claimsStatus.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statut'**
+  String get claimsStatus;
+
+  /// No description provided for @claimsSeverity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Gravité'**
+  String get claimsSeverity;
+
+  /// No description provided for @claimsDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date'**
+  String get claimsDate;
+
+  /// No description provided for @claimsAllOf.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous : {label}'**
+  String claimsAllOf(String label);
+
+  /// No description provided for @claimsNoMatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun dossier ne correspond.'**
+  String get claimsNoMatch;
+
+  /// No description provided for @claimsAgentSpace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Espace agent'**
+  String get claimsAgentSpace;
+
+  /// No description provided for @claimsAgentSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Instruction des sinistres'**
+  String get claimsAgentSubtitle;
+
+  /// No description provided for @claimsStatistics.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statistiques'**
+  String get claimsStatistics;
+
+  /// No description provided for @claimsNotifications.
+  ///
+  /// In fr, this message translates to:
+  /// **'Notifications'**
+  String get claimsNotifications;
+
+  /// No description provided for @claimsToHandle.
+  ///
+  /// In fr, this message translates to:
+  /// **'À traiter'**
+  String get claimsToHandle;
+
+  /// No description provided for @claimsExpertises.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertises'**
+  String get claimsExpertises;
+
+  /// No description provided for @claimsClosedCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Clôturés'**
+  String get claimsClosedCount;
+
+  /// No description provided for @claimsPriority.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossiers prioritaires'**
+  String get claimsPriority;
+
+  /// No description provided for @claimsNothingToHandle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun dossier à traiter.'**
+  String get claimsNothingToHandle;
+
+  /// No description provided for @claimsAssistant.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assistant'**
+  String get claimsAssistant;
+
+  /// No description provided for @claimsMessaging.
+  ///
+  /// In fr, this message translates to:
+  /// **'Messagerie'**
+  String get claimsMessaging;
+
+  /// No description provided for @claimsRequestedDocuments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièces demandées'**
+  String get claimsRequestedDocuments;
+
+  /// No description provided for @claimsUpload.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déposer'**
+  String get claimsUpload;
+
+  /// No description provided for @claimsExpertiseTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertise'**
+  String get claimsExpertiseTitle;
+
+  /// No description provided for @claimsAppointmentOn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous le {date}'**
+  String claimsAppointmentOn(String date);
+
+  /// No description provided for @claimsTimeline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chronologie'**
+  String get claimsTimeline;
+
+  /// No description provided for @claimsConstat.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat'**
+  String get claimsConstat;
+
+  /// No description provided for @claimsDocuments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièces du dossier'**
+  String get claimsDocuments;
+
+  /// No description provided for @claimsDownload.
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger'**
+  String get claimsDownload;
+
+  /// No description provided for @claimsNoDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune pièce déposée.'**
+  String get claimsNoDocument;
+
+  /// No description provided for @claimsUploadDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déposer une pièce'**
+  String get claimsUploadDocument;
+
+  /// No description provided for @claimsHandling.
+  ///
+  /// In fr, this message translates to:
+  /// **'Instruction'**
+  String get claimsHandling;
+
+  /// No description provided for @claimsDocMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ne correspond pas à la demande.'**
+  String get claimsDocMismatch;
+
+  /// No description provided for @claimsRejectedTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossier rejeté'**
+  String get claimsRejectedTitle;
+
+  /// No description provided for @claimsClosedTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossier clôturé'**
+  String get claimsClosedTitle;
+
+  /// No description provided for @claimsReason.
+  ///
+  /// In fr, this message translates to:
+  /// **'Motif : {reason}'**
+  String claimsReason(String reason);
+
+  /// No description provided for @claimsResponsibilitySplit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Responsabilité : A {a} %, B {b} %'**
+  String claimsResponsibilitySplit(String a, String b);
+
+  /// No description provided for @claimsIndemnity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indemnisation : {amount} TND'**
+  String claimsIndemnity(String amount);
+
+  /// No description provided for @claimsCircumstances.
+  ///
+  /// In fr, this message translates to:
+  /// **'Circonstances'**
+  String get claimsCircumstances;
+
+  /// No description provided for @claimsImpactPoint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Point de choc'**
+  String get claimsImpactPoint;
+
+  /// No description provided for @claimsObservations.
+  ///
+  /// In fr, this message translates to:
+  /// **'Observations'**
+  String get claimsObservations;
+
+  /// No description provided for @claimsNoConstat.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune information de constat.'**
+  String get claimsNoConstat;
+
+  /// No description provided for @claimsLabelColon.
+  ///
+  /// In fr, this message translates to:
+  /// **'{label} : '**
+  String claimsLabelColon(String label);
+
+  /// No description provided for @claimsTakeCharge.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prendre en charge'**
+  String get claimsTakeCharge;
+
+  /// No description provided for @claimsRequestDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demander une pièce'**
+  String get claimsRequestDocument;
+
+  /// No description provided for @claimsMoveAppointment.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déplacer le rendez-vous'**
+  String get claimsMoveAppointment;
+
+  /// No description provided for @claimsAppointExpert.
+  ///
+  /// In fr, this message translates to:
+  /// **'Désigner un expert'**
+  String get claimsAppointExpert;
+
+  /// No description provided for @claimsAttachReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Joindre le rapport d’expertise'**
+  String get claimsAttachReport;
+
+  /// No description provided for @claimsReject.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejeter le dossier'**
+  String get claimsReject;
+
+  /// No description provided for @claimsDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce'**
+  String get claimsDocument;
+
+  /// No description provided for @claimsDetail.
+  ///
+  /// In fr, this message translates to:
+  /// **'Précision'**
+  String get claimsDetail;
+
+  /// No description provided for @claimsSendRequest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer la demande'**
+  String get claimsSendRequest;
+
+  /// No description provided for @claimsExpert.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expert'**
+  String get claimsExpert;
+
+  /// No description provided for @claimsSchedule.
+  ///
+  /// In fr, this message translates to:
+  /// **'Planifier'**
+  String get claimsSchedule;
+
+  /// No description provided for @claimsReasonLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Motif'**
+  String get claimsReasonLabel;
+
+  /// No description provided for @claimsRejectAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejeter'**
+  String get claimsRejectAction;
+
+  /// No description provided for @claimsInvalidAmount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisissez un montant valide.'**
+  String get claimsInvalidAmount;
+
+  /// No description provided for @claimsDecision.
+  ///
+  /// In fr, this message translates to:
+  /// **'Décision'**
+  String get claimsDecision;
+
+  /// No description provided for @claimsProposal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proposition : A {a} %, B {b} %. {reason}'**
+  String claimsProposal(String a, String b, String reason);
+
+  /// No description provided for @claimsIndemnityAmount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Montant d\'indemnisation (TND)'**
+  String get claimsIndemnityAmount;
+
+  /// No description provided for @claimsCloseClaim.
+  ///
+  /// In fr, this message translates to:
+  /// **'Clôturer le dossier'**
+  String get claimsCloseClaim;
+
+  /// No description provided for @claimsProposalFault.
+  ///
+  /// In fr, this message translates to:
+  /// **'{box} : manœuvre à risque de A.'**
+  String claimsProposalFault(String box);
+
+  /// No description provided for @claimsProposalParked.
+  ///
+  /// In fr, this message translates to:
+  /// **'A était en stationnement.'**
+  String get claimsProposalParked;
+
+  /// No description provided for @claimsProposalTurn.
+  ///
+  /// In fr, this message translates to:
+  /// **'{box} : partage par défaut.'**
+  String claimsProposalTurn(String box);
+
+  /// No description provided for @claimsProposalUnknown.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cases insuffisantes : partage par défaut.'**
+  String get claimsProposalUnknown;
+
+  /// No description provided for @claimsSummaryOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synthèse indisponible hors connexion.'**
+  String get claimsSummaryOffline;
+
+  /// No description provided for @claimsDecisionHelp.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aide à la décision'**
+  String get claimsDecisionHelp;
+
+  /// No description provided for @claimsOverdue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retard {days} j'**
+  String claimsOverdue(String days);
+
+  /// No description provided for @claimsEstimate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Estimation'**
+  String get claimsEstimate;
+
+  /// No description provided for @claimsRange.
+  ///
+  /// In fr, this message translates to:
+  /// **'{low} à {high} TND'**
+  String claimsRange(String low, String high);
+
+  /// No description provided for @claimsUsualDuration.
+  ///
+  /// In fr, this message translates to:
+  /// **'Durée habituelle'**
+  String get claimsUsualDuration;
+
+  /// No description provided for @claimsDays.
+  ///
+  /// In fr, this message translates to:
+  /// **'{days} jours'**
+  String claimsDays(String days);
+
+  /// No description provided for @claimsRejectionRisk.
+  ///
+  /// In fr, this message translates to:
+  /// **'Risque de rejet'**
+  String get claimsRejectionRisk;
+
+  /// No description provided for @claimsRiskLow.
+  ///
+  /// In fr, this message translates to:
+  /// **'faible'**
+  String get claimsRiskLow;
+
+  /// No description provided for @claimsRiskMedium.
+  ///
+  /// In fr, this message translates to:
+  /// **'moyen'**
+  String get claimsRiskMedium;
+
+  /// No description provided for @claimsRiskHigh.
+  ///
+  /// In fr, this message translates to:
+  /// **'élevé'**
+  String get claimsRiskHigh;
+
+  /// No description provided for @claimsRiskWithFactors.
+  ///
+  /// In fr, this message translates to:
+  /// **'{level} : {factors}'**
+  String claimsRiskWithFactors(String level, String factors);
+
+  /// No description provided for @claimsRecommended.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandée pour ce dossier'**
+  String get claimsRecommended;
+
+  /// No description provided for @claimsToCheck.
+  ///
+  /// In fr, this message translates to:
+  /// **'À vérifier'**
+  String get claimsToCheck;
+
+  /// No description provided for @claimsMissingDocuments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièces manquantes'**
+  String get claimsMissingDocuments;
+
+  /// No description provided for @claimsRequest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demander'**
+  String get claimsRequest;
+
+  /// No description provided for @claimsSimilar.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossiers similaires'**
+  String get claimsSimilar;
+
+  /// No description provided for @claimsSummaryBy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synthèse rédigée par {by}'**
+  String claimsSummaryBy(String by);
+
+  /// No description provided for @claimsSummaryRules.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synthèse automatique, sans IA générative'**
+  String get claimsSummaryRules;
+
+  /// No description provided for @claimsSummarizing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synthèse en cours'**
+  String get claimsSummarizing;
+
+  /// No description provided for @claimsSummarize.
+  ///
+  /// In fr, this message translates to:
+  /// **'Résumer le dossier'**
+  String get claimsSummarize;
+
+  /// No description provided for @claimsModelDisclaimer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Estimations issues d’un modèle entraîné sur des données simulées. La décision appartient à l’agent.'**
+  String get claimsModelDisclaimer;
+
+  /// No description provided for @claimsDriverIdea1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Où en est mon dossier ?'**
+  String get claimsDriverIdea1;
+
+  /// No description provided for @claimsDriverIdea2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quelles pièces dois-je déposer ?'**
+  String get claimsDriverIdea2;
+
+  /// No description provided for @claimsDriverIdea3.
+  ///
+  /// In fr, this message translates to:
+  /// **'Combien de temps ça va prendre ?'**
+  String get claimsDriverIdea3;
+
+  /// No description provided for @claimsAgentIdea1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Que dois-je faire ensuite ?'**
+  String get claimsAgentIdea1;
+
+  /// No description provided for @claimsAgentIdea2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quels points vérifier ?'**
+  String get claimsAgentIdea2;
+
+  /// No description provided for @claimsAgentIdea3.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quelle responsabilité proposes-tu ?'**
+  String get claimsAgentIdea3;
+
+  /// No description provided for @claimsAssistantUnavailable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assistant indisponible pour le moment. Réessayez plus tard.'**
+  String get claimsAssistantUnavailable;
+
+  /// No description provided for @claimsAssistantTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assistant {id}'**
+  String claimsAssistantTitle(String id);
+
+  /// No description provided for @claimsAssistantIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Posez une question sur ce dossier. L’assistant informe, il ne prend aucune décision.'**
+  String get claimsAssistantIntro;
+
+  /// No description provided for @claimsAssistantReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'L’assistant lit le dossier…'**
+  String get claimsAssistantReading;
+
+  /// No description provided for @claimsYourQuestion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre question'**
+  String get claimsYourQuestion;
+
+  /// No description provided for @claimsSend.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer'**
+  String get claimsSend;
+
+  /// No description provided for @claimsAutomaticAnswer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réponse automatique'**
+  String get claimsAutomaticAnswer;
+
+  /// No description provided for @claimsStatsServerOnly.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statistiques disponibles avec le serveur.'**
+  String get claimsStatsServerOnly;
+
+  /// No description provided for @claimsTotal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossiers'**
+  String get claimsTotal;
+
+  /// No description provided for @claimsLate.
+  ///
+  /// In fr, this message translates to:
+  /// **'En retard'**
+  String get claimsLate;
+
+  /// No description provided for @claimsAverageDuration.
+  ///
+  /// In fr, this message translates to:
+  /// **'Durée moyenne'**
+  String get claimsAverageDuration;
+
+  /// No description provided for @claimsDaysShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'{days} j'**
+  String claimsDaysShort(String days);
+
+  /// No description provided for @claimsIndemnified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indemnisé (TND)'**
+  String get claimsIndemnified;
+
+  /// No description provided for @claimsByStatus.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossiers par statut'**
+  String get claimsByStatus;
+
+  /// No description provided for @claimsSystemVsAgents.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le système face aux agents'**
+  String get claimsSystemVsAgents;
+
+  /// No description provided for @claimsNoDecisionYet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore de décision à comparer.'**
+  String get claimsNoDecisionYet;
+
+  /// No description provided for @claimsAgreement.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sur {count} décision(s), la responsabilité proposée a été retenue dans {percent} % des cas.'**
+  String claimsAgreement(String count, String percent);
+
+  /// No description provided for @claimsAverageGap.
+  ///
+  /// In fr, this message translates to:
+  /// **'Écart moyen avec le montant décidé : {gap} TND.'**
+  String claimsAverageGap(String gap);
+
+  /// No description provided for @claimsModel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modèle'**
+  String get claimsModel;
+
+  /// No description provided for @claimsModelVersion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Version {version}'**
+  String claimsModelVersion(String version);
+
+  /// No description provided for @claimsTrainedOn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Entraîné sur {synthetic} cas simulés et {real} dossiers réels.'**
+  String claimsTrainedOn(String synthetic, String real);
+
+  /// No description provided for @claimsModelTest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Test : erreur moyenne {mae} TND, AUC rejet {auc}.'**
+  String claimsModelTest(String mae, String auc);
+
+  /// No description provided for @claimsSimulatedWarning.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ces mesures portent sur des données simulées : elles ne disent pas encore si le modèle est juste sur de vrais sinistres.'**
+  String get claimsSimulatedWarning;
+
+  /// No description provided for @claimsSuggestionsUnavailable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suggestions indisponibles.'**
+  String get claimsSuggestionsUnavailable;
+
+  /// No description provided for @claimsNoMessages.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun message sur ce dossier.'**
+  String get claimsNoMessages;
+
+  /// No description provided for @claimsSuggestReply.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suggérer une réponse'**
+  String get claimsSuggestReply;
+
+  /// No description provided for @claimsAttachFile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Joindre un fichier'**
+  String get claimsAttachFile;
+
+  /// No description provided for @claimsYourMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre message'**
+  String get claimsYourMessage;
+
+  /// No description provided for @claimsOneConversation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une conversation par dossier'**
+  String get claimsOneConversation;
+
+  /// No description provided for @claimsNoClaims.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun dossier.'**
+  String get claimsNoClaims;
+
+  /// No description provided for @claimsNoMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun message'**
+  String get claimsNoMessage;
+
+  /// No description provided for @claimsMarkAllRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout marquer lu'**
+  String get claimsMarkAllRead;
+
+  /// No description provided for @claimsNoNotification.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune notification.'**
+  String get claimsNoNotification;
+
+  /// No description provided for @claimsOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors ligne : vos changements partiront au retour du réseau'**
+  String get claimsOffline;
+
+  /// No description provided for @claimsFileUnavailable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fichier indisponible pour le moment.'**
+  String get claimsFileUnavailable;
+
+  /// No description provided for @claimsValueDraft.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brouillon'**
+  String get claimsValueDraft;
+
+  /// No description provided for @claimsValueDeclared.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déclaré'**
+  String get claimsValueDeclared;
+
+  /// No description provided for @claimsValueSigned.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat signé'**
+  String get claimsValueSigned;
+
+  /// No description provided for @claimsValueTransmitted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Transmis'**
+  String get claimsValueTransmitted;
+
+  /// No description provided for @claimsValueInReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'En instruction'**
+  String get claimsValueInReview;
+
+  /// No description provided for @claimsValueDocumentRequested.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce demandée'**
+  String get claimsValueDocumentRequested;
+
+  /// No description provided for @claimsValueExpertise.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertise'**
+  String get claimsValueExpertise;
+
+  /// No description provided for @claimsValueClosed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Clôturé'**
+  String get claimsValueClosed;
+
+  /// No description provided for @claimsValueRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejeté'**
+  String get claimsValueRejected;
+
+  /// No description provided for @claimsValueCollision.
+  ///
+  /// In fr, this message translates to:
+  /// **'Collision'**
+  String get claimsValueCollision;
+
+  /// No description provided for @claimsValueOffRoad.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sortie de route'**
+  String get claimsValueOffRoad;
+
+  /// No description provided for @claimsValuePedestrian.
+  ///
+  /// In fr, this message translates to:
+  /// **'Piéton'**
+  String get claimsValuePedestrian;
+
+  /// No description provided for @claimsValueMaterialAccident.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accident matériel'**
+  String get claimsValueMaterialAccident;
+
+  /// No description provided for @claimsValueOther.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre'**
+  String get claimsValueOther;
+
+  /// No description provided for @claimsValueMaterial.
+  ///
+  /// In fr, this message translates to:
+  /// **'Matériel'**
+  String get claimsValueMaterial;
+
+  /// No description provided for @claimsValueLight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Léger'**
+  String get claimsValueLight;
+
+  /// No description provided for @claimsValueSerious.
+  ///
+  /// In fr, this message translates to:
+  /// **'Grave'**
+  String get claimsValueSerious;
+
+  /// No description provided for @claimsValueParked.
+  ///
+  /// In fr, this message translates to:
+  /// **'En stationnement'**
+  String get claimsValueParked;
+
+  /// No description provided for @claimsValueLeavingParking.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quittait un stationnement'**
+  String get claimsValueLeavingParking;
+
+  /// No description provided for @claimsValueChangingLane.
+  ///
+  /// In fr, this message translates to:
+  /// **'Changeait de file'**
+  String get claimsValueChangingLane;
+
+  /// No description provided for @claimsValueOvertaking.
+  ///
+  /// In fr, this message translates to:
+  /// **'Doublait'**
+  String get claimsValueOvertaking;
+
+  /// No description provided for @claimsValueTurningRight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Virait à droite'**
+  String get claimsValueTurningRight;
+
+  /// No description provided for @claimsValueTurningLeft.
+  ///
+  /// In fr, this message translates to:
+  /// **'Virait à gauche'**
+  String get claimsValueTurningLeft;
+
+  /// No description provided for @claimsValueReversing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Reculait'**
+  String get claimsValueReversing;
+
+  /// No description provided for @claimsValueFront.
+  ///
+  /// In fr, this message translates to:
+  /// **'Avant'**
+  String get claimsValueFront;
+
+  /// No description provided for @claimsValueRear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Arrière'**
+  String get claimsValueRear;
+
+  /// No description provided for @claimsValueLeftSide.
+  ///
+  /// In fr, this message translates to:
+  /// **'Côté gauche'**
+  String get claimsValueLeftSide;
+
+  /// No description provided for @claimsValueRightSide.
+  ///
+  /// In fr, this message translates to:
+  /// **'Côté droit'**
+  String get claimsValueRightSide;
+
+  /// No description provided for @claimsValueQuote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Devis'**
+  String get claimsValueQuote;
+
+  /// No description provided for @claimsValueInvoice.
+  ///
+  /// In fr, this message translates to:
+  /// **'Facture'**
+  String get claimsValueInvoice;
+
+  /// No description provided for @claimsValuePoliceReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'PV de police'**
+  String get claimsValuePoliceReport;
+
+  /// No description provided for @claimsValueExpertReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rapport d\'expertise'**
+  String get claimsValueExpertReport;
+
+  /// No description provided for @claimsValueSupporting.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce'**
+  String get claimsValueSupporting;
+
+  /// No description provided for @claimsValuePhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo'**
+  String get claimsValuePhoto;
+
+  /// No description provided for @claimsValueVideo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vidéo'**
+  String get claimsValueVideo;
+
+  /// No description provided for @claimsValueVoiceNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Note vocale'**
+  String get claimsValueVoiceNote;
+
+  /// No description provided for @claimsValueAccidentReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat amiable'**
+  String get claimsValueAccidentReport;
+
+  /// No description provided for @claimsEventDraftCreated.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brouillon créé'**
+  String get claimsEventDraftCreated;
+
+  /// No description provided for @claimsEventDeclared.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déclaration complétée'**
+  String get claimsEventDeclared;
+
+  /// No description provided for @claimsEventEvidence.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} preuves ajoutées'**
+  String claimsEventEvidence(String count);
+
+  /// No description provided for @claimsEventSigned.
+  ///
+  /// In fr, this message translates to:
+  /// **'Double signature'**
+  String get claimsEventSigned;
+
+  /// No description provided for @claimsEventPdfLocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'PDF verrouillé'**
+  String get claimsEventPdfLocked;
+
+  /// No description provided for @claimsEventSent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Transmis aux assureurs'**
+  String get claimsEventSent;
+
+  /// No description provided for @claimsEventMoved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous déplacé'**
+  String get claimsEventMoved;
+
+  /// No description provided for @claimsEventReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rapport d’expertise joint'**
+  String get claimsEventReport;
+
+  /// No description provided for @claimsEventDetail.
+  ///
+  /// In fr, this message translates to:
+  /// **'{status} : {detail}'**
+  String claimsEventDetail(String status, String detail);
+
+  /// No description provided for @claimsNotifNew.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau sinistre reçu : {id}'**
+  String claimsNotifNew(String id);
+
+  /// No description provided for @claimsNotifRequested.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : pièce demandée ({document})'**
+  String claimsNotifRequested(String id, String document);
+
+  /// No description provided for @claimsNotifUploaded.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : pièce déposée ({name})'**
+  String claimsNotifUploaded(String id, String name);
+
+  /// No description provided for @claimsNotifMoved.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : rendez-vous d’expertise déplacé'**
+  String claimsNotifMoved(String id);
+
+  /// No description provided for @claimsNotifEvent.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : {event}'**
+  String claimsNotifEvent(String id, String event);
+
+  /// No description provided for @claimsNotifInReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre dossier {id} est en instruction.'**
+  String claimsNotifInReview(String id);
+
+  /// No description provided for @claimsNotifContract.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre contrat expire dans {days} jours.'**
+  String claimsNotifContract(String days);
+
+  /// No description provided for @claimsValueVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicule'**
+  String get claimsValueVehicle;
+
+  /// No description provided for @claimsValueBodily.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corporelle'**
+  String get claimsValueBodily;
+
+  /// No description provided for @claimsValueReopened.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rouvert'**
+  String get claimsValueReopened;
+
+  /// No description provided for @claimsEventConfirmed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez-vous confirmé'**
+  String get claimsEventConfirmed;
+
+  /// No description provided for @claimsEventOtherSlot.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre créneau proposé'**
+  String get claimsEventOtherSlot;
+
+  /// No description provided for @claimsNotifConfirmed.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : rendez-vous d’expertise confirmé'**
+  String claimsNotifConfirmed(String id);
+
+  /// No description provided for @claimsNotifOtherSlot.
+  ///
+  /// In fr, this message translates to:
+  /// **'{id} : autre créneau proposé pour l’expertise'**
+  String claimsNotifOtherSlot(String id);
+
+  /// No description provided for @claimsQuestionOnDecision.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une question sur la décision ? Écrire à l’agent'**
+  String get claimsQuestionOnDecision;
+
+  /// No description provided for @claimsReportPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'L’expert envoie son rapport à l’assureur après le rendez-vous. Il apparaîtra ici.'**
+  String get claimsReportPending;
+
+  /// No description provided for @claimsReportReceived.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rapport de l’expert, joint par l’agent'**
+  String get claimsReportReceived;
+
+  /// No description provided for @claimsReopen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rouvrir le dossier'**
+  String get claimsReopen;
+
+  /// No description provided for @claimsReopenHelp.
+  ///
+  /// In fr, this message translates to:
+  /// **'En cas d’erreur, rouvrez le dossier : il revient en instruction et la décision précédente reste dans la chronologie.'**
+  String get claimsReopenHelp;
+
+  /// No description provided for @claimsReopenAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rouvrir'**
+  String get claimsReopenAction;
+
+  /// No description provided for @claimsKindHelp.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corporelle : examen médical d’une personne blessée, un piéton par exemple. Aucun véhicule à présenter.'**
+  String get claimsKindHelp;
+
+  /// No description provided for @claimsExpertPhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléphone de l’expert'**
+  String get claimsExpertPhone;
+
+  /// No description provided for @claimsExpertPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu du rendez-vous'**
+  String get claimsExpertPlace;
+
+  /// No description provided for @claimsPlaceHintBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cabinet médical, clinique…'**
+  String get claimsPlaceHintBody;
+
+  /// No description provided for @claimsPlaceHintVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Garage, agence, domicile…'**
+  String get claimsPlaceHintVehicle;
+
+  /// No description provided for @claimsSuggestedSlots.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créneaux suggérés'**
+  String get claimsSuggestedSlots;
+
+  /// No description provided for @claimsNoteOptional.
+  ///
+  /// In fr, this message translates to:
+  /// **'Message (facultatif)'**
+  String get claimsNoteOptional;
+
+  /// No description provided for @claimsExpertRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indiquez le nom de l’expert.'**
+  String get claimsExpertRequired;
+
+  /// No description provided for @claimsSlotConfirmed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmé'**
+  String get claimsSlotConfirmed;
+
+  /// No description provided for @claimsSlotYourTurn.
+  ///
+  /// In fr, this message translates to:
+  /// **'À confirmer'**
+  String get claimsSlotYourTurn;
+
+  /// No description provided for @claimsSlotWaitingAgent.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente de l’agent'**
+  String get claimsSlotWaitingAgent;
+
+  /// No description provided for @claimsSlotWaitingDriver.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente du conducteur'**
+  String get claimsSlotWaitingDriver;
+
+  /// No description provided for @claimsExpertiseBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertise médicale'**
+  String get claimsExpertiseBody;
+
+  /// No description provided for @claimsExpertiseVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertise du véhicule'**
+  String get claimsExpertiseVehicle;
+
+  /// No description provided for @claimsPlaceFromExpert.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu communiqué par l’expert'**
+  String get claimsPlaceFromExpert;
+
+  /// No description provided for @claimsFromDriver.
+  ///
+  /// In fr, this message translates to:
+  /// **'Du conducteur'**
+  String get claimsFromDriver;
+
+  /// No description provided for @claimsFromAgent.
+  ///
+  /// In fr, this message translates to:
+  /// **'De l’agent'**
+  String get claimsFromAgent;
+
+  /// No description provided for @claimsToBring.
+  ///
+  /// In fr, this message translates to:
+  /// **'À apporter'**
+  String get claimsToBring;
+
+  /// No description provided for @claimsBringId.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre pièce d’identité'**
+  String get claimsBringId;
+
+  /// No description provided for @claimsBringCertificates.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les certificats médicaux'**
+  String get claimsBringCertificates;
+
+  /// No description provided for @claimsBringPrescriptions.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les ordonnances et factures de soins'**
+  String get claimsBringPrescriptions;
+
+  /// No description provided for @claimsBringVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le véhicule, non réparé'**
+  String get claimsBringVehicle;
+
+  /// No description provided for @claimsBringRegistration.
+  ///
+  /// In fr, this message translates to:
+  /// **'La carte grise'**
+  String get claimsBringRegistration;
+
+  /// No description provided for @claimsBringLicence.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le permis de conduire'**
+  String get claimsBringLicence;
+
+  /// No description provided for @claimsBringInsurance.
+  ///
+  /// In fr, this message translates to:
+  /// **'L’attestation d’assurance'**
+  String get claimsBringInsurance;
+
+  /// No description provided for @claimsAccept.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accepter'**
+  String get claimsAccept;
+
+  /// No description provided for @claimsProposeOther.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proposer un autre créneau'**
+  String get claimsProposeOther;
+
+  /// No description provided for @claimsCannotCome.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je ne peux plus venir'**
+  String get claimsCannotCome;
+
+  /// No description provided for @claimsOtherDateTime.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre date et heure'**
+  String get claimsOtherDateTime;
+
+  /// No description provided for @claimsSendProposal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer la proposition'**
+  String get claimsSendProposal;
+
+  /// No description provided for @claimsStepReceived.
+  ///
+  /// In fr, this message translates to:
+  /// **'Reçu'**
+  String get claimsStepReceived;
+
+  /// No description provided for @claimsStepReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étude'**
+  String get claimsStepReview;
+
+  /// No description provided for @claimsStepExpertise.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expertise'**
+  String get claimsStepExpertise;
+
+  /// No description provided for @claimsStepDecision.
+  ///
+  /// In fr, this message translates to:
+  /// **'Décision'**
+  String get claimsStepDecision;
+
+  /// No description provided for @claimsYourTodo.
+  ///
+  /// In fr, this message translates to:
+  /// **'À faire'**
+  String get claimsYourTodo;
+
+  /// No description provided for @claimsRemainingDays.
+  ///
+  /// In fr, this message translates to:
+  /// **'{days, plural, =1{Encore environ 1 jour} other{Encore environ {days} jours}}'**
+  String claimsRemainingDays(int days);
+
+  /// No description provided for @claimsEstimateNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Estimation, pas un engagement.'**
+  String get claimsEstimateNote;
+
+  /// No description provided for @claimsTakingLonger.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre dossier prend plus de temps que d’habitude. Vous pouvez écrire à votre agent.'**
+  String get claimsTakingLonger;
+
+  /// No description provided for @claimsCircumstancesA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Circonstances de A'**
+  String get claimsCircumstancesA;
+
+  /// No description provided for @claimsCircumstancesB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Circonstances de B'**
+  String get claimsCircumstancesB;
+
+  /// No description provided for @claimsProposalFaultB.
+  ///
+  /// In fr, this message translates to:
+  /// **'{box} : manœuvre à risque de B.'**
+  String claimsProposalFaultB(String box);
+
+  /// No description provided for @claimsProposalBoth.
+  ///
+  /// In fr, this message translates to:
+  /// **'A : {a}, B : {b}. Manœuvres à risque des deux côtés : partage.'**
+  String claimsProposalBoth(String a, String b);
+
+  /// No description provided for @claimsProposalParkedB.
+  ///
+  /// In fr, this message translates to:
+  /// **'B était en stationnement.'**
+  String get claimsProposalParkedB;
+
+  /// No description provided for @claimsNoCompany.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compagnie non renseignée'**
+  String get claimsNoCompany;
+
+  /// No description provided for @claimsEventSealed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat scellé (SHA-256 {hash})'**
+  String claimsEventSealed(String hash);
+
+  /// No description provided for @claimsEventSealedLocal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat scellé sur le téléphone (SHA-256 {hash})'**
+  String claimsEventSealedLocal(String hash);
+
+  /// No description provided for @claimsEventWaitingSync.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente de connexion pour l’envoi'**
+  String get claimsEventWaitingSync;
+
+  /// No description provided for @claimsSummaryTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Résumé du dossier'**
+  String get claimsSummaryTitle;
+
+  /// No description provided for @claimsPriorityScore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Priorité {score}'**
+  String claimsPriorityScore(String score);
+
+  /// No description provided for @claimsSearchMine.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher dans mes dossiers'**
+  String get claimsSearchMine;
+
+  /// No description provided for @claimsBySeverity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Par gravité'**
+  String get claimsBySeverity;
+
+  /// No description provided for @claimsByType.
+  ///
+  /// In fr, this message translates to:
+  /// **'Par type d’accident'**
+  String get claimsByType;
+
+  /// No description provided for @claimsAnswersBySource.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réponses par source'**
+  String get claimsAnswersBySource;
+
   /// No description provided for @appTitle.
   ///
   /// In fr, this message translates to:
@@ -1051,7 +2527,7 @@ abstract class AppLocalizations {
   /// No description provided for @navDeclarations.
   ///
   /// In fr, this message translates to:
-  /// **'Déclarations'**
+  /// **'Constats'**
   String get navDeclarations;
 
   /// No description provided for @securityDevicesTitle.
@@ -1207,13 +2683,13 @@ abstract class AppLocalizations {
   /// No description provided for @identityIntro.
   ///
   /// In fr, this message translates to:
-  /// **'Un administrateur vérifie votre CIN. Elle est exigée pour signer un constat.'**
+  /// **'Choisissez une pièce, photographiez-la, puis vérifiez votre visage. Notre IA compare votre visage à la photo de la pièce, sur nos serveurs, sans aucun service extérieur.'**
   String get identityIntro;
 
   /// No description provided for @identityPendingNote.
   ///
   /// In fr, this message translates to:
-  /// **'Un administrateur vérifie vos documents. Vous serez prévenu sur WhatsApp et par e-mail.'**
+  /// **'L\'IA n\'a pas pu conclure : un administrateur compare vos photos. Vous serez prévenu sur WhatsApp et par e-mail.'**
   String get identityPendingNote;
 
   /// No description provided for @identityVerifiedNote.
@@ -1261,7 +2737,7 @@ abstract class AppLocalizations {
   /// No description provided for @identityPhotosRequired.
   ///
   /// In fr, this message translates to:
-  /// **'Ajoutez le recto et le verso de votre CIN.'**
+  /// **'Ajoutez les photos de la pièce.'**
   String get identityPhotosRequired;
 
   /// No description provided for @submitIdentity.
@@ -1345,7 +2821,7 @@ abstract class AppLocalizations {
   /// No description provided for @rejectReasonNotCin.
   ///
   /// In fr, this message translates to:
-  /// **'Ce n\'est pas une CIN'**
+  /// **'Pièce non valable'**
   String get rejectReasonNotCin;
 
   /// No description provided for @otherReason.
@@ -1375,7 +2851,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorCinInUse.
   ///
   /// In fr, this message translates to:
-  /// **'Ce numéro de CIN est déjà utilisé.'**
+  /// **'Ce numéro de pièce est déjà utilisé.'**
   String get errorCinInUse;
 
   /// No description provided for @errorIdentityNotVerified.
@@ -1551,6 +3027,1506 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Hors ligne : liste enregistrée le {date}'**
   String companiesOffline(String date);
+
+  /// No description provided for @pendingSyncTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifications en attente'**
+  String get pendingSyncTitle;
+
+  /// No description provided for @pendingSyncBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrées sur le téléphone. Elles seront envoyées dès le retour du réseau.'**
+  String get pendingSyncBody;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur a refusé la modification : {reason}'**
+  String syncFailed(String reason);
+
+  /// No description provided for @syncNow.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchroniser'**
+  String get syncNow;
+
+  /// No description provided for @retrySync.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réessayer'**
+  String get retrySync;
+
+  /// No description provided for @discardChanges.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler les modifications'**
+  String get discardChanges;
+
+  /// No description provided for @savedOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistré sur le téléphone. Envoi dès le retour du réseau.'**
+  String get savedOffline;
+
+  /// No description provided for @syncing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisation…'**
+  String get syncing;
+
+  /// No description provided for @consoleDashboard.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tableau de bord'**
+  String get consoleDashboard;
+
+  /// No description provided for @consoleToHandle.
+  ///
+  /// In fr, this message translates to:
+  /// **'À traiter'**
+  String get consoleToHandle;
+
+  /// No description provided for @consoleReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Examiner'**
+  String get consoleReview;
+
+  /// No description provided for @consoleSeeAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout voir'**
+  String get consoleSeeAll;
+
+  /// No description provided for @consoleNothingToHandle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rien à traiter pour le moment.'**
+  String get consoleNothingToHandle;
+
+  /// No description provided for @refresh.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actualiser'**
+  String get refresh;
+
+  /// No description provided for @signedInAs.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connecté'**
+  String get signedInAs;
+
+  /// No description provided for @colUser.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utilisateur'**
+  String get colUser;
+
+  /// No description provided for @colStatus.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statut'**
+  String get colStatus;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous'**
+  String get filterAll;
+
+  /// No description provided for @filterDrivers.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conducteurs'**
+  String get filterDrivers;
+
+  /// No description provided for @filterAgents.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agents'**
+  String get filterAgents;
+
+  /// No description provided for @filterAdmins.
+  ///
+  /// In fr, this message translates to:
+  /// **'Administrateurs'**
+  String get filterAdmins;
+
+  /// No description provided for @accountsCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun compte} =1{1 compte} other{{count} comptes}}'**
+  String accountsCount(int count);
+
+  /// No description provided for @statusActive.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actif'**
+  String get statusActive;
+
+  /// No description provided for @statusSuspended.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suspendu'**
+  String get statusSuspended;
+
+  /// No description provided for @changeRole.
+  ///
+  /// In fr, this message translates to:
+  /// **'Changer le rôle'**
+  String get changeRole;
+
+  /// No description provided for @suspendAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suspendre'**
+  String get suspendAccount;
+
+  /// No description provided for @reactivateAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réactiver'**
+  String get reactivateAccount;
+
+  /// No description provided for @selectRequest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionnez une demande pour voir la pièce.'**
+  String get selectRequest;
+
+  /// No description provided for @pendingCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucune demande} =1{1 demande} other{{count} demandes}}'**
+  String pendingCount(int count);
+
+  /// No description provided for @selectCompany.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionnez une compagnie pour gérer ses agences.'**
+  String get selectCompany;
+
+  /// No description provided for @agenciesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agences'**
+  String get agenciesTitle;
+
+  /// No description provided for @noAgencies.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune agence pour le moment.'**
+  String get noAgencies;
+
+  /// No description provided for @heroPoint1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un constat complet en moins de 10 minutes, même hors ligne'**
+  String get heroPoint1;
+
+  /// No description provided for @heroPoint2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Signature des deux conducteurs et PDF infalsifiable'**
+  String get heroPoint2;
+
+  /// No description provided for @heroPoint3.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suivi du dossier en temps réel jusqu’à l’indemnisation'**
+  String get heroPoint3;
+
+  /// No description provided for @identityVerifiedAutoNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiée automatiquement par reconnaissance faciale. Vous pouvez signer vos constats.'**
+  String get identityVerifiedAutoNote;
+
+  /// No description provided for @documentTypeLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce d\'identité'**
+  String get documentTypeLabel;
+
+  /// No description provided for @documentCin.
+  ///
+  /// In fr, this message translates to:
+  /// **'CIN'**
+  String get documentCin;
+
+  /// No description provided for @documentLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis'**
+  String get documentLicense;
+
+  /// No description provided for @documentPassport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Passeport'**
+  String get documentPassport;
+
+  /// No description provided for @passportNumberLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° du passeport'**
+  String get passportNumberLabel;
+
+  /// No description provided for @licenseNumberInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro de permis invalide (ex. 12/345678).'**
+  String get licenseNumberInvalid;
+
+  /// No description provided for @passportNumberInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro de passeport invalide (ex. X1234567).'**
+  String get passportNumberInvalid;
+
+  /// No description provided for @licenseFront.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recto du permis'**
+  String get licenseFront;
+
+  /// No description provided for @licenseBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Verso du permis'**
+  String get licenseBack;
+
+  /// No description provided for @passportPage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Page photo du passeport'**
+  String get passportPage;
+
+  /// No description provided for @faceCheckTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification du visage'**
+  String get faceCheckTitle;
+
+  /// No description provided for @faceCheckIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trois photos rapides : de face, puis la tête tournée de chaque côté. Une photo imprimée ou un écran ne passe pas.'**
+  String get faceCheckIntro;
+
+  /// No description provided for @faceCheckDone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage vérifié'**
+  String get faceCheckDone;
+
+  /// No description provided for @faceCheckStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifier mon visage'**
+  String get faceCheckStart;
+
+  /// No description provided for @faceCheckRedo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommencer'**
+  String get faceCheckRedo;
+
+  /// No description provided for @faceCheckRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faites d\'abord la vérification du visage.'**
+  String get faceCheckRequired;
+
+  /// No description provided for @livenessCenter.
+  ///
+  /// In fr, this message translates to:
+  /// **'Regardez la caméra, bien de face'**
+  String get livenessCenter;
+
+  /// No description provided for @livenessLeft.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournez la tête vers la gauche'**
+  String get livenessLeft;
+
+  /// No description provided for @livenessRight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournez la tête vers la droite'**
+  String get livenessRight;
+
+  /// No description provided for @livenessStepOf.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo {current} sur {total}'**
+  String livenessStepOf(int current, int total);
+
+  /// No description provided for @livenessAnalyzing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse par l\'IA…'**
+  String get livenessAnalyzing;
+
+  /// No description provided for @livenessNoCamera.
+  ///
+  /// In fr, this message translates to:
+  /// **'Caméra indisponible. Autorisez l\'accès à la caméra, puis réessayez.'**
+  String get livenessNoCamera;
+
+  /// No description provided for @livenessPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo de face sert uniquement à cette vérification. Elle est effacée dès la décision.'**
+  String get livenessPrivacy;
+
+  /// No description provided for @livenessSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage vérifié. Vous pouvez envoyer la demande.'**
+  String get livenessSuccess;
+
+  /// No description provided for @identityVerifiedByAi.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité vérifiée par l\'IA'**
+  String get identityVerifiedByAi;
+
+  /// No description provided for @errorNoFaceOnDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun visage détecté sur la pièce. Reprenez la photo à plat, bien éclairée et sans reflet.'**
+  String get errorNoFaceOnDocument;
+
+  /// No description provided for @errorLivenessNoFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage introuvable. Placez votre visage dans l\'ovale, bien éclairé.'**
+  String get errorLivenessNoFace;
+
+  /// No description provided for @errorLivenessManyFaces.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une seule personne doit être devant la caméra.'**
+  String get errorLivenessManyFaces;
+
+  /// No description provided for @errorLivenessNotCentered.
+  ///
+  /// In fr, this message translates to:
+  /// **'Regardez la caméra bien de face pour la première photo.'**
+  String get errorLivenessNotCentered;
+
+  /// No description provided for @errorLivenessNoTurn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournez davantage la tête quand la consigne le demande.'**
+  String get errorLivenessNoTurn;
+
+  /// No description provided for @errorLivenessDifferentFaces.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les photos ne montrent pas la même personne.'**
+  String get errorLivenessDifferentFaces;
+
+  /// No description provided for @errorLivenessExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le défi a expiré. Recommencez la vérification du visage.'**
+  String get errorLivenessExpired;
+
+  /// No description provided for @errorFaceEngine.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'analyse du visage est indisponible. Réessayez dans un instant.'**
+  String get errorFaceEngine;
+
+  /// No description provided for @aiMatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ressemblance IA : {percent} %'**
+  String aiMatch(int percent);
+
+  /// No description provided for @aiNoConclusion.
+  ///
+  /// In fr, this message translates to:
+  /// **'IA : pas de conclusion'**
+  String get aiNoConclusion;
+
+  /// No description provided for @livenessPassed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage vivant vérifié'**
+  String get livenessPassed;
+
+  /// No description provided for @selfieLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo du visage'**
+  String get selfieLabel;
+
+  /// No description provided for @documentNumberLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de la pièce'**
+  String get documentNumberLabel;
+
+  /// No description provided for @rejectReasonFaceMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le visage ne correspond pas à la pièce'**
+  String get rejectReasonFaceMismatch;
+
+  /// No description provided for @dashVerifiedIdsAi.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} vérifiées, dont {ai} par l\'IA'**
+  String dashVerifiedIdsAi(int count, int ai);
+
+  /// No description provided for @readingDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture de la pièce par l\'IA…'**
+  String get readingDocument;
+
+  /// No description provided for @readOnCard.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu sur la pièce par l\'IA'**
+  String get readOnCard;
+
+  /// No description provided for @readNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro'**
+  String get readNumber;
+
+  /// No description provided for @readName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get readName;
+
+  /// No description provided for @readParents.
+  ///
+  /// In fr, this message translates to:
+  /// **'Filiation'**
+  String get readParents;
+
+  /// No description provided for @readBirth.
+  ///
+  /// In fr, this message translates to:
+  /// **'Naissance'**
+  String get readBirth;
+
+  /// No description provided for @readExpiry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Valable jusqu\'au'**
+  String get readExpiry;
+
+  /// No description provided for @readConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez ces informations. Le numéro saisi doit être celui de la pièce.'**
+  String get readConfirm;
+
+  /// No description provided for @readNothing.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'IA n\'a pas pu lire la pièce. Saisissez le numéro : un administrateur vérifiera.'**
+  String get readNothing;
+
+  /// No description provided for @useNumberRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser ce numéro'**
+  String get useNumberRead;
+
+  /// No description provided for @useLicensePhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser la photo du permis de mon profil'**
+  String get useLicensePhoto;
+
+  /// No description provided for @errorBackHasFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette photo montre un recto. Photographiez le verso de la même pièce.'**
+  String get errorBackHasFace;
+
+  /// No description provided for @errorLicensePhotoMissing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune photo de permis dans votre profil.'**
+  String get errorLicensePhotoMissing;
+
+  /// No description provided for @checksTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contrôles de l\'IA'**
+  String get checksTitle;
+
+  /// No description provided for @checkLiveness.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage vivant'**
+  String get checkLiveness;
+
+  /// No description provided for @checkFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage identique à la photo de la pièce'**
+  String get checkFace;
+
+  /// No description provided for @checkNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro saisi = numéro lu ({number})'**
+  String checkNumber(String number);
+
+  /// No description provided for @checkNumberUnread.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro illisible sur la pièce'**
+  String get checkNumberUnread;
+
+  /// No description provided for @checkName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du compte sur la pièce'**
+  String get checkName;
+
+  /// No description provided for @checkExpiry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce en cours de validité'**
+  String get checkExpiry;
+
+  /// No description provided for @scanLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Scanner mon permis'**
+  String get scanLicense;
+
+  /// No description provided for @scanLicenseHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prenez votre permis en photo : l\'IA remplit le numéro, les catégories et la date.'**
+  String get scanLicenseHint;
+
+  /// No description provided for @licenseFilledByAi.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rempli par l\'IA à partir de la photo. Vérifiez avant d\'enregistrer.'**
+  String get licenseFilledByAi;
+
+  /// No description provided for @licenseNotRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo enregistrée, mais l\'IA n\'a pas pu lire le permis. Complétez les champs.'**
+  String get licenseNotRead;
+
+  /// No description provided for @errorBackNotRecognized.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce n\'est pas le verso de la pièce. Sur une CIN, le code-barres doit être net et entier sur la photo.'**
+  String get errorBackNotRecognized;
+
+  /// No description provided for @checkBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Verso reconnu'**
+  String get checkBack;
+
+  /// No description provided for @rejectSevere.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refus définitif : bloquer les nouvelles demandes'**
+  String get rejectSevere;
+
+  /// No description provided for @rejectSevereHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour une fraude probable : visage différent, fausse pièce.'**
+  String get rejectSevereHint;
+
+  /// No description provided for @identityBlockedNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'La vérification de votre identité est bloquée. Contactez le support.'**
+  String get identityBlockedNote;
+
+  /// No description provided for @identityRetryOn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelle demande possible le {date}.'**
+  String identityRetryOn(String date);
+
+  /// No description provided for @identityAttemptsLeft.
+  ///
+  /// In fr, this message translates to:
+  /// **'Essais restants : {count}.'**
+  String identityAttemptsLeft(int count);
+
+  /// No description provided for @errorIdentityBlocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'La vérification de votre identité est bloquée. Contactez le support.'**
+  String get errorIdentityBlocked;
+
+  /// No description provided for @errorIdentityRetryLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attendez 24 h après un refus avant une nouvelle demande.'**
+  String get errorIdentityRetryLater;
+
+  /// No description provided for @unblockIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Débloquer la vérification'**
+  String get unblockIdentity;
+
+  /// No description provided for @identityUnblocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification débloquée'**
+  String get identityUnblocked;
+
+  /// No description provided for @identityBlockedChip.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification bloquée'**
+  String get identityBlockedChip;
+
+  /// No description provided for @attemptsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demandes de ce compte'**
+  String get attemptsTitle;
+
+  /// No description provided for @refusalsCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refus : {count}'**
+  String refusalsCount(int count);
+
+  /// No description provided for @outcomeAuto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Validée par l\'IA'**
+  String get outcomeAuto;
+
+  /// No description provided for @outcomeVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Validée'**
+  String get outcomeVerified;
+
+  /// No description provided for @outcomeRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refusée'**
+  String get outcomeRejected;
+
+  /// No description provided for @outcomePending.
+  ///
+  /// In fr, this message translates to:
+  /// **'En attente'**
+  String get outcomePending;
+
+  /// No description provided for @biometricConsentLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte que mon visage soit analysé pour vérifier mon identité. Analyse faite sur les serveurs de Mon Constat, photo effacée dès la décision (loi n° 2004-63).'**
+  String get biometricConsentLabel;
+
+  /// No description provided for @errorAiQuota.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop d\'analyses en peu de temps. Réessayez dans un moment.'**
+  String get errorAiQuota;
+
+  /// No description provided for @livenessHintNoFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Placez votre visage dans l\'ovale'**
+  String get livenessHintNoFace;
+
+  /// No description provided for @livenessHintLookStraight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Regardez la caméra bien en face'**
+  String get livenessHintLookStraight;
+
+  /// No description provided for @livenessHintTurnMore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tournez davantage la tête'**
+  String get livenessHintTurnMore;
+
+  /// No description provided for @dashAiTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification par l\'IA'**
+  String get dashAiTitle;
+
+  /// No description provided for @dashAiFooter.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sur la période affichée. Analyse sur nos serveurs, sans service extérieur.'**
+  String get dashAiFooter;
+
+  /// No description provided for @dashAiRequests.
+  ///
+  /// In fr, this message translates to:
+  /// **'demandes'**
+  String get dashAiRequests;
+
+  /// No description provided for @dashAiAutoRate.
+  ///
+  /// In fr, this message translates to:
+  /// **'validées par l\'IA seule'**
+  String get dashAiAutoRate;
+
+  /// No description provided for @dashAiAverageMatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'ressemblance moyenne'**
+  String get dashAiAverageMatch;
+
+  /// No description provided for @dashAiBlocked.
+  ///
+  /// In fr, this message translates to:
+  /// **'comptes bloqués'**
+  String get dashAiBlocked;
+
+  /// No description provided for @checkBirthDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Même date de naissance que le permis'**
+  String get checkBirthDate;
+
+  /// No description provided for @licenseBirthMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : la date de naissance du permis ne correspond pas à votre pièce d\'identité.'**
+  String get licenseBirthMismatch;
+
+  /// No description provided for @licenseNameMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : ce permis n\'est pas à votre nom. Ajoutez votre propre permis.'**
+  String get licenseNameMismatch;
+
+  /// No description provided for @licenseCinMismatch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention : le numéro de CIN du permis ne correspond pas à votre pièce d\'identité.'**
+  String get licenseCinMismatch;
+
+  /// No description provided for @errorWrongDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo ne montre pas la pièce choisie. Changez de pièce ou de photo.'**
+  String get errorWrongDocument;
+
+  /// No description provided for @errorNotALicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette photo n\'est pas un permis de conduire.'**
+  String get errorNotALicense;
+
+  /// No description provided for @registerIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un e-mail et un mot de passe. Le reste se fait juste après, en quelques étapes.'**
+  String get registerIntro;
+
+  /// No description provided for @registerStepYou.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous'**
+  String get registerStepYou;
+
+  /// No description provided for @registerStepContact.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos coordonnées'**
+  String get registerStepContact;
+
+  /// No description provided for @registerStepSecurity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sécurité'**
+  String get registerStepSecurity;
+
+  /// No description provided for @registerPhoneHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un code de vérification vous sera envoyé sur WhatsApp.'**
+  String get registerPhoneHint;
+
+  /// No description provided for @passwordWeak.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faible'**
+  String get passwordWeak;
+
+  /// No description provided for @passwordFair.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moyen'**
+  String get passwordFair;
+
+  /// No description provided for @passwordGood.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bon'**
+  String get passwordGood;
+
+  /// No description provided for @passwordStrong.
+  ///
+  /// In fr, this message translates to:
+  /// **'Excellent'**
+  String get passwordStrong;
+
+  /// No description provided for @passwordRuleLength.
+  ///
+  /// In fr, this message translates to:
+  /// **'8 caractères'**
+  String get passwordRuleLength;
+
+  /// No description provided for @passwordRuleUpper.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une majuscule'**
+  String get passwordRuleUpper;
+
+  /// No description provided for @passwordRuleDigit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un chiffre'**
+  String get passwordRuleDigit;
+
+  /// No description provided for @passwordRuleSymbol.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un symbole'**
+  String get passwordRuleSymbol;
+
+  /// No description provided for @identityStepDocument.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pièce'**
+  String get identityStepDocument;
+
+  /// No description provided for @identityStepReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture'**
+  String get identityStepReading;
+
+  /// No description provided for @identityStepFace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visage'**
+  String get identityStepFace;
+
+  /// No description provided for @identityStepSend.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoi'**
+  String get identityStepSend;
+
+  /// No description provided for @profileIdentityVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité vérifiée'**
+  String get profileIdentityVerified;
+
+  /// No description provided for @profileIdentityPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité en cours'**
+  String get profileIdentityPending;
+
+  /// No description provided for @profileIdentityTodo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité à vérifier'**
+  String get profileIdentityTodo;
+
+  /// No description provided for @licenseStatusVerified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis vérifié'**
+  String get licenseStatusVerified;
+
+  /// No description provided for @licenseStatusToReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis en cours de vérification'**
+  String get licenseStatusToReview;
+
+  /// No description provided for @licenseStatusRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis refusé'**
+  String get licenseStatusRejected;
+
+  /// No description provided for @licenseToReviewNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une information du permis ne correspond pas à votre compte : un administrateur le vérifie.'**
+  String get licenseToReviewNote;
+
+  /// No description provided for @licenseRejectedNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre permis a été refusé. Motif : {reason}. Ajoutez votre propre permis.'**
+  String licenseRejectedNote(String reason);
+
+  /// No description provided for @errorLicenseNotYours.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n\'a pas été enregistré.'**
+  String get errorLicenseNotYours;
+
+  /// No description provided for @accountFileTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dossier du compte'**
+  String get accountFileTitle;
+
+  /// No description provided for @openAccountFile.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir le dossier'**
+  String get openAccountFile;
+
+  /// No description provided for @sectionAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte'**
+  String get sectionAccount;
+
+  /// No description provided for @licenseReviewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis à vérifier'**
+  String get licenseReviewTitle;
+
+  /// No description provided for @licenseReviewSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un contrôle de l\'IA a échoué, ou la photo était illisible'**
+  String get licenseReviewSubtitle;
+
+  /// No description provided for @noLicenseReviews.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun permis à vérifier.'**
+  String get noLicenseReviews;
+
+  /// No description provided for @licensesToReviewCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 permis à vérifier} other{{count} permis à vérifier}}'**
+  String licensesToReviewCount(int count);
+
+  /// No description provided for @approveLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Valider le permis'**
+  String get approveLicense;
+
+  /// No description provided for @rejectLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refuser le permis'**
+  String get rejectLicense;
+
+  /// No description provided for @deleteLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le permis'**
+  String get deleteLicense;
+
+  /// No description provided for @deleteLicenseBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo et les informations du permis de {name} seront effacées.'**
+  String deleteLicenseBody(String name);
+
+  /// No description provided for @licenseApproved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis validé'**
+  String get licenseApproved;
+
+  /// No description provided for @licenseRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis refusé, le conducteur voit le motif'**
+  String get licenseRejected;
+
+  /// No description provided for @licenseDeleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis supprimé'**
+  String get licenseDeleted;
+
+  /// No description provided for @licenseUpdated.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis modifié'**
+  String get licenseUpdated;
+
+  /// No description provided for @noLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun permis enregistré.'**
+  String get noLicense;
+
+  /// No description provided for @noIdentityDocuments.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune pièce enregistrée.'**
+  String get noIdentityDocuments;
+
+  /// No description provided for @aiChecksTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contrôles de l\'IA'**
+  String get aiChecksTitle;
+
+  /// No description provided for @checkLicenseName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du titulaire = nom du compte'**
+  String get checkLicenseName;
+
+  /// No description provided for @checkLicenseBirth.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de naissance = pièce d\'identité'**
+  String get checkLicenseBirth;
+
+  /// No description provided for @checkLicenseCin.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de CIN = pièce d\'identité'**
+  String get checkLicenseCin;
+
+  /// No description provided for @checkLicenseNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro saisi = numéro lu sur la photo'**
+  String get checkLicenseNumber;
+
+  /// No description provided for @checkNotCompared.
+  ///
+  /// In fr, this message translates to:
+  /// **'non comparable'**
+  String get checkNotCompared;
+
+  /// No description provided for @licenseRejectReasonNotOwner.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis d\'une autre personne'**
+  String get licenseRejectReasonNotOwner;
+
+  /// No description provided for @licenseRejectReasonExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis expiré'**
+  String get licenseRejectReasonExpired;
+
+  /// No description provided for @revokeIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler la vérification'**
+  String get revokeIdentity;
+
+  /// No description provided for @revokeIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler la vérification d\'identité ?'**
+  String get revokeIdentityTitle;
+
+  /// No description provided for @revokeIdentityBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les photos de la pièce seront effacées. Le conducteur voit le motif et peut refaire une demande tout de suite.'**
+  String get revokeIdentityBody;
+
+  /// No description provided for @identityRevoked.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification annulée'**
+  String get identityRevoked;
+
+  /// No description provided for @reasonLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Motif'**
+  String get reasonLabel;
+
+  /// No description provided for @onbSkip.
+  ///
+  /// In fr, this message translates to:
+  /// **'Passer'**
+  String get onbSkip;
+
+  /// No description provided for @onbLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus tard'**
+  String get onbLater;
+
+  /// No description provided for @onbContinue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer'**
+  String get onbContinue;
+
+  /// No description provided for @onbBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étape précédente'**
+  String get onbBack;
+
+  /// No description provided for @onbProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étape {current} sur {total}'**
+  String onbProgress(int current, int total);
+
+  /// No description provided for @onbWelcomeEyebrow.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte créé'**
+  String get onbWelcomeEyebrow;
+
+  /// No description provided for @onbWelcomeTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue,\n{name}'**
+  String onbWelcomeTitle(String name);
+
+  /// No description provided for @onbWelcomeBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Deux minutes pour préparer votre compte, et vous serez prêt le jour où vous en aurez besoin.'**
+  String get onbWelcomeBody;
+
+  /// No description provided for @onbWelcomeStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Préparer mon compte'**
+  String get onbWelcomeStart;
+
+  /// No description provided for @onbWelcomeSkip.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je le ferai plus tard'**
+  String get onbWelcomeSkip;
+
+  /// No description provided for @onbLicenseTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez votre permis'**
+  String get onbLicenseTitle;
+
+  /// No description provided for @onbLicenseBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une photo suffit : l\'IA lit le numéro, les catégories et la date. Il servira à remplir vos constats.'**
+  String get onbLicenseBody;
+
+  /// No description provided for @onbLicenseScan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photographier mon permis'**
+  String get onbLicenseScan;
+
+  /// No description provided for @onbLicenseRescan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Reprendre la photo'**
+  String get onbLicenseRescan;
+
+  /// No description provided for @onbLicenseReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture du permis…'**
+  String get onbLicenseReading;
+
+  /// No description provided for @onbLicenseRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu par l\'IA'**
+  String get onbLicenseRead;
+
+  /// No description provided for @onbLicenseUnread.
+  ///
+  /// In fr, this message translates to:
+  /// **'La carte n\'a pas pu être lue. Vous compléterez les informations depuis votre profil.'**
+  String get onbLicenseUnread;
+
+  /// No description provided for @onbLicenseTip.
+  ///
+  /// In fr, this message translates to:
+  /// **'À plat, bien éclairé, sans reflet.'**
+  String get onbLicenseTip;
+
+  /// No description provided for @onbIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez votre identité'**
+  String get onbIdentityTitle;
+
+  /// No description provided for @onbIdentityBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour signer vos constats en toute confiance. Comptez deux minutes.'**
+  String get onbIdentityBody;
+
+  /// No description provided for @onbIdentityStep1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une pièce : CIN, permis ou passeport'**
+  String get onbIdentityStep1;
+
+  /// No description provided for @onbIdentityStep2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre visage, en tournant la tête'**
+  String get onbIdentityStep2;
+
+  /// No description provided for @onbIdentityStep3.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'IA compare, en quelques secondes'**
+  String get onbIdentityStep3;
+
+  /// No description provided for @onbIdentityStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifier maintenant'**
+  String get onbIdentityStart;
+
+  /// No description provided for @onbIdentityLicenseHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre permis peut servir de pièce : inutile de le reprendre en photo.'**
+  String get onbIdentityLicenseHint;
+
+  /// No description provided for @onbIdentityPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos photos sont analysées sur nos serveurs, sans service extérieur.'**
+  String get onbIdentityPrivacy;
+
+  /// No description provided for @onbBiometricTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion en un geste'**
+  String get onbBiometricTitle;
+
+  /// No description provided for @onbBiometricBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrez l\'application avec votre empreinte ou votre visage, sans retaper votre mot de passe.'**
+  String get onbBiometricBody;
+
+  /// No description provided for @onbBiometricEnable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer'**
+  String get onbBiometricEnable;
+
+  /// No description provided for @onbDoneTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout est prêt,\n{name}'**
+  String onbDoneTitle(String name);
+
+  /// No description provided for @onbDoneBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous pouvez déclarer un accident à tout moment, même sans réseau.'**
+  String get onbDoneBody;
+
+  /// No description provided for @onbDoneLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le reste se termine depuis votre profil, quand vous voulez.'**
+  String get onbDoneLater;
+
+  /// No description provided for @onbDoneStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accéder à l\'application'**
+  String get onbDoneStart;
+
+  /// No description provided for @onbItemPhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléphone'**
+  String get onbItemPhone;
+
+  /// No description provided for @onbItemLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis de conduire'**
+  String get onbItemLicense;
+
+  /// No description provided for @onbItemIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité'**
+  String get onbItemIdentity;
+
+  /// No description provided for @onbItemBiometric.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion biométrique'**
+  String get onbItemBiometric;
+
+  /// No description provided for @onbStateDone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fait'**
+  String get onbStateDone;
+
+  /// No description provided for @onbStatePending.
+  ///
+  /// In fr, this message translates to:
+  /// **'En vérification'**
+  String get onbStatePending;
+
+  /// No description provided for @onbStateTodo.
+  ///
+  /// In fr, this message translates to:
+  /// **'À faire'**
+  String get onbStateTodo;
+
+  /// No description provided for @registerStepAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre compte'**
+  String get registerStepAccount;
+
+  /// No description provided for @onbWelcomeNewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue sur\nMon Constat'**
+  String get onbWelcomeNewTitle;
+
+  /// No description provided for @onbProfileTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faisons connaissance'**
+  String get onbProfileTitle;
+
+  /// No description provided for @onbProfileBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre nom figure sur vos constats. Votre numéro sert à vous connecter et à suivre vos dossiers.'**
+  String get onbProfileBody;
+
+  /// No description provided for @onbPhoneTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmez votre numéro'**
+  String get onbPhoneTitle;
+
+  /// No description provided for @onbCodeSent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau code envoyé.'**
+  String get onbCodeSent;
+
+  /// No description provided for @onbReadingTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu sur la pièce'**
+  String get onbReadingTitle;
+
+  /// No description provided for @correctReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corriger'**
+  String get correctReading;
+
+  /// No description provided for @correctReadingTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corriger la lecture de la pièce'**
+  String get correctReadingTitle;
+
+  /// No description provided for @correctReadingHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corrigez ce que l\'IA a mal lu, en recopiant la pièce. Dates au format AAAA-MM-JJ.'**
+  String get correctReadingHint;
+
+  /// No description provided for @readingCorrected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture corrigée'**
+  String get readingCorrected;
+
+  /// No description provided for @readLastName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get readLastName;
+
+  /// No description provided for @readFirstName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prénom'**
+  String get readFirstName;
+
+  /// No description provided for @readBirthDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de naissance'**
+  String get readBirthDate;
+
+  /// No description provided for @readBirthPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu de naissance'**
+  String get readBirthPlace;
+
+  /// No description provided for @claimsDecisionHelpGuide.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aide à la décision : priorité, estimation, risque et pièces manquantes de ce dossier. Touchez l’icône pour l’ouvrir.'**
+  String get claimsDecisionHelpGuide;
+
+  /// No description provided for @claimsTimelineEarlier.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 étape précédente} other{{count} étapes précédentes}}'**
+  String claimsTimelineEarlier(int count);
+
+  /// No description provided for @claimsAlertOpen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir'**
+  String get claimsAlertOpen;
+
+  /// No description provided for @claimsTimelineCollapse.
+  ///
+  /// In fr, this message translates to:
+  /// **'Afficher moins'**
+  String get claimsTimelineCollapse;
 }
 
 class _AppLocalizationsDelegate

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mon_constat_digital/core/network/api_client.dart';
@@ -52,6 +54,47 @@ void main() {
       await db.saveProfile(sami(licence: '99/000001'));
       expect((await db.loadProfile())!.licenseNumber, '99/000001');
       expect(await db.select(db.cachedProfiles).get(), hasLength(1));
+    });
+  });
+
+  group("file d'attente hors ligne", () {
+    test('les modifications du même type sont fusionnées', () async {
+      await db.enqueue('profile', {'firstName': 'Samir', 'phone': '20111222'});
+      await db.enqueue('profile', {'firstName': 'Sam', 'licenseNumber': 'X1'});
+      final rows = await db.pending();
+      expect(rows, hasLength(1));
+      expect(jsonDecode(rows.single.payload), {
+        'firstName': 'Sam',
+        'phone': '20111222',
+        'licenseNumber': 'X1',
+      });
+    });
+
+    test(
+      'refus enregistré, puis effacé par une nouvelle modification',
+      () async {
+        await db.enqueue('profile', {'phone': '20111222'});
+        final id = (await db.pending()).single.id;
+        await db.markFailed(id, 'Téléphone déjà utilisé.');
+        var row = (await db.pending()).single;
+        expect(row.lastError, 'Téléphone déjà utilisé.');
+        expect(row.attempts, 1);
+
+        await db.enqueue('profile', {'phone': '20333444'});
+        row = (await db.pending()).single;
+        expect(row.lastError, isNull);
+      },
+    );
+
+    test('suppression d une ligne et vidage complet', () async {
+      await db.enqueue('profile', {'firstName': 'A'});
+      await db.enqueue('language', {'language': 'AR'});
+      final rows = await db.pending();
+      expect(rows.map((r) => r.kind), ['profile', 'language']);
+      await db.removePending(rows.first.id);
+      expect((await db.pending()).single.kind, 'language');
+      await db.clearPending();
+      expect(await db.pending(), isEmpty);
     });
   });
 

@@ -21,6 +21,21 @@ enum Language {
   EN
 }
 
+// Pièce présentée pour la vérification d'identité.
+enum IdentityDocument {
+  CIN
+  LICENSE
+  PASSPORT
+}
+
+// Permis du profil : validé par l'IA ou un administrateur, à vérifier par un
+// administrateur (un contrôle croisé a échoué), ou refusé.
+enum LicenseStatus {
+  VERIFIED
+  TO_REVIEW
+  REJECTED
+}
+
 enum IdentityStatus {
   UNVERIFIED
   PENDING
@@ -40,10 +55,12 @@ enum AccidentStatus {
 
 model User {
   id              String    @id @default(uuid()) @db.Uuid
-  firstName       String
-  lastName        String
+  // Inscription : e-mail et mot de passe seulement ; le nom et le téléphone
+  // sont demandés juste après, dans l'accueil de l'application.
+  firstName       String    @default("")
+  lastName        String    @default("")
   email           String    @unique
-  phone           String    @unique
+  phone           String?   @unique
   passwordHash    String
   role            Role      @default(DRIVER)
   active          Boolean   @default(true)
@@ -58,11 +75,37 @@ model User {
   // Noms de fichiers dans UPLOAD_DIR/users. Jamais servis publiquement.
   photoFile        String?
   licensePhotoFile String?
-  // Vérification d'identité (CIN) : validée par un administrateur.
+  // Lu sur la photo du permis par l'OCR (numéro, catégories, dates).
+  licenseReading   Json?
+  // Contrôles croisés avec le compte (nom, date de naissance, CIN) et décision.
+  licenseStatus          LicenseStatus?
+  licenseChecks          Json?
+  licenseRejectionReason String?
+  licenseReviewedAt      DateTime?
+  // Vérification d'identité : pièce (CIN, permis ou passeport) et visage
+  // comparés par l'IA, sinon décision d'un administrateur.
   identityStatus          IdentityStatus @default(UNVERIFIED)
+  identityDocument        IdentityDocument @default(CIN)
+  // Numéro de la pièce présentée (nom historique : la CIN était la seule pièce).
   cinNumber               String?        @unique
   cinFrontFile            String?
   cinBackFile             String?
+  // Photo de face prise pendant la vérification du visage. Effacée dès la décision.
+  identitySelfieFile      String?
+  identityLivenessAt      DateTime?
+  // Ressemblance entre la pièce et le visage, de 0 à 1.
+  identityFaceMatch       Float?
+  identityAutoVerified    Boolean        @default(false)
+  // Lu sur la pièce par l'OCR (numéro, et pour un passeport nom et dates).
+  identityExtracted       Json?
+  // Résultat des contrôles automatiques, montré à l'administrateur.
+  identityChecks          Json?
+  // Refus : 3 au plus, 24 h entre deux demandes ; un refus grave bloque.
+  identityRefusals        Int            @default(0)
+  identityRetryAt         DateTime?
+  identityBlocked         Boolean        @default(false)
+  // Accord explicite pour l'analyse du visage (donnée sensible, loi 2004-63).
+  identityBiometricConsentAt DateTime?
   identitySubmittedAt     DateTime?
   identityReviewedAt      DateTime?
   identityReviewerId      String?        @db.Uuid
@@ -80,6 +123,7 @@ model User {
   accidents         Accident[]
   sessions          Session[]
   loginEvents       LoginEvent[]
+  identityAttempts  IdentityAttempt[]
   vehicles          Vehicle[]
   constats          Constat[]
 
@@ -169,6 +213,26 @@ model RefreshToken {
 }
 
 /// Historique des connexions, réussies ou non.
+// Historique des demandes de vérification d'identité, pour l'administrateur.
+model IdentityAttempt {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  documentType IdentityDocument
+  number       String
+  faceMatch    Float?
+  checks       Json?
+  // AUTO_VERIFIED, PENDING, VERIFIED ou REJECTED.
+  outcome      String
+  reason       String?
+  severe       Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  decidedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
 model LoginEvent {
   id         String   @id @default(uuid()) @db.Uuid
   userId     String   @db.Uuid
@@ -213,6 +277,154 @@ model DeviceKey {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// Module 5 : sinistres, suivi, notifications, messagerie.
+// driverId, agentId, companyId et constatId restent de simples identifiants :
+// pas de clé étrangère vers les tables des autres modules.
+model Claim {
+  id                String    @id
+  constatId         String?
+  companyId         String?
+  driverId          String
+  agentId           String?
+  agentName         String?
+  type              String
+  place             String
+  date              String
+  status            String
+  severity          String
+  observations      String    @default("")
+  // Cases cochées par le conducteur A (le déclarant) et par le conducteur B.
+  circumstances     String[]
+  circumstancesB    String[]  @default([])
+  impactZones       String[]
+  expertName        String?
+  expertAppointment DateTime?
+  expertPhone       String?
+  // Lieu du rendez-vous : garage, agence, cabinet médical.
+  expertPlace       String?
+  // « Véhicule » ou « Corporelle » (blessé, piéton).
+  expertKind        String?
+  // Créneau : « proposed » puis « accepted » ; appointmentBy : driver ou agent.
+  appointmentState  String?
+  appointmentBy     String?
+  appointmentNote   String?
+  responsibility    Int?
+  indemnity         Float?
+  decisionReason    String?
+  // Proposition du système au moment de la décision, pour mesurer l'écart.
+  aiProposal        Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  events     ClaimEvent[]
+  documents  ClaimDocument[]
+  requests   DocumentRequest[]
+  messages   ChatMessage[]
+}
+
+model ClaimEvent {
+  id        Int      @id @default(autoincrement())
+  claimId   String
+  label     String
+  createdAt DateTime @default(now())
+  claim     Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+}
+
+model ClaimDocument {
+  id         String   @id
+  claimId    String
+  name       String
+  kind       String   @default("Pièce")
+  storedName String?
+  requestId  String?
+  // Données lues dans la pièce par Claude, absentes sans clé.
+  analysis   Json?
+  createdAt  DateTime @default(now())
+  claim      Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+}
+
+model DocumentRequest {
+  id         String   @id
+  claimId    String
+  label      String
+  note       String   @default("")
+  documentId String?
+  createdAt  DateTime @default(now())
+  claim      Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+}
+
+model ClaimNotification {
+  id          String   @id @default(uuid())
+  claimId     String?
+  audience    String
+  recipientId String?
+  body        String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([audience, recipientId])
+}
+
+model ChatMessage {
+  id               String   @id
+  claimId          String
+  author           String
+  senderRole       String
+  body             String   @default("")
+  attachmentName   String?
+  attachmentStored String?
+  read             Boolean  @default(false)
+  sentAt           DateTime @default(now())
+  claim            Claim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+}
+
+// Une ligne par requête déjà appliquée : un renvoi ne s'applique pas deux fois.
+model ProcessedRequest {
+  key       String   @id
+  status    Int
+  body      Json
+  createdAt DateTime @default(now())
+}
+
+// Texte généré par Claude, réutilisé tant que le dossier ne change pas.
+model ClaimAiNote {
+  claimId   String
+  kind      String
+  hash      String
+  text      String
+  // Modèle qui a rédigé le texte, affiché dans l'application.
+  by        String?
+  updatedAt DateTime @updatedAt
+
+  @@id([claimId, kind])
+}
+
+// Journal des appels aux modèles : fournisseur (source), coût, échecs, qui a demandé quoi.
+model AiCall {
+  id           Int      @id @default(autoincrement())
+  claimId      String?
+  feature      String
+  actorRole    String
+  source       String
+  model        String?
+  ok           Boolean
+  error        String?
+  inputTokens  Int?
+  outputTokens Int?
+  ms           Int?
+  createdAt    DateTime @default(now())
+
+  @@index([claimId])
 }
 
 // ── Module 2 : véhicules et contrats d'assurance ──────────────────────────────

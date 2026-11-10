@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:video_player/video_player.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
@@ -83,7 +84,7 @@ class _ContextStepState extends State<ContextStep> {
               Expanded(
                 child: Text(
                   _locationError!,
-                  style: const TextStyle(color: AppColors.errorText),
+                  style: TextStyle(color: context.palette.errorText),
                 ),
               ),
             ],
@@ -96,8 +97,8 @@ class _ContextStepState extends State<ContextStep> {
             'GPS ${widget.draft.latitude!.toStringAsFixed(6)}, '
             '${widget.draft.longitude!.toStringAsFixed(6)} • '
             'précision ±${(widget.draft.locationAccuracy ?? 0).round()} m',
-            style: const TextStyle(
-              color: AppColors.successText,
+            style: TextStyle(
+              color: context.palette.successText,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
@@ -230,7 +231,7 @@ class _ContextStepState extends State<ContextStep> {
         context: context,
         barrierDismissible: false,
         builder: (dialogContext) => AlertDialog(
-          icon: const Icon(Icons.my_location, color: AppColors.primary),
+          icon: Icon(Icons.my_location, color: context.palette.primaryText),
           title: const Text('Position détectée'),
           content: Text(
             '${detected.label}\n\nVoulez-vous utiliser cette localisation ?',
@@ -374,16 +375,16 @@ class DescriptionStep extends StatelessWidget {
       if (draft.hasInjured) ...[
         const SizedBox(height: 14),
         Card(
-          color: AppColors.errorBg,
+          color: context.palette.errorBg,
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Sécurisez la zone et appelez les secours',
                   style: TextStyle(
-                    color: AppColors.errorText,
+                    color: context.palette.errorText,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -482,8 +483,8 @@ class _EvidenceStepState extends State<EvidenceStep> {
               ),
               leading: CircleAvatar(
                 backgroundColor: entry.value
-                    ? AppColors.successBg
-                    : AppColors.primaryTint,
+                    ? context.palette.successBg
+                    : context.palette.primaryTint,
                 backgroundImage: draft.evidencePaths[entry.key] != null
                     ? FileImage(File(draft.evidencePaths[entry.key]!))
                     : null,
@@ -491,8 +492,8 @@ class _EvidenceStepState extends State<EvidenceStep> {
                     ? Icon(
                         entry.value ? Icons.check : Icons.camera_alt_outlined,
                         color: entry.value
-                            ? AppColors.successText
-                            : AppColors.primary,
+                            ? context.palette.successText
+                            : context.palette.primaryText,
                       )
                     : null,
               ),
@@ -913,8 +914,8 @@ class _MediaTile extends StatelessWidget {
         color: active
             ? AppColors.errorSolid
             : selected
-            ? AppColors.successText
-            : AppColors.primary,
+            ? context.palette.successText
+            : context.palette.primaryText,
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
       subtitle: Text(subtitle),
@@ -948,10 +949,10 @@ class _SectionIntro extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: AppColors.primaryTint,
+            color: context.palette.primaryTint,
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(icon, color: AppColors.primary),
+          child: Icon(icon, color: context.palette.primaryText),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -960,7 +961,7 @@ class _SectionIntro extends StatelessWidget {
             children: [
               Text(title, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 3),
-              Text(text, style: const TextStyle(color: AppColors.textMuted)),
+              Text(text, style: TextStyle(color: context.palette.textMuted)),
             ],
           ),
         ),

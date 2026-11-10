@@ -59,13 +59,13 @@ class ConstatSealedScreen extends StatelessWidget {
                     Container(
                       width: 64,
                       height: 64,
-                      decoration: const BoxDecoration(
-                        color: AppColors.successBg,
+                      decoration: BoxDecoration(
+                        color: context.palette.successBg,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.verified_user_rounded,
-                        color: AppColors.successText,
+                        color: context.palette.successText,
                         size: 36,
                       ),
                     ),
@@ -225,18 +225,18 @@ class ConstatSealedScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryTint,
-                      border: Border.all(color: AppColors.primary.withAlpha(50)),
+                      color: context.palette.primaryTint,
+                      border: Border.all(color: context.palette.primaryText.withAlpha(50)),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                        Row(
                           children: [
                             CircleAvatar(
                               radius: 10,
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: context.palette.primary,
                               child: Text(
                                 'A',
                                 style: TextStyle(
@@ -250,7 +250,7 @@ class ConstatSealedScreen extends StatelessWidget {
                             Text(
                               'Véhicule A',
                               style: TextStyle(
-                                color: AppColors.primary,
+                                color: context.palette.primaryText,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 13,
                               ),
@@ -268,17 +268,17 @@ class ConstatSealedScreen extends StatelessWidget {
                           constat.driverAPlate.isNotEmpty
                               ? constat.driverAPlate
                               : 'Immatriculation A',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'JetBrains Mono',
                             fontSize: 12,
-                            color: AppColors.textMuted,
+                            color: context.palette.textMuted,
                           ),
                         ),
                         Text(
                           constat.driverAInsurer.isNotEmpty
                               ? constat.driverAInsurer
                               : 'Assurance A',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                          style: TextStyle(fontSize: 12, color: context.palette.textMuted),
                         ),
                         if (constat.driverAPolicy != null &&
                             constat.driverAPolicy!.isNotEmpty)
@@ -300,14 +300,14 @@ class ConstatSealedScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppColors.warningBg,
+                      color: context.palette.warningBg,
                       border: Border.all(color: AppColors.accent.withAlpha(80)),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                        Row(
                           children: [
                             CircleAvatar(
                               radius: 10,
@@ -325,7 +325,7 @@ class ConstatSealedScreen extends StatelessWidget {
                             Text(
                               'Véhicule B',
                               style: TextStyle(
-                                color: AppColors.warningText,
+                                color: context.palette.warningText,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 13,
                               ),
@@ -343,17 +343,17 @@ class ConstatSealedScreen extends StatelessWidget {
                           constat.driverBPlate.isNotEmpty
                               ? constat.driverBPlate
                               : 'Immatriculation B',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'JetBrains Mono',
                             fontSize: 12,
-                            color: AppColors.textMuted,
+                            color: context.palette.textMuted,
                           ),
                         ),
                         Text(
                           constat.driverBInsurer.isNotEmpty
                               ? constat.driverBInsurer
                               : 'Assurance B',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                          style: TextStyle(fontSize: 12, color: context.palette.textMuted),
                         ),
                         if (constat.driverBPolicy != null &&
                             constat.driverBPolicy!.isNotEmpty)

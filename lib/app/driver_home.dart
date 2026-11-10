@@ -8,6 +8,7 @@ import 'package:mon_constat_digital/modules/accident/screens/accident_wizard.dar
 import 'package:mon_constat_digital/modules/accident/screens/declarations_screen.dart';
 import 'package:mon_constat_digital/modules/accident/screens/emergency_screen.dart';
 import 'package:mon_constat_digital/modules/claims/screens/notifications_screen.dart';
+import 'package:mon_constat_digital/modules/users/models/app_user.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/claim_card.dart';
 import 'package:mon_constat_digital/modules/users/screens/profile_screen.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/alerts_screen.dart';
@@ -30,7 +31,8 @@ class DriverHome extends StatelessWidget {
               IconButton(
                 onPressed: () => open(context, const NotificationsScreen()),
                 icon: Badge(
-                  label: Text('${s.claims.notifications.length}'),
+                  isLabelVisible: s.claims.unreadCount(UserRole.driver) > 0,
+                  label: Text('${s.claims.unreadCount(UserRole.driver)}'),
                   child: const Icon(Icons.notifications_outlined),
                 ),
               ),
@@ -153,10 +155,16 @@ class DriverHome extends StatelessWidget {
           children: [
             Icon(i, color: c.palette.primaryText),
             const SizedBox(height: 8),
-            Text(
-              t,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            // Une seule ligne, réduite au besoin : « Notifications » ne se
+            // coupe plus en « Notification / s ».
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                t,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),

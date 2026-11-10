@@ -3,9 +3,17 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mon_constat_digital/main.dart';
+import 'package:mon_constat_digital/modules/users/screens/liveness_screen.dart';
+import 'package:mon_constat_digital/modules/users/models/liveness.dart';
 import 'package:mon_constat_digital/modules/users/screens/profile_screen.dart';
+import 'package:mon_constat_digital/modules/users/screens/identity_review_screen.dart'
+    show IdentityPhotoFrame;
+import 'package:mon_constat_digital/modules/users/services/face_guide.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
+import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
+import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 
 import 'support/fake_backend.dart';
 
@@ -50,7 +58,7 @@ void main() {
       await signIn(tester);
       expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
       expect(find.text('Véhicules'), findsOneWidget);
-      expect(find.text('Déclarations'), findsOneWidget);
+      expect(find.text('Constats'), findsOneWidget);
       expect(find.text('Messages'), findsOneWidget);
       expect(find.text('Profil'), findsOneWidget);
     });
@@ -110,7 +118,11 @@ void main() {
       final backend = FakeBackend();
       backend.storage.values['refresh_token'] = 'refresh-0';
       await pumpApp(tester, backend);
-      expect(backend.requests, ['POST /auth/refresh']);
+      expect(backend.requests.where((r) => r.contains('/auth/')), [
+        'POST /auth/refresh',
+      ]);
+      // Session reprise : les véhicules du compte reviennent du serveur.
+      expect(backend.requests, contains('GET /vehicles'));
       expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
     });
 
@@ -180,7 +192,15 @@ void main() {
     testWidgets('valide les champs, crée le compte, puis demande le code', (
       tester,
     ) async {
-      final backend = FakeBackend(user: userJson(phoneVerified: false));
+      // Compte tout neuf : ni nom ni téléphone, donnés dans l'accueil.
+      final backend = FakeBackend(
+        user: userJson(
+          firstName: '',
+          lastName: '',
+          phone: '',
+          phoneVerified: false,
+        ),
+      );
       await pumpApp(tester, backend);
       await tester.tap(find.text('Créer un compte'));
       await tester.pumpAndSettle();
@@ -188,11 +208,11 @@ void main() {
       await tester.tap(find.text('Créer mon compte'));
       await tester.pumpAndSettle();
       expect(backend.requests, isEmpty);
+      // Plus de nom ni de téléphone à l'inscription.
+      expect(field('Prénom'), findsNothing);
+      expect(field('Téléphone'), findsNothing);
 
-      await tester.enterText(field('Prénom'), 'Sami');
-      await tester.enterText(field('Nom'), 'Ben Ali');
       await tester.enterText(field('E-mail'), 'sami@example.com');
-      await tester.enterText(field('Téléphone'), '20 123 456');
       await tester.enterText(field('Mot de passe'), 'Password123!');
       await tester.enterText(field('Confirmer le mot de passe'), 'Different1!');
       await tester.ensureVisible(find.text('Créer mon compte'));
@@ -216,20 +236,71 @@ void main() {
       await tester.tap(find.byKey(const Key('consent')));
       await tester.ensureVisible(find.text('Créer mon compte'));
       await tester.tap(find.text('Créer mon compte'));
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pump(const Duration(seconds: 1));
-      expect(find.text('Vérifier mon téléphone'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(backend.bodies['POST /auth/register'], {
+        'email': 'sami@example.com',
+        'password': 'Password123!',
+        'language': 'FR',
+        'consent': true,
+      });
 
+      // Compte créé : l'accueil s'ouvre, sans pouvoir passer le nom.
+      expect(find.text('Bienvenue sur\nMon Constat'), findsOneWidget);
+      expect(find.byKey(const Key('onb-skip-all')), findsNothing);
+      await tester.tap(find.byKey(const Key('onb-start')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Faisons connaissance'), findsOneWidget);
+      await tester.enterText(field('Prénom'), 'Sami');
+      await tester.enterText(field('Nom'), 'Ben Ali');
+      await tester.enterText(field('Téléphone'), '20 123 456');
+      await tester.tap(find.byKey(const Key('onb-primary')));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['PATCH /users/me'], {
+        'firstName': 'Sami',
+        'lastName': 'Ben Ali',
+        'phone': '20 123 456',
+      });
+      expect(backend.requests, contains('POST /auth/phone/send'));
+
+      // Code reçu sur WhatsApp.
+      expect(find.text('Confirmez votre numéro'), findsOneWidget);
       await tester.enterText(field('Code de vérification'), '123456');
-      await tester.tap(find.text('Valider'));
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pump(const Duration(seconds: 1));
+      await tester.tap(find.byKey(const Key('onb-primary')));
+      await tester.pumpAndSettle();
       expect(backend.bodies['POST /auth/phone/verify'], {'code': '123456'});
-      expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
       expect(backend.stores.users.currentUser!.phoneVerified, isTrue);
-      expect(backend.bodies['POST /auth/register']!['consent'], isTrue);
+
+      // Le reste peut attendre : récapitulatif, puis l'application.
+      expect(find.text('Ajoutez votre permis'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('onb-skip')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('onb-finish')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
+      expect(backend.storage.values['onboarding_user'], isNull);
+    });
+
+    testWidgets('mot de passe : jauge de robustesse et confirmation', (
+      tester,
+    ) async {
+      await pumpApp(tester, FakeBackend());
+      await tester.tap(find.text('Créer un compte'));
+      await tester.pumpAndSettle();
+      await tester.enterText(field('Mot de passe'), 'abc');
+      await tester.pump();
+      expect(find.text('Faible'), findsOneWidget);
+      await tester.enterText(field('Mot de passe'), 'abcdefg1');
+      await tester.pump();
+      expect(find.text('Moyen'), findsOneWidget);
+      await tester.enterText(field('Mot de passe'), 'Abcdefg1!');
+      await tester.pump();
+      expect(find.text('Excellent'), findsOneWidget);
+      // Coche dès que la confirmation correspond.
+      expect(find.byKey(const Key('passwords-match')), findsNothing);
+      await tester.enterText(field('Confirmer le mot de passe'), 'Abcdefg1!');
+      await tester.pump();
+      expect(find.byKey(const Key('passwords-match')), findsOneWidget);
     });
 
     testWidgets('e-mail déjà utilisé : erreur affichée', (tester) async {
@@ -242,10 +313,7 @@ void main() {
       await pumpApp(tester, backend);
       await tester.tap(find.text('Créer un compte'));
       await tester.pumpAndSettle();
-      await tester.enterText(field('Prénom'), 'Sami');
-      await tester.enterText(field('Nom'), 'Ben Ali');
       await tester.enterText(field('E-mail'), 'sami@example.com');
-      await tester.enterText(field('Téléphone'), '20123456');
       await tester.enterText(field('Mot de passe'), 'Password123!');
       await tester.enterText(
         field('Confirmer le mot de passe'),
@@ -257,6 +325,228 @@ void main() {
       await tester.tap(find.text('Créer mon compte'));
       await tester.pumpAndSettle();
       expect(find.text('E-mail ou téléphone déjà utilisé.'), findsOneWidget);
+    });
+  });
+
+  group('accueil après inscription', () {
+    /// Compte qui n'a pas fini l'accueil sur ce téléphone, puis connexion.
+    Future<FakeBackend> openOnboarding(
+      WidgetTester tester, {
+      FakeBackend? backend,
+    }) async {
+      final fake = backend ?? FakeBackend();
+      fake.storage.values['onboarding_user'] = 'u1';
+      await pumpApp(tester, fake);
+      await signIn(tester);
+      return fake;
+    }
+
+    Future<void> tapKey(WidgetTester tester, String key) async {
+      await tester.tap(find.byKey(Key(key)));
+      await tester.pumpAndSettle();
+    }
+
+    /// Bienvenue, nom et téléphone déjà donnés, numéro déjà vérifié : jusqu'au
+    /// permis.
+    Future<void> toLicense(WidgetTester tester) async {
+      await tapKey(tester, 'onb-start');
+      await tapKey(tester, 'onb-primary'); // nom et téléphone
+      await tapKey(tester, 'onb-primary'); // numéro déjà vérifié
+    }
+
+    testWidgets('bienvenue : prénom et promesses de l application', (
+      tester,
+    ) async {
+      await openOnboarding(tester);
+      expect(find.byKey(const Key('onboarding')), findsOneWidget);
+      expect(find.text('Bienvenue,\nSami'), findsOneWidget);
+      expect(find.byKey(const Key('onb-start')), findsOneWidget);
+      // Pas encore la barre de navigation de l'application.
+      expect(find.byType(NavigationBar), findsNothing);
+    });
+
+    testWidgets('permis : photo lue par l IA, enregistrée en continuant', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = await openOnboarding(tester);
+      await toLicense(tester);
+      expect(find.text('Ajoutez votre permis'), findsOneWidget);
+      expect(find.bySemanticsLabel('Étape 3 sur 5'), findsOneWidget);
+      // Rien n'a changé : pas d'enregistrement, pas de code.
+      expect(backend.requests, isNot(contains('PATCH /users/me')));
+      expect(backend.requests, isNot(contains('POST /auth/phone/send')));
+
+      await tapKey(tester, 'onb-primary');
+      expect(backend.requests, contains('PUT /users/me/license-photo'));
+      expect(find.byKey(const Key('onb-license-result')), findsOneWidget);
+      expect(find.text('12/345678'), findsOneWidget);
+      expect(find.text('B+E'), findsOneWidget);
+
+      await tapKey(tester, 'onb-primary');
+      expect(backend.bodies['PATCH /users/me'], {
+        'licenseNumber': '12/345678',
+        'licenseCategory': 'B, B+E',
+        'licenseIssuedAt': '2018-06-15',
+      });
+      // Étape suivante : l'identité, avec le permis comme pièce possible.
+      expect(find.text('Vérifiez votre identité'), findsOneWidget);
+      expect(
+        find.textContaining('Votre permis peut servir de pièce'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('permis d une autre personne : refusé, on peut reprendre', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend()
+        ..failures['PUT /users/me/license-photo'] = (
+          422,
+          'LICENSE_NOT_YOURS',
+          'Ce permis ne semble pas être le vôtre.',
+        );
+      await openOnboarding(tester, backend: backend);
+      await toLicense(tester);
+      await tapKey(tester, 'onb-primary');
+      expect(
+        find.text('Ce permis ne semble pas être le vôtre.'),
+        findsOneWidget,
+      );
+      // Toujours sur l'étape : nouvelle photo ou plus tard.
+      expect(find.text('Photographier mon permis'), findsOneWidget);
+      expect(find.text('Plus tard'), findsOneWidget);
+    });
+
+    testWidgets('empreinte activée, puis récapitulatif', (tester) async {
+      final backend = await openOnboarding(tester);
+      await toLicense(tester);
+      await tapKey(tester, 'onb-secondary'); // permis : plus tard
+      await tapKey(tester, 'onb-secondary'); // identité : plus tard
+      expect(find.text('Connexion en un geste'), findsOneWidget);
+
+      await tapKey(tester, 'onb-primary');
+      expect(backend.requests, contains('POST /auth/biometric'));
+      expect(find.byKey(const Key('onb-biometric-on')), findsOneWidget);
+      await tapKey(tester, 'onb-primary');
+
+      final summary = find.byKey(const Key('onb-summary'));
+      expect(summary, findsOneWidget);
+      expect(
+        find.descendant(of: summary, matching: find.text('Fait')),
+        findsNWidgets(2), // téléphone et empreinte
+      );
+      expect(
+        find.descendant(of: summary, matching: find.text('À faire')),
+        findsNWidgets(2), // permis et identité
+      );
+      expect(
+        find.textContaining('Le reste se termine depuis votre profil'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('passer : récapitulatif, puis l application', (tester) async {
+      final backend = await openOnboarding(tester);
+      await tapKey(tester, 'onb-start');
+      await tapKey(tester, 'onb-skip');
+      expect(find.byKey(const Key('onb-summary')), findsOneWidget);
+
+      await tapKey(tester, 'onb-finish');
+      expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(backend.storage.values['onboarding_user'], isNull);
+      expect(backend.stores.users.needsOnboarding, isFalse);
+    });
+
+    testWidgets('retour : étape précédente', (tester) async {
+      await openOnboarding(tester);
+      await toLicense(tester);
+      await tapKey(tester, 'onb-secondary');
+      expect(find.text('Vérifiez votre identité'), findsOneWidget);
+      await tapKey(tester, 'onb-back');
+      expect(find.text('Ajoutez votre permis'), findsOneWidget);
+      await tapKey(tester, 'onb-back');
+      expect(find.text('Confirmez votre numéro'), findsOneWidget);
+      await tapKey(tester, 'onb-back');
+      expect(find.text('Faisons connaissance'), findsOneWidget);
+      await tapKey(tester, 'onb-back');
+      expect(find.text('Bienvenue,\nSami'), findsOneWidget);
+    });
+
+    testWidgets('profil incomplet : accueil imposé, nom et téléphone requis', (
+      tester,
+    ) async {
+      // Inscription commencée sur un autre téléphone : pas d'indicateur ici.
+      final backend = FakeBackend(
+        user: userJson(firstName: '', lastName: '', phone: ''),
+      );
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      expect(find.byKey(const Key('onboarding')), findsOneWidget);
+      expect(find.byKey(const Key('onb-skip-all')), findsNothing);
+
+      await tapKey(tester, 'onb-start');
+      // « Passer » sans effet tant que le profil manque.
+      await tester.tap(find.byKey(const Key('onb-skip')), warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(find.text('Faisons connaissance'), findsOneWidget);
+
+      await tapKey(tester, 'onb-primary');
+      expect(backend.requests, isNot(contains('PATCH /users/me')));
+      expect(find.text('Faisons connaissance'), findsOneWidget);
+
+      // Profil complété : l'accueil continue, il ne se ferme pas d'un coup.
+      await tester.enterText(field('Prénom'), 'Sami');
+      await tester.enterText(field('Nom'), 'Ben Ali');
+      await tester.enterText(field('Téléphone'), '20 123 456');
+      await tapKey(tester, 'onb-primary');
+      expect(find.text('Confirmez votre numéro'), findsOneWidget);
+      expect(find.byKey(const Key('onboarding')), findsOneWidget);
+    });
+
+    testWidgets('code incorrect : message, on reste sur l étape', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: userJson(phoneVerified: false))
+        ..failures['POST /auth/phone/verify'] = (
+          400,
+          'INVALID_CODE',
+          'Code incorrect ou expiré.',
+        );
+      await openOnboarding(tester, backend: backend);
+      await tapKey(tester, 'onb-start');
+      await tapKey(tester, 'onb-primary');
+      // Numéro pas encore vérifié : le code part en continuant.
+      expect(backend.requests, contains('POST /auth/phone/send'));
+      await tester.enterText(field('Code de vérification'), '000000');
+      await tapKey(tester, 'onb-primary');
+      expect(find.text('Code incorrect ou expiré.'), findsOneWidget);
+      expect(find.text('Confirmez votre numéro'), findsOneWidget);
+      // Plus tard : la suite reste possible.
+      await tapKey(tester, 'onb-secondary');
+      expect(find.text('Ajoutez votre permis'), findsOneWidget);
+    });
+
+    testWidgets('sans capteur : pas d étape empreinte', (tester) async {
+      final backend = FakeBackend()..biometric.available = false;
+      await openOnboarding(tester, backend: backend);
+      await toLicense(tester);
+      await tapKey(tester, 'onb-secondary');
+      await tapKey(tester, 'onb-secondary');
+      // Directement le récapitulatif, sans la ligne biométrique.
+      expect(find.byKey(const Key('onb-summary')), findsOneWidget);
+      expect(find.text('Connexion biométrique'), findsNothing);
+    });
+
+    testWidgets('connexion habituelle : pas d accueil', (tester) async {
+      await pumpApp(tester, FakeBackend());
+      await signIn(tester);
+      expect(find.byKey(const Key('onboarding')), findsNothing);
+      expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
     });
   });
 
@@ -298,6 +588,20 @@ void main() {
       expect(find.text('Mon profil'), findsOneWidget);
     }
 
+    testWidgets('en-tête : état de l identité du conducteur', (tester) async {
+      await openProfile(
+        tester,
+        FakeBackend(
+          user: {
+            ...userJson(),
+            'identity': {'status': 'VERIFIED'},
+          },
+        ),
+      );
+      expect(find.text('Identité vérifiée'), findsWidgets);
+      expect(find.byKey(const Key('identity-pill')), findsOneWidget);
+    });
+
     testWidgets('sections, complétion et permis vide', (tester) async {
       final backend = FakeBackend();
       await openProfile(tester, backend);
@@ -328,6 +632,208 @@ void main() {
       expect(find.text("Modifier l'identité"), findsNothing);
       expect(find.text('Samir Ben Ali'), findsWidgets);
       expect(find.text('Profil enregistré'), findsOneWidget);
+    });
+
+    testWidgets('scanner le permis : l IA remplit numéro, catégories, date', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend();
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('scan-license')));
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('PUT /users/me/license-photo'));
+      expect(
+        find.text(
+          "Rempli par l'IA à partir de la photo. Vérifiez avant d'enregistrer.",
+        ),
+        findsOneWidget,
+      );
+      // Rien n'est enregistré avant la confirmation.
+      expect(backend.requests, isNot(contains('PATCH /users/me')));
+
+      await tester.ensureVisible(find.text('Enregistrer'));
+      await tester.tap(find.text('Enregistrer'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['PATCH /users/me'], {
+        'licenseNumber': '12/345678',
+        'licenseCategory': 'B, B+E',
+        'licenseIssuedAt': '2018-06-15',
+      });
+    });
+
+    testWidgets('scanner le permis : date de naissance différente signalée', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend()
+        ..licenseReading = {
+          'number': '12/345678',
+          'categories': ['B'],
+          'issuedAt': '2018-06-15',
+          'birthDateMatchesIdentity': false,
+        };
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('scan-license')));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('la date de naissance du permis ne correspond pas'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('scanner le permis d un proche : « pas à votre nom »', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend()
+        ..licenseReading = {
+          'number': '08/12345',
+          'categories': <String>[],
+          'issuedAt': '2017-08-18',
+          'nameMatchesAccount': false,
+        };
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('scan-license')));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining("ce permis n'est pas à votre nom"),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('permis d une autre personne : refusé, message clair', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend()
+        ..failures['PUT /users/me/license-photo'] = (
+          422,
+          'LICENSE_NOT_YOURS',
+          "Ce permis ne semble pas être le vôtre : le nom, la date de naissance ou le numéro de CIN ne correspondent pas à votre compte. Il n'a pas été enregistré.",
+        );
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('scan-license')));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Ce permis ne semble pas être le vôtre'),
+        findsOneWidget,
+      );
+      expect(find.textContaining("Il n'a pas été enregistré"), findsOneWidget);
+    });
+
+    testWidgets('permis signalé : « en cours de vérification » au profil', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: {
+          ...userJson(),
+          'licenseNumber': '08/12345',
+          'licensePhotoId': 'permis.jpg',
+          'license': {
+            'status': 'TO_REVIEW',
+            'checks': {'nameMatchesAccount': false},
+          },
+        },
+      );
+      await openProfile(tester, backend);
+      await scrollProfileTo(
+        tester,
+        find.byKey(const Key('license-status-TO_REVIEW')),
+      );
+      expect(
+        find.textContaining('un administrateur le vérifie'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('permis refusé par l administrateur : le motif est affiché', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: {
+          ...userJson(),
+          'license': {
+            'status': 'REJECTED',
+            'rejectionReason': "Permis d'une autre personne",
+          },
+        },
+      );
+      await openProfile(tester, backend);
+      await scrollProfileTo(
+        tester,
+        find.byKey(const Key('license-status-REJECTED')),
+      );
+      expect(
+        find.textContaining("Motif : Permis d'une autre personne"),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('photo du permis : ouvre le permis pour la remplacer', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: {...userJson(), 'licensePhotoId': 'permis.jpg'},
+      );
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('license-photo')));
+      await tester.tap(find.byKey(const Key('license-photo')));
+      await tester.pumpAndSettle();
+      // La photo actuelle, et le scan qui la remplace en relisant la carte.
+      expect(find.byKey(const Key('license-sheet-photo')), findsOneWidget);
+      expect(find.byKey(const Key('scan-license')), findsOneWidget);
+    });
+
+    testWidgets('administrateur : pas de section permis dans le profil', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: userJson(role: 'ADMIN'));
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      // Le profil est bien affiché, sans la section permis.
+      await scrollProfileTo(tester, find.byKey(const Key('export-data')));
+      expect(find.byKey(const Key('edit-license')), findsNothing);
+      expect(find.byKey(const Key('license-photo')), findsNothing);
+    });
+
+    testWidgets('scanner le permis illisible : formulaire à compléter', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend()..licenseReading = null;
+      await openProfile(tester, backend);
+      await scrollProfileTo(tester, find.byKey(const Key('edit-license')));
+      await tester.tap(find.byKey(const Key('edit-license')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('scan-license')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          "Photo enregistrée, mais l'IA n'a pas pu lire le permis. Complétez les champs.",
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('modifier le permis : numéro et catégories dans l ordre', (
@@ -550,13 +1056,97 @@ void main() {
   });
 
   group("vérification d'identité", () {
-    Future<void> openIdentity(WidgetTester tester, FakeBackend backend) async {
+    setUp(() {
+      LivenessScreen.cameraFactory = FakeFaceCamera.new;
+      // Par défaut sans détection sur le téléphone : compte à rebours.
+      LivenessScreen.guideFactory = () => null;
+    });
+    tearDown(() {
+      LivenessScreen.cameraFactory = DeviceFaceCamera.new;
+      LivenessScreen.guideFactory = deviceFaceGuide;
+    });
+
+    /// Compte avec les photos de la pièce, et au besoin le visage déjà vérifié.
+    Map<String, dynamic> withIdentity({
+      bool back = true,
+      bool liveness = false,
+    }) => {
+      ...userJson(),
+      'identity': {
+        'status': 'UNVERIFIED',
+        'frontId': 'front.jpg',
+        if (back) 'backId': 'back.jpg',
+        if (liveness) 'selfieId': 'selfie.jpg',
+        if (liveness) 'livenessAt': DateTime.now().toUtc().toIso8601String(),
+      },
+    };
+
+    final identityList = find
+        .descendant(
+          of: find.byKey(const Key('identity-list')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+
+    Future<void> tapSubmit(WidgetTester tester) async {
+      // Un message en bas d'écran masquerait le bouton.
+      tester
+          .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
+          .clearSnackBars();
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Envoyer pour vérification'),
+        200,
+        scrollable: identityList,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Envoyer pour vérification'));
+      await tester.pumpAndSettle();
+    }
+
+    /// Trois consignes de trois secondes, puis l'analyse.
+    Future<void> pumpCountdown(WidgetTester tester) async {
+      for (var i = 0; i < 12; i++) {
+        await tester.pump(const Duration(seconds: 1));
+      }
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> openFaceCheck(WidgetTester tester) async {
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('start-face-check')),
+        200,
+        scrollable: identityList,
+      );
+      await tester.pumpAndSettle();
+      // Sans accord, le bouton reste inactif.
+      await tester.tap(find.byKey(const Key('start-face-check')));
+      await tester.pumpAndSettle();
+      expect(find.byType(LivenessScreen), findsNothing);
+      await tester.tap(find.byKey(const Key('biometric-consent')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('start-face-check')));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> runFaceCheck(WidgetTester tester) async {
+      await openFaceCheck(tester);
+      await pumpCountdown(tester);
+    }
+
+    Future<void> openIdentity(
+      WidgetTester tester,
+      FakeBackend backend, {
+      bool unverified = true,
+    }) async {
       await pumpApp(tester, backend);
       await signIn(tester);
       await tester.tap(find.text('Profil'));
       await tester.pumpAndSettle();
       await scrollProfileTo(tester, find.byKey(const Key('open-identity')));
-      expect(find.text('Identité non vérifiée'), findsOneWidget);
+      if (unverified) {
+        expect(find.text('Identité non vérifiée'), findsOneWidget);
+      }
       await tester.tap(find.byKey(const Key('open-identity')));
       await tester.pumpAndSettle();
     }
@@ -567,10 +1157,65 @@ void main() {
       final backend = FakeBackend();
       await openIdentity(tester, backend);
       await tester.enterText(field('N° de CIN'), '12345678');
-      await tester.tap(find.text('Envoyer pour vérification'));
-      await tester.pumpAndSettle();
+      await tapSubmit(tester);
+      await tester.scrollUntilVisible(
+        find.text('Ajoutez les photos de la pièce.'),
+        -200,
+        scrollable: identityList,
+      );
+      expect(find.text('Ajoutez les photos de la pièce.'), findsOneWidget);
       expect(
-        find.text('Ajoutez le recto et le verso de votre CIN.'),
+        backend.requests,
+        isNot(contains('POST /users/me/identity/submit')),
+      );
+    });
+
+    testWidgets('avancement : pièce faite, lecture en cours', (tester) async {
+      final backend = FakeBackend(user: withIdentity());
+      await openIdentity(tester, backend);
+      expect(find.byKey(const Key('identity-progress')), findsOneWidget);
+      // Étape 1 cochée (recto et verso), les autres numérotées.
+      final progress = find.byKey(const Key('identity-progress'));
+      expect(
+        find.descendant(
+          of: progress,
+          matching: find.byIcon(Icons.check_rounded),
+        ),
+        findsOneWidget,
+      );
+      for (final number in ['2', '3', '4']) {
+        expect(
+          find.descendant(of: progress, matching: find.text(number)),
+          findsOneWidget,
+        );
+      }
+    });
+
+    testWidgets('sans vérification du visage : demande refusée', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: withIdentity());
+      await openIdentity(tester, backend);
+      await tester.enterText(field('N° de CIN'), '1234');
+      await tapSubmit(tester);
+      await tester.scrollUntilVisible(
+        find.text('Le numéro de CIN contient 8 chiffres.'),
+        -200,
+        scrollable: identityList,
+      );
+      expect(
+        find.text('Le numéro de CIN contient 8 chiffres.'),
+        findsOneWidget,
+      );
+      await tester.enterText(field('N° de CIN'), '12345678');
+      await tapSubmit(tester);
+      await tester.scrollUntilVisible(
+        find.text("Faites d'abord la vérification du visage."),
+        -200,
+        scrollable: identityList,
+      );
+      expect(
+        find.text("Faites d'abord la vérification du visage."),
         findsOneWidget,
       );
       expect(
@@ -579,38 +1224,229 @@ void main() {
       );
     });
 
-    testWidgets('avec les photos : envoyée, puis en cours de vérification', (
+    testWidgets(
+      'parcours complet : visage vérifié, identité validée par l IA',
+      (tester) async {
+        final backend = FakeBackend(user: withIdentity());
+        await openIdentity(tester, backend);
+        await runFaceCheck(tester);
+
+        // Défi demandé, puis trois photos envoyées avec le jeton.
+        expect(backend.requests, contains('POST /users/me/identity/liveness'));
+        final upload = backend.uploads['POST /users/me/identity/selfie']!;
+        final body = latin1.decode(upload.bodyBytes);
+        expect(body, contains('challenge-1'));
+        expect('filename='.allMatches(body).length, 3);
+        expect(find.text('Visage vérifié'), findsOneWidget);
+
+        await tester.enterText(field('N° de CIN'), '12345678');
+        await tapSubmit(tester);
+        expect(backend.bodies['POST /users/me/identity/submit'], {
+          'documentType': 'CIN',
+          'number': '12345678',
+        });
+        expect(find.text('Identité vérifiée'), findsOneWidget);
+        expect(
+          find.text(
+            'Vérifiée automatiquement par reconnaissance faciale. '
+            'Vous pouvez signer vos constats.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('Envoyer pour vérification'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets('IA dans le doute : la demande attend un administrateur', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: withIdentity(liveness: true))
+        ..aiMatch = 0.4;
+      await openIdentity(tester, backend);
+      await tester.enterText(field('N° de CIN'), '12345678');
+      await tapSubmit(tester);
+      expect(find.text('Vérification en cours'), findsOneWidget);
+      // Verrouillée pendant la vérification.
+      expect(find.text('Envoyer pour vérification'), findsNothing);
+    });
+
+    testWidgets('passeport : une seule page et le numéro du passeport', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: withIdentity(back: false, liveness: true),
+      );
+      await openIdentity(tester, backend);
+      await tester.tap(find.text('Passeport'));
+      await tester.pumpAndSettle();
+      expect(find.text('Page photo du passeport'), findsOneWidget);
+      expect(find.text('Verso de la CIN'), findsNothing);
+
+      await tester.enterText(field('N° du passeport'), '123');
+      await tapSubmit(tester);
+      expect(
+        find.text('Numéro de passeport invalide (ex. X1234567).'),
+        findsOneWidget,
+      );
+      await tester.enterText(field('N° du passeport'), 'x 1234567');
+      await tapSubmit(tester);
+      expect(backend.bodies['POST /users/me/identity/submit'], {
+        'documentType': 'PASSPORT',
+        'number': 'X1234567',
+      });
+    });
+
+    testWidgets('visage refusé par l IA : message, puis nouvel essai', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: withIdentity())
+        ..failures['POST /users/me/identity/selfie'] = (
+          422,
+          'LIVENESS_NO_TURN',
+          'Tournez davantage la tête quand la consigne le demande.',
+        );
+      await openIdentity(tester, backend);
+      await runFaceCheck(tester);
+      expect(
+        find.text('Tournez davantage la tête quand la consigne le demande.'),
+        findsOneWidget,
+      );
+      backend.failures.clear();
+      await tester.tap(find.byKey(const Key('liveness-retry')));
+      await pumpCountdown(tester);
+      expect(find.text('Visage vérifié'), findsOneWidget);
+    });
+
+    testWidgets(
+      'lecture de la pièce : informations lues et numéro pré-rempli',
+      (tester) async {
+        final backend = FakeBackend(
+          user: {
+            ...withIdentity(),
+            'identity': {
+              ...withIdentity()['identity'] as Map<String, dynamic>,
+              'documentType': 'CIN',
+              'extracted': {
+                'type': 'CIN',
+                'number': '12345678',
+                'lastNameAr': 'بن علي',
+                'firstNameAr': 'سامي',
+                'parentsAr': 'بن محمد بن صالح',
+                'birthDate': '1999-03-12',
+              },
+            },
+          },
+        );
+        await openIdentity(tester, backend);
+        expect(find.text("Lu sur la pièce par l'IA"), findsOneWidget);
+        expect(find.text('سامي بن علي'), findsOneWidget);
+        expect(find.text('بن محمد بن صالح'), findsOneWidget);
+        await tester.scrollUntilVisible(
+          field('N° de CIN'),
+          200,
+          scrollable: identityList,
+        );
+        final input = tester.widget<EditableText>(
+          find.descendant(
+            of: field('N° de CIN'),
+            matching: find.byType(EditableText),
+          ),
+        );
+        expect(input.controller.text, '12345678');
+
+        // Une autre pièce choisie : la lecture de la CIN ne s'applique plus.
+        await tester.tap(find.text('Passeport'));
+        await tester.pumpAndSettle();
+        expect(find.text("Lu sur la pièce par l'IA"), findsNothing);
+      },
+    );
+
+    testWidgets('permis du profil réutilisé comme pièce, puis lu par l IA', (
       tester,
     ) async {
       final backend = FakeBackend(
         user: {
           ...userJson(),
-          'identity': {
-            'status': 'UNVERIFIED',
-            'frontId': 'front.jpg',
-            'backId': 'back.jpg',
-          },
+          'licensePhotoId': 'permis.jpg',
+          'identity': {'status': 'UNVERIFIED'},
         },
-      );
+      )..documentReading = {'number': '12/345678'};
       await openIdentity(tester, backend);
-      await tester.enterText(field('N° de CIN'), '1234');
-      await tester.tap(find.text('Envoyer pour vérification'));
+      expect(find.byKey(const Key('use-license-photo')), findsNothing);
+      await tester.tap(find.text('Permis'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('use-license-photo')));
       await tester.pumpAndSettle();
       expect(
-        find.text('Le numéro de CIN contient 8 chiffres.'),
+        backend.requests,
+        contains('POST /users/me/identity/front/from-license'),
+      );
+      expect(find.text("Lu sur la pièce par l'IA"), findsOneWidget);
+      expect(find.text('12/345678'), findsWidgets);
+    });
+
+    testWidgets('détection sur le téléphone : photos prises au bon moment', (
+      tester,
+    ) async {
+      final guide = FakeFaceGuide([
+        null, // personne devant la caméra
+        (faces: 1, yaw: 3.0), // de face : gardée
+        (faces: 1, yaw: 8.0), // pas assez tournée
+        (faces: 1, yaw: 31.0), // tournée : gardée
+        (faces: 1, yaw: 27.0), // même sens : refusée
+        (faces: 1, yaw: -29.0), // sens opposé : gardée
+      ]);
+      LivenessScreen.guideFactory = () => guide;
+      final backend = FakeBackend(user: withIdentity());
+      await openIdentity(tester, backend);
+      await openFaceCheck(tester);
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+      await tester.pumpAndSettle();
+      expect(guide.seen, 6);
+      final upload = backend.uploads['POST /users/me/identity/selfie']!;
+      expect('filename='.allMatches(latin1.decode(upload.bodyBytes)).length, 3);
+      expect(find.text('Visage vérifié'), findsOneWidget);
+    });
+
+    test('pose attendue : de face, puis deux rotations de sens opposés', () {
+      expect(poseMatches(LivenessStep.center, (faces: 1, yaw: 5)), isTrue);
+      expect(poseMatches(LivenessStep.center, (faces: 1, yaw: 25)), isFalse);
+      expect(poseMatches(LivenessStep.center, (faces: 2, yaw: 0)), isFalse);
+      expect(poseMatches(LivenessStep.left, (faces: 1, yaw: 15)), isFalse);
+      expect(poseMatches(LivenessStep.left, (faces: 1, yaw: -24)), isTrue);
+      expect(
+        poseMatches(LivenessStep.right, (
+          faces: 1,
+          yaw: -30,
+        ), firstTurnSign: -1),
+        isFalse,
+      );
+      expect(
+        poseMatches(LivenessStep.right, (faces: 1, yaw: 30), firstTurnSign: -1),
+        isTrue,
+      );
+    });
+
+    testWidgets('caméra refusée : message clair, aucune requête', (
+      tester,
+    ) async {
+      LivenessScreen.cameraFactory = () => FakeFaceCamera(fail: true);
+      final backend = FakeBackend(user: withIdentity());
+      await openIdentity(tester, backend);
+      await openFaceCheck(tester);
+      expect(
+        find.text(
+          "Caméra indisponible. Autorisez l'accès à la caméra, puis réessayez.",
+        ),
         findsOneWidget,
       );
-
-      await tester.enterText(field('N° de CIN'), '12345678');
-      await tester.tap(find.text('Envoyer pour vérification'));
-      await tester.pumpAndSettle();
-      expect(backend.bodies['POST /users/me/identity/submit'], {
-        'cinNumber': '12345678',
-      });
-      expect(find.text('Vérification en cours'), findsOneWidget);
-      // Verrouillée pendant la vérification.
-      expect(find.text('Envoyer pour vérification'), findsNothing);
-      expect(tester.takeException(), isNull);
+      expect(
+        backend.requests,
+        isNot(contains('POST /users/me/identity/liveness')),
+      );
     });
 
     testWidgets('administrateur : valide une demande de la file', (
@@ -634,14 +1470,19 @@ void main() {
             ];
       await pumpApp(tester, backend);
       await signIn(tester);
-      await tester.tap(find.text('Identités'));
+      await tester.tap(find.byTooltip('Identités'));
       await tester.pumpAndSettle();
       expect(find.text('Mouna Trabelsi'), findsOneWidget);
 
       await tester.tap(find.text('Mouna Trabelsi'));
       await tester.pumpAndSettle();
       expect(find.text('87654321'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('Valider'), 200);
+      await tester.scrollUntilVisible(
+        find.text('Valider'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Valider'));
       await tester.pumpAndSettle();
       expect(backend.requests, contains('POST /users/u2/identity/approve'));
@@ -662,20 +1503,186 @@ void main() {
             ];
       await pumpApp(tester, backend);
       await signIn(tester);
-      await tester.tap(find.text('Identités'));
+      await tester.tap(find.byTooltip('Identités'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Mouna Trabelsi'));
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('Refuser'), 200);
+      await tester.scrollUntilVisible(
+        find.text('Refuser'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Refuser'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Photo floue'));
       await tester.pumpAndSettle();
+      // Photo floue : nouvelle demande possible, pas de refus définitif.
+      expect(
+        tester
+            .widget<SwitchListTile>(find.byKey(const Key('reject-severe')))
+            .value,
+        isFalse,
+      );
       await tester.tap(find.widgetWithText(FilledButton, 'Refuser'));
       await tester.pumpAndSettle();
       expect(backend.bodies['POST /users/u2/identity/reject'], {
         'reason': 'Photo floue',
+        'severe': false,
       });
+    });
+
+    testWidgets('administrateur : visage différent = refus définitif', (
+      tester,
+    ) async {
+      final backend =
+          FakeBackend(
+              user: userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+            )
+            ..pendingIdentities = [
+              {
+                ...userJson(id: 'u2', firstName: 'Mouna', lastName: 'Trabelsi'),
+                'identity': {'status': 'PENDING', 'cinNumber': '87654321'},
+              },
+            ];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.byTooltip('Identités'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mouna Trabelsi'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Refuser'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Refuser'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Le visage ne correspond pas à la pièce'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Refuser'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['POST /users/u2/identity/reject'], {
+        'reason': 'Le visage ne correspond pas à la pièce',
+        'severe': true,
+      });
+    });
+
+    testWidgets('refusée : 24 h d attente, essais restants, demande fermée', (
+      tester,
+    ) async {
+      final backend = FakeBackend(
+        user: {
+          ...userJson(),
+          'identity': {
+            'status': 'REJECTED',
+            'rejectionReason': 'Photo floue',
+            'refusals': 1,
+            'retryAt': DateTime.now()
+                .add(const Duration(hours: 20))
+                .toUtc()
+                .toIso8601String(),
+          },
+        },
+      );
+      await openIdentity(tester, backend, unverified: false);
+      expect(
+        find.textContaining('Nouvelle demande possible le'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Essais restants : 2.'), findsOneWidget);
+      expect(find.text('Envoyer pour vérification'), findsNothing);
+    });
+
+    testWidgets('bloquée : message support, demande fermée', (tester) async {
+      final backend = FakeBackend(
+        user: {
+          ...userJson(),
+          'identity': {
+            'status': 'REJECTED',
+            'rejectionReason': 'Pièce non valable',
+            'refusals': 1,
+            'blocked': true,
+          },
+        },
+      );
+      await openIdentity(tester, backend, unverified: false);
+      expect(find.text('Vérification bloquée'), findsWidgets);
+      expect(find.textContaining('Contactez le support'), findsOneWidget);
+      expect(find.text('Envoyer pour vérification'), findsNothing);
+    });
+  });
+
+  group("modifications hors ligne (file SQLite)", () {
+    Future<void> editNameOffline(
+      WidgetTester tester,
+      FakeBackend backend,
+    ) async {
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Profil'));
+      await tester.pumpAndSettle();
+      backend.offline = true;
+      await tester.tap(find.byKey(const Key('edit-identity')));
+      await tester.pumpAndSettle();
+      await tester.enterText(field('Prénom'), 'Samir');
+      await tester.tap(find.text('Enregistrer'));
+      await tester.pumpAndSettle();
+      // Le nouvel essai toutes les 20 s ne doit pas survivre au test.
+      addTearDown(backend.stores.users.stopAutoSync);
+    }
+
+    testWidgets('sans réseau : affichée tout de suite, gardée en attente', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await editNameOffline(tester, backend);
+      expect(
+        find.textContaining('Enregistré sur le téléphone'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('pending-sync')), findsOneWidget);
+      expect(backend.stores.users.userName, 'Samir Ben Ali');
+      expect(await backend.usersDb.pending(), hasLength(1));
+      expect(backend.requests, isNot(contains('PATCH /users/me')));
+    });
+
+    testWidgets('retour du réseau : envoyée puis retirée de la file', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await editNameOffline(tester, backend);
+      backend.offline = false;
+      await tester.tap(find.text('Synchroniser'));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['PATCH /users/me']!['firstName'], 'Samir');
+      expect(await backend.usersDb.pending(), isEmpty);
+      expect(find.byKey(const Key('pending-sync')), findsNothing);
+    });
+
+    testWidgets('refus du serveur : motif affiché, modification annulable', (
+      tester,
+    ) async {
+      final backend = FakeBackend();
+      await editNameOffline(tester, backend);
+      backend
+        ..offline = false
+        ..failures['PATCH /users/me'] = (
+          409,
+          'ALREADY_EXISTS',
+          'E-mail ou téléphone déjà utilisé.',
+        );
+      await tester.tap(find.text('Synchroniser'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('déjà utilisé'), findsOneWidget);
+      expect(find.text('Annuler les modifications'), findsOneWidget);
+
+      backend.failures.remove('PATCH /users/me');
+      await tester.tap(find.text('Annuler les modifications'));
+      await tester.pumpAndSettle();
+      expect(await backend.usersDb.pending(), isEmpty);
+      expect(backend.stores.users.userName, 'Sami Ben Ali');
     });
   });
 
@@ -736,7 +1743,116 @@ void main() {
     expect(find.text('75 %'), findsOneWidget);
     // Plus de chiffres fictifs d'accidents.
     expect(find.text('248'), findsNothing);
+    // Bilan de l'IA.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('dash-ai')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('63 %'), findsOneWidget);
+    expect(find.text('71 %'), findsOneWidget);
+    expect(find.text("validées par l'IA seule"), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  group("console d'administration (grand écran)", () {
+    Future<FakeBackend> openConsole(WidgetTester tester) async {
+      final backend =
+          FakeBackend(
+              user: userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+            )
+            ..users = [
+              userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+              userJson(id: 'u2'),
+              userJson(
+                id: 'u3',
+                firstName: 'Leïla',
+                lastName: 'Mansour',
+                role: 'AGENT',
+              ),
+            ]
+            ..pendingIdentities = [
+              {
+                ...userJson(id: 'u4', firstName: 'Mouna', lastName: 'Trabelsi'),
+                'identity': {
+                  'status': 'PENDING',
+                  'cinNumber': '08123456',
+                  'frontId': 'f.png',
+                  'backId': 'b.png',
+                  'submittedAt': '2026-11-09T10:00:00.000Z',
+                },
+              },
+            ]
+            ..companies = [
+              {
+                'id': 'c1',
+                'name': 'STAR Assurances',
+                'agencies': [
+                  {'id': 'a1', 'name': 'Agence Lac', 'city': 'Tunis'},
+                ],
+              },
+            ];
+      tester.view.physicalSize = const Size(1440, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(MonConstatApp(stores: backend.stores));
+      await tester.pumpAndSettle();
+      await signIn(tester);
+      return backend;
+    }
+
+    testWidgets('barre latérale, tableau de bord et demande à traiter', (
+      tester,
+    ) async {
+      await openConsole(tester);
+      expect(find.text('Tableau de bord'), findsWidgets);
+      // Pas d'onglets du téléphone sur grand écran.
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.text('Mouna Trabelsi'), findsOneWidget);
+      expect(find.text('Examiner'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('comptes : tableau et filtre par rôle', (tester) async {
+      final backend = await openConsole(tester);
+      await tester.tap(find.text('Comptes'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DataTable), findsOneWidget);
+      expect(find.text('Leïla Mansour'), findsOneWidget);
+      expect(find.text('3 comptes'), findsOneWidget);
+
+      await tester.tap(find.text('Agents'));
+      await tester.pumpAndSettle();
+      expect(backend.headers.keys, contains('GET /users'));
+      expect(
+        backend.requests.where((r) => r == 'GET /users').length,
+        greaterThan(1),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+      'identités : examen depuis le tableau de bord, puis validation',
+      (tester) async {
+        final backend = await openConsole(tester);
+        await tester.tap(find.text('Examiner'));
+        await tester.pumpAndSettle();
+        expect(find.text('08123456'), findsWidgets);
+        await tester.tap(find.text('Valider'));
+        await tester.pumpAndSettle();
+        expect(backend.requests, contains('POST /users/u4/identity/approve'));
+        expect(find.text('Aucune demande en attente.'), findsOneWidget);
+      },
+    );
+
+    testWidgets('compagnies : agences de la compagnie choisie', (tester) async {
+      await openConsole(tester);
+      await tester.tap(find.text('Compagnies'));
+      await tester.pumpAndSettle();
+      expect(find.text('Agence Lac'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('administration', () {
@@ -773,7 +1889,7 @@ void main() {
       final backend = adminBackend();
       await pumpApp(tester, backend);
       await signIn(tester);
-      await tester.tap(find.text('Compagnies'));
+      await tester.tap(find.byTooltip('Compagnies'));
       await tester.pumpAndSettle();
       expect(find.text('STAR Assurances'), findsOneWidget);
 
@@ -784,6 +1900,198 @@ void main() {
       await tester.pumpAndSettle();
       expect(backend.bodies['POST /companies'], {'name': 'COMAR'});
       expect(find.text('COMAR'), findsOneWidget);
+    });
+
+    /// Fait défiler le dossier du compte jusqu'à [target].
+    Future<void> scrollFileTo(WidgetTester tester, Finder target) async {
+      await tester.scrollUntilVisible(
+        target,
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const Key('account-file')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.pumpAndSettle();
+    }
+
+    Map<String, dynamic> flaggedDriver() => {
+      ...userJson(id: 'u3', firstName: 'Mouna', lastName: 'Trabelsi'),
+      'licenseNumber': '08/82157',
+      'licensePhotoId': 'permis.jpg',
+      'license': {
+        'status': 'TO_REVIEW',
+        'reading': {'number': '08/82157'},
+        'checks': {
+          'nameMatchesAccount': false,
+          'birthDateMatchesIdentity': null,
+          'cinMatchesIdentity': null,
+        },
+      },
+    };
+
+    testWidgets('permis signalé : alerte, file, dossier, validation', (
+      tester,
+    ) async {
+      final backend = adminBackend()..licenseReviews = [flaggedDriver()];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      // Le tableau de bord signale le permis.
+      expect(find.text('1 permis à vérifier'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('license-review-alert')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mouna Trabelsi'));
+      await tester.pumpAndSettle();
+
+      // Le dossier montre ce qui a fait douter l'IA.
+      expect(find.byKey(const Key('license-checklist')), findsOneWidget);
+      expect(find.text('Nom du titulaire = nom du compte'), findsOneWidget);
+      await scrollFileTo(tester, find.byKey(const Key('approve-license')));
+      await tester.tap(find.byKey(const Key('approve-license')));
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('POST /users/u3/license/approve'));
+      expect(find.text('Permis validé'), findsWidgets);
+
+      // De retour dans la file : plus rien à vérifier.
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Aucun permis à vérifier.'), findsOneWidget);
+    });
+
+    testWidgets('permis refusé avec un motif, puis supprimé', (tester) async {
+      final backend = adminBackend()..licenseReviews = [flaggedDriver()];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.byKey(const Key('license-review-alert')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mouna Trabelsi'));
+      await tester.pumpAndSettle();
+
+      await scrollFileTo(tester, find.byKey(const Key('delete-license')));
+      await tester.tap(find.byKey(const Key('delete-license')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('confirm-delete-license')));
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('DELETE /users/u3/license'));
+      expect(find.text('Aucun permis enregistré.'), findsOneWidget);
+    });
+
+    testWidgets('refus du permis : motif obligatoire, envoyé au serveur', (
+      tester,
+    ) async {
+      final backend = adminBackend()..licenseReviews = [flaggedDriver()];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.byKey(const Key('license-review-alert')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mouna Trabelsi'));
+      await tester.pumpAndSettle();
+
+      await scrollFileTo(tester, find.byKey(const Key('reject-license')));
+      await tester.tap(find.byKey(const Key('reject-license')));
+      await tester.pumpAndSettle();
+      // Sans motif, pas de refus.
+      final confirm = find.byKey(const Key('confirm-reason'));
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+      await tester.tap(find.text("Permis d'une autre personne"));
+      await tester.pumpAndSettle();
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+      expect(backend.bodies['POST /users/u3/license/reject'], {
+        'reason': "Permis d'une autre personne",
+      });
+      expect(find.text('Permis refusé'), findsOneWidget);
+    });
+
+    testWidgets('dossier : l administrateur corrige la lecture de la pièce', (
+      tester,
+    ) async {
+      final backend = adminBackend()
+        ..users = [
+          userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+          {
+            ...userJson(id: 'u2'),
+            'identity': {
+              'status': 'VERIFIED',
+              'documentType': 'CIN',
+              'cinNumber': '12345678',
+              'extracted': {
+                'type': 'CIN',
+                'number': '12345678',
+                'lastNameAr': 'بن علي',
+                'firstNameAr': 'سامي',
+                'birthDate': '1999-03-12',
+                'birthPlaceAr': 'قايس',
+              },
+            },
+          },
+        ];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Comptes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sami Ben Ali'));
+      await tester.pumpAndSettle();
+
+      await scrollFileTo(tester, find.byKey(const Key('correct-reading')));
+      expect(find.text('قايس'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('correct-reading')));
+      await tester.pumpAndSettle();
+      await tester.enterText(field('Lieu de naissance'), 'قابس');
+      await tester.tap(find.byKey(const Key('save-reading')));
+      await tester.pumpAndSettle();
+      // Seul le champ corrigé part.
+      expect(backend.bodies['PATCH /users/u2/identity/reading'], {
+        'birthPlaceAr': 'قابس',
+      });
+      expect(find.text('قابس'), findsOneWidget);
+    });
+
+    testWidgets('dossier : identité validée par l IA, visible et annulable', (
+      tester,
+    ) async {
+      final backend = adminBackend()
+        ..users = [
+          userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+          {
+            ...userJson(id: 'u2'),
+            'identity': {
+              'status': 'VERIFIED',
+              'documentType': 'CIN',
+              'cinNumber': '12345678',
+              'frontId': 'front.jpg',
+              'backId': 'back.jpg',
+              'faceMatch': 0.92,
+              'autoVerified': true,
+            },
+          },
+        ];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Comptes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sami Ben Ali'));
+      await tester.pumpAndSettle();
+      expect(backend.requests, contains('GET /users/u2'));
+
+      // Les photos de la pièce restent consultables après la validation.
+      await scrollFileTo(tester, find.byKey(const Key('revoke-identity')));
+      expect(find.text("Identité vérifiée par l'IA"), findsOneWidget);
+      expect(find.byType(IdentityPhotoFrame), findsNWidgets(2));
+
+      await tester.tap(find.byKey(const Key('revoke-identity')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Photo floue'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('confirm-reason')));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['POST /users/u2/identity/revoke'], {
+        'reason': 'Photo floue',
+      });
+      await scrollFileTo(tester, find.text('Vérification refusée'));
+      expect(find.text('Vérification refusée'), findsOneWidget);
     });
   });
 
@@ -928,7 +2236,7 @@ void main() {
   });
 
   testWidgets('exige deux preuves avant le constat', (tester) async {
-    await pumpApp(tester, FakeBackend());
+    await pumpApp(tester, FakeBackend()..vehicles = [vehicleJson()]);
     await signIn(tester);
     await tester.tap(find.text('Commencer une déclaration'));
     await tester.pumpAndSettle();
@@ -962,8 +2270,73 @@ void main() {
     expect(find.text('Conducteur B'), findsNothing);
   });
 
+  testWidgets('déclaration : véhicule obligatoire, contrat expiré bloquant', (
+    tester,
+  ) async {
+    // Sans véhicule : on propose d'en ajouter un, et on ne passe pas.
+    final backend = FakeBackend();
+    await pumpApp(tester, backend);
+    await signIn(tester);
+    await tester.tap(find.text('Commencer une déclaration'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('add-vehicle')), findsOneWidget);
+    await tester.tap(find.text('Continuer'));
+    await tester.pump();
+    expect(
+      find.text('Choisissez votre véhicule : son assureur reçoit le constat.'),
+      findsOneWidget,
+    );
+    expect(find.text('Que s’est-il passé ?'), findsNothing);
+  });
+
+  testWidgets('déclaration : contrat expiré, déclaration refusée', (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      FakeBackend()..vehicles = [vehicleJson(insuranceExpiry: '2025-01-31')],
+    );
+    await signIn(tester);
+    await tester.tap(find.text('Commencer une déclaration'));
+    await tester.pumpAndSettle();
+    // Seul véhicule : choisi d'office, mais son contrat a expiré.
+    expect(find.textContaining('Contrat expiré le 31/01/2025'), findsOneWidget);
+    await tester.tap(find.text('Continuer'));
+    await tester.pump();
+    expect(find.textContaining('a expiré le 31/01/2025'), findsOneWidget);
+    expect(find.text('Que s’est-il passé ?'), findsNothing);
+  });
+
+  testWidgets(
+    'véhicules : repris du serveur, envoyés, effacés à la déconnexion',
+    (tester) async {
+      final backend = FakeBackend()..vehicles = [vehicleJson()];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      final store = backend.stores.vehicles;
+      expect(store.vehicles.map((v) => v.plate), ['245 TU 8812']);
+      expect(store.vehicles.single.companyId, 'c-star');
+
+      // Un véhicule ajouté sur le téléphone part sur le serveur.
+      final added = Vehicle.fromApi(
+        vehicleJson(
+          id: '22222222-2222-4222-8222-222222222222',
+          plate: '1 TU 1',
+        ),
+      );
+      await store.addVehicle(added);
+      expect(backend.bodies['POST /vehicles']!['id'], added.id);
+      expect(backend.bodies['POST /vehicles']!['companyId'], 'c-star');
+
+      // Déconnexion : plus rien pour le compte suivant sur ce téléphone.
+      await backend.stores.users.logout();
+      await tester.pumpAndSettle();
+      expect(store.vehicles, isEmpty);
+    },
+  );
+
   testWidgets('reprend un brouillon à la dernière étape', (tester) async {
-    await pumpApp(tester, FakeBackend());
+    await pumpApp(tester, FakeBackend()..vehicles = [vehicleJson()]);
     await signIn(tester);
     await tester.tap(find.text('Commencer une déclaration'));
     await tester.pumpAndSettle();

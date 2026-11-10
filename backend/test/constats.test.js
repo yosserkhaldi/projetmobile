@@ -4,6 +4,8 @@ import { after, before, beforeEach, test } from 'node:test';
 
 import { driver, migrate, prisma, resetDatabase, startApi } from './helpers.js';
 import { verifyPdfBuffer } from '../src/lib/pdf-signature.js';
+import { responsibilityProposal } from '../src/modules/claims/ai/rules.js';
+import { valueIn } from '../src/modules/claims/ai/i18n.js';
 
 before(migrate);
 beforeEach(resetDatabase);
@@ -14,11 +16,18 @@ const dummyPdfBuffer = Buffer.from('%PDF-1.4 dummy test constat content %EOF');
 const dummyPdfHash = createHash('sha256').update(dummyPdfBuffer).digest('hex');
 const dummyPdfBase64 = dummyPdfBuffer.toString('base64');
 
-async function register(call, overrides = {}) {
+// Conducteur à l'identité vérifiée : seul un tel compte peut sceller.
+async function register(call, overrides = {}, { verified = true } = {}) {
   const response = await call('POST', '/auth/register', {
     body: driver(overrides),
   });
   assert.equal(response.status, 201);
+  if (verified) {
+    await prisma.user.update({
+      where: { id: response.body.user.id },
+      data: { identityStatus: 'VERIFIED' },
+    });
+  }
   return response.body;
 }
 
@@ -57,6 +66,18 @@ test('vérification publique d’un hash SHA-256', async (t) => {
   // Hash introuvable
   const notFound = await call('GET', `/constats/verify/${'a'.repeat(64)}`);
   assert.equal(notFound.status, 404);
+});
+
+test('refuse de sceller sans identité vérifiée', async (t) => {
+  const { call } = await startApi(t);
+  const auth = await register(call, {}, { verified: false });
+  const res = await call('POST', '/constats', {
+    token: auth.accessToken,
+    body: sampleConstatInput(),
+  });
+  assert.equal(res.status, 403);
+  assert.equal(res.body.error.code, 'IDENTITY_NOT_VERIFIED');
+  assert.equal(await prisma.constat.count(), 0);
 });
 
 test('refuse un constat si le hash SHA-256 ne correspond pas au PDF', async (t) => {
@@ -287,5 +308,18 @@ test('scellement en 2 étapes : diffère l’e-mail, finalise le PDF avec signat
   });
   assert.equal(replayRes.status, 409);
   assert.equal(replayRes.body.error.code, 'PDF_ALREADY_FINALIZED');
+});
+
+test('compatibilité circonstances FTUSA numérotées avec les règles et i18n du module 5', () => {
+  const proposal = responsibilityProposal(
+    ['1 - En stationnement / À l’arrêt'],
+    ['14 - Reculait'],
+    'EN',
+  );
+  assert.equal(proposal.driverA, 0);
+  assert.equal(proposal.basis, 'fault-b');
+  assert.equal(valueIn('EN', '1 - En stationnement / À l’arrêt'), 'Parked');
+  assert.equal(valueIn('EN', '10 - Changeait de file'), 'Changing lanes');
+  assert.equal(valueIn('AR', '14 - Reculait'), 'ترجع إلى الخلف');
 });
 

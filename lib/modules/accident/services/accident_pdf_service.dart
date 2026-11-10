@@ -148,7 +148,16 @@ class AccidentPdfService {
     String? sha256Hex,
   }) async {
     final sealedTimestamp = generatedAt ?? DateTime.now();
-    final effectiveDriverA = driverA ?? const ConstatDriverAData();
+    final effectiveDriverA =
+        driverA ??
+        ConstatDriverAData(
+          fullName: draft.driverAName,
+          licenseNumber: draft.driverALicense,
+          vehicleBrand: draft.driverAVehicle,
+          plate: draft.driverAPlate,
+          insurerName: draft.driverAInsurer,
+          policyNumber: draft.driverAPolicy,
+        );
     final hasQr =
         (verifierUrl != null && verifierUrl.trim().isNotEmpty) ||
         qrCodeBytes != null;

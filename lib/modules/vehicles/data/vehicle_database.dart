@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:mon_constat_digital/core/data/drift_web.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -31,14 +32,11 @@ class Vehicles extends Table {
   TextColumn get technicalExpiry => text().nullable()();
   TextColumn get color => text().nullable()();
   IntColumn get mileage => integer().nullable()();
-  TextColumn get type =>
-      text().withDefault(const Constant('car'))();
-  TextColumn get fuel =>
-      text().withDefault(const Constant('petrol'))();
+  TextColumn get type => text().withDefault(const Constant('car'))();
+  TextColumn get fuel => text().withDefault(const Constant('petrol'))();
   TextColumn get photoPath => text().nullable()();
   IntColumn get claimCount => integer().withDefault(const Constant(0))();
-  BoolColumn get archived =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get archived => boolean().withDefault(const Constant(false))();
   TextColumn get createdAt => text()();
 
   @override
@@ -143,6 +141,7 @@ class VehicleDatabase extends _$VehicleDatabase {
 QueryExecutor _openConnection() => driftDatabase(
   name: 'mon_constat_vehicles',
   native: DriftNativeOptions(databasePath: _databasePath),
+  web: driftWebOptions,
 );
 
 Future<String> _databasePath() async {

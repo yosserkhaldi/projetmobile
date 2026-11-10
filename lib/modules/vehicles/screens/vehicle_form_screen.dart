@@ -1,10 +1,15 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
+import 'package:mon_constat_digital/modules/accident/services/accident_media_service.dart';
 import 'package:mon_constat_digital/modules/users/widgets/company_picker.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
+import 'package:mon_constat_digital/modules/vehicles/services/vehicle_ocr_service.dart';
 
 /// Formulaire d'ajout et de modification d'un véhicule.
 ///
@@ -22,8 +27,41 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   final _form = GlobalKey<FormState>();
   bool _saving = false;
 
+  final _ocr = VehicleOcrService();
+  final _media = AccidentMediaService();
+  bool _scanning = false;
+
   String? _companyId;
   String? _companyName;
+
+  Future<void> _scanCard() async {
+    setState(() => _scanning = true);
+    try {
+      final photo = await _media.capturePhoto('carte_grise');
+      if (photo != null) {
+        final data = await _ocr.scan(photo);
+        setState(() {
+          if (data.plate.isNotEmpty) _plate.text = data.plate;
+          if (data.brand.isNotEmpty) _brand.text = data.brand;
+          if (data.model.isNotEmpty) _model.text = data.model;
+          if (data.year.isNotEmpty) _year.text = data.year;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Carte grise analysée avec succès par l’IA !')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors du scan IA : $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _scanning = false);
+    }
+  }
 
   // Contrôleurs de saisie
   late final TextEditingController _plate;
@@ -94,6 +132,54 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
           children: [
+            Card(
+              color: AppColors.successBg,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.document_scanner_outlined,
+                          color: AppColors.successText,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Scanner la carte grise avec l’IA',
+                            style: TextStyle(fontWeight: FontWeight.w900),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      'Remplissez automatiquement les informations par reconnaissance optique on-device.',
+                      style: TextStyle(color: AppColors.textMuted),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _scanning ? null : _scanCard,
+                        icon: _scanning
+                            ? const SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.camera_alt_outlined),
+                        label: Text(
+                          _scanning ? 'Analyse IA en cours…' : 'Photographier la carte grise',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             // ── Identification ─────────────────────────────────────────────
             _Section(label: 'Identification du véhicule'),
             _Field(
@@ -346,10 +432,15 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   }
 
   /// UUID v4 simple (pas de dépendance supplémentaire).
+  /// UUID v4 : le même identifiant sur le téléphone et sur le serveur.
   String _uuid() {
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final rand = Object().hashCode.abs();
-    return '$now-$rand';
+    final random = Random.secure();
+    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    final hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-'
+        '${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
   }
 }
 

@@ -15,6 +15,9 @@ import 'package:mon_constat_digital/modules/accident/services/accident_pdf_servi
 import 'package:mon_constat_digital/modules/constat/models/constat.dart';
 import 'package:mon_constat_digital/modules/constat/screens/constat_sealed_screen.dart';
 import 'package:mon_constat_digital/modules/constat/services/constat_crypto_service.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
+import 'package:mon_constat_digital/modules/claims/models/responsibility.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/constat/state/constat_store.dart';
 
 void main() {
@@ -31,7 +34,8 @@ void main() {
     });
 
     test('formate le hash par blocs lisibles de 8 caractères', () {
-      const hash = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+      const hash =
+          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
       final formatted = service.formatHash(hash);
       expect(
         formatted,
@@ -257,6 +261,21 @@ void main() {
       expect(find.textContaining('67b9a452'), findsNothing);
     });
   });
+
+  group('Compatibilité circonstances FTUSA <-> Module 5', () {
+    test('reconnaît les libellés numérotés FTUSA dans ResponsibilityProposal et ClaimsText', () {
+      final proposal = ResponsibilityProposal.fromBoxes(
+        ['1 - En stationnement / À l’arrêt'],
+        ['14 - Reculait'],
+      );
+      expect(proposal.driverA, equals(0));
+      expect(proposal.basis, equals(ProposalBasis.faultB));
+
+      final en = lookupAppLocalizations(const Locale('en'));
+      expect(en.claimValue('1 - En stationnement / À l’arrêt'), equals('Parked'));
+      expect(en.claimValue('10 - Changeait de file'), equals('Changing lanes'));
+    });
+  });
 }
 
 class _TestStorage implements SessionStorage {
@@ -272,4 +291,3 @@ class _TestStorage implements SessionStorage {
 extension on String {
   String repeat(int times) => List.filled(times, this).join();
 }
-

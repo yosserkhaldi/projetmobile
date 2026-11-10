@@ -9,6 +9,839 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get claimsMyClaims => 'ملفاتي';
+
+  @override
+  String get claimsReceived => 'الحوادث الواردة';
+
+  @override
+  String claimsCount(String shown, String total) {
+    return '$shown من أصل $total ملفات';
+  }
+
+  @override
+  String get claimsFilterHint => 'تصفية حسب الرقم أو الحالة أو الخطورة';
+
+  @override
+  String get claimsStatus => 'الحالة';
+
+  @override
+  String get claimsSeverity => 'الخطورة';
+
+  @override
+  String get claimsDate => 'التاريخ';
+
+  @override
+  String claimsAllOf(String label) {
+    return 'الكل: $label';
+  }
+
+  @override
+  String get claimsNoMatch => 'لا يوجد ملف مطابق.';
+
+  @override
+  String get claimsAgentSpace => 'فضاء العون';
+
+  @override
+  String get claimsAgentSubtitle => 'دراسة ملفات الحوادث';
+
+  @override
+  String get claimsStatistics => 'الإحصائيات';
+
+  @override
+  String get claimsNotifications => 'الإشعارات';
+
+  @override
+  String get claimsToHandle => 'للمعالجة';
+
+  @override
+  String get claimsExpertises => 'الخبرات';
+
+  @override
+  String get claimsClosedCount => 'مغلقة';
+
+  @override
+  String get claimsPriority => 'الملفات ذات الأولوية';
+
+  @override
+  String get claimsNothingToHandle => 'لا يوجد ملف للمعالجة.';
+
+  @override
+  String get claimsAssistant => 'المساعد';
+
+  @override
+  String get claimsMessaging => 'المحادثات';
+
+  @override
+  String get claimsRequestedDocuments => 'الوثائق المطلوبة';
+
+  @override
+  String get claimsUpload => 'إيداع';
+
+  @override
+  String get claimsExpertiseTitle => 'الخبرة الفنية';
+
+  @override
+  String claimsAppointmentOn(String date) {
+    return 'الموعد يوم $date';
+  }
+
+  @override
+  String get claimsTimeline => 'التسلسل الزمني';
+
+  @override
+  String get claimsConstat => 'المحضر';
+
+  @override
+  String get claimsDocuments => 'وثائق الملف';
+
+  @override
+  String get claimsDownload => 'تنزيل';
+
+  @override
+  String get claimsNoDocument => 'لم تودَع أي وثيقة.';
+
+  @override
+  String get claimsUploadDocument => 'إيداع وثيقة';
+
+  @override
+  String get claimsHandling => 'الدراسة';
+
+  @override
+  String get claimsDocMismatch => 'لا تطابق الطلب.';
+
+  @override
+  String get claimsRejectedTitle => 'ملف مرفوض';
+
+  @override
+  String get claimsClosedTitle => 'ملف مغلق';
+
+  @override
+  String claimsReason(String reason) {
+    return 'السبب: $reason';
+  }
+
+  @override
+  String claimsResponsibilitySplit(String a, String b) {
+    return 'المسؤولية: A $a %، B $b %';
+  }
+
+  @override
+  String claimsIndemnity(String amount) {
+    return 'التعويض: $amount دينار';
+  }
+
+  @override
+  String get claimsCircumstances => 'الظروف';
+
+  @override
+  String get claimsImpactPoint => 'نقطة الاصطدام';
+
+  @override
+  String get claimsObservations => 'الملاحظات';
+
+  @override
+  String get claimsNoConstat => 'لا توجد معلومات عن المحضر.';
+
+  @override
+  String claimsLabelColon(String label) {
+    return '$label: ';
+  }
+
+  @override
+  String get claimsTakeCharge => 'التكفّل بالملف';
+
+  @override
+  String get claimsRequestDocument => 'طلب وثيقة';
+
+  @override
+  String get claimsMoveAppointment => 'تغيير الموعد';
+
+  @override
+  String get claimsAppointExpert => 'تعيين خبير';
+
+  @override
+  String get claimsAttachReport => 'إرفاق تقرير الخبير';
+
+  @override
+  String get claimsReject => 'رفض الملف';
+
+  @override
+  String get claimsDocument => 'الوثيقة';
+
+  @override
+  String get claimsDetail => 'توضيح';
+
+  @override
+  String get claimsSendRequest => 'إرسال الطلب';
+
+  @override
+  String get claimsExpert => 'الخبير';
+
+  @override
+  String get claimsSchedule => 'تحديد الموعد';
+
+  @override
+  String get claimsReasonLabel => 'السبب';
+
+  @override
+  String get claimsRejectAction => 'رفض';
+
+  @override
+  String get claimsInvalidAmount => 'أدخل مبلغًا صحيحًا.';
+
+  @override
+  String get claimsDecision => 'القرار';
+
+  @override
+  String claimsProposal(String a, String b, String reason) {
+    return 'المقترح: A $a %، B $b %. $reason';
+  }
+
+  @override
+  String get claimsIndemnityAmount => 'مبلغ التعويض (دينار)';
+
+  @override
+  String get claimsCloseClaim => 'إغلاق الملف';
+
+  @override
+  String claimsProposalFault(String box) {
+    return '$box: مناورة خطرة من السائق A.';
+  }
+
+  @override
+  String get claimsProposalParked => 'كانت سيارة A متوقفة.';
+
+  @override
+  String claimsProposalTurn(String box) {
+    return '$box: مسؤولية مشتركة افتراضيًا.';
+  }
+
+  @override
+  String get claimsProposalUnknown =>
+      'الخانات غير كافية: مسؤولية مشتركة افتراضيًا.';
+
+  @override
+  String get claimsSummaryOffline => 'الملخص غير متاح دون اتصال.';
+
+  @override
+  String get claimsDecisionHelp => 'المساعدة على القرار';
+
+  @override
+  String claimsOverdue(String days) {
+    return 'تأخير $days يوم';
+  }
+
+  @override
+  String get claimsEstimate => 'التقدير';
+
+  @override
+  String claimsRange(String low, String high) {
+    return 'من $low إلى $high دينار';
+  }
+
+  @override
+  String get claimsUsualDuration => 'المدة المعتادة';
+
+  @override
+  String claimsDays(String days) {
+    return '$days يوم';
+  }
+
+  @override
+  String get claimsRejectionRisk => 'خطر الرفض';
+
+  @override
+  String get claimsRiskLow => 'منخفض';
+
+  @override
+  String get claimsRiskMedium => 'متوسط';
+
+  @override
+  String get claimsRiskHigh => 'مرتفع';
+
+  @override
+  String claimsRiskWithFactors(String level, String factors) {
+    return '$level: $factors';
+  }
+
+  @override
+  String get claimsRecommended => 'موصى بها لهذا الملف';
+
+  @override
+  String get claimsToCheck => 'للتحقق';
+
+  @override
+  String get claimsMissingDocuments => 'الوثائق الناقصة';
+
+  @override
+  String get claimsRequest => 'طلب';
+
+  @override
+  String get claimsSimilar => 'ملفات مشابهة';
+
+  @override
+  String claimsSummaryBy(String by) {
+    return 'ملخص كتبه $by';
+  }
+
+  @override
+  String get claimsSummaryRules => 'ملخص آلي دون ذكاء اصطناعي توليدي';
+
+  @override
+  String get claimsSummarizing => 'جارٍ التلخيص';
+
+  @override
+  String get claimsSummarize => 'تلخيص الملف';
+
+  @override
+  String get claimsModelDisclaimer =>
+      'التقديرات صادرة عن نموذج مدرَّب على بيانات محاكاة. القرار يعود إلى العون.';
+
+  @override
+  String get claimsDriverIdea1 => 'أين وصل ملفي؟';
+
+  @override
+  String get claimsDriverIdea2 => 'ما الوثائق التي عليّ إيداعها؟';
+
+  @override
+  String get claimsDriverIdea3 => 'كم من الوقت سيستغرق ذلك؟';
+
+  @override
+  String get claimsAgentIdea1 => 'ماذا عليّ أن أفعل بعد ذلك؟';
+
+  @override
+  String get claimsAgentIdea2 => 'ما النقاط التي يجب التحقق منها؟';
+
+  @override
+  String get claimsAgentIdea3 => 'ما المسؤولية التي تقترحها؟';
+
+  @override
+  String get claimsAssistantUnavailable =>
+      'المساعد غير متاح حاليًا. أعد المحاولة لاحقًا.';
+
+  @override
+  String claimsAssistantTitle(String id) {
+    return 'المساعد $id';
+  }
+
+  @override
+  String get claimsAssistantIntro =>
+      'اطرح سؤالًا عن هذا الملف. المساعد يُعلِم ولا يتخذ أي قرار.';
+
+  @override
+  String get claimsAssistantReading => 'المساعد يقرأ الملف…';
+
+  @override
+  String get claimsYourQuestion => 'سؤالك';
+
+  @override
+  String get claimsSend => 'إرسال';
+
+  @override
+  String get claimsAutomaticAnswer => 'إجابة آلية';
+
+  @override
+  String get claimsStatsServerOnly => 'الإحصائيات متاحة مع الخادم.';
+
+  @override
+  String get claimsTotal => 'الملفات';
+
+  @override
+  String get claimsLate => 'متأخرة';
+
+  @override
+  String get claimsAverageDuration => 'متوسط المدة';
+
+  @override
+  String claimsDaysShort(String days) {
+    return '$days يوم';
+  }
+
+  @override
+  String get claimsIndemnified => 'التعويضات (دينار)';
+
+  @override
+  String get claimsByStatus => 'الملفات حسب الحالة';
+
+  @override
+  String get claimsSystemVsAgents => 'النظام مقارنة بالأعوان';
+
+  @override
+  String get claimsNoDecisionYet => 'لا توجد قرارات للمقارنة بعد.';
+
+  @override
+  String claimsAgreement(String count, String percent) {
+    return 'من أصل $count قرار، اعتُمدت المسؤولية المقترحة في $percent % من الحالات.';
+  }
+
+  @override
+  String claimsAverageGap(String gap) {
+    return 'متوسط الفارق مع المبلغ المقرَّر: $gap دينار.';
+  }
+
+  @override
+  String get claimsModel => 'النموذج';
+
+  @override
+  String claimsModelVersion(String version) {
+    return 'الإصدار $version';
+  }
+
+  @override
+  String claimsTrainedOn(String synthetic, String real) {
+    return 'مدرَّب على $synthetic حالة محاكاة و$real ملف حقيقي.';
+  }
+
+  @override
+  String claimsModelTest(String mae, String auc) {
+    return 'الاختبار: متوسط الخطأ $mae دينار، AUC الرفض $auc.';
+  }
+
+  @override
+  String get claimsSimulatedWarning =>
+      'هذه القياسات مبنية على بيانات محاكاة: لا تبيّن بعد إن كان النموذج دقيقًا في الحوادث الحقيقية.';
+
+  @override
+  String get claimsSuggestionsUnavailable => 'الاقتراحات غير متاحة.';
+
+  @override
+  String get claimsNoMessages => 'لا توجد رسائل في هذا الملف.';
+
+  @override
+  String get claimsSuggestReply => 'اقتراح ردّ';
+
+  @override
+  String get claimsAttachFile => 'إرفاق ملف';
+
+  @override
+  String get claimsYourMessage => 'رسالتك';
+
+  @override
+  String get claimsOneConversation => 'محادثة لكل ملف';
+
+  @override
+  String get claimsNoClaims => 'لا توجد ملفات.';
+
+  @override
+  String get claimsNoMessage => 'لا توجد رسائل';
+
+  @override
+  String get claimsMarkAllRead => 'تعليم الكل كمقروء';
+
+  @override
+  String get claimsNoNotification => 'لا توجد إشعارات.';
+
+  @override
+  String get claimsOffline => 'دون اتصال: ستُرسَل تغييراتك عند عودة الشبكة';
+
+  @override
+  String get claimsFileUnavailable => 'الملف غير متاح حاليًا.';
+
+  @override
+  String get claimsValueDraft => 'مسودة';
+
+  @override
+  String get claimsValueDeclared => 'مُصرَّح به';
+
+  @override
+  String get claimsValueSigned => 'محضر موقَّع';
+
+  @override
+  String get claimsValueTransmitted => 'مُرسَل';
+
+  @override
+  String get claimsValueInReview => 'قيد الدراسة';
+
+  @override
+  String get claimsValueDocumentRequested => 'وثيقة مطلوبة';
+
+  @override
+  String get claimsValueExpertise => 'خبرة فنية';
+
+  @override
+  String get claimsValueClosed => 'مُغلَق';
+
+  @override
+  String get claimsValueRejected => 'مرفوض';
+
+  @override
+  String get claimsValueCollision => 'تصادم';
+
+  @override
+  String get claimsValueOffRoad => 'خروج عن الطريق';
+
+  @override
+  String get claimsValuePedestrian => 'حادث مع مترجّل';
+
+  @override
+  String get claimsValueMaterialAccident => 'حادث مادي';
+
+  @override
+  String get claimsValueOther => 'أخرى';
+
+  @override
+  String get claimsValueMaterial => 'أضرار مادية';
+
+  @override
+  String get claimsValueLight => 'خفيف';
+
+  @override
+  String get claimsValueSerious => 'خطير';
+
+  @override
+  String get claimsValueParked => 'متوقفة';
+
+  @override
+  String get claimsValueLeavingParking => 'تغادر مكان التوقف';
+
+  @override
+  String get claimsValueChangingLane => 'تغيّر المسار';
+
+  @override
+  String get claimsValueOvertaking => 'تتجاوز';
+
+  @override
+  String get claimsValueTurningRight => 'تنعطف يمينًا';
+
+  @override
+  String get claimsValueTurningLeft => 'تنعطف يسارًا';
+
+  @override
+  String get claimsValueReversing => 'ترجع إلى الخلف';
+
+  @override
+  String get claimsValueFront => 'الأمام';
+
+  @override
+  String get claimsValueRear => 'الخلف';
+
+  @override
+  String get claimsValueLeftSide => 'الجانب الأيسر';
+
+  @override
+  String get claimsValueRightSide => 'الجانب الأيمن';
+
+  @override
+  String get claimsValueQuote => 'تقدير كلفة الإصلاح';
+
+  @override
+  String get claimsValueInvoice => 'فاتورة';
+
+  @override
+  String get claimsValuePoliceReport => 'محضر الشرطة';
+
+  @override
+  String get claimsValueExpertReport => 'تقرير الخبير';
+
+  @override
+  String get claimsValueSupporting => 'وثيقة';
+
+  @override
+  String get claimsValuePhoto => 'صورة';
+
+  @override
+  String get claimsValueVideo => 'فيديو';
+
+  @override
+  String get claimsValueVoiceNote => 'تسجيل صوتي';
+
+  @override
+  String get claimsValueAccidentReport => 'المحضر الودّي';
+
+  @override
+  String get claimsEventDraftCreated => 'تم إنشاء المسودة';
+
+  @override
+  String get claimsEventDeclared => 'اكتمل التصريح';
+
+  @override
+  String claimsEventEvidence(String count) {
+    return 'أضيفت $count أدلة';
+  }
+
+  @override
+  String get claimsEventSigned => 'توقيع الطرفين';
+
+  @override
+  String get claimsEventPdfLocked => 'تم قفل ملف PDF';
+
+  @override
+  String get claimsEventSent => 'أُرسل إلى شركات التأمين';
+
+  @override
+  String get claimsEventMoved => 'تم تغيير الموعد';
+
+  @override
+  String get claimsEventReport => 'أُرفق تقرير الخبير';
+
+  @override
+  String claimsEventDetail(String status, String detail) {
+    return '$status: $detail';
+  }
+
+  @override
+  String claimsNotifNew(String id) {
+    return 'حادث جديد وارد: $id';
+  }
+
+  @override
+  String claimsNotifRequested(String id, String document) {
+    return '$id: وثيقة مطلوبة ($document)';
+  }
+
+  @override
+  String claimsNotifUploaded(String id, String name) {
+    return '$id: أُودعت وثيقة ($name)';
+  }
+
+  @override
+  String claimsNotifMoved(String id) {
+    return '$id: تم تغيير موعد الخبرة';
+  }
+
+  @override
+  String claimsNotifEvent(String id, String event) {
+    return '$id: $event';
+  }
+
+  @override
+  String claimsNotifInReview(String id) {
+    return 'ملفك $id قيد الدراسة.';
+  }
+
+  @override
+  String claimsNotifContract(String days) {
+    return 'ينتهي عقدك خلال $days أيام.';
+  }
+
+  @override
+  String get claimsValueVehicle => 'المركبة';
+
+  @override
+  String get claimsValueBodily => 'أضرار جسدية';
+
+  @override
+  String get claimsValueReopened => 'أُعيد فتحه';
+
+  @override
+  String get claimsEventConfirmed => 'تم تأكيد الموعد';
+
+  @override
+  String get claimsEventOtherSlot => 'اقتُرح موعد آخر';
+
+  @override
+  String claimsNotifConfirmed(String id) {
+    return '$id: تم تأكيد موعد الخبرة';
+  }
+
+  @override
+  String claimsNotifOtherSlot(String id) {
+    return '$id: اقتُرح موعد آخر للخبرة';
+  }
+
+  @override
+  String get claimsQuestionOnDecision => 'سؤال حول القرار؟ راسل العون';
+
+  @override
+  String get claimsReportPending =>
+      'يرسل الخبير تقريره إلى شركة التأمين بعد الموعد. سيظهر هنا.';
+
+  @override
+  String get claimsReportReceived => 'تقرير الخبير، أرفقه العون';
+
+  @override
+  String get claimsReopen => 'إعادة فتح الملف';
+
+  @override
+  String get claimsReopenHelp =>
+      'في حال وجود خطأ، أعد فتح الملف: يعود إلى الدراسة ويبقى القرار السابق في التسلسل الزمني.';
+
+  @override
+  String get claimsReopenAction => 'إعادة الفتح';
+
+  @override
+  String get claimsKindHelp =>
+      'أضرار جسدية: فحص طبي لشخص مصاب، مترجّل مثلًا. لا توجد مركبة لعرضها.';
+
+  @override
+  String get claimsExpertPhone => 'هاتف الخبير';
+
+  @override
+  String get claimsExpertPlace => 'مكان الموعد';
+
+  @override
+  String get claimsPlaceHintBody => 'عيادة، مصحة…';
+
+  @override
+  String get claimsPlaceHintVehicle => 'مستودع، وكالة، المنزل…';
+
+  @override
+  String get claimsSuggestedSlots => 'مواعيد مقترحة';
+
+  @override
+  String get claimsNoteOptional => 'رسالة (اختياري)';
+
+  @override
+  String get claimsExpertRequired => 'أدخل اسم الخبير.';
+
+  @override
+  String get claimsSlotConfirmed => 'مؤكَّد';
+
+  @override
+  String get claimsSlotYourTurn => 'بانتظار تأكيدك';
+
+  @override
+  String get claimsSlotWaitingAgent => 'بانتظار العون';
+
+  @override
+  String get claimsSlotWaitingDriver => 'بانتظار السائق';
+
+  @override
+  String get claimsExpertiseBody => 'خبرة طبية';
+
+  @override
+  String get claimsExpertiseVehicle => 'خبرة المركبة';
+
+  @override
+  String get claimsPlaceFromExpert => 'يحدّد الخبير المكان';
+
+  @override
+  String get claimsFromDriver => 'من السائق';
+
+  @override
+  String get claimsFromAgent => 'من العون';
+
+  @override
+  String get claimsToBring => 'ما يجب إحضاره';
+
+  @override
+  String get claimsBringId => 'بطاقة هويتك';
+
+  @override
+  String get claimsBringCertificates => 'الشهادات الطبية';
+
+  @override
+  String get claimsBringPrescriptions => 'الوصفات وفواتير العلاج';
+
+  @override
+  String get claimsBringVehicle => 'المركبة قبل إصلاحها';
+
+  @override
+  String get claimsBringRegistration => 'البطاقة الرمادية';
+
+  @override
+  String get claimsBringLicence => 'رخصة السياقة';
+
+  @override
+  String get claimsBringInsurance => 'شهادة التأمين';
+
+  @override
+  String get claimsAccept => 'قبول';
+
+  @override
+  String get claimsProposeOther => 'اقتراح موعد آخر';
+
+  @override
+  String get claimsCannotCome => 'لم يعد بإمكاني الحضور';
+
+  @override
+  String get claimsOtherDateTime => 'تاريخ وساعة أخرى';
+
+  @override
+  String get claimsSendProposal => 'إرسال الاقتراح';
+
+  @override
+  String get claimsStepReceived => 'استُلم';
+
+  @override
+  String get claimsStepReview => 'دراسة';
+
+  @override
+  String get claimsStepExpertise => 'خبرة';
+
+  @override
+  String get claimsStepDecision => 'قرار';
+
+  @override
+  String get claimsYourTodo => 'المطلوب منك';
+
+  @override
+  String claimsRemainingDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'يبقى حوالي $days يومًا',
+      few: 'يبقى حوالي $days أيام',
+      two: 'يبقى حوالي يومين',
+      one: 'يبقى حوالي يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get claimsEstimateNote => 'تقدير وليس التزامًا.';
+
+  @override
+  String get claimsTakingLonger =>
+      'ملفك يستغرق وقتًا أطول من المعتاد. يمكنك مراسلة العون.';
+
+  @override
+  String get claimsCircumstancesA => 'ظروف السائق A';
+
+  @override
+  String get claimsCircumstancesB => 'ظروف السائق B';
+
+  @override
+  String claimsProposalFaultB(String box) {
+    return '$box: مناورة خطرة من السائق B.';
+  }
+
+  @override
+  String claimsProposalBoth(String a, String b) {
+    return 'A: $a، B: $b. مناورات خطرة من الطرفين: مسؤولية مشتركة.';
+  }
+
+  @override
+  String get claimsProposalParkedB => 'كانت سيارة B متوقفة.';
+
+  @override
+  String get claimsNoCompany => 'شركة التأمين غير محدّدة';
+
+  @override
+  String claimsEventSealed(String hash) {
+    return 'تم ختم المحضر (SHA-256 $hash)';
+  }
+
+  @override
+  String claimsEventSealedLocal(String hash) {
+    return 'تم ختم المحضر على الهاتف (SHA-256 $hash)';
+  }
+
+  @override
+  String get claimsEventWaitingSync => 'في انتظار الاتصال للإرسال';
+
+  @override
+  String get claimsSummaryTitle => 'ملخص الملف';
+
+  @override
+  String claimsPriorityScore(String score) {
+    return 'الأولوية $score';
+  }
+
+  @override
+  String get claimsSearchMine => 'البحث في ملفاتي';
+
+  @override
+  String get claimsBySeverity => 'حسب الخطورة';
+
+  @override
+  String get claimsByType => 'حسب نوع الحادث';
+
+  @override
+  String get claimsAnswersBySource => 'الإجابات حسب المصدر';
+
+  @override
   String get appTitle => 'Mon Constat Digital';
 
   @override
@@ -611,11 +1444,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get identityIntro =>
-      'يتحقق مسؤول من بطاقة تعريفك. وهي ضرورية لتوقيع المعاينة.';
+      'اختر وثيقة، صوّرها، ثم تحقّق من وجهك. يقارن الذكاء الاصطناعي وجهك بصورة الوثيقة على خوادمنا، دون أي خدمة خارجية.';
 
   @override
   String get identityPendingNote =>
-      'يراجع مسؤول وثائقك. سيصلك إشعار عبر واتساب والبريد الإلكتروني.';
+      'لم يتمكن الذكاء الاصطناعي من الحسم: يقارن أحد المشرفين صورك. ستصلك رسالة على واتساب وبالبريد الإلكتروني.';
 
   @override
   String get identityVerifiedNote => 'يمكنك توقيع معايناتك.';
@@ -641,7 +1474,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addPhoto => 'إضافة صورة';
 
   @override
-  String get identityPhotosRequired => 'أضف وجه وظهر بطاقة التعريف.';
+  String get identityPhotosRequired => 'أضف صور الوثيقة.';
 
   @override
   String get submitIdentity => 'إرسال للمراجعة';
@@ -685,7 +1518,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rejectReasonNameMismatch => 'الاسم لا يطابق الحساب';
 
   @override
-  String get rejectReasonNotCin => 'ليست بطاقة تعريف';
+  String get rejectReasonNotCin => 'وثيقة غير صالحة';
 
   @override
   String get otherReason => 'سبب آخر';
@@ -700,7 +1533,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorIdentityLocked => 'هويتك قيد المراجعة أو تم التحقق منها.';
 
   @override
-  String get errorCinInUse => 'رقم بطاقة التعريف هذا مستعمل.';
+  String get errorCinInUse => 'رقم هذه الوثيقة مستعمل من قبل.';
 
   @override
   String get errorIdentityNotVerified => 'يجب التحقق من هويتك أولًا.';
@@ -801,4 +1634,859 @@ class AppLocalizationsAr extends AppLocalizations {
   String companiesOffline(String date) {
     return 'دون اتصال: قائمة محفوظة في $date';
   }
+
+  @override
+  String get pendingSyncTitle => 'تعديلات في الانتظار';
+
+  @override
+  String get pendingSyncBody => 'محفوظة على الهاتف. ستُرسل فور عودة الشبكة.';
+
+  @override
+  String syncFailed(String reason) {
+    return 'رفض الخادم التعديل: $reason';
+  }
+
+  @override
+  String get syncNow => 'مزامنة';
+
+  @override
+  String get retrySync => 'إعادة المحاولة';
+
+  @override
+  String get discardChanges => 'إلغاء التعديلات';
+
+  @override
+  String get savedOffline => 'حُفظ على الهاتف. سيُرسل عند عودة الشبكة.';
+
+  @override
+  String get syncing => 'جارٍ المزامنة…';
+
+  @override
+  String get consoleDashboard => 'لوحة القيادة';
+
+  @override
+  String get consoleToHandle => 'للمعالجة';
+
+  @override
+  String get consoleReview => 'مراجعة';
+
+  @override
+  String get consoleSeeAll => 'عرض الكل';
+
+  @override
+  String get consoleNothingToHandle => 'لا شيء للمعالجة حاليًا.';
+
+  @override
+  String get refresh => 'تحديث';
+
+  @override
+  String get signedInAs => 'متصل';
+
+  @override
+  String get colUser => 'المستخدم';
+
+  @override
+  String get colStatus => 'الحالة';
+
+  @override
+  String get filterAll => 'الكل';
+
+  @override
+  String get filterDrivers => 'السائقون';
+
+  @override
+  String get filterAgents => 'الأعوان';
+
+  @override
+  String get filterAdmins => 'المسؤولون';
+
+  @override
+  String accountsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count حساب',
+      few: '$count حسابات',
+      two: 'حسابان',
+      one: 'حساب واحد',
+      zero: 'لا توجد حسابات',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statusActive => 'نشط';
+
+  @override
+  String get statusSuspended => 'موقوف';
+
+  @override
+  String get changeRole => 'تغيير الدور';
+
+  @override
+  String get suspendAccount => 'إيقاف';
+
+  @override
+  String get reactivateAccount => 'إعادة التفعيل';
+
+  @override
+  String get selectRequest => 'اختر طلبًا لعرض الوثيقة.';
+
+  @override
+  String pendingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count طلب',
+      few: '$count طلبات',
+      two: 'طلبان',
+      one: 'طلب واحد',
+      zero: 'لا توجد طلبات',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get selectCompany => 'اختر شركة لإدارة وكالاتها.';
+
+  @override
+  String get agenciesTitle => 'الوكالات';
+
+  @override
+  String get noAgencies => 'لا توجد وكالات بعد.';
+
+  @override
+  String get heroPoint1 => 'معاينة كاملة في أقل من 10 دقائق، حتى دون اتصال';
+
+  @override
+  String get heroPoint2 => 'توقيع السائقين وملف PDF غير قابل للتزوير';
+
+  @override
+  String get heroPoint3 => 'متابعة الملف لحظيًا حتى التعويض';
+
+  @override
+  String get identityVerifiedAutoNote =>
+      'تم التحقق تلقائيًا عبر التعرّف على الوجه. يمكنك الآن توقيع المعاينات.';
+
+  @override
+  String get documentTypeLabel => 'وثيقة الهوية';
+
+  @override
+  String get documentCin => 'بطاقة التعريف';
+
+  @override
+  String get documentLicense => 'رخصة السياقة';
+
+  @override
+  String get documentPassport => 'جواز السفر';
+
+  @override
+  String get passportNumberLabel => 'رقم جواز السفر';
+
+  @override
+  String get licenseNumberInvalid => 'رقم رخصة غير صالح (مثال: 12/345678).';
+
+  @override
+  String get passportNumberInvalid => 'رقم جواز سفر غير صالح (مثال: X1234567).';
+
+  @override
+  String get licenseFront => 'وجه الرخصة';
+
+  @override
+  String get licenseBack => 'ظهر الرخصة';
+
+  @override
+  String get passportPage => 'صفحة الصورة في جواز السفر';
+
+  @override
+  String get faceCheckTitle => 'التحقق من الوجه';
+
+  @override
+  String get faceCheckIntro =>
+      'ثلاث صور سريعة: من الأمام، ثم مع إدارة الرأس إلى كل جهة. لا تنجح صورة مطبوعة أو شاشة.';
+
+  @override
+  String get faceCheckDone => 'تم التحقق من الوجه';
+
+  @override
+  String get faceCheckStart => 'تحقّق من وجهي';
+
+  @override
+  String get faceCheckRedo => 'إعادة';
+
+  @override
+  String get faceCheckRequired => 'قم أولًا بالتحقق من الوجه.';
+
+  @override
+  String get livenessCenter => 'انظر مباشرة إلى الكاميرا';
+
+  @override
+  String get livenessLeft => 'أدر رأسك إلى اليسار';
+
+  @override
+  String get livenessRight => 'أدر رأسك إلى اليمين';
+
+  @override
+  String livenessStepOf(int current, int total) {
+    return 'الصورة $current من $total';
+  }
+
+  @override
+  String get livenessAnalyzing => 'تحليل بالذكاء الاصطناعي…';
+
+  @override
+  String get livenessNoCamera =>
+      'الكاميرا غير متاحة. اسمح بالوصول إلى الكاميرا ثم أعد المحاولة.';
+
+  @override
+  String get livenessPrivacy =>
+      'تُستعمل الصورة الأمامية لهذا التحقق فقط، وتُحذف فور اتخاذ القرار.';
+
+  @override
+  String get livenessSuccess => 'تم التحقق من الوجه. يمكنك إرسال الطلب.';
+
+  @override
+  String get identityVerifiedByAi => 'تم التحقق من الهوية بالذكاء الاصطناعي';
+
+  @override
+  String get errorNoFaceOnDocument =>
+      'لم يُعثر على وجه في الوثيقة. أعد التصوير والوثيقة مسطّحة، بإضاءة جيدة ودون انعكاس.';
+
+  @override
+  String get errorLivenessNoFace =>
+      'لم يُعثر على الوجه. ضع وجهك داخل الإطار البيضاوي بإضاءة جيدة.';
+
+  @override
+  String get errorLivenessManyFaces =>
+      'يجب أن يكون شخص واحد فقط أمام الكاميرا.';
+
+  @override
+  String get errorLivenessNotCentered =>
+      'انظر مباشرة إلى الكاميرا في الصورة الأولى.';
+
+  @override
+  String get errorLivenessNoTurn => 'أدر رأسك أكثر عندما يُطلب منك ذلك.';
+
+  @override
+  String get errorLivenessDifferentFaces => 'الصور لا تُظهر الشخص نفسه.';
+
+  @override
+  String get errorLivenessExpired =>
+      'انتهت صلاحية التحدي. أعد التحقق من الوجه.';
+
+  @override
+  String get errorFaceEngine => 'تحليل الوجه غير متاح. أعد المحاولة بعد قليل.';
+
+  @override
+  String aiMatch(int percent) {
+    return 'تطابق الذكاء الاصطناعي: $percent٪';
+  }
+
+  @override
+  String get aiNoConclusion => 'الذكاء الاصطناعي: دون حسم';
+
+  @override
+  String get livenessPassed => 'تم التحقق من وجه حيّ';
+
+  @override
+  String get selfieLabel => 'صورة الوجه';
+
+  @override
+  String get documentNumberLabel => 'رقم الوثيقة';
+
+  @override
+  String get rejectReasonFaceMismatch => 'الوجه لا يطابق الوثيقة';
+
+  @override
+  String dashVerifiedIdsAi(int count, int ai) {
+    return '$count موثّقة، منها $ai بالذكاء الاصطناعي';
+  }
+
+  @override
+  String get readingDocument => 'يقرأ الذكاء الاصطناعي وثيقتك…';
+
+  @override
+  String get readOnCard => 'ما قرأه الذكاء الاصطناعي من الوثيقة';
+
+  @override
+  String get readNumber => 'الرقم';
+
+  @override
+  String get readName => 'الاسم';
+
+  @override
+  String get readParents => 'النسب';
+
+  @override
+  String get readBirth => 'الولادة';
+
+  @override
+  String get readExpiry => 'صالحة إلى غاية';
+
+  @override
+  String get readConfirm =>
+      'تحقق من هذه المعلومات. يجب أن يكون الرقم المُدخل هو رقم الوثيقة.';
+
+  @override
+  String get readNothing =>
+      'لم يتمكن الذكاء الاصطناعي من قراءة الوثيقة. أدخل الرقم وسيتحقق منه أحد المشرفين.';
+
+  @override
+  String get useNumberRead => 'استعمل هذا الرقم';
+
+  @override
+  String get useLicensePhoto => 'استعمل صورة الرخصة من ملفي';
+
+  @override
+  String get errorBackHasFace =>
+      'هذه الصورة تُظهر الوجه الأمامي. صوّر ظهر الوثيقة نفسها.';
+
+  @override
+  String get errorLicensePhotoMissing => 'لا توجد صورة رخصة في ملفك.';
+
+  @override
+  String get checksTitle => 'فحوصات الذكاء الاصطناعي';
+
+  @override
+  String get checkLiveness => 'وجه حيّ';
+
+  @override
+  String get checkFace => 'الوجه يطابق صورة الوثيقة';
+
+  @override
+  String checkNumber(String number) {
+    return 'الرقم المُدخل = الرقم المقروء ($number)';
+  }
+
+  @override
+  String get checkNumberUnread => 'الرقم غير مقروء في الوثيقة';
+
+  @override
+  String get checkName => 'اسم الحساب على الوثيقة';
+
+  @override
+  String get checkExpiry => 'الوثيقة سارية المفعول';
+
+  @override
+  String get scanLicense => 'امسح رخصتي';
+
+  @override
+  String get scanLicenseHint =>
+      'صوّر رخصتك: يملأ الذكاء الاصطناعي الرقم والأصناف والتاريخ.';
+
+  @override
+  String get licenseFilledByAi =>
+      'ملأها الذكاء الاصطناعي من الصورة. تحقق قبل الحفظ.';
+
+  @override
+  String get licenseNotRead =>
+      'حُفظت الصورة لكن الذكاء الاصطناعي لم يتمكن من قراءة الرخصة. أكمل الحقول.';
+
+  @override
+  String get errorBackNotRecognized =>
+      'هذا ليس ظهر الوثيقة. في بطاقة التعريف يجب أن يظهر الرمز الشريطي كاملًا وواضحًا.';
+
+  @override
+  String get checkBack => 'تم التعرّف على ظهر الوثيقة';
+
+  @override
+  String get rejectSevere => 'رفض نهائي: منع الطلبات الجديدة';
+
+  @override
+  String get rejectSevereHint =>
+      'في حالة احتيال محتمل: وجه مختلف أو وثيقة مزورة.';
+
+  @override
+  String get identityBlockedNote => 'تم حظر التحقق من هويتك. اتصل بالدعم.';
+
+  @override
+  String identityRetryOn(String date) {
+    return 'يمكنك إرسال طلب جديد يوم $date.';
+  }
+
+  @override
+  String identityAttemptsLeft(int count) {
+    return 'المحاولات المتبقية: $count.';
+  }
+
+  @override
+  String get errorIdentityBlocked => 'تم حظر التحقق من هويتك. اتصل بالدعم.';
+
+  @override
+  String get errorIdentityRetryLater =>
+      'انتظر 24 ساعة بعد الرفض قبل تقديم طلب جديد.';
+
+  @override
+  String get unblockIdentity => 'رفع حظر التحقق';
+
+  @override
+  String get identityUnblocked => 'تم رفع حظر التحقق';
+
+  @override
+  String get identityBlockedChip => 'التحقق محظور';
+
+  @override
+  String get attemptsTitle => 'طلبات هذا الحساب';
+
+  @override
+  String refusalsCount(int count) {
+    return 'عدد الرفض: $count';
+  }
+
+  @override
+  String get outcomeAuto => 'وثّقها الذكاء الاصطناعي';
+
+  @override
+  String get outcomeVerified => 'موثّقة';
+
+  @override
+  String get outcomeRejected => 'مرفوضة';
+
+  @override
+  String get outcomePending => 'قيد الانتظار';
+
+  @override
+  String get biometricConsentLabel =>
+      'أوافق على تحليل وجهي للتحقق من هويتي. يتم التحليل على خوادم Mon Constat وتُحذف الصورة فور اتخاذ القرار (القانون عدد 63 لسنة 2004).';
+
+  @override
+  String get errorAiQuota =>
+      'عدد كبير من التحاليل في وقت قصير. أعد المحاولة بعد قليل.';
+
+  @override
+  String get livenessHintNoFace => 'ضع وجهك داخل الإطار';
+
+  @override
+  String get livenessHintLookStraight => 'انظر مباشرة إلى الكاميرا';
+
+  @override
+  String get livenessHintTurnMore => 'أدر رأسك أكثر';
+
+  @override
+  String get dashAiTitle => 'التحقق بالذكاء الاصطناعي';
+
+  @override
+  String get dashAiFooter =>
+      'خلال الفترة المعروضة. التحليل على خوادمنا دون خدمة خارجية.';
+
+  @override
+  String get dashAiRequests => 'طلبات';
+
+  @override
+  String get dashAiAutoRate => 'وثّقها الذكاء الاصطناعي وحده';
+
+  @override
+  String get dashAiAverageMatch => 'متوسط التطابق';
+
+  @override
+  String get dashAiBlocked => 'حسابات محظورة';
+
+  @override
+  String get checkBirthDate => 'نفس تاريخ الولادة في الرخصة';
+
+  @override
+  String get licenseBirthMismatch =>
+      'تنبيه: تاريخ الولادة في الرخصة لا يطابق وثيقة هويتك.';
+
+  @override
+  String get licenseNameMismatch =>
+      'تنبيه: هذه الرخصة ليست باسمك. أضف رخصتك أنت.';
+
+  @override
+  String get licenseCinMismatch =>
+      'تنبيه: رقم بطاقة التعريف في الرخصة لا يطابق وثيقة هويتك.';
+
+  @override
+  String get errorWrongDocument =>
+      'الصورة لا تُظهر الوثيقة المختارة. غيّر الوثيقة أو الصورة.';
+
+  @override
+  String get errorNotALicense => 'هذه الصورة ليست رخصة سياقة.';
+
+  @override
+  String get registerIntro =>
+      'بريد إلكتروني وكلمة مرور. الباقي يأتي مباشرة بعد ذلك، في بضع خطوات.';
+
+  @override
+  String get registerStepYou => 'أنت';
+
+  @override
+  String get registerStepContact => 'بيانات الاتصال';
+
+  @override
+  String get registerStepSecurity => 'الأمان';
+
+  @override
+  String get registerPhoneHint => 'سيصلك رمز التحقق على واتساب.';
+
+  @override
+  String get passwordWeak => 'ضعيفة';
+
+  @override
+  String get passwordFair => 'متوسطة';
+
+  @override
+  String get passwordGood => 'جيدة';
+
+  @override
+  String get passwordStrong => 'ممتازة';
+
+  @override
+  String get passwordRuleLength => '8 أحرف';
+
+  @override
+  String get passwordRuleUpper => 'حرف كبير';
+
+  @override
+  String get passwordRuleDigit => 'رقم';
+
+  @override
+  String get passwordRuleSymbol => 'رمز';
+
+  @override
+  String get identityStepDocument => 'الوثيقة';
+
+  @override
+  String get identityStepReading => 'القراءة';
+
+  @override
+  String get identityStepFace => 'الوجه';
+
+  @override
+  String get identityStepSend => 'الإرسال';
+
+  @override
+  String get profileIdentityVerified => 'هوية موثّقة';
+
+  @override
+  String get profileIdentityPending => 'الهوية قيد التحقق';
+
+  @override
+  String get profileIdentityTodo => 'تحقّق من هويتك';
+
+  @override
+  String get licenseStatusVerified => 'رخصة موثقة';
+
+  @override
+  String get licenseStatusToReview => 'الرخصة قيد التحقق';
+
+  @override
+  String get licenseStatusRejected => 'الرخصة مرفوضة';
+
+  @override
+  String get licenseToReviewNote =>
+      'معلومة في الرخصة لا تطابق حسابك: يقوم مشرف بالتحقق منها.';
+
+  @override
+  String licenseRejectedNote(String reason) {
+    return 'تم رفض رخصتك. السبب: $reason. أضف رخصتك الخاصة.';
+  }
+
+  @override
+  String get errorLicenseNotYours =>
+      'يبدو أن هذه الرخصة ليست لك: الاسم أو تاريخ الميلاد أو رقم بطاقة التعريف لا يطابق حسابك. لم يتم حفظها.';
+
+  @override
+  String get accountFileTitle => 'ملف الحساب';
+
+  @override
+  String get openAccountFile => 'عرض الملف';
+
+  @override
+  String get sectionAccount => 'الحساب';
+
+  @override
+  String get licenseReviewTitle => 'رخص للتحقق';
+
+  @override
+  String get licenseReviewSubtitle =>
+      'فشل أحد فحوص الذكاء الاصطناعي، أو تعذرت قراءة الصورة';
+
+  @override
+  String get noLicenseReviews => 'لا توجد رخص للتحقق.';
+
+  @override
+  String licensesToReviewCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count رخص للتحقق',
+      one: 'رخصة واحدة للتحقق',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get approveLicense => 'قبول الرخصة';
+
+  @override
+  String get rejectLicense => 'رفض الرخصة';
+
+  @override
+  String get deleteLicense => 'حذف الرخصة';
+
+  @override
+  String deleteLicenseBody(String name) {
+    return 'سيتم حذف صورة ومعلومات رخصة $name.';
+  }
+
+  @override
+  String get licenseApproved => 'تم قبول الرخصة';
+
+  @override
+  String get licenseRejected => 'تم رفض الرخصة، يرى السائق السبب';
+
+  @override
+  String get licenseDeleted => 'تم حذف الرخصة';
+
+  @override
+  String get licenseUpdated => 'تم تعديل الرخصة';
+
+  @override
+  String get noLicense => 'لا توجد رخصة مسجلة.';
+
+  @override
+  String get noIdentityDocuments => 'لا توجد وثيقة مسجلة.';
+
+  @override
+  String get aiChecksTitle => 'فحوص الذكاء الاصطناعي';
+
+  @override
+  String get checkLicenseName => 'اسم صاحب الرخصة = اسم الحساب';
+
+  @override
+  String get checkLicenseBirth => 'تاريخ الميلاد = وثيقة الهوية';
+
+  @override
+  String get checkLicenseCin => 'رقم بطاقة التعريف = وثيقة الهوية';
+
+  @override
+  String get checkLicenseNumber => 'الرقم المدخل = الرقم المقروء من الصورة';
+
+  @override
+  String get checkNotCompared => 'غير قابل للمقارنة';
+
+  @override
+  String get licenseRejectReasonNotOwner => 'رخصة شخص آخر';
+
+  @override
+  String get licenseRejectReasonExpired => 'رخصة منتهية الصلاحية';
+
+  @override
+  String get revokeIdentity => 'إلغاء التحقق';
+
+  @override
+  String get revokeIdentityTitle => 'إلغاء التحقق من الهوية؟';
+
+  @override
+  String get revokeIdentityBody =>
+      'سيتم حذف صور الوثيقة. يرى السائق السبب ويمكنه إعادة الطلب فورا.';
+
+  @override
+  String get identityRevoked => 'تم إلغاء التحقق';
+
+  @override
+  String get reasonLabel => 'السبب';
+
+  @override
+  String get onbSkip => 'تخطي';
+
+  @override
+  String get onbLater => 'لاحقا';
+
+  @override
+  String get onbContinue => 'متابعة';
+
+  @override
+  String get onbBack => 'الخطوة السابقة';
+
+  @override
+  String onbProgress(int current, int total) {
+    return 'الخطوة $current من $total';
+  }
+
+  @override
+  String get onbWelcomeEyebrow => 'تم إنشاء الحساب';
+
+  @override
+  String onbWelcomeTitle(String name) {
+    return 'مرحبا،\n$name';
+  }
+
+  @override
+  String get onbWelcomeBody =>
+      'دقيقتان لتجهيز حسابك، وستكون مستعدا يوم تحتاج إليه.';
+
+  @override
+  String get onbWelcomeStart => 'تجهيز حسابي';
+
+  @override
+  String get onbWelcomeSkip => 'سأفعل ذلك لاحقا';
+
+  @override
+  String get onbLicenseTitle => 'أضف رخصة القيادة';
+
+  @override
+  String get onbLicenseBody =>
+      'صورة واحدة تكفي: يقرأ الذكاء الاصطناعي الرقم والأصناف والتاريخ. ستُستعمل لملء محاضرك.';
+
+  @override
+  String get onbLicenseScan => 'تصوير رخصتي';
+
+  @override
+  String get onbLicenseRescan => 'إعادة التصوير';
+
+  @override
+  String get onbLicenseReading => 'جار قراءة الرخصة…';
+
+  @override
+  String get onbLicenseRead => 'قرأها الذكاء الاصطناعي';
+
+  @override
+  String get onbLicenseUnread =>
+      'تعذرت قراءة البطاقة. ستكمل المعلومات من ملفك الشخصي.';
+
+  @override
+  String get onbLicenseTip => 'على سطح مستو، بإضاءة جيدة ودون انعكاس.';
+
+  @override
+  String get onbIdentityTitle => 'تحقق من هويتك';
+
+  @override
+  String get onbIdentityBody => 'لتوقيع محاضرك بكل ثقة. يستغرق ذلك دقيقتين.';
+
+  @override
+  String get onbIdentityStep1 => 'وثيقة: بطاقة تعريف أو رخصة أو جواز سفر';
+
+  @override
+  String get onbIdentityStep2 => 'وجهك، مع إدارة الرأس';
+
+  @override
+  String get onbIdentityStep3 => 'يقارن الذكاء الاصطناعي في ثوان';
+
+  @override
+  String get onbIdentityStart => 'التحقق الآن';
+
+  @override
+  String get onbIdentityLicenseHint =>
+      'يمكن استعمال رخصتك كوثيقة: لا حاجة لتصويرها مجددا.';
+
+  @override
+  String get onbIdentityPrivacy => 'تُحلل صورك على خوادمنا دون أي خدمة خارجية.';
+
+  @override
+  String get onbBiometricTitle => 'الدخول بلمسة واحدة';
+
+  @override
+  String get onbBiometricBody =>
+      'افتح التطبيق ببصمتك أو وجهك دون إعادة كتابة كلمة المرور.';
+
+  @override
+  String get onbBiometricEnable => 'تفعيل';
+
+  @override
+  String onbDoneTitle(String name) {
+    return 'كل شيء جاهز،\n$name';
+  }
+
+  @override
+  String get onbDoneBody => 'يمكنك التصريح بحادث في أي وقت، حتى دون شبكة.';
+
+  @override
+  String get onbDoneLater => 'يمكنك إكمال الباقي من ملفك الشخصي متى شئت.';
+
+  @override
+  String get onbDoneStart => 'الدخول إلى التطبيق';
+
+  @override
+  String get onbItemPhone => 'الهاتف';
+
+  @override
+  String get onbItemLicense => 'رخصة القيادة';
+
+  @override
+  String get onbItemIdentity => 'الهوية';
+
+  @override
+  String get onbItemBiometric => 'الدخول البيومتري';
+
+  @override
+  String get onbStateDone => 'تم';
+
+  @override
+  String get onbStatePending => 'قيد التحقق';
+
+  @override
+  String get onbStateTodo => 'للإنجاز';
+
+  @override
+  String get registerStepAccount => 'حسابك';
+
+  @override
+  String get onbWelcomeNewTitle => 'مرحبا بك في\nMon Constat';
+
+  @override
+  String get onbProfileTitle => 'لنتعرف عليك';
+
+  @override
+  String get onbProfileBody =>
+      'يظهر اسمك في محاضرك. ويُستعمل رقمك لتسجيل الدخول ومتابعة ملفاتك.';
+
+  @override
+  String get onbPhoneTitle => 'أكد رقمك';
+
+  @override
+  String get onbCodeSent => 'تم إرسال رمز جديد.';
+
+  @override
+  String get onbReadingTitle => 'المقروء من الوثيقة';
+
+  @override
+  String get correctReading => 'تصحيح';
+
+  @override
+  String get correctReadingTitle => 'تصحيح قراءة الوثيقة';
+
+  @override
+  String get correctReadingHint =>
+      'صحح ما أخطأ الذكاء الاصطناعي في قراءته بنسخ الوثيقة. التواريخ بصيغة YYYY-MM-DD.';
+
+  @override
+  String get readingCorrected => 'تم تصحيح القراءة';
+
+  @override
+  String get readLastName => 'اللقب';
+
+  @override
+  String get readFirstName => 'الاسم';
+
+  @override
+  String get readBirthDate => 'تاريخ الولادة';
+
+  @override
+  String get readBirthPlace => 'مكان الولادة';
+
+  @override
+  String get claimsDecisionHelpGuide =>
+      'مساعدة القرار: الأولوية والتقدير والمخاطر والوثائق الناقصة لهذا الملف. اضغط على الأيقونة لفتحها.';
+
+  @override
+  String claimsTimelineEarlier(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مرحلة سابقة',
+      many: '$count مرحلة سابقة',
+      few: '$count مراحل سابقة',
+      two: 'مرحلتان سابقتان',
+      one: 'مرحلة سابقة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get claimsAlertOpen => 'عرض';
+
+  @override
+  String get claimsTimelineCollapse => 'عرض أقل';
 }

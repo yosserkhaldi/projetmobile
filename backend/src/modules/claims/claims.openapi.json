@@ -1,0 +1,900 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Mon Constat Digital : module 5",
+    "version": "1.0.0",
+    "description": "Sinistres, suivi, notifications et messagerie. Hors production, identité par en-têtes x-user-id, x-user-role et x-user-name en attendant le module 1."
+  },
+  "servers": [
+    {
+      "url": "/api/claims"
+    }
+  ],
+  "security": [
+    {
+      "bearer": []
+    },
+    {
+      "devUser": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "devUser": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-user-id"
+      }
+    },
+    "parameters": {
+      "ClaimId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Un renvoi avec la même clé ne s'applique pas deux fois."
+      }
+    }
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Lister les sinistres",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Transmettre un dossier (conducteur)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "type",
+                  "place",
+                  "date",
+                  "severity"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "place": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string"
+                  },
+                  "severity": {
+                    "type": "string"
+                  },
+                  "observations": {
+                    "type": "string"
+                  },
+                  "circumstances": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "impactZones": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "timeline": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sync": {
+      "get": {
+        "summary": "Dossiers, notifications et messages de l'utilisateur",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "summary": "Centre de notifications",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/notifications/read": {
+      "post": {
+        "summary": "Marquer des notifications lues",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/document/{id}": {
+      "get": {
+        "summary": "Télécharger une pièce",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          }
+        ]
+      }
+    },
+    "/files/message/{id}": {
+      "get": {
+        "summary": "Télécharger une pièce jointe",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          }
+        ]
+      }
+    },
+    "/{id}": {
+      "get": {
+        "summary": "Dossier complet",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          }
+        ]
+      }
+    },
+    "/{id}/take-charge": {
+      "post": {
+        "summary": "Prendre en charge (agent)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ]
+      }
+    },
+    "/{id}/document-requests": {
+      "post": {
+        "summary": "Demander une pièce (agent)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{id}/documents": {
+      "post": {
+        "summary": "Déposer une pièce",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "requestId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{id}/expertise": {
+      "post": {
+        "summary": "Proposer un rendez-vous d'expertise (agent)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "expertName",
+                  "appointment"
+                ],
+                "properties": {
+                  "expertName": {
+                    "type": "string"
+                  },
+                  "expertPhone": {
+                    "type": "string"
+                  },
+                  "expertPlace": {
+                    "type": "string"
+                  },
+                  "expertKind": {
+                    "type": "string",
+                    "enum": [
+                      "Véhicule",
+                      "Corporelle"
+                    ],
+                    "description": "Par défaut : Corporelle pour un piéton, Véhicule sinon."
+                  },
+                  "appointment": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{id}/appointment": {
+      "post": {
+        "summary": "Accepter le créneau de l'autre partie, ou en proposer un autre (conducteur ou agent)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action"
+                ],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "accept",
+                      "propose"
+                    ]
+                  },
+                  "appointment": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Requis pour propose."
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Date invalide ou passée"
+          },
+          "409": {
+            "description": "Pas de créneau à confirmer, ou c'est le sien"
+          }
+        }
+      }
+    },
+    "/{id}/reopen": {
+      "post": {
+        "summary": "Rouvrir un dossier clôturé ou rejeté (agent)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dossier revenu en instruction"
+          },
+          "409": {
+            "description": "Dossier pas terminé"
+          }
+        }
+      }
+    },
+    "/{id}/expert-report": {
+      "post": {
+        "summary": "Joindre le rapport d'expertise (agent)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{id}/close": {
+      "post": {
+        "summary": "Clôturer (agent)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "responsibility": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      50,
+                      100
+                    ]
+                  },
+                  "indemnity": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{id}/reject": {
+      "post": {
+        "summary": "Rejeter avec un motif (agent)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{id}/messages": {
+      "get": {
+        "summary": "Messages du dossier",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          }
+        ]
+      },
+      "post": {
+        "summary": "Envoyer un message",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{id}/messages/read": {
+      "post": {
+        "summary": "Accusé de lecture",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClaimId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ]
+      }
+    },
+    "/ai/status": {
+      "get": {
+        "summary": "État de la couche IA : fournisseur actif (CLI Claude, Claude, OpenAI compatible, Perplexity) et version du modèle ML",
+        "tags": [
+          "Intelligence"
+        ],
+        "responses": {
+          "200": {
+            "description": "État",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "active": {
+                      "nullable": true,
+                      "type": "object",
+                      "description": "null : les règles répondent",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "enum": [
+                            "claude-cli",
+                            "anthropic",
+                            "openai",
+                            "perplexity"
+                          ]
+                        },
+                        "label": {
+                          "type": "string"
+                        },
+                        "model": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "configured": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "ml": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics": {
+      "get": {
+        "summary": "Statistiques et écart entre le système et les décisions (agent)",
+        "tags": [
+          "Intelligence"
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistiques"
+          },
+          "403": {
+            "description": "Réservé à l’agent"
+          }
+        }
+      }
+    },
+    "/{id}/insights": {
+      "get": {
+        "summary": "Analyse du dossier. Le conducteur ne reçoit que son guide.",
+        "tags": [
+          "Intelligence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analyse"
+          }
+        }
+      }
+    },
+    "/{id}/ai/assistant": {
+      "post": {
+        "summary": "Question sur le dossier. Modèle de langage (outils en lecture seule ou données jointes), ou règles sans fournisseur. Réponse dans la langue du profil.",
+        "tags": [
+          "Intelligence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "messages"
+                ],
+                "properties": {
+                  "messages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "assistant"
+                          ]
+                        },
+                        "content": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "answer, source (ai ou rules), by (modèle qui a répondu, null pour les règles)"
+          },
+          "400": {
+            "description": "Conversation invalide"
+          },
+          "429": {
+            "description": "Trop de demandes"
+          }
+        }
+      }
+    },
+    "/{id}/ai/summary": {
+      "post": {
+        "summary": "Synthèse du dossier (agent), en cache tant qu’il ne change pas",
+        "tags": [
+          "Intelligence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "summary, source (ai ou rules), by (modèle qui a répondu, null pour les règles)"
+          }
+        }
+      }
+    },
+    "/{id}/ai/replies": {
+      "post": {
+        "summary": "Réponses suggérées pour la messagerie (agent)",
+        "tags": [
+          "Intelligence"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "replies, source (ai ou rules), by (modèle qui a répondu, null pour les règles)"
+          }
+        }
+      }
+    }
+  }
+}

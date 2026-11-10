@@ -6,6 +6,7 @@ import { after, before, beforeEach, test } from 'node:test';
 import {
   createAdmin,
   driver,
+  image,
   migrate,
   prisma,
   resetDatabase,
@@ -71,9 +72,11 @@ test('photo du permis : champ séparé de la photo de profil', async (t) => {
   const { call } = await startApi(t);
   const { body } = await call('POST', '/auth/register', { body: driver() });
   const token = body.accessToken;
+  // Image reconnue comme un permis par l'IA simulée.
+  const license = image('license');
   const sent = await call('PUT', '/users/me/license-photo', {
     token,
-    form: form(PNG),
+    form: form(license),
   });
   assert.equal(sent.status, 200);
   assert.ok(sent.body.user.licensePhotoId);
@@ -81,7 +84,7 @@ test('photo du permis : champ séparé de la photo de profil', async (t) => {
   const read = await call('GET', `/users/${body.user.id}/license-photo`, {
     token,
   });
-  assert.deepEqual(read.bytes, PNG);
+  assert.deepEqual(read.bytes, license);
 });
 
 test('photos : refuse ce qui n est pas une image, quel que soit le type annoncé', async (t) => {
@@ -119,7 +122,7 @@ test('photos : visibles par le titulaire et les administrateurs seulement', asyn
   });
   await call('PUT', '/users/me/license-photo', {
     token: owner.accessToken,
-    form: form(PNG),
+    form: form(image('license')),
   });
   const { body: other } = await call('POST', '/auth/register', {
     body: driver({ email: 'autre@example.com', phone: '20777000' }),
@@ -133,4 +136,64 @@ test('photos : visibles par le titulaire et les administrateurs seulement', asyn
     403,
   );
   assert.equal((await call('GET', path, { token: admin })).status, 200);
+});
+
+test('photo du permis : l IA lit numéro, catégories et dates', async (t) => {
+  const { call } = await startApi(t);
+  const { body } = await call('POST', '/auth/register', { body: driver() });
+  const data = new FormData();
+  data.append('photo', new Blob([image('license')], { type: 'image/png' }), 'permis.png');
+  const res = await call('PUT', '/users/me/license-photo', {
+    token: body.accessToken,
+    form: data,
+  });
+  assert.equal(res.status, 200);
+  assert.ok(res.body.user.licensePhotoId);
+  assert.deepEqual(res.body.extracted, {
+    number: '12/345678',
+    categories: ['B', 'B+E'],
+    issuedAt: '2020-05-10',
+    expiresAt: '2030-05-10',
+    birthDate: '1999-03-12',
+    lastName: 'BEN ALI',
+    firstName: 'SAMI',
+    cinNumber: '12345678',
+    nameMatchesAccount: true,
+    birthDateMatchesIdentity: null,
+    cinMatchesIdentity: null,
+  });
+  // Rien n'est enregistré sans confirmation de l'utilisateur.
+  assert.equal(res.body.user.licenseNumber, null);
+});
+
+test('photo du permis : un permis à un autre nom est signalé', async (t) => {
+  const { call } = await startApi(t);
+  const { body } = await call('POST', '/auth/register', { body: driver() });
+  const data = new FormData();
+  data.append(
+    'photo',
+    new Blob([image('license-other')], { type: 'image/png' }),
+    'permis.png',
+  );
+  const res = await call('PUT', '/users/me/license-photo', {
+    token: body.accessToken,
+    form: data,
+  });
+  // Même nom de famille (un frère, une sœur), autre prénom.
+  assert.equal(res.body.extracted.nameMatchesAccount, false);
+});
+
+test('photo du permis : un passeport est refusé, rien n est enregistré', async (t) => {
+  const { call } = await startApi(t);
+  const { body } = await call('POST', '/auth/register', { body: driver() });
+  const data = new FormData();
+  data.append('photo', new Blob([image('passport')], { type: 'image/png' }), 'p.png');
+  const res = await call('PUT', '/users/me/license-photo', {
+    token: body.accessToken,
+    form: data,
+  });
+  assert.equal(res.status, 422);
+  assert.equal(res.body.error.code, 'NOT_A_LICENSE');
+  const me = await call('GET', '/users/me', { token: body.accessToken });
+  assert.equal(me.body.user.licensePhotoId, null);
 });

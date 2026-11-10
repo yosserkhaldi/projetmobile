@@ -11,6 +11,8 @@ class ConstatService {
   final ApiClient _api;
 
   /// Soumet un constat scellé avec son document PDF et son empreinte SHA-256.
+  /// Le conducteur A vient du brouillon, rempli depuis le profil et le
+  /// véhicule choisi (AccidentDraft.driverA…).
   Future<Constat> sealConstat({
     required AccidentDraft draft,
     required Uint8List pdfBytes,
@@ -27,20 +29,25 @@ class ConstatService {
     String? companyBId,
   }) async {
     final signedIso = (signedAt ?? DateTime.now()).toUtc().toIso8601String();
+    final resolvedDriverAName =
+        _firstNonEmpty(driverAName, draft.driverAName) ?? 'Conducteur A';
+    final resolvedDriverAPlate =
+        _firstNonEmpty(driverAPlate, draft.driverAPlate) ?? 'Non renseignée';
+    final resolvedDriverAInsurer =
+        _firstNonEmpty(driverAInsurer, draft.driverAInsurer) ?? 'Non renseigné';
+    final resolvedDriverAPolicy = _firstNonEmpty(driverAPolicy, draft.driverAPolicy);
+    final resolvedCompanyAId = _firstNonEmpty(companyAId, draft.driverACompanyId);
     final payload = {
       if (accidentId != null && accidentId.isNotEmpty) 'accidentId': accidentId,
       'sha256Hash': sha256Hash,
       if (signaturesHash != null && signaturesHash.isNotEmpty)
         'signaturesHash': signaturesHash,
       if (deferEmail) 'deferEmail': true,
-      'driverAName':
-          (driverAName != null && driverAName.isNotEmpty) ? driverAName : 'Conducteur A',
-      'driverAPlate':
-          (driverAPlate != null && driverAPlate.isNotEmpty) ? driverAPlate : 'A-Plate',
-      'driverAInsurer':
-          (driverAInsurer != null && driverAInsurer.isNotEmpty) ? driverAInsurer : 'Assureur A',
-      if (driverAPolicy != null && driverAPolicy.isNotEmpty) 'driverAPolicy': driverAPolicy,
-      if (companyAId != null && companyAId.isNotEmpty) 'companyAId': companyAId,
+      'driverAName': resolvedDriverAName,
+      'driverAPlate': resolvedDriverAPlate,
+      'driverAInsurer': resolvedDriverAInsurer,
+      'driverAPolicy': ?resolvedDriverAPolicy,
+      'companyAId': ?resolvedCompanyAId,
       'driverBName': draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
       'driverBPlate': draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'B-Plate',
       'driverBInsurer': draft.driverBInsurer.isNotEmpty ? draft.driverBInsurer : 'Assureur B',
@@ -78,6 +85,12 @@ class ConstatService {
         bytes: stampedPdfBytes,
         filename: 'constat-signed.pdf',
       );
+
+  static String? _firstNonEmpty(String? primary, String? fallback) {
+    if (primary != null && primary.trim().isNotEmpty) return primary.trim();
+    if (fallback != null && fallback.trim().isNotEmpty) return fallback.trim();
+    return null;
+  }
 
   /// Liste les constats scellés pour l'utilisateur connecté.
   Future<List<Constat>> listConstats() async {

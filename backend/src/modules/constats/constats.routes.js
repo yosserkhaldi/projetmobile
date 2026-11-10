@@ -12,7 +12,7 @@ import { notifier } from '../../lib/notifier.js';
 import { hasPdfSignature, signPdfBuffer } from '../../lib/pdf-signature.js';
 import { prisma } from '../../lib/prisma.js';
 import { filePath, savePdf, singlePdf } from '../../lib/uploads.js';
-import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { requireAuth, requireRole, requireVerifiedIdentity } from '../../middleware/auth.js';
 
 const router = Router();
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -308,7 +308,8 @@ function sendSealedNotifications(constat, data, fileBuffer, user) {
 }
 
 // ── 5. Enregistrement et scellement d'un nouveau constat ────────────────────
-router.post('/', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
+// Signer engage le conducteur : identité vérifiée obligatoire (module 1).
+router.post('/', requireRole('DRIVER'), requireVerifiedIdentity, singlePdf('pdf'), async (req, res) => {
   const bodyData = parseBodyData(req);
   const data = constatSchema.parse(bodyData);
   const normalizedSha256 = data.sha256Hash.toLowerCase();

@@ -1,14 +1,22 @@
-import 'package:flutter/material.dart';
+import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_steps.dart';
+import 'package:mon_constat_digital/modules/accident/widgets/vehicle_choice.dart';
+import 'package:mon_constat_digital/modules/claims/data/declaration_files.dart';
 import 'package:mon_constat_digital/modules/claims/models/claim.dart';
 import 'package:mon_constat_digital/modules/constat/models/constat.dart';
 import 'package:mon_constat_digital/modules/constat/screens/constat_sealed_screen.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/constat_steps.dart';
+import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/screens/identity_screen.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 
 /// Parcours en 7 étapes : les 3 premières relèvent du module 3 (déclaration),
@@ -28,8 +36,12 @@ class _AccidentWizardState extends State<AccidentWizard> {
   final witnessName = TextEditingController();
   final witnessPhone = TextEditingController();
   final observations = TextEditingController();
-  String? _selectedVehicleAId;
   int step = 0;
+  bool _sending = false;
+
+  /// Identifiant de la déclaration côté téléphone : un nouvel envoi (après
+  /// une coupure) met à jour la même déclaration sur le serveur.
+  final _clientId = 'acc-${DateTime.now().microsecondsSinceEpoch}';
 
   static const steps = [
     ('Contexte', 'Lieu, heure et conditions'),
@@ -50,8 +62,15 @@ class _AccidentWizardState extends State<AccidentWizard> {
     witnessName.text = draft.witnessName;
     witnessPhone.text = draft.witnessPhone;
     observations.text = draft.observations;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _persistDraft();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final vehicles = AppScope.of(context).vehicles;
+      _persistDraft();
+      // Véhicules à jour avant de choisir (ajoutés ailleurs, par exemple).
+      await vehicles.syncWithServer();
+      if (!mounted) return;
+      VehicleChoice.preselect(draft, vehicles.vehicles);
+      setState(() {});
     });
   }
 
@@ -106,62 +125,42 @@ class _AccidentWizardState extends State<AccidentWizard> {
     ),
   );
 
-  Vehicle? _resolveVehicleA(AppStores stores) {
-    final active = stores.vehicles.vehicles;
-    if (active.isEmpty) return null;
-    if (_selectedVehicleAId != null) {
-      for (final v in active) {
-        if (v.id == _selectedVehicleAId) return v;
-      }
-    }
-    return active.first;
-  }
-
   ConstatDriverAData _buildDriverA(AppStores stores) =>
       ConstatDriverAData.fromUserAndVehicle(
         user: stores.users.currentUser,
-        vehicle: _resolveVehicleA(stores),
+        vehicle:
+            _vehicle(stores.vehicles.vehicles) ??
+            stores.vehicles.vehicles.firstOrNull,
       );
 
-  Widget _content() {
-    final stores = AppScope.of(context);
-    final driverA = _buildDriverA(stores);
-    return switch (step) {
-      0 => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _VehicleASelectorCard(
-            vehicles: stores.vehicles.vehicles,
-            selected: _resolveVehicleA(stores),
-            driverName: stores.users.userName,
-            onChanged: (vehicleId) =>
-                setState(() => _selectedVehicleAId = vehicleId),
-          ),
-          const SizedBox(height: 14),
-          ContextStep(draft: draft, place: place, onChanged: _touch),
-        ],
-      ),
-      1 => DescriptionStep(
-        draft: draft,
-        witnessName: witnessName,
-        witnessPhone: witnessPhone,
-        onChanged: _touch,
-      ),
-      2 => EvidenceStep(draft: draft, onChanged: _touch),
-      3 => GuestDriverStep(draft: draft, onChanged: _touch),
-      4 => CircumstancesStep(
-        draft: draft,
-        observations: observations,
-        onChanged: _touch,
-      ),
-      5 => SketchStep(draft: draft, onChanged: _touch),
-      _ => SignatureStep(
-        draft: draft,
-        driverA: driverA,
-        onChanged: _touch,
-      ),
-    };
-  }
+  Widget _content() => switch (step) {
+    0 => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        VehicleChoice(draft: draft, onChanged: _touch),
+        ContextStep(draft: draft, place: place, onChanged: _touch),
+      ],
+    ),
+    1 => DescriptionStep(
+      draft: draft,
+      witnessName: witnessName,
+      witnessPhone: witnessPhone,
+      onChanged: _touch,
+    ),
+    2 => EvidenceStep(draft: draft, onChanged: _touch),
+    3 => GuestDriverStep(draft: draft, onChanged: _touch),
+    4 => CircumstancesStep(
+      draft: draft,
+      observations: observations,
+      onChanged: _touch,
+    ),
+    5 => SketchStep(draft: draft, onChanged: _touch),
+    _ => SignatureStep(
+      draft: draft,
+      driverA: _buildDriverA(AppScope.of(context)),
+      onChanged: _touch,
+    ),
+  };
 
   void _touch() {
     draft.touch();
@@ -187,14 +186,38 @@ class _AccidentWizardState extends State<AccidentWizard> {
       _persistDraft();
       return;
     }
-
+    // Le scellement prend un instant : un second appui ne crée pas un doublon.
+    if (_sending) return;
     final stores = AppScope.of(context);
+    final navigator = Navigator.of(context);
+    final user = stores.users.currentUser;
+    // Signer engage : identité vérifiée obligatoire (le serveur le vérifie
+    // aussi). On le dit avant le scellement plutôt qu'après.
+    if (user?.identity.status != IdentityStatus.verified) {
+      await _askIdentity();
+      return;
+    }
+    final vehicle = _vehicle(stores.vehicles.vehicles);
+    if (vehicle == null) {
+      _showError('Choisissez votre véhicule à la première étape.');
+      return;
+    }
+    _sending = true;
+    // Conducteur A : le profil et le véhicule choisi, pas des valeurs fictives.
+    draft
+      ..driverAName = user!.name
+      ..driverALicense = user.licenseNumber ?? ''
+      ..driverAPlate = vehicle.plate
+      ..driverAVehicle = '${vehicle.brand} ${vehicle.model}'
+      ..driverAInsurer = vehicle.companyName ?? vehicle.insurerName
+      ..driverAPolicy = vehicle.policy
+      ..driverACompanyId = vehicle.companyId;
 
     // Dialogue d'attente pendant la génération et le scellement
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(
+      builder: (_) => Center(
         child: Card(
           child: Padding(
             padding: EdgeInsets.all(24),
@@ -210,7 +233,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
                 SizedBox(height: 4),
                 Text(
                   'Calcul du hash SHA-256 et transmission',
-                  style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  style: TextStyle(fontSize: 12, color: context.palette.textMuted),
                 ),
               ],
             ),
@@ -219,127 +242,182 @@ class _AccidentWizardState extends State<AccidentWizard> {
       ),
     );
 
-    final vehicleA = _resolveVehicleA(stores);
     final driverA = _buildDriverA(stores);
-    final resolvedDriverAName =
-        driverA.fullName.isNotEmpty ? driverA.fullName : stores.users.userName;
-    final resolvedDriverAPlate =
-        driverA.plate.isNotEmpty ? driverA.plate : 'Véhicule A';
-    final resolvedDriverAInsurer =
-        driverA.insurerName.isNotEmpty ? driverA.insurerName : 'Assureur A';
-    final resolvedDriverAPolicy =
-        driverA.policyNumber.isNotEmpty ? driverA.policyNumber : null;
-    final resolvedCompanyAId =
-        vehicleA?.companyId ?? stores.users.currentUser?.companyId;
-
+    // Module 4 : le PDF scellé sur le serveur fait foi. Hors ligne, il est
+    // scellé localement et le sinistre reste en attente de synchronisation.
+    Constat constat;
+    Uint8List pdfBytes;
+    bool sealedOnline;
     try {
-      final sealed = await stores.constats.sealAndSubmit(
+      // Module 3 : la déclaration rejoint le serveur, liée au constat.
+      final accidentId = await stores.accidents.submitToServer(
+        stores.api,
+        draft,
+        clientId: _clientId,
+      );
+      constat = await stores.constats.sealAndSubmit(
         draft: draft,
-        driverAName: resolvedDriverAName,
-        driverAPlate: resolvedDriverAPlate,
-        driverAInsurer: resolvedDriverAInsurer,
-        driverAPolicy: resolvedDriverAPolicy,
-        companyAId: resolvedCompanyAId,
+        accidentId: accidentId,
+        driverAName: driverA.fullName.isNotEmpty
+            ? driverA.fullName
+            : user.name,
+        driverAPlate: driverA.plate.isNotEmpty
+            ? driverA.plate
+            : vehicle.plate,
+        driverAInsurer: driverA.insurerName.isNotEmpty
+            ? driverA.insurerName
+            : (vehicle.companyName ?? vehicle.insurerName),
+        driverAPolicy: vehicle.policy,
+        companyAId: vehicle.companyId ?? user.companyId,
         companyBId: draft.driverBCompanyId,
         driverA: driverA,
       );
-
-      final claim = Claim(
-        id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-        type: draft.type,
-        place: draft.place,
-        date: draft.occurredAt.toString().substring(0, 16),
-        severity: draft.severity,
-        status: 'Transmis',
-      );
-      claim.timeline.addAll([
-        'Déclaration complétée',
-        '${draft.evidenceCount} preuves ajoutées',
-        'Double signature bilatérale',
-        'Scellement SHA-256 (${sealed.sha256Hash.substring(0, 8)}...)',
-        'Transmis aux assureurs',
-      ]);
-      claim.documents.add('Constat amiable scellé.pdf');
-      stores.claims.addClaim(claim);
-      stores.accidents.clearDraft();
-
-      if (!mounted) return;
-      Navigator.pop(context); // ferme le dialog
-
-      await Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ConstatSealedScreen(
-            constat: sealed,
-            draft: draft,
-            pdfBytes: stores.constats.lastSealedPdfBytes,
-            driverA: driverA,
-          ),
-        ),
-      );
-    } catch (e, st) {
-      debugPrint('[ConstatWizard] Scellement serveur échoué, bascule hors-ligne : $e\n$st');
-      // En cas de mode déconnecté (hors-ligne), scellement local garanti
-      final offlineAt = DateTime.now().toUtc();
-      final pdfBytes = await AccidentPdfService().build(
+      pdfBytes = stores.constats.lastSealedPdfBytes!;
+      sealedOnline = true;
+    } on ApiException catch (error) {
+      if (!error.isNetwork) {
+        // Refus du serveur (identité, données) : rien n'est scellé, le
+        // brouillon reste pour corriger et réessayer.
+        _sending = false;
+        if (mounted) {
+          navigator.pop(); // ferme le dialog
+          _showError(error.message);
+        }
+        return;
+      }
+      // Hors ligne : scellé sur le téléphone, envoyé plus tard.
+      final offlineAt = DateTime.now();
+      pdfBytes = await AccidentPdfService().build(
         draft,
         driverA: driverA,
         generatedAt: offlineAt,
       );
       final hash = stores.constats.crypto.computeSha256(pdfBytes);
-      final localConstat = Constat(
-        id: 'local-${DateTime.now().millisecondsSinceEpoch}',
-        userId: stores.users.currentUser?.id ?? '',
-        status: 'SIGNED',
-        sha256Hash: hash,
-        pdfUrl: '',
-        driverAName: resolvedDriverAName,
-        driverAPlate: resolvedDriverAPlate,
-        driverAInsurer: resolvedDriverAInsurer,
-        driverAPolicy: resolvedDriverAPolicy,
-        driverBName: draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
-        driverBPlate: draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'Véhicule B',
-        driverBInsurer: draft.driverBInsurer.isNotEmpty ? draft.driverBInsurer : 'Assureur B',
-        driverBPolicy: draft.driverBPolicy.isNotEmpty ? draft.driverBPolicy : null,
-        place: draft.place,
-        occurredAt: draft.occurredAt,
-        circumstancesA: draft.circumstancesA.toList(),
-        circumstancesB: draft.circumstancesB.toList(),
-        impactZones: draft.impactZones.toList(),
-        observations: draft.observations,
+      constat = _localConstat(stores, hash);
+      sealedOnline = false;
+    } catch (_) {
+      final offlineAt = DateTime.now();
+      pdfBytes = await AccidentPdfService().build(
+        draft,
+        driverA: driverA,
+        generatedAt: offlineAt,
       );
+      final hash = stores.constats.crypto.computeSha256(pdfBytes);
+      constat = _localConstat(stores, hash);
+      sealedOnline = false;
+    }
 
-      final claim = Claim(
-        id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-        type: draft.type,
-        place: draft.place,
-        date: draft.occurredAt.toString().substring(0, 16),
-        severity: draft.severity,
-        status: 'Transmis',
-      );
-      claim.timeline.addAll([
-        'Déclaration complétée',
-        'Double signature bilatérale',
-        'Scellement local SHA-256 (${hash.substring(0, 8)}...)',
+    final claim = Claim(
+      id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+      type: draft.type,
+      place: draft.place,
+      date: draft.occurredAt.toString().substring(0, 16),
+      severity: draft.severity,
+      status: 'Transmis',
+      observations: draft.observations,
+    );
+    // Module 5 : la proposition de responsabilité lit les cases du déclarant (A).
+    claim.circumstances.addAll(draft.circumstancesA);
+    claim.circumstancesB.addAll(draft.circumstancesB);
+    // Module 5 : le sinistre va aux agents de l'assureur du véhicule choisi.
+    claim.companyId =
+        vehicle.companyId ?? declarationCompany(stores.vehicles.vehicles);
+    // Module 5 : le constat scellé sur le serveur ; hors ligne, pas encore.
+    if (sealedOnline) claim.constatId = constat.id;
+    claim.impactZones.addAll(draft.impactZones);
+    final shortHash = constat.sha256Hash.substring(0, 8);
+    claim.timeline.addAll([
+      'Déclaration complétée',
+      '${draft.evidenceCount} preuves ajoutées',
+      'Double signature bilatérale',
+      if (sealedOnline) ...[
+        'Scellement SHA-256 ($shortHash...)',
+        'Transmis aux assureurs',
+      ] else ...[
+        'Scellement local SHA-256 ($shortHash...)',
         'En attente de synchronisation réseau',
-      ]);
-      claim.documents.add('Constat amiable scellé.pdf');
-      stores.claims.addClaim(claim);
-      stores.accidents.clearDraft();
+      ],
+    ]);
+    stores.claims.addClaim(claim);
+    // Module 5 : photos, vidéo, note vocale et le PDF scellé (le même octet
+    // pour octet, pour que son SHA-256 corresponde) rejoignent le dossier.
+    // Lus avant d'effacer le brouillon.
+    stores.claims.attachDeclaration(
+      claim,
+      await declarationFiles(draft, buildPdf: (_) async => pdfBytes),
+    );
+    stores.accidents.clearDraft();
 
-      if (!mounted) return;
-      Navigator.pop(context); // ferme le dialog
-
-      await Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ConstatSealedScreen(
-            constat: localConstat,
-            draft: draft,
-            pdfBytes: pdfBytes,
-            driverA: driverA,
-          ),
+    if (!mounted) return;
+    navigator.pop(); // ferme le dialog
+    await navigator.pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => ConstatSealedScreen(
+          constat: constat,
+          draft: draft,
+          pdfBytes: pdfBytes,
+          driverA: driverA,
         ),
+      ),
+    );
+  }
+
+  Vehicle? _vehicle(List<Vehicle> vehicles) =>
+      vehicles.where((v) => v.id == draft.vehicleId).firstOrNull;
+
+  /// Constat scellé sur le téléphone (hors ligne), envoyé plus tard.
+  Constat _localConstat(AppStores stores, String hash) => Constat(
+    id: 'local-${DateTime.now().millisecondsSinceEpoch}',
+    userId: stores.users.currentUser?.id ?? '',
+    status: 'SIGNED',
+    sha256Hash: hash,
+    pdfUrl: '',
+    driverAName: draft.driverAName,
+    driverAPlate: draft.driverAPlate,
+    driverAInsurer: draft.driverAInsurer,
+    driverAPolicy: draft.driverAPolicy.isNotEmpty ? draft.driverAPolicy : null,
+    driverBName: draft.driverBName.isNotEmpty ? draft.driverBName : 'Conducteur B',
+    driverBPlate: draft.driverBPlate.isNotEmpty ? draft.driverBPlate : 'Véhicule B',
+    driverBInsurer: draft.driverBInsurer.isNotEmpty
+        ? draft.driverBInsurer
+        : 'Assureur B',
+    driverBPolicy: draft.driverBPolicy.isNotEmpty ? draft.driverBPolicy : null,
+    place: draft.place,
+    occurredAt: draft.occurredAt,
+    circumstancesA: draft.circumstancesA.toList(),
+    circumstancesB: draft.circumstancesB.toList(),
+    impactZones: draft.impactZones.toList(),
+    observations: draft.observations,
+  );
+
+  /// Identité pas encore vérifiée : on propose de le faire tout de suite.
+  Future<void> _askIdentity() async {
+    final verify = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.verified_user_outlined),
+        title: const Text('Vérifiez votre identité pour signer'),
+        content: const Text(
+          'Le constat engage les deux conducteurs : votre identité doit être '
+          'vérifiée avant la signature. Votre brouillon reste enregistré.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Plus tard'),
+          ),
+          FilledButton(
+            key: const ValueKey('verify-identity-to-sign'),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Vérifier mon identité'),
+          ),
+        ],
+      ),
+    );
+    if (verify == true && mounted) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IdentityScreen()),
       );
     }
   }
@@ -354,6 +432,16 @@ class _AccidentWizardState extends State<AccidentWizard> {
   }
 
   bool _isCurrentStepValid() {
+    if (step == 0) {
+      final problem = VehicleChoice.problem(
+        draft,
+        AppScope.of(context).vehicles.vehicles,
+      );
+      if (problem != null) {
+        _showError(problem);
+        return false;
+      }
+    }
     if (step == 0 && !(_contextForm.currentState?.validate() ?? false)) {
       _showError('Vérifiez le lieu de l’accident.');
       return false;
@@ -377,8 +465,12 @@ class _AccidentWizardState extends State<AccidentWizard> {
       );
       return false;
     }
-    if (step == 4 && draft.circumstancesA.isEmpty && draft.circumstancesB.isEmpty) {
-      _showError('Sélectionnez au moins une circonstance pour le véhicule A ou B.');
+    if (step == 4 &&
+        draft.circumstancesA.isEmpty &&
+        draft.circumstancesB.isEmpty) {
+      _showError(
+        'Sélectionnez au moins une circonstance pour le véhicule A ou B.',
+      );
       return false;
     }
     if (step == 5 && (!draft.sketchConfirmed || draft.impactZones.isEmpty)) {
@@ -441,7 +533,7 @@ class _ProgressHeader extends StatelessWidget {
   final List<(String, String)> steps;
   @override
   Widget build(BuildContext context) => Container(
-    color: AppColors.surface,
+    color: context.palette.surface,
     padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -451,8 +543,8 @@ class _ProgressHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 'Étape ${step + 1} sur ${steps.length}',
-                style: const TextStyle(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  color: context.palette.primaryText,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -469,7 +561,7 @@ class _ProgressHeader extends StatelessWidget {
         Text(steps[step].$1, style: Theme.of(context).textTheme.headlineSmall),
         Text(
           steps[step].$2,
-          style: const TextStyle(color: AppColors.textMuted),
+          style: TextStyle(color: context.palette.textMuted),
         ),
         const SizedBox(height: 14),
         Row(
@@ -483,10 +575,10 @@ class _ProgressHeader extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: index < step
-                      ? AppColors.primary
+                      ? context.palette.primaryText
                       : index == step
                       ? AppColors.accent
-                      : AppColors.border,
+                      : context.palette.border,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -511,9 +603,9 @@ class _BottomActions extends StatelessWidget {
   final VoidCallback onBack, onContinue;
   @override
   Widget build(BuildContext context) => Container(
-    decoration: const BoxDecoration(
-      color: AppColors.surface,
-      border: Border(top: BorderSide(color: AppColors.borderSoft)),
+    decoration: BoxDecoration(
+      color: context.palette.surface,
+      border: Border(top: BorderSide(color: context.palette.borderSoft)),
     ),
     padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
     child: Row(
@@ -538,82 +630,4 @@ class _BottomActions extends StatelessWidget {
       ],
     ),
   );
-}
-
-class _VehicleASelectorCard extends StatelessWidget {
-  const _VehicleASelectorCard({
-    required this.vehicles,
-    required this.selected,
-    required this.driverName,
-    required this.onChanged,
-  });
-
-  final List<Vehicle> vehicles;
-  final Vehicle? selected;
-  final String driverName;
-  final ValueChanged<String?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    if (vehicles.isEmpty) {
-      return Card(
-        color: AppColors.primaryTint,
-        child: ListTile(
-          leading: const Icon(Icons.directions_car_outlined, color: AppColors.primary),
-          title: const Text(
-            'Véhicule A — Profil conducteur',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
-          ),
-          subtitle: Text(
-            '$driverName • Enregistrez un véhicule dans Mes véhicules pour pré-remplir plaque et N° police.',
-            style: const TextStyle(fontSize: 12),
-          ),
-        ),
-      );
-    }
-
-    if (vehicles.length == 1 && selected != null) {
-      final v = selected!;
-      final insurer = (v.companyName ?? '').isNotEmpty
-          ? v.companyName!
-          : v.insurerName;
-      return Card(
-        color: AppColors.primaryTint,
-        child: ListTile(
-          leading: const CircleAvatar(
-            backgroundColor: AppColors.primary,
-            child: Text(
-              'A',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
-            ),
-          ),
-          title: Text(
-            '${v.brand} ${v.model} • ${v.plate}',
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-          ),
-          subtitle: Text(
-            '${insurer.isNotEmpty ? insurer : 'Assurance'} • Police ${v.policy.isNotEmpty ? v.policy : 'non renseignée'}',
-            style: const TextStyle(fontSize: 12),
-          ),
-        ),
-      );
-    }
-
-    return DropdownButtonFormField<String>(
-      initialValue: selected?.id,
-      decoration: const InputDecoration(
-        labelText: 'Votre véhicule impliqué (Véhicule A)',
-        prefixIcon: Icon(Icons.directions_car_outlined),
-      ),
-      items: vehicles
-          .map(
-            (v) => DropdownMenuItem<String>(
-              value: v.id,
-              child: Text('${v.brand} ${v.model} • ${v.plate}'),
-            ),
-          )
-          .toList(),
-      onChanged: onChanged,
-    );
-  }
 }

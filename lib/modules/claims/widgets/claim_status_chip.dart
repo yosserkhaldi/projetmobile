@@ -1,0 +1,55 @@
+import 'package:flutter/material.dart';
+
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
+
+import 'package:mon_constat_digital/modules/claims/models/claim_status.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
+
+/// Pastille de statut. Couleurs : DESIGN.md, section 7.
+class ClaimStatusChip extends StatelessWidget {
+  const ClaimStatusChip(this.status, {super.key});
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final (background, text) = switch (status) {
+      ClaimStatus.draft => (
+        context.palette.surfaceAlt,
+        context.palette.textMuted,
+      ),
+      ClaimStatus.signed || ClaimStatus.closed => (
+        context.palette.successBg,
+        context.palette.successText,
+      ),
+      ClaimStatus.documentRequested => (
+        context.palette.warningBg,
+        context.palette.warningText,
+      ),
+      ClaimStatus.expertise => (
+        context.palette.primaryTint,
+        context.palette.primaryText,
+      ),
+      ClaimStatus.rejected => (
+        context.palette.errorBg,
+        context.palette.errorText,
+      ),
+      _ => (context.palette.primaryTint, context.palette.primaryText),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        context.t.claimValue(status),
+        style: TextStyle(
+          color: text,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}

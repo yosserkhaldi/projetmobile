@@ -46,33 +46,120 @@ class _AuthScreenState extends State<AuthScreen> with FormActions {
     backgroundColor: context.palette.hero,
     body: SafeArea(
       bottom: false,
-      child: CustomScrollView(
-        slivers: [
-          const SliverToBoxAdapter(child: _Hero()),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Container(
-              decoration: BoxDecoration(
-                color: context.palette.canvas,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(32),
-                ),
-              ),
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: Form(
-                    key: formKey,
-                    child: AutofillGroup(child: _form(context)),
+      // Grand écran (console d'administration, tablette) : deux colonnes.
+      child: MediaQuery.sizeOf(context).width >= 1000
+          ? _wide(context)
+          : _narrow(context),
+    ),
+  );
+
+  Widget _wide(BuildContext context) {
+    final t = context.t;
+    return Row(
+      children: [
+        Expanded(
+          child: Stack(
+            children: [
+              // Anneau décoratif de la maquette.
+              PositionedDirectional(
+                end: -120,
+                bottom: -140,
+                child: Container(
+                  width: 460,
+                  height: 460,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.navy800, width: 56),
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(56, 48, 56, 48),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _Hero(padding: EdgeInsets.zero, large: true),
+                    const Spacer(),
+                    for (final (icon, text) in [
+                      (Icons.timer_outlined, t.heroPoint1),
+                      (Icons.draw_outlined, t.heroPoint2),
+                      (Icons.track_changes_outlined, t.heroPoint3),
+                    ])
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 18),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.navy800,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.md,
+                                ),
+                              ),
+                              child: Icon(icon, color: AppColors.accent),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                text,
+                                style: const TextStyle(
+                                  color: AppColors.onDarkBody,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          width: 520,
+          color: context.palette.canvas,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(48),
+              child: Form(
+                key: formKey,
+                child: AutofillGroup(child: _form(context)),
+              ),
             ),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _narrow(BuildContext context) => CustomScrollView(
+    slivers: [
+      const SliverToBoxAdapter(child: _Hero()),
+      SliverFillRemaining(
+        hasScrollBody: false,
+        child: Container(
+          decoration: BoxDecoration(
+            color: context.palette.canvas,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Form(
+                key: formKey,
+                child: AutofillGroup(child: _form(context)),
+              ),
+            ),
+          ),
+        ),
       ),
-    ),
+    ],
   );
 
   Widget _form(BuildContext context) {
@@ -90,6 +177,7 @@ class _AuthScreenState extends State<AuthScreen> with FormActions {
         if (error != null) ...[ErrorBanner(error!), const SizedBox(height: 16)],
         LabeledField(
           label: t.identifierLabel,
+          prefixIcon: Icons.alternate_email,
           controller: _identifier,
           keyboardType: TextInputType.emailAddress,
           validator: validators.required,
@@ -168,13 +256,21 @@ class _AuthScreenState extends State<AuthScreen> with FormActions {
 }
 
 class _Hero extends StatelessWidget {
-  const _Hero();
+  const _Hero({
+    this.padding = const EdgeInsets.fromLTRB(24, 36, 24, 28),
+    this.large = false,
+  });
+
+  final EdgeInsets padding;
+
+  /// Titre agrandi pour la colonne de gauche sur grand écran.
+  final bool large;
 
   @override
   Widget build(BuildContext context) {
     final t = context.t;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 36, 24, 28),
+      padding: padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -211,10 +307,10 @@ class _Hero extends StatelessWidget {
           const SizedBox(height: 26),
           Text.rich(
             TextSpan(
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppFonts.display,
                 fontWeight: FontWeight.w800,
-                fontSize: 38,
+                fontSize: large ? 64 : 38,
                 height: 1.05,
                 letterSpacing: -1.2,
                 color: Colors.white,

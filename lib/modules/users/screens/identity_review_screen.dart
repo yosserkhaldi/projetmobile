@@ -4,12 +4,16 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/users/admin/console_widgets.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/models/identity_attempt.dart';
+import 'package:mon_constat_digital/modules/users/screens/identity_screen.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
 import 'package:mon_constat_digital/shared/widgets/page_head.dart';
+import 'package:mon_constat_digital/modules/users/widgets/skeleton.dart';
 
 /// File des identités à vérifier (administrateurs).
 class IdentityReviewScreen extends StatefulWidget {
@@ -60,9 +64,9 @@ class _IdentityReviewScreenState extends State<IdentityReviewScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_loading && pending.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(child: CircularProgressIndicator()),
+                    const SizedBox(
+                      height: 300,
+                      child: SkeletonList(count: 4, padding: EdgeInsets.zero),
                     ),
                   if (_error != null) ...[
                     ErrorBanner(_error!),
@@ -144,11 +148,11 @@ class _ReviewDetailState extends State<_ReviewDetail> with FormActions {
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final done = context.t.identityRejected;
-    final reason = await showModalBottomSheet<String>(
+    final reason = await showModalBottomSheet<IdentityRejection>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => const _RejectSheet(),
+      builder: (_) => const RejectReasonSheet(),
     );
     if (reason == null) return;
     await submit(() async {
@@ -164,6 +168,7 @@ class _ReviewDetailState extends State<_ReviewDetail> with FormActions {
     final p = context.palette;
     final user = widget.user;
     final submitted = user.identity.submittedAt;
+    final document = user.identity.documentType;
     return Scaffold(
       appBar: AppBar(title: Text(user.name)),
       body: SafeArea(
@@ -182,7 +187,7 @@ class _ReviewDetailState extends State<_ReviewDetail> with FormActions {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      t.cinNumberLabel,
+                      '${document.labelIn(t)} · ${document.numberLabel(t)}',
                       style: TextStyle(
                         color: p.textMuted,
                         fontSize: 12,
@@ -217,20 +222,36 @@ class _ReviewDetailState extends State<_ReviewDetail> with FormActions {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              t.cinFront,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                aiMatchChip(context, user.identity),
+                if (user.identity.livenessAt != null)
+                  StatusChip(
+                    label: t.livenessPassed,
+                    background: p.successBg,
+                    foreground: p.successText,
+                    icon: Icons.check_circle_outline,
+                  ),
+              ],
             ),
-            const SizedBox(height: 6),
-            _Photo(user: user, photo: UserPhoto.cinFront),
-            const SizedBox(height: 16),
-            Text(
-              t.cinBack,
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 6),
-            _Photo(user: user, photo: UserPhoto.cinBack),
+            const SizedBox(height: 14),
+            IdentityChecklist(identity: user.identity),
+            AttemptHistoryButton(user: user),
+            // La pièce et le visage l'un sous l'autre, pour comparer.
+            for (final (photo, label) in [
+              (UserPhoto.cinFront, document.frontLabel(t)),
+              if (user.identity.selfieId != null)
+                (UserPhoto.selfie, t.selfieLabel),
+              if (document.hasBack) (UserPhoto.cinBack, document.backLabel(t)),
+            ]) ...[
+              const SizedBox(height: 16),
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 6),
+              IdentityPhotoFrame(user: user, photo: photo),
+            ],
             const SizedBox(height: 24),
             Row(
               children: [
@@ -262,16 +283,19 @@ class _ReviewDetailState extends State<_ReviewDetail> with FormActions {
   }
 }
 
-class _RejectSheet extends StatefulWidget {
-  const _RejectSheet();
+class RejectReasonSheet extends StatefulWidget {
+  const RejectReasonSheet({super.key});
 
   @override
-  State<_RejectSheet> createState() => _RejectSheetState();
+  State<RejectReasonSheet> createState() => RejectReasonSheetState();
 }
 
-class _RejectSheetState extends State<_RejectSheet> {
+class RejectReasonSheetState extends State<RejectReasonSheet> {
   final _other = TextEditingController();
   String? _choice;
+
+  /// Refus définitif : plus aucune nouvelle demande pour ce compte.
+  bool _severe = false;
 
   @override
   void dispose() {
@@ -287,7 +311,10 @@ class _RejectSheetState extends State<_RejectSheet> {
       t.rejectReasonUnreadable,
       t.rejectReasonNameMismatch,
       t.rejectReasonNotCin,
+      t.rejectReasonFaceMismatch,
     ];
+    // Motifs de fraude probable : refus définitif proposé d'office.
+    final severeReasons = {t.rejectReasonNotCin, t.rejectReasonFaceMismatch};
     final reason = _choice == t.otherReason ? _other.text.trim() : _choice;
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -310,7 +337,10 @@ class _RejectSheetState extends State<_RejectSheet> {
                 ChoiceChip(
                   label: Text(option),
                   selected: _choice == option,
-                  onSelected: (_) => setState(() => _choice = option),
+                  onSelected: (_) => setState(() {
+                    _choice = option;
+                    _severe = severeReasons.contains(option);
+                  }),
                 ),
             ],
           ),
@@ -323,11 +353,26 @@ class _RejectSheetState extends State<_RejectSheet> {
               onChanged: (_) => setState(() {}),
             ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          SwitchListTile(
+            key: const Key('reject-severe'),
+            contentPadding: EdgeInsets.zero,
+            value: _severe,
+            onChanged: (on) => setState(() => _severe = on),
+            title: Text(
+              t.rejectSevere,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            subtitle: Text(t.rejectSevereHint),
+          ),
+          const SizedBox(height: 8),
           FilledButton(
             onPressed: reason == null || reason.length < 3
                 ? null
-                : () => Navigator.pop(context, reason),
+                : () => Navigator.pop<IdentityRejection>(context, (
+                    reason: reason,
+                    severe: _severe,
+                  )),
             child: Text(t.reject),
           ),
         ],
@@ -336,8 +381,12 @@ class _RejectSheetState extends State<_RejectSheet> {
   }
 }
 
-class _Photo extends StatelessWidget {
-  const _Photo({required this.user, required this.photo});
+class IdentityPhotoFrame extends StatelessWidget {
+  const IdentityPhotoFrame({
+    required this.user,
+    required this.photo,
+    super.key,
+  });
   final AppUser user;
   final UserPhoto photo;
 
