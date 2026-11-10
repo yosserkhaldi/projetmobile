@@ -193,3 +193,44 @@ test('identité : l administrateur annule une vérification faite par l IA', asy
   });
   assert.equal(denied.status, 403);
 });
+
+test('permis : une photo où rien ne ressemble à un permis est refusée', async (t) => {
+  const { call } = await startApi(t);
+  const { token } = await verifiedDriver(call);
+  // L'IA simulée ne reconnaît aucune pièce et ne lit qu'un numéro de CIN.
+  const res = await call('PUT', '/users/me/license-photo', {
+    token,
+    form: licenseForm('me'),
+  });
+  assert.equal(res.status, 422);
+  assert.equal(res.body.error.code, 'NOT_A_LICENSE');
+  const me = await call('GET', '/users/me', { token });
+  assert.equal(me.body.user.licensePhotoId, null);
+});
+
+test('identité : l administrateur corrige ce que l IA a lu', async (t) => {
+  const { call } = await startApi(t);
+  const admin = await createAdmin(call);
+  const { token, id } = await verifiedDriver(call);
+  const res = await call('PATCH', `/users/${id}/identity/reading`, {
+    token: admin.token,
+    body: { birthPlaceAr: 'قابس', number: '87654321' },
+  });
+  assert.equal(res.status, 200);
+  const identity = res.body.user.identity;
+  assert.equal(identity.extracted.birthPlaceAr, 'قابس');
+  // Les autres champs lus restent.
+  assert.equal(identity.extracted.birthDate, '1999-03-12');
+  assert.equal(identity.cinNumber, '87654321');
+
+  const invalid = await call('PATCH', `/users/${id}/identity/reading`, {
+    token: admin.token,
+    body: { birthDate: '12/03/1999' },
+  });
+  assert.equal(invalid.status, 400);
+  const denied = await call('PATCH', `/users/${id}/identity/reading`, {
+    token,
+    body: { birthPlaceAr: 'تونس' },
+  });
+  assert.equal(denied.status, 403);
+});

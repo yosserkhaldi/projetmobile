@@ -425,6 +425,13 @@ class AppUser {
 
   String get name => '$firstName $lastName';
 
+  /// Nom et téléphone donnés. L'inscription ne demande que l'e-mail et le
+  /// mot de passe : le reste vient dans l'accueil.
+  bool get profileComplete =>
+      firstName.trim().isNotEmpty &&
+      lastName.trim().isNotEmpty &&
+      phone.isNotEmpty;
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'firstName': firstName,

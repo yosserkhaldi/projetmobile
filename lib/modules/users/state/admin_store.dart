@@ -179,6 +179,14 @@ class AdminStore extends ChangeNotifier {
     return updated;
   }
 
+  /// Corrige ce que l'IA a lu sur la pièce (nom, lieu de naissance…).
+  Future<AppUser> correctIdentityReading(
+    AppUser user,
+    Map<String, String?> fields,
+  ) async => _applyUser(
+    await _api.patch('/users/${user.id}/identity/reading', body: fields),
+  );
+
   Future<AppUser> _license(Future<dynamic> change) async {
     final updated = _applyUser(await change);
     // Décidé : le permis quitte la file.

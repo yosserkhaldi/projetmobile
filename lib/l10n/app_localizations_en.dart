@@ -2114,7 +2114,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get registerIntro =>
-      'Three steps, less than a minute. Your number will then be verified with a code.';
+      'An e-mail and a password. The rest comes right after, in a few steps.';
 
   @override
   String get registerStepYou => 'You';
@@ -2432,4 +2432,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onbStateTodo => 'To do';
+
+  @override
+  String get registerStepAccount => 'Your account';
+
+  @override
+  String get onbWelcomeNewTitle => 'Welcome to\nMon Constat';
+
+  @override
+  String get onbProfileTitle => 'Let\'s get to know you';
+
+  @override
+  String get onbProfileBody =>
+      'Your name appears on your accident reports. Your number is used to sign in and follow your claims.';
+
+  @override
+  String get onbPhoneTitle => 'Confirm your number';
+
+  @override
+  String get onbCodeSent => 'New code sent.';
+
+  @override
+  String get onbReadingTitle => 'Read on the document';
+
+  @override
+  String get correctReading => 'Correct';
+
+  @override
+  String get correctReadingTitle => 'Correct the document reading';
+
+  @override
+  String get correctReadingHint =>
+      'Fix what the AI misread by copying the document. Dates as YYYY-MM-DD.';
+
+  @override
+  String get readingCorrected => 'Reading corrected';
+
+  @override
+  String get readLastName => 'Surname';
+
+  @override
+  String get readFirstName => 'Given name';
+
+  @override
+  String get readBirthDate => 'Date of birth';
+
+  @override
+  String get readBirthPlace => 'Place of birth';
 }

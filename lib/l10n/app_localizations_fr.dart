@@ -2133,7 +2133,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get registerIntro =>
-      'Trois étapes, moins d\'une minute. Votre numéro sera ensuite vérifié par un code.';
+      'Un e-mail et un mot de passe. Le reste se fait juste après, en quelques étapes.';
 
   @override
   String get registerStepYou => 'Vous';
@@ -2451,4 +2451,51 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onbStateTodo => 'À faire';
+
+  @override
+  String get registerStepAccount => 'Votre compte';
+
+  @override
+  String get onbWelcomeNewTitle => 'Bienvenue sur\nMon Constat';
+
+  @override
+  String get onbProfileTitle => 'Faisons connaissance';
+
+  @override
+  String get onbProfileBody =>
+      'Votre nom figure sur vos constats. Votre numéro sert à vous connecter et à suivre vos dossiers.';
+
+  @override
+  String get onbPhoneTitle => 'Confirmez votre numéro';
+
+  @override
+  String get onbCodeSent => 'Nouveau code envoyé.';
+
+  @override
+  String get onbReadingTitle => 'Lu sur la pièce';
+
+  @override
+  String get correctReading => 'Corriger';
+
+  @override
+  String get correctReadingTitle => 'Corriger la lecture de la pièce';
+
+  @override
+  String get correctReadingHint =>
+      'Corrigez ce que l\'IA a mal lu, en recopiant la pièce. Dates au format AAAA-MM-JJ.';
+
+  @override
+  String get readingCorrected => 'Lecture corrigée';
+
+  @override
+  String get readLastName => 'Nom';
+
+  @override
+  String get readFirstName => 'Prénom';
+
+  @override
+  String get readBirthDate => 'Date de naissance';
+
+  @override
+  String get readBirthPlace => 'Lieu de naissance';
 }

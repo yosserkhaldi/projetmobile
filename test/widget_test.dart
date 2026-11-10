@@ -187,7 +187,15 @@ void main() {
     testWidgets('valide les champs, crée le compte, puis demande le code', (
       tester,
     ) async {
-      final backend = FakeBackend(user: userJson(phoneVerified: false));
+      // Compte tout neuf : ni nom ni téléphone, donnés dans l'accueil.
+      final backend = FakeBackend(
+        user: userJson(
+          firstName: '',
+          lastName: '',
+          phone: '',
+          phoneVerified: false,
+        ),
+      );
       await pumpApp(tester, backend);
       await tester.tap(find.text('Créer un compte'));
       await tester.pumpAndSettle();
@@ -195,11 +203,11 @@ void main() {
       await tester.tap(find.text('Créer mon compte'));
       await tester.pumpAndSettle();
       expect(backend.requests, isEmpty);
+      // Plus de nom ni de téléphone à l'inscription.
+      expect(field('Prénom'), findsNothing);
+      expect(field('Téléphone'), findsNothing);
 
-      await tester.enterText(field('Prénom'), 'Sami');
-      await tester.enterText(field('Nom'), 'Ben Ali');
       await tester.enterText(field('E-mail'), 'sami@example.com');
-      await tester.enterText(field('Téléphone'), '20 123 456');
       await tester.enterText(field('Mot de passe'), 'Password123!');
       await tester.enterText(field('Confirmer le mot de passe'), 'Different1!');
       await tester.ensureVisible(find.text('Créer mon compte'));
@@ -223,24 +231,44 @@ void main() {
       await tester.tap(find.byKey(const Key('consent')));
       await tester.ensureVisible(find.text('Créer mon compte'));
       await tester.tap(find.text('Créer mon compte'));
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pump(const Duration(seconds: 1));
-      expect(find.text('Vérifier mon téléphone'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(backend.bodies['POST /auth/register'], {
+        'email': 'sami@example.com',
+        'password': 'Password123!',
+        'language': 'FR',
+        'consent': true,
+      });
 
+      // Compte créé : l'accueil s'ouvre, sans pouvoir passer le nom.
+      expect(find.text('Bienvenue sur\nMon Constat'), findsOneWidget);
+      expect(find.byKey(const Key('onb-skip-all')), findsNothing);
+      await tester.tap(find.byKey(const Key('onb-start')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Faisons connaissance'), findsOneWidget);
+      await tester.enterText(field('Prénom'), 'Sami');
+      await tester.enterText(field('Nom'), 'Ben Ali');
+      await tester.enterText(field('Téléphone'), '20 123 456');
+      await tester.tap(find.byKey(const Key('onb-primary')));
+      await tester.pumpAndSettle();
+      expect(backend.bodies['PATCH /users/me'], {
+        'firstName': 'Sami',
+        'lastName': 'Ben Ali',
+        'phone': '20 123 456',
+      });
+      expect(backend.requests, contains('POST /auth/phone/send'));
+
+      // Code reçu sur WhatsApp.
+      expect(find.text('Confirmez votre numéro'), findsOneWidget);
       await tester.enterText(field('Code de vérification'), '123456');
-      await tester.tap(find.text('Valider'));
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pump(const Duration(seconds: 1));
+      await tester.tap(find.byKey(const Key('onb-primary')));
+      await tester.pumpAndSettle();
       expect(backend.bodies['POST /auth/phone/verify'], {'code': '123456'});
       expect(backend.stores.users.currentUser!.phoneVerified, isTrue);
-      expect(backend.bodies['POST /auth/register']!['consent'], isTrue);
 
-      // Compte créé : l'accueil s'ouvre, puis l'application.
-      await tester.pumpAndSettle();
-      expect(find.text('Bienvenue,\nSami'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('onb-skip-all')));
+      // Le reste peut attendre : récapitulatif, puis l'application.
+      expect(find.text('Ajoutez votre permis'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('onb-skip')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('onb-finish')));
       await tester.pumpAndSettle();
@@ -280,10 +308,7 @@ void main() {
       await pumpApp(tester, backend);
       await tester.tap(find.text('Créer un compte'));
       await tester.pumpAndSettle();
-      await tester.enterText(field('Prénom'), 'Sami');
-      await tester.enterText(field('Nom'), 'Ben Ali');
       await tester.enterText(field('E-mail'), 'sami@example.com');
-      await tester.enterText(field('Téléphone'), '20123456');
       await tester.enterText(field('Mot de passe'), 'Password123!');
       await tester.enterText(
         field('Confirmer le mot de passe'),
@@ -316,6 +341,14 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    /// Bienvenue, nom et téléphone déjà donnés, numéro déjà vérifié : jusqu'au
+    /// permis.
+    Future<void> toLicense(WidgetTester tester) async {
+      await tapKey(tester, 'onb-start');
+      await tapKey(tester, 'onb-primary'); // nom et téléphone
+      await tapKey(tester, 'onb-primary'); // numéro déjà vérifié
+    }
+
     testWidgets('bienvenue : prénom et promesses de l application', (
       tester,
     ) async {
@@ -333,9 +366,12 @@ void main() {
       photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
       addTearDown(() => photoPicker = (_) async => null);
       final backend = await openOnboarding(tester);
-      await tapKey(tester, 'onb-start');
+      await toLicense(tester);
       expect(find.text('Ajoutez votre permis'), findsOneWidget);
-      expect(find.bySemanticsLabel('Étape 1 sur 3'), findsOneWidget);
+      expect(find.bySemanticsLabel('Étape 3 sur 5'), findsOneWidget);
+      // Rien n'a changé : pas d'enregistrement, pas de code.
+      expect(backend.requests, isNot(contains('PATCH /users/me')));
+      expect(backend.requests, isNot(contains('POST /auth/phone/send')));
 
       await tapKey(tester, 'onb-primary');
       expect(backend.requests, contains('PUT /users/me/license-photo'));
@@ -369,7 +405,7 @@ void main() {
           'Ce permis ne semble pas être le vôtre.',
         );
       await openOnboarding(tester, backend: backend);
-      await tapKey(tester, 'onb-start');
+      await toLicense(tester);
       await tapKey(tester, 'onb-primary');
       expect(
         find.text('Ce permis ne semble pas être le vôtre.'),
@@ -382,7 +418,7 @@ void main() {
 
     testWidgets('empreinte activée, puis récapitulatif', (tester) async {
       final backend = await openOnboarding(tester);
-      await tapKey(tester, 'onb-start');
+      await toLicense(tester);
       await tapKey(tester, 'onb-secondary'); // permis : plus tard
       await tapKey(tester, 'onb-secondary'); // identité : plus tard
       expect(find.text('Connexion en un geste'), findsOneWidget);
@@ -423,19 +459,77 @@ void main() {
 
     testWidgets('retour : étape précédente', (tester) async {
       await openOnboarding(tester);
-      await tapKey(tester, 'onb-start');
+      await toLicense(tester);
       await tapKey(tester, 'onb-secondary');
       expect(find.text('Vérifiez votre identité'), findsOneWidget);
       await tapKey(tester, 'onb-back');
       expect(find.text('Ajoutez votre permis'), findsOneWidget);
       await tapKey(tester, 'onb-back');
+      expect(find.text('Confirmez votre numéro'), findsOneWidget);
+      await tapKey(tester, 'onb-back');
+      expect(find.text('Faisons connaissance'), findsOneWidget);
+      await tapKey(tester, 'onb-back');
       expect(find.text('Bienvenue,\nSami'), findsOneWidget);
+    });
+
+    testWidgets('profil incomplet : accueil imposé, nom et téléphone requis', (
+      tester,
+    ) async {
+      // Inscription commencée sur un autre téléphone : pas d'indicateur ici.
+      final backend = FakeBackend(
+        user: userJson(firstName: '', lastName: '', phone: ''),
+      );
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      expect(find.byKey(const Key('onboarding')), findsOneWidget);
+      expect(find.byKey(const Key('onb-skip-all')), findsNothing);
+
+      await tapKey(tester, 'onb-start');
+      // « Passer » sans effet tant que le profil manque.
+      await tester.tap(find.byKey(const Key('onb-skip')), warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(find.text('Faisons connaissance'), findsOneWidget);
+
+      await tapKey(tester, 'onb-primary');
+      expect(backend.requests, isNot(contains('PATCH /users/me')));
+      expect(find.text('Faisons connaissance'), findsOneWidget);
+
+      // Profil complété : l'accueil continue, il ne se ferme pas d'un coup.
+      await tester.enterText(field('Prénom'), 'Sami');
+      await tester.enterText(field('Nom'), 'Ben Ali');
+      await tester.enterText(field('Téléphone'), '20 123 456');
+      await tapKey(tester, 'onb-primary');
+      expect(find.text('Confirmez votre numéro'), findsOneWidget);
+      expect(find.byKey(const Key('onboarding')), findsOneWidget);
+    });
+
+    testWidgets('code incorrect : message, on reste sur l étape', (
+      tester,
+    ) async {
+      final backend = FakeBackend(user: userJson(phoneVerified: false))
+        ..failures['POST /auth/phone/verify'] = (
+          400,
+          'INVALID_CODE',
+          'Code incorrect ou expiré.',
+        );
+      await openOnboarding(tester, backend: backend);
+      await tapKey(tester, 'onb-start');
+      await tapKey(tester, 'onb-primary');
+      // Numéro pas encore vérifié : le code part en continuant.
+      expect(backend.requests, contains('POST /auth/phone/send'));
+      await tester.enterText(field('Code de vérification'), '000000');
+      await tapKey(tester, 'onb-primary');
+      expect(find.text('Code incorrect ou expiré.'), findsOneWidget);
+      expect(find.text('Confirmez votre numéro'), findsOneWidget);
+      // Plus tard : la suite reste possible.
+      await tapKey(tester, 'onb-secondary');
+      expect(find.text('Ajoutez votre permis'), findsOneWidget);
     });
 
     testWidgets('sans capteur : pas d étape empreinte', (tester) async {
       final backend = FakeBackend()..biometric.available = false;
       await openOnboarding(tester, backend: backend);
-      await tapKey(tester, 'onb-start');
+      await toLicense(tester);
       await tapKey(tester, 'onb-secondary');
       await tapKey(tester, 'onb-secondary');
       // Directement le récapitulatif, sans la ligne biométrique.
@@ -1904,6 +1998,50 @@ void main() {
         'reason': "Permis d'une autre personne",
       });
       expect(find.text('Permis refusé'), findsOneWidget);
+    });
+
+    testWidgets('dossier : l administrateur corrige la lecture de la pièce', (
+      tester,
+    ) async {
+      final backend = adminBackend()
+        ..users = [
+          userJson(id: 'me', firstName: 'Admin', role: 'ADMIN'),
+          {
+            ...userJson(id: 'u2'),
+            'identity': {
+              'status': 'VERIFIED',
+              'documentType': 'CIN',
+              'cinNumber': '12345678',
+              'extracted': {
+                'type': 'CIN',
+                'number': '12345678',
+                'lastNameAr': 'بن علي',
+                'firstNameAr': 'سامي',
+                'birthDate': '1999-03-12',
+                'birthPlaceAr': 'قايس',
+              },
+            },
+          },
+        ];
+      await pumpApp(tester, backend);
+      await signIn(tester);
+      await tester.tap(find.text('Comptes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sami Ben Ali'));
+      await tester.pumpAndSettle();
+
+      await scrollFileTo(tester, find.byKey(const Key('correct-reading')));
+      expect(find.text('قايس'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('correct-reading')));
+      await tester.pumpAndSettle();
+      await tester.enterText(field('Lieu de naissance'), 'قابس');
+      await tester.tap(find.byKey(const Key('save-reading')));
+      await tester.pumpAndSettle();
+      // Seul le champ corrigé part.
+      expect(backend.bodies['PATCH /users/u2/identity/reading'], {
+        'birthPlaceAr': 'قابس',
+      });
+      expect(find.text('قابس'), findsOneWidget);
     });
 
     testWidgets('dossier : identité validée par l IA, visible et annulable', (

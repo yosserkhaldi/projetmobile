@@ -46,6 +46,7 @@ import {
   documentTypeSchema,
   idParams,
   identityFileParams,
+  identityReadingSchema,
   identitySideParams,
   identitySubmitSchema,
   livenessFramesSchema,
@@ -809,6 +810,34 @@ router.post('/:id/identity/revoke', requireAuth, requireRole('ADMIN'), async (re
       data: { reason: `Annulée : ${reason}` },
     });
   }
+  res.json({ user: publicUser(user) });
+});
+
+/**
+ * Correction par un administrateur de ce que l'IA a lu sur la pièce (nom mal
+ * lu, lieu de naissance, numéro). Les autres champs lus restent.
+ */
+router.patch('/:id/identity/reading', requireAuth, requireRole('ADMIN'), async (req, res) => {
+  const { id } = idParams.parse(req.params);
+  const changes = identityReadingSchema.parse(req.body);
+  const before = await prisma.user.findUnique({ where: { id } });
+  if (!before || before.deletedAt) {
+    throw new HttpError(404, 'NOT_FOUND', 'Compte introuvable.');
+  }
+  const user = await prisma.user
+    .update({
+      where: { id },
+      data: {
+        identityExtracted: { ...(before.identityExtracted ?? {}), ...changes },
+        ...(changes.number && { cinNumber: changes.number }),
+      },
+      include: withCompany,
+    })
+    .catch((err) => {
+      throw isUniqueViolation(err)
+        ? new HttpError(409, 'CIN_IN_USE', 'Ce numéro de pièce est déjà utilisé.')
+        : err;
+    });
   res.json({ user: publicUser(user) });
 });
 

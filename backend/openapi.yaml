@@ -57,7 +57,10 @@ paths:
     post:
       tags: [Authentification]
       summary: Créer un compte conducteur
-      description: Le rôle est toujours DRIVER. Un code OTP part par SMS.
+      description: >-
+        Le rôle est toujours DRIVER. Si le téléphone est fourni, un code OTP
+        part tout de suite ; sinon il part avec POST /auth/phone/send une fois
+        le numéro ajouté.
       security: []
       requestBody:
         required: true
@@ -646,6 +649,33 @@ paths:
       responses:
         '200': { $ref: '#/components/responses/UserResponse' }
         '404': { $ref: '#/components/responses/Error' }
+
+  /users/{id}/identity/reading:
+    patch:
+      tags: [Identité]
+      summary: Corriger ce que l'IA a lu sur la pièce (administrateurs)
+      description: Seuls les champs envoyés changent ; le numéro met aussi à jour la pièce du compte.
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                number: { type: string }
+                lastName: { type: [string, 'null'] }
+                firstName: { type: [string, 'null'] }
+                lastNameAr: { type: [string, 'null'] }
+                firstNameAr: { type: [string, 'null'] }
+                parentsAr: { type: [string, 'null'] }
+                birthPlaceAr: { type: [string, 'null'] }
+                birthDate: { type: [string, 'null'], format: date }
+                expiresAt: { type: [string, 'null'], format: date }
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
 
   /users/{id}/identity/revoke:
     post:
@@ -1299,7 +1329,10 @@ components:
         expiresAt: { type: string, format: date-time }
     RegisterInput:
       type: object
-      required: [firstName, lastName, email, phone, password, consent]
+      description: >-
+        Inscription en deux temps : e-mail et mot de passe suffisent ; le nom
+        et le téléphone sont donnés ensuite dans l'accueil (PATCH /users/me).
+      required: [email, password, consent]
       properties:
         firstName: { type: string }
         lastName: { type: string }

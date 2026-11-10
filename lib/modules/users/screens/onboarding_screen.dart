@@ -14,9 +14,10 @@ import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 import 'package:mon_constat_digital/modules/users/widgets/form_widgets.dart';
 import 'package:mon_constat_digital/modules/users/widgets/user_photo.dart';
 
-/// Accueil après l'inscription : bienvenue, permis, identité, connexion
-/// biométrique, puis un récapitulatif. Chaque étape se passe ; ce qui reste
-/// se termine depuis le profil. Interrompu, il reprend au prochain lancement
+/// Accueil après l'inscription : bienvenue, nom et téléphone (obligatoires),
+/// code reçu par WhatsApp, permis, identité, connexion biométrique, puis un
+/// récapitulatif. À partir du code, chaque étape se passe ; ce qui reste se
+/// termine depuis le profil. Interrompu, il reprend au prochain lancement
 /// (UserStore.needsOnboarding).
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -25,7 +26,7 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-enum _Step { welcome, license, identity, biometric, done }
+enum _Step { welcome, profile, phone, license, identity, biometric, done }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pages = PageController();
@@ -35,11 +36,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   /// L'étape biométrique n'apparaît que si le téléphone a un capteur.
   List<_Step> get _steps => _stepsCache ??= [
     _Step.welcome,
+    _Step.profile,
+    _Step.phone,
     _Step.license,
     _Step.identity,
     if (AppScope.of(context).users.biometricAvailable) _Step.biometric,
     _Step.done,
   ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    AppScope.of(context).users.keepOnboarding();
+  }
 
   @override
   void dispose() {
@@ -63,7 +72,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _next() => _go(_index + 1);
-  void _toSummary() => _go(_steps.length - 1);
+
+  /// Nom et téléphone d'abord : rien ne se passe tant qu'ils manquent.
+  bool get _canSkip =>
+      AppScope.of(context).users.currentUser?.profileComplete ?? false;
+
+  void _toSummary() {
+    if (_canSkip) _go(_steps.length - 1);
+  }
 
   Future<void> _finish() async {
     HapticFeedback.lightImpact();
@@ -94,8 +110,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   switch (step) {
                     _Step.welcome => _WelcomePage(
                       onStart: _next,
-                      onSkip: _toSummary,
+                      onSkip: _canSkip ? _toSummary : null,
                     ),
+                    _Step.profile => _ProfileStep(onDone: _next),
+                    _Step.phone => _PhoneStep(onDone: _next),
                     _Step.license => _LicenseStep(onDone: _next),
                     _Step.identity => _IdentityStep(onDone: _next),
                     _Step.biometric => _BiometricStep(onDone: _next),
@@ -117,7 +135,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     current: _index.clamp(1, middle),
                     total: middle,
                     onBack: () => _go(_index - 1),
-                    onSkip: _toSummary,
+                    onSkip: _canSkip ? _toSummary : null,
                   ),
                 ),
               ),
@@ -134,7 +152,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
 class _WelcomePage extends StatelessWidget {
   const _WelcomePage({required this.onStart, required this.onSkip});
-  final VoidCallback onStart, onSkip;
+  final VoidCallback onStart;
+
+  /// null : nom et téléphone encore à donner, rien à passer.
+  final VoidCallback? onSkip;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +167,11 @@ class _WelcomePage extends StatelessWidget {
       content: [
         _Eyebrow(icon: Icons.check_rounded, text: t.onbWelcomeEyebrow),
         const SizedBox(height: 18),
-        _DisplayTitle(t.onbWelcomeTitle(firstName)),
+        _DisplayTitle(
+          firstName.isEmpty
+              ? t.onbWelcomeNewTitle
+              : t.onbWelcomeTitle(firstName),
+        ),
         const SizedBox(height: 14),
         Text(
           t.onbWelcomeBody,
@@ -190,15 +215,16 @@ class _WelcomePage extends StatelessWidget {
           icon: Icons.arrow_forward_rounded,
           onPressed: onStart,
         ),
-        TextButton(
-          key: const Key('onb-skip-all'),
-          onPressed: onSkip,
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.onDarkStrong,
-            minimumSize: const Size.fromHeight(48),
+        if (onSkip != null)
+          TextButton(
+            key: const Key('onb-skip-all'),
+            onPressed: onSkip,
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.onDarkStrong,
+              minimumSize: const Size.fromHeight(48),
+            ),
+            child: Text(t.onbWelcomeSkip),
           ),
-          child: Text(t.onbWelcomeSkip),
-        ),
       ],
     );
   }
@@ -552,7 +578,8 @@ class _TopBar extends StatelessWidget {
   });
 
   final int current, total;
-  final VoidCallback onBack, onSkip;
+  final VoidCallback onBack;
+  final VoidCallback? onSkip;
 
   @override
   Widget build(BuildContext context) {
@@ -597,10 +624,14 @@ class _TopBar extends StatelessWidget {
                   ),
                 ),
               ),
-              TextButton(
-                key: const Key('onb-skip'),
-                onPressed: onSkip,
-                child: Text(t.onbSkip),
+              // Place gardée : la barre ne bouge pas quand « Passer » apparaît.
+              Visibility.maintain(
+                visible: onSkip != null,
+                child: TextButton(
+                  key: const Key('onb-skip'),
+                  onPressed: onSkip,
+                  child: Text(t.onbSkip),
+                ),
               ),
             ],
           ),
@@ -875,6 +906,231 @@ class _Note extends StatelessWidget {
 }
 
 enum _Tone { neutral, success, warning, info }
+
+// --- Nom et téléphone --------------------------------------------------------
+
+/// Obligatoire : le nom figure sur les constats, le téléphone sert à se
+/// connecter et à recevoir le suivi. Le code part dès qu'on continue.
+class _ProfileStep extends StatefulWidget {
+  const _ProfileStep({required this.onDone});
+  final VoidCallback onDone;
+
+  @override
+  State<_ProfileStep> createState() => _ProfileStepState();
+}
+
+class _ProfileStepState extends State<_ProfileStep>
+    with FormActions, AutomaticKeepAliveClientMixin {
+  late final AppUser? _user = AppScope.of(context).users.currentUser;
+  late final _firstName = TextEditingController(text: _user?.firstName);
+  late final _lastName = TextEditingController(text: _user?.lastName);
+  // Affiché sans l'indicatif, déjà devant le champ.
+  late final _phone = TextEditingController(
+    text: (_user?.phone ?? '').replaceFirst(RegExp(r'^\+216'), ''),
+  );
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void dispose() {
+    for (final controller in [_firstName, _lastName, _phone]) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void _continue() {
+    final users = AppScope.of(context).users;
+    final user = users.currentUser;
+    submit(() async {
+      final phone = _phone.text.trim();
+      final changes = <String, Object?>{
+        if (_firstName.text.trim() != user?.firstName)
+          'firstName': _firstName.text.trim(),
+        if (_lastName.text.trim() != user?.lastName)
+          'lastName': _lastName.text.trim(),
+        if (phone.replaceAll(' ', '') !=
+            (user?.phone ?? '').replaceFirst(RegExp(r'^\+216'), ''))
+          'phone': phone,
+      };
+      if (changes.isNotEmpty) await users.updateProfile(changes);
+      // Nouveau numéro, ou pas encore vérifié : le code part maintenant.
+      if (!(users.currentUser?.phoneVerified ?? true)) {
+        try {
+          await users.resendPhoneCode();
+        } catch (_) {
+          // Code déjà envoyé il y a moins d'une minute : l'étape suivante
+          // permet d'en redemander un.
+        }
+      }
+      widget.onDone();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final t = context.t;
+    final v = validators;
+    const gap = SizedBox(height: 14);
+    return Form(
+      key: formKey,
+      child: _StepPage(
+        icon: Icons.person_outline_rounded,
+        title: t.onbProfileTitle,
+        body: t.onbProfileBody,
+        content: [
+          if (error != null) ...[ErrorBanner(error!), gap],
+          LabeledField(
+            label: t.firstNameLabel,
+            controller: _firstName,
+            validator: v.required,
+            prefixIcon: Icons.person_outline,
+            autofillHints: const [AutofillHints.givenName],
+          ),
+          gap,
+          LabeledField(
+            label: t.lastNameLabel,
+            controller: _lastName,
+            validator: v.required,
+            prefixIcon: Icons.badge_outlined,
+            autofillHints: const [AutofillHints.familyName],
+          ),
+          gap,
+          LabeledField(
+            label: t.phoneLabel,
+            controller: _phone,
+            keyboardType: TextInputType.phone,
+            validator: v.phone,
+            hint: '20 123 456',
+            prefixIcon: Icons.phone_outlined,
+            prefixText: '+216',
+            textDirection: TextDirection.ltr,
+            autofillHints: const [AutofillHints.telephoneNumber],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            t.registerPhoneHint,
+            style: TextStyle(color: context.palette.textMuted, fontSize: 13),
+          ),
+        ],
+        primary: _PrimaryButton(
+          label: t.onbContinue,
+          busy: busy,
+          onPressed: _continue,
+        ),
+      ),
+    );
+  }
+}
+
+/// Code à 6 chiffres reçu sur WhatsApp. Peut se faire plus tard.
+class _PhoneStep extends StatefulWidget {
+  const _PhoneStep({required this.onDone});
+  final VoidCallback onDone;
+
+  @override
+  State<_PhoneStep> createState() => _PhoneStepState();
+}
+
+class _PhoneStepState extends State<_PhoneStep>
+    with FormActions, AutomaticKeepAliveClientMixin {
+  final _code = TextEditingController();
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void dispose() {
+    _code.dispose();
+    super.dispose();
+  }
+
+  void _verify() {
+    final users = AppScope.of(context).users;
+    submit(() async {
+      await users.verifyPhone(_code.text.trim());
+      HapticFeedback.lightImpact();
+      widget.onDone();
+    });
+  }
+
+  Future<void> _resend() async {
+    final users = AppScope.of(context).users;
+    final messenger = ScaffoldMessenger.of(context);
+    final sent = context.t.onbCodeSent;
+    String describe(Object e) => errorMessage(context, e);
+    try {
+      await users.resendPhoneCode();
+      messenger.showSnackBar(SnackBar(content: Text(sent)));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(describe(e))));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final t = context.t;
+    final user = AppScope.of(context).users.currentUser;
+    final verified = user?.phoneVerified ?? false;
+    return Form(
+      key: formKey,
+      child: _StepPage(
+        icon: Icons.sms_outlined,
+        title: t.onbPhoneTitle,
+        body: t.otpInstructions(ltr(user?.phone ?? '')),
+        content: [
+          if (error != null) ...[
+            ErrorBanner(error!),
+            const SizedBox(height: 10),
+          ],
+          if (verified)
+            _Note(
+              key: const Key('onb-phone-verified'),
+              icon: Icons.verified_rounded,
+              text: t.phoneVerified,
+              tone: _Tone.success,
+            )
+          else ...[
+            LabeledField(
+              label: t.otpCodeLabel,
+              controller: _code,
+              keyboardType: TextInputType.number,
+              textDirection: TextDirection.ltr,
+              autofillHints: const [AutofillHints.oneTimeCode],
+              validator: (value) => RegExp(r'^\d{6}$').hasMatch(value ?? '')
+                  ? null
+                  : t.codeFormat,
+              style: const TextStyle(
+                fontFamily: AppFonts.mono,
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
+                letterSpacing: 6,
+              ),
+            ),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                key: const Key('onb-resend'),
+                onPressed: busy ? null : _resend,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: Text(t.resendCode),
+              ),
+            ),
+          ],
+        ],
+        primary: verified
+            ? _PrimaryButton(label: t.onbContinue, onPressed: widget.onDone)
+            : _PrimaryButton(label: t.validate, busy: busy, onPressed: _verify),
+        secondary: verified
+            ? null
+            : _SecondaryButton(label: t.onbLater, onPressed: widget.onDone),
+      ),
+    );
+  }
+}
 
 // --- Permis -----------------------------------------------------------------
 

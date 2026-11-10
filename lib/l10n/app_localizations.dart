@@ -3841,7 +3841,7 @@ abstract class AppLocalizations {
   /// No description provided for @registerIntro.
   ///
   /// In fr, this message translates to:
-  /// **'Trois étapes, moins d\'une minute. Votre numéro sera ensuite vérifié par un code.'**
+  /// **'Un e-mail et un mot de passe. Le reste se fait juste après, en quelques étapes.'**
   String get registerIntro;
 
   /// No description provided for @registerStepYou.
@@ -4413,6 +4413,96 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'À faire'**
   String get onbStateTodo;
+
+  /// No description provided for @registerStepAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre compte'**
+  String get registerStepAccount;
+
+  /// No description provided for @onbWelcomeNewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue sur\nMon Constat'**
+  String get onbWelcomeNewTitle;
+
+  /// No description provided for @onbProfileTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faisons connaissance'**
+  String get onbProfileTitle;
+
+  /// No description provided for @onbProfileBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre nom figure sur vos constats. Votre numéro sert à vous connecter et à suivre vos dossiers.'**
+  String get onbProfileBody;
+
+  /// No description provided for @onbPhoneTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmez votre numéro'**
+  String get onbPhoneTitle;
+
+  /// No description provided for @onbCodeSent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau code envoyé.'**
+  String get onbCodeSent;
+
+  /// No description provided for @onbReadingTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu sur la pièce'**
+  String get onbReadingTitle;
+
+  /// No description provided for @correctReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corriger'**
+  String get correctReading;
+
+  /// No description provided for @correctReadingTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corriger la lecture de la pièce'**
+  String get correctReadingTitle;
+
+  /// No description provided for @correctReadingHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corrigez ce que l\'IA a mal lu, en recopiant la pièce. Dates au format AAAA-MM-JJ.'**
+  String get correctReadingHint;
+
+  /// No description provided for @readingCorrected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture corrigée'**
+  String get readingCorrected;
+
+  /// No description provided for @readLastName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get readLastName;
+
+  /// No description provided for @readFirstName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prénom'**
+  String get readFirstName;
+
+  /// No description provided for @readBirthDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de naissance'**
+  String get readBirthDate;
+
+  /// No description provided for @readBirthPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu de naissance'**
+  String get readBirthPlace;
 }
 
 class _AppLocalizationsDelegate

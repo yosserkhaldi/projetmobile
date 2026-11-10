@@ -113,8 +113,22 @@ function mrzDate(value, past) {
   return `${century + yy}-${value.slice(2, 4)}-${value.slice(4, 6)}`;
 }
 
+/** Nom de la MRZ : les mots séparés par « < ». Une lettre seule est un
+ * « < » mal lu (« JLASSI<<C<IHEB »), jamais un prénom. */
 const mrzName = (value) =>
-  value.replaceAll('<', ' ').replace(/\s+/g, ' ').trim();
+  value
+    .split('<')
+    .filter((word) => word.length > 1)
+    .join(' ');
+
+/**
+ * Zone des noms de la MRZ nettoyée : le remplissage « <<<<< » est souvent lu
+ * K, L ou C (« IHEBCCCKLLLLKLKKL »). Trois de ces signes d'affilée ne se
+ * trouvent dans aucun nom : c'est la fin des noms.
+ */
+export function cleanMrzNames(zone) {
+  return zone.replace(/[<KLC]{3,}/g, '<<<');
+}
 
 // Confusions classiques de l'OCR entre chiffres et lettres.
 const LOOKALIKES = { 0: 'OQD', 1: 'I', 2: 'Z', 5: 'S', 6: 'G', 8: 'B', O: '0', I: '1', Z: '2', S: '5', B: '8' };
@@ -157,7 +171,7 @@ export function parseMrz(text) {
   }
   line2 = line2.padEnd(44, '<');
 
-  const [surname, given = ''] = line1.slice(5).split('<<');
+  const [surname, given = ''] = cleanMrzNames(line1.slice(5)).split('<<');
   const candidates = mrzNumberCandidates(line2.slice(0, 9), line2[9]);
   const birth = line2.slice(13, 19);
   const expiry = line2.slice(21, 27);
@@ -387,7 +401,8 @@ const arabicWords = (line) =>
 const PLACE_PREFIXES = ['سيدي', 'بن', 'منزل', 'حمام', 'راس', 'قصر', 'برج', 'جبل', 'وادي', 'بئر', 'بير'];
 
 /** Lieu de naissance : le dernier mot, avec son préfixe s'il en a un. Les
- * restes du libellé « مكانها » restent devant. */
+ * restes du libellé « مكانها » restent devant. Ramené au nom connu le plus
+ * proche (قايس → قابس). */
 function placeOf(line) {
   const words = (line.match(/[؀-ۿ]+/g) ?? []).filter(
     (w) => w.length > 1,
@@ -395,9 +410,60 @@ function placeOf(line) {
   const last = words.at(-1);
   if (!last) return null;
   const before = words.at(-2);
-  return before && PLACE_PREFIXES.includes(simplify(before))
-    ? `${before} ${last}`
-    : last;
+  return snapPlace(
+    before && PLACE_PREFIXES.includes(simplify(before))
+      ? `${before} ${last}`
+      : last,
+  );
+}
+
+// Gouvernorats et principales villes de Tunisie, tels qu'écrits sur la CIN.
+export const TUNISIAN_PLACES = [
+  'تونس', 'اريانة', 'بن عروس', 'منوبة', 'نابل', 'زغوان', 'بنزرت', 'باجة',
+  'جندوبة', 'الكاف', 'سليانة', 'سوسة', 'المنستير', 'المهدية', 'صفاقس',
+  'القيروان', 'القصرين', 'سيدي بوزيد', 'قابس', 'مدنين', 'تطاوين', 'قفصة',
+  'توزر', 'قبلي', 'المرسى', 'باردو', 'الكرم', 'حلق الوادي', 'رادس',
+  'حمام الانف', 'الزهراء', 'المحمدية', 'الحمامات', 'قليبية', 'قرمبالية',
+  'منزل تميم', 'منزل بورقيبة', 'ماطر', 'طبرقة', 'عين دراهم', 'مساكن',
+  'حمام سوسة', 'القلعة الكبرى', 'المكنين', 'قصر هلال', 'جمال', 'المحرس',
+  'ساقية الزيت', 'الحامة', 'مارث', 'جربة', 'جرجيس', 'بنقردان', 'المتلوي',
+  'نفطة', 'دوز', 'سبيطلة', 'تالة', 'سكرة', 'الدندان', 'طبربة', 'الفحص',
+];
+
+/**
+ * Lettres arabes réduites à leur forme sans points : l'OCR confond surtout
+ * les lettres qui ne diffèrent que par leurs points (ب ت ث ن ي, ج ح خ,
+ * ف ق…). « قايس » et « قابس » ont la même forme.
+ */
+const RASM = {
+  ب: 'ٮ', ت: 'ٮ', ث: 'ٮ', ن: 'ٮ', ي: 'ٮ', ى: 'ٮ', ئ: 'ٮ',
+  ج: 'ح', خ: 'ح', ذ: 'د', ز: 'ر', ش: 'س', ض: 'ص', ظ: 'ط', غ: 'ع',
+  ق: 'ٯ', ف: 'ٯ', ة: 'ه',
+};
+export const rasm = (text) =>
+  simplify(text)
+    .replace(/\s+/g, '')
+    .split('')
+    .map((char) => RASM[char] ?? char)
+    .join('');
+
+/** Nom de lieu connu le plus proche : même forme sans points, ou une lettre
+ * de différence sur un nom d'au moins 4 lettres. Sinon le texte lu. */
+export function snapPlace(text) {
+  const shape = rasm(text);
+  const exact = TUNISIAN_PLACES.filter((place) => rasm(place) === shape);
+  if (exact.length === 1) return exact[0];
+  if (exact.length > 1) {
+    // Plusieurs noms de même forme : celui qui diffère le moins, lettre à lettre.
+    return exact.sort((a, b) => distance(simplify(text), simplify(a)) - distance(simplify(text), simplify(b)))[0];
+  }
+  if (shape.length >= 4) {
+    const close = TUNISIAN_PLACES.filter(
+      (place) => distance(rasm(place), shape) === 1,
+    );
+    if (close.length === 1) return close[0];
+  }
+  return text;
 }
 
 const PARENT = /(^|\s)بن\s/;
@@ -663,6 +729,16 @@ async function backIssueDate(upright) {
   return null;
 }
 
+/** Une MRZ lisible (au moins un champ dont le contrôle passe), quel que soit
+ * le sens de la photo. */
+async function passportInAnyDirection(image) {
+  for (const angle of [0, 90, 270, 180]) {
+    const turned = angle ? await sharp(image).rotate(angle).toBuffer() : image;
+    if (mrzScore(await readMrz(turned)) >= 1) return true;
+  }
+  return false;
+}
+
 export const documentReader = {
   /**
    * Reconnaît un verso. CIN : code-barres (et date de délivrance lue en
@@ -709,7 +785,12 @@ export const documentReader = {
       return { type: documentType, kind, ...(mrz ?? { number: null }) };
     }
     const text = await recognize('eng', await prepare(upright));
-    const kind = await kindOf(upright, text);
+    let kind = await kindOf(upright, text);
+    if (documentType === 'LICENSE' && !kind) {
+      // Rien de lisible à l'endroit : un passeport de travers se reconnaît
+      // encore à sa MRZ, dans l'un des quatre sens.
+      kind = (await passportInAnyDirection(exif)) ? 'PASSPORT' : null;
+    }
     if (documentType === 'LICENSE') {
       // Le numéro de CIN (case 6 de la carte de 2017) est une suite de
       // 8 chiffres ; le numéro du permis, lui, porte une barre.
@@ -719,10 +800,12 @@ export const documentReader = {
         kind,
         // Numéro avec sa barre lu sur toute la carte, sinon de près, à côté
         // de la photo, sinon un autre format de numéro.
+        // Une suite de chiffres quelconque n'est retenue que sur une carte
+        // reconnue comme un permis : sur un passeport, ce serait n'importe quoi.
         number:
           (/\d{2}\s*\/\s*\d{5,8}/.test(text) ? parseLicenseNumber(text) : null) ??
           (box ? await licenseNumberNearPhoto(upright, box) : null) ??
-          parseLicenseNumber(text),
+          (kind === 'LICENSE' ? parseLicenseNumber(text) : null),
         categories: parseLicenseCategories(text),
         ...parseLicenseDates(text),
         ...parseLicenseHolder(text),

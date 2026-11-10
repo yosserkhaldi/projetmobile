@@ -115,14 +115,20 @@ async function readLicense(buffer) {
     const { number, categories, issuedAt, expiresAt, birthDate } = read;
     const { lastName, firstName, cinNumber, kind } = read;
     // Un passeport ou une CIN n'est pas un permis : refusé, rien n'est
-    // enregistré. Dans le doute (kind null), on laisse passer.
-    if (kind && kind !== 'LICENSE') {
+    // enregistré. Une carte ni reconnue (« PERMIS », « رخصة سياقة ») ni
+    // portant un numéro de permis (« 08/82157 ») est refusée aussi : mieux
+    // vaut reprendre la photo qu'enregistrer n'importe quoi.
+    const looksLikeLicense =
+      kind === 'LICENSE' || /^\d{2}\/\d{5,8}$/.test(number ?? '');
+    if (!looksLikeLicense) {
       throw new HttpError(
         422,
         'NOT_A_LICENSE',
         kind === 'PASSPORT'
           ? 'Cette photo montre un passeport, pas un permis de conduire.'
-          : "Cette photo montre une carte d'identité, pas un permis de conduire.",
+          : kind === 'CIN'
+            ? "Cette photo montre une carte d'identité, pas un permis de conduire."
+            : "Aucun permis de conduire reconnu sur cette photo. Reprenez-la à plat, bien éclairée, la carte entière dans le cadre.",
       );
     }
     return {

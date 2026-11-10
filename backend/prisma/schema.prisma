@@ -55,10 +55,12 @@ enum AccidentStatus {
 
 model User {
   id              String    @id @default(uuid()) @db.Uuid
-  firstName       String
-  lastName        String
+  // Inscription : e-mail et mot de passe seulement ; le nom et le téléphone
+  // sont demandés juste après, dans l'accueil de l'application.
+  firstName       String    @default("")
+  lastName        String    @default("")
   email           String    @unique
-  phone           String    @unique
+  phone           String?   @unique
   passwordHash    String
   role            Role      @default(DRIVER)
   active          Boolean   @default(true)

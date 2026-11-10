@@ -139,6 +139,26 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
     await _act(() => admin.updateLicense(_user, fields), t.licenseUpdated);
   }
 
+  Future<void> _correctReading(DocumentReading reading) async {
+    final t = context.t;
+    final fields = await showModalBottomSheet<Map<String, String?>>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _ReadingSheet(
+        reading: reading,
+        document: _user.identity.documentType,
+        number: _user.identity.cinNumber,
+      ),
+    );
+    if (fields == null || fields.isEmpty || !mounted) return;
+    final admin = AppScope.of(context).admin;
+    await _act(
+      () => admin.correctIdentityReading(_user, fields),
+      t.readingCorrected,
+    );
+  }
+
   Future<void> _revokeIdentity() async {
     final t = context.t;
     final admin = AppScope.of(context).admin;
@@ -423,6 +443,13 @@ class _AccountDetailScreenState extends State<AccountDetailScreen>
             ],
           ),
         ],
+        if (identity.extracted case final reading? when !reading.isEmpty) ...[
+          const SizedBox(height: 12),
+          _ReadingBlock(
+            reading: reading,
+            onCorrect: busy ? null : () => _correctReading(reading),
+          ),
+        ],
         if (identity.checks != null) ...[
           const SizedBox(height: 12),
           IdentityChecklist(identity: identity),
@@ -662,6 +689,196 @@ class _ReasonSheetState extends State<_ReasonSheet> {
             child: Text(widget.confirm ?? t.reject),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Ce que l'IA a lu sur la pièce, avec « Corriger ».
+class _ReadingBlock extends StatelessWidget {
+  const _ReadingBlock({required this.reading, required this.onCorrect});
+  final DocumentReading reading;
+  final VoidCallback? onCorrect;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final p = context.palette;
+    final rows = [
+      (t.readLastName, reading.lastNameAr ?? reading.lastName),
+      (t.readFirstName, reading.firstNameAr ?? reading.firstName),
+      (t.readParents, reading.parentsAr),
+      (t.readBirthDate, reading.birthDate),
+      (t.readBirthPlace, reading.birthPlaceAr),
+      (t.readExpiry, reading.expiresAt),
+    ].where((row) => row.$2 != null);
+    return Container(
+      key: const Key('identity-reading'),
+      padding: const EdgeInsets.fromLTRB(14, 6, 6, 10),
+      decoration: BoxDecoration(
+        color: p.surfaceAlt,
+        borderRadius: BorderRadius.circular(AppRadius.input),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.document_scanner_outlined,
+                size: 18,
+                color: p.primaryText,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  t.onbReadingTitle,
+                  style: TextStyle(
+                    color: p.primaryText,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                key: const Key('correct-reading'),
+                onPressed: onCorrect,
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: Text(t.correctReading),
+              ),
+            ],
+          ),
+          for (final (label, value) in rows)
+            Padding(
+              padding: const EdgeInsets.only(top: 6, right: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 130,
+                    child: Text(label, style: TextStyle(color: p.textMuted)),
+                  ),
+                  Expanded(
+                    child: Text(
+                      value!,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Correction de la lecture : les champs de la pièce présentée, pré-remplis.
+/// Seuls les champs changés partent au serveur.
+class _ReadingSheet extends StatefulWidget {
+  const _ReadingSheet({
+    required this.reading,
+    required this.document,
+    required this.number,
+  });
+
+  final DocumentReading reading;
+  final IdentityDocument document;
+  final String? number;
+
+  @override
+  State<_ReadingSheet> createState() => _ReadingSheetState();
+}
+
+class _ReadingSheetState extends State<_ReadingSheet> {
+  Map<String, (String, TextEditingController, bool)>? _cache;
+
+  /// Champs de la pièce, créés au premier affichage (libellés traduits).
+  Map<String, (String, TextEditingController, bool)> get _fields =>
+      _cache ??= _build();
+
+  Map<String, (String, TextEditingController, bool)> _build() {
+    final t = context.t;
+    final r = widget.reading;
+    TextEditingController c(String? value) =>
+        TextEditingController(text: value ?? '');
+    // (libellé, champ, écrit en lettres latines)
+    return {
+      'number': (t.readNumber, c(widget.number ?? r.number), true),
+      if (widget.document == IdentityDocument.cin) ...{
+        'lastNameAr': (t.readLastName, c(r.lastNameAr), false),
+        'firstNameAr': (t.readFirstName, c(r.firstNameAr), false),
+        'parentsAr': (t.readParents, c(r.parentsAr), false),
+        'birthDate': (t.readBirthDate, c(r.birthDate), true),
+        'birthPlaceAr': (t.readBirthPlace, c(r.birthPlaceAr), false),
+      } else ...{
+        'lastName': (t.readLastName, c(r.lastName), true),
+        'firstName': (t.readFirstName, c(r.firstName), true),
+        'birthDate': (t.readBirthDate, c(r.birthDate), true),
+        if (widget.document == IdentityDocument.passport)
+          'expiresAt': (t.readExpiry, c(r.expiresAt), true),
+      },
+    };
+  }
+
+  @override
+  void dispose() {
+    for (final (_, controller, _)
+        in _cache?.values ?? const <(String, TextEditingController, bool)>[]) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  String? _initial(String key) => switch (key) {
+    'number' => widget.number ?? widget.reading.number,
+    _ => widget.reading.toJson()[key] as String?,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        0,
+        20,
+        20 + MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              t.correctReadingTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              t.correctReadingHint,
+              style: TextStyle(color: context.palette.textMuted, height: 1.4),
+            ),
+            for (final (label, controller, latin) in _fields.values) ...[
+              const SizedBox(height: 12),
+              LabeledField(
+                label: label,
+                controller: controller,
+                textDirection: latin ? TextDirection.ltr : TextDirection.rtl,
+              ),
+            ],
+            const SizedBox(height: 18),
+            FilledButton(
+              key: const Key('save-reading'),
+              onPressed: () => Navigator.pop(context, {
+                for (final MapEntry(key: key, value: (_, controller, _))
+                    in _fields.entries)
+                  if (controller.text.trim() != (_initial(key) ?? ''))
+                    key: controller.text.trim(),
+              }),
+              child: Text(t.save),
+            ),
+          ],
+        ),
       ),
     );
   }

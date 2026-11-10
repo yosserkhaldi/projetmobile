@@ -2105,7 +2105,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get registerIntro =>
-      'ثلاث خطوات، أقل من دقيقة. سيتم بعدها التحقق من رقمك برمز.';
+      'بريد إلكتروني وكلمة مرور. الباقي يأتي مباشرة بعد ذلك، في بضع خطوات.';
 
   @override
   String get registerStepYou => 'أنت';
@@ -2418,4 +2418,51 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onbStateTodo => 'للإنجاز';
+
+  @override
+  String get registerStepAccount => 'حسابك';
+
+  @override
+  String get onbWelcomeNewTitle => 'مرحبا بك في\nMon Constat';
+
+  @override
+  String get onbProfileTitle => 'لنتعرف عليك';
+
+  @override
+  String get onbProfileBody =>
+      'يظهر اسمك في محاضرك. ويُستعمل رقمك لتسجيل الدخول ومتابعة ملفاتك.';
+
+  @override
+  String get onbPhoneTitle => 'أكد رقمك';
+
+  @override
+  String get onbCodeSent => 'تم إرسال رمز جديد.';
+
+  @override
+  String get onbReadingTitle => 'المقروء من الوثيقة';
+
+  @override
+  String get correctReading => 'تصحيح';
+
+  @override
+  String get correctReadingTitle => 'تصحيح قراءة الوثيقة';
+
+  @override
+  String get correctReadingHint =>
+      'صحح ما أخطأ الذكاء الاصطناعي في قراءته بنسخ الوثيقة. التواريخ بصيغة YYYY-MM-DD.';
+
+  @override
+  String get readingCorrected => 'تم تصحيح القراءة';
+
+  @override
+  String get readLastName => 'اللقب';
+
+  @override
+  String get readFirstName => 'الاسم';
+
+  @override
+  String get readBirthDate => 'تاريخ الولادة';
+
+  @override
+  String get readBirthPlace => 'مكان الولادة';
 }

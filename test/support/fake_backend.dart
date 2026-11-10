@@ -455,7 +455,7 @@ class FakeBackend {
       return http.Response.bytes(tinyPng, 200);
     }
     final account = RegExp(
-      r'^/users/([^/]+)(/license(?:/(approve|reject))?|/identity/revoke)?$',
+      r'^/users/([^/]+)(/license(?:/(approve|reject))?|/identity/revoke|/identity/reading)?$',
     ).firstMatch(path);
     if (account != null) {
       final found = _account(account[1]!);
@@ -484,6 +484,16 @@ class FakeBackend {
         },
         ('PATCH', '/license', _) => {...found, ...?body},
         ('DELETE', '/license', _) => {...found, ...cleared, 'license': null},
+        ('PATCH', '/identity/reading', _) => {
+          ...found,
+          'identity': {
+            ..._map(found['identity']),
+            'extracted': {
+              ..._map(_map(found['identity'])['extracted']),
+              ...?body,
+            },
+          },
+        },
         ('POST', '/identity/revoke', _) => {
           ...found,
           'identity': {
