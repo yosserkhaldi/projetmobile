@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1537A8">
+  <meta name="description" content="Vérificateur d'authenticité hors-ligne des constats amiables numériques (ECDSA P-256 JWS)">
+  <title>Certification Constat | Mon Constat Digital</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="container">
+    <!-- En-tête Marque -->
+    <header class="brand-header">
+      <div class="brand-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+        </svg>
+        Audit & Sécurité Cryptographique
+      </div>
+      <h1 class="brand-title">Mon Constat Digital</h1>
+      <p class="brand-subtitle">Vérification d'authenticité et d'intégrité hors-ligne (Zero-Dependency)</p>
+    </header>
+
+    <!-- Zone de statut dynamique -->
+    <section id="result-area" aria-live="polite">
+      <!-- Rempli dynamiquement par verify.js -->
+    </section>
+
+    <!-- Formulaire manuel (affiché si aucun hash dans l'URL) -->
+    <section id="manual-box" class="card manual-input-box" style="display: none;">
+      <div class="card-title">Saisie Manuelle d'un Jeton JWS</div>
+      <p style="font-size: 13px; color: var(--text-muted);">
+        Si vous n'avez pas scanné directement le QR code, vous pouvez coller ici le jeton JWS ou l'URL complète avec le fragment :
+      </p>
+      <input type="text" id="manual-token" class="input-field" placeholder="eyJhbGciOiJFUzI1NiIs...#..." />
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button id="verify-btn" class="btn btn-primary" type="button">
+          Vérifier la Signature
+        </button>
+        <button id="demo-btn" class="btn btn-secondary" type="button">
+          Tester avec un Constat Valide
+        </button>
+      </div>
+    </section>
+
+    <!-- Détails des véhicules et de l'accident (affiché si signature valide) -->
+    <section id="details-area" style="display: none; display: flex; flex-direction: column; gap: 16px;">
+      <!-- Rempli dynamiquement par verify.js -->
+    </section>
+
+    <!-- Pied de page officiel -->
+    <footer class="footer">
+      <p>République Tunisienne — Norme Esprit 5SAE1</p>
+      <p style="margin-top: 4px; font-size: 10px; color: #94A3B8;">
+        Architecture cryptographique ECDSA P-256 (ES256) certifiée inaltérable sans dépendance serveur.
+      </p>
+    </footer>
+  </main>
+
+  <script src="verify.js"></script>
+</body>
+</html>

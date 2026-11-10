@@ -51,6 +51,9 @@ void main() {
         occurredAt: now,
         circumstancesA: ['1 - En stationnement'],
         circumstancesB: ['2 - Quittait un stationnement'],
+        qrCodeBase64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+        jwsToken: 'header.payload.signature',
+        verifierUrl: 'https://verifier.mon-constat.tn/#token',
       );
 
       final json = constat.toJson();
@@ -62,6 +65,9 @@ void main() {
       expect(decoded.driverBName, equals('Karim Trabelsi'));
       expect(decoded.circumstancesA, contains('1 - En stationnement'));
       expect(decoded.circumstancesB, contains('2 - Quittait un stationnement'));
+      expect(decoded.qrCodeBase64, equals(constat.qrCodeBase64));
+      expect(decoded.jwsToken, equals('header.payload.signature'));
+      expect(decoded.verifierUrl, equals('https://verifier.mon-constat.tn/#token'));
     });
   });
 }

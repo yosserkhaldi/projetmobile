@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
@@ -83,6 +85,132 @@ class ConstatSealedScreen extends StatelessWidget {
                       'Document officiel inaltérable signé bilatéralement.',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: palette.textMuted, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Certification QR Code JWS Hors-Ligne (Zero-Dependency)
+            Card(
+              color: palette.surface,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                side: BorderSide(color: palette.borderSoft),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.qr_code_2_rounded,
+                          color: AppColors.primary,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'CERTIFICATION HORS-LIGNE (JWS)',
+                          style: TextStyle(
+                            color: palette.text,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                            letterSpacing: .6,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Scannez ce QR Code pour certifier l’authenticité et l’intégrité du constat sans connexion au serveur.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: palette.textMuted, fontSize: 12),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: palette.borderSoft),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(12),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: (constat.qrCodeBase64 != null &&
+                              constat.qrCodeBase64!.isNotEmpty)
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.memory(
+                                base64Decode(constat.qrCodeBase64!),
+                                width: 200,
+                                height: 200,
+                                fit: BoxFit.contain,
+                              ),
+                            )
+                          : Container(
+                              width: 200,
+                              height: 200,
+                              color: AppColors.canvas,
+                              child: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.qr_code_scanner,
+                                    size: 64,
+                                    color: AppColors.primary,
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'QR Code Certifié',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 12,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.successBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(
+                            Icons.shield_outlined,
+                            color: AppColors.successText,
+                            size: 18,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Signature ECDSA P-256 certifiée — Zero-Dependency Verification',
+                              style: TextStyle(
+                                color: AppColors.successText,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

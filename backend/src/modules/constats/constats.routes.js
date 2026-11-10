@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 import { constatSealedEmail } from '../../lib/emails.js';
 import { HttpError } from '../../lib/errors.js';
+import { CONSTAT_PUBLIC_JWK, generateConstatQr, signConstatJws } from '../../lib/jws.js';
 import { notifier } from '../../lib/notifier.js';
 import { prisma } from '../../lib/prisma.js';
 import { filePath, savePdf, singlePdf } from '../../lib/uploads.js';
@@ -128,10 +129,21 @@ router.get('/verify/:hash', async (req, res) => {
     throw new HttpError(404, 'NOT_FOUND', 'Aucun constat ne correspond à cette empreinte.');
   }
 
+  const { jws } = signConstatJws(constat);
+  const { qrCodeBase64, verifierUrl } = await generateConstatQr(jws);
+
   res.json({
     valid: true,
     constat,
+    jwsToken: jws,
+    qrCodeBase64,
+    verifierUrl,
   });
+});
+
+// Clé publique ECDSA P-256 pour les auditeurs et le vérificateur autonome
+router.get('/public-key', (req, res) => {
+  res.json({ jwk: CONSTAT_PUBLIC_JWK });
 });
 
 // Toutes les autres routes requièrent d'être authentifié
@@ -325,7 +337,20 @@ router.post('/', requireRole('DRIVER'), singlePdf('pdf'), async (req, res) => {
 
   sendSealedNotifications(constat, data, fileBuffer, req.user);
 
-  res.status(201).json({ constat: publicConstat(constat) });
+  const { jws } = signConstatJws(constat);
+  const { qrCodeBase64, verifierUrl } = await generateConstatQr(jws);
+
+  res.status(201).json({
+    constat: {
+      ...publicConstat(constat),
+      qrCodeBase64,
+      jwsToken: jws,
+      verifierUrl,
+    },
+    jwsToken: jws,
+    qrCodeBase64,
+    verifierUrl,
+  });
 });
 
 export default router;

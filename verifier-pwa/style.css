@@ -1,0 +1,392 @@
+/* Design System - Mon Constat Digital
+ * Strict inheritance from Flutter AppColors & AppPalette
+ */
+:root {
+  --ink: #0B1626;
+  --primary: #1537A8;
+  --primary-hover: #102B85;
+  --primary-tint: #E7ECFB;
+  --accent: #F5A524;
+  --canvas: #F2F4F7;
+  --surface: #FFFFFF;
+  --border-soft: #E4E8EE;
+  --text-muted: #64748B;
+  --navy-800: #112340;
+  
+  --success-bg: #E4F4F0;
+  --success-text: #0F6B5E;
+  --success-border: #7FE0CC;
+
+  --error-bg: #FDECEA;
+  --error-text: #A3261A;
+  --error-border: #F5A39B;
+
+  --warning-bg: #FEF3E2;
+  --warning-text: #B45309;
+
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-family);
+  line-height: 1.5;
+  min-height: 100vh;
+  padding: 24px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  width: 100%;
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header & Brand */
+.brand-header {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--primary-tint);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  margin-bottom: 8px;
+}
+
+.brand-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+
+.brand-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Cards */
+.card {
+  background-color: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(11, 22, 38, 0.04);
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Verification State Badges */
+.status-banner {
+  padding: 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  border: 1.5px solid transparent;
+}
+
+.status-banner.valid {
+  background-color: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success-text);
+}
+
+.status-banner.invalid {
+  background-color: var(--error-bg);
+  border-color: var(--error-border);
+  color: var(--error-text);
+}
+
+.status-banner.pending {
+  background-color: var(--primary-tint);
+  border-color: #CAD5FA;
+  color: var(--primary);
+}
+
+.status-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.status-banner.valid .status-icon {
+  background-color: #D1EFE8;
+  color: var(--success-text);
+}
+
+.status-banner.invalid .status-icon {
+  background-color: #F8D3CE;
+  color: var(--error-text);
+}
+
+.status-banner.pending .status-icon {
+  background-color: #D3E0FA;
+  color: var(--primary);
+}
+
+.status-headline {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.status-description {
+  font-size: 13px;
+  max-width: 440px;
+  opacity: 0.95;
+}
+
+/* Vehicle Panels Grid */
+.vehicles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .vehicles-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vehicle-panel {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+}
+
+.vehicle-panel.vehicle-a {
+  background-color: var(--primary-tint);
+  border-color: rgba(21, 55, 168, 0.2);
+}
+
+.vehicle-panel.vehicle-b {
+  background-color: var(--warning-bg);
+  border-color: rgba(245, 165, 36, 0.3);
+}
+
+.vehicle-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.vehicle-a .vehicle-tag {
+  color: var(--primary);
+}
+
+.vehicle-b .vehicle-tag {
+  color: var(--warning-text);
+}
+
+.vehicle-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: #FFFFFF;
+}
+
+.vehicle-a .vehicle-avatar {
+  background-color: var(--primary);
+}
+
+.vehicle-b .vehicle-avatar {
+  background-color: var(--accent);
+  color: var(--ink);
+}
+
+.vehicle-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.vehicle-plate {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.vehicle-insurer {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Metadata & Crypto Details */
+.meta-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.meta-table tr:not(:last-child) {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.meta-table td {
+  padding: 10px 0;
+  font-size: 13px;
+}
+
+.meta-table td.label {
+  color: var(--text-muted);
+  width: 40%;
+}
+
+.meta-table td.value {
+  font-weight: 600;
+  text-align: right;
+  color: var(--ink);
+}
+
+/* Fingerprint Dark Box */
+.crypto-box {
+  background-color: var(--ink);
+  color: #FFFFFF;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.crypto-box-header {
+  color: #7FE0CC;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mono-display {
+  background-color: var(--navy-800);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: #D3E0FA;
+  word-break: break-all;
+}
+
+.crypto-caption {
+  font-size: 11px;
+  color: #8A9BB3;
+  margin-top: 8px;
+}
+
+/* Form and Manual Input */
+.manual-input-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+  background-color: var(--canvas);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--primary);
+  background-color: #FFFFFF;
+}
+
+.btn {
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--primary-tint);
+  color: var(--primary);
+}
+
+.btn-secondary:hover {
+  background-color: #D7E1FA;
+}
+
+.footer {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 12px 0 24px;
+}

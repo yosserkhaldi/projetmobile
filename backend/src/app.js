@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import cors from 'cors';
 import express from 'express';
@@ -39,6 +40,7 @@ export function createApp() {
 
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apiDocs));
+  app.use('/verifier', express.static(fileURLToPath(new URL('../../verifier-pwa', import.meta.url))));
 
   // Chaque module ajoute ses endpoints dans son propre fichier de routes.
   app.use('/api/auth', authRoutes);
