@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, beforeEach, test } from 'node:test';
 
-import { driver, migrate, prisma, resetDatabase, startApi } from './helpers.js';
+import { driver, image, migrate, prisma, resetDatabase, startApi } from './helpers.js';
 
 before(migrate);
 beforeEach(resetDatabase);
@@ -160,4 +160,38 @@ test('un brouillon non transmis peut être supprimé', async (t) => {
   );
   assert.equal(removed.status, 204);
   assert.equal(await prisma.accident.count(), 0);
+});
+
+const photoForm = (tag) => {
+  const data = new FormData();
+  data.append('photo', new Blob([image(tag)], { type: 'image/png' }), 'permis.png');
+  return data;
+};
+
+test('permis du conducteur B : lu par l IA, rien d enregistré', async (t) => {
+  const { call } = await startApi(t);
+  const auth = await register(call);
+  const res = await call('POST', '/accidents/license-scan', {
+    token: auth.accessToken,
+    form: photoForm('license'),
+  });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.license.number, '12/345678');
+  assert.equal(res.body.license.lastName, 'BEN ALI');
+  assert.equal(res.body.license.firstName, 'SAMI');
+  assert.equal(res.body.license.expiresAt, '2030-05-10');
+  // Le permis d'un tiers n'est jamais rangé dans le compte.
+  const me = await call('GET', '/users/me', { token: auth.accessToken });
+  assert.equal(me.body.user.licensePhotoId, null);
+  assert.equal(me.body.user.licenseNumber, null);
+
+  // Un passeport, ou une photo sans permis : refusés.
+  for (const tag of ['passport', 'me']) {
+    const refused = await call('POST', '/accidents/license-scan', {
+      token: auth.accessToken,
+      form: photoForm(tag),
+    });
+    assert.equal(refused.status, 422);
+    assert.equal(refused.body.error.code, 'NOT_A_LICENSE');
+  }
 });
