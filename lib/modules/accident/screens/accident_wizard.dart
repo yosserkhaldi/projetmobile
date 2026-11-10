@@ -195,7 +195,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
     final user = stores.users.currentUser;
     // Signer engage : identité vérifiée obligatoire (le serveur le vérifie
     // aussi). On le dit avant le scellement plutôt qu'après.
-    if (user?.identity.status != IdentityStatus.verified) {
+    if (user == null || user.identity.status != IdentityStatus.verified) {
       await _askIdentity();
       return;
     }
