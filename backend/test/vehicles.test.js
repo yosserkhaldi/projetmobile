@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { after, before, beforeEach, test } from 'node:test';
 
-import { driver, migrate, prisma, resetDatabase, startApi } from './helpers.js';
+import { driver, image, migrate, prisma, resetDatabase, startApi } from './helpers.js';
+
+const PNG = image('doc');
 
 const { sendExpiryReminders } = await import(
   '../src/modules/vehicles/vehicles.reminders.js'
@@ -97,4 +99,94 @@ test('rappels d échéance : 30, 7 et 1 jours avant, une fois', async (t) => {
   assert.ok(notes.some((n) => /Fiat Tipo \(C\) expire demain/.test(n.body)));
   // Aussi sur WhatsApp (SMS simulé dans les tests).
   assert.equal(sent.sms.filter((m) => /expire/.test(m.text)).length, 3);
+});
+
+// ── Lecture des documents du véhicule (données fictives) ─────────────────────
+const docs = await import('../src/lib/vehicleDocs.js');
+
+test('carte grise : plaque de la bande verticale, marque, modèle, année', () => {
+  // Texte tel que l'OCR le rend, carte à l'endroit puis tournée d'un quart.
+  const flat = [
+    "CERTIFICAT D'IMMATRICULATION\n12345678 CIN (ou MF)\nKMHJ381ABCU123456\nRENAULT S7S111AB1\n2023/03/15 DPMC\nType commercial\nRENAULT CLIO",
+  ];
+  const turned = ['7781\n183\nN° d\'immatriculation', 'xx 18 ZZ'];
+  const result = docs.parseRegistration({ flat, turned });
+  assert.deepEqual(result, {
+    plate: '183 TU 7781',
+    brand: 'Renault',
+    model: 'CLIO',
+    year: 2023,
+    firstRegistration: '2023-03-15',
+  });
+  // Les chiffres d'un long numéro (CIN) ne sont pas pris pour la plaque.
+  assert.equal(docs.plateFromBand(['1234\n567'], ['12345678 CIN']), null);
+});
+
+test('carte grise : marque écrite avec des points, plaque à l horizontale', () => {
+  assert.equal(docs.brandIn('Constructeur M.G.'), 'MG');
+  assert.equal(docs.brandIn('PEUGEOT'), 'Peugeot');
+  assert.equal(docs.plateIn('Immatriculation 4521TU198'), '198 TU 4521');
+  assert.equal(docs.plateIn('198 TU 4521'), '198 TU 4521');
+});
+
+test('attestation : assureur, contrat, validité, plaque', () => {
+  const flat = [
+    "Attestation d'Assurance\nEntreprise d'Assurance\nCOMAR\nContrat N° 2025123456789\nValidité Du 01/09/2025 Au 31/08/2026\nImmatriculation 4521TU198\nMarque KIA\nFédération Tunisienne des Sociétés d'Assurances",
+  ];
+  assert.deepEqual(docs.parseInsurance({ flat }), {
+    insurer: 'COMAR',
+    policy: '2025123456789',
+    startsAt: '2025-09-01',
+    expiresAt: '2026-08-31',
+    expiresAtEstimated: false,
+    plate: '198 TU 4521',
+    brand: 'Kia',
+  });
+});
+
+test('attestation : dates mal lues et contrat retenu par vote seulement', () => {
+  // Barres lues « 1 », fin seule lisible : la fin est la plus tardive.
+  const result = docs.parseInsurance({
+    flat: ['STAR\nDu: 0110912025\nfait le 20/08/2025\n31/08/2026'],
+    policyVotes: [['2025111222333', 2]],
+  });
+  assert.equal(result.insurer, 'STAR Assurances');
+  assert.equal(result.startsAt, '2025-09-01');
+  assert.equal(result.expiresAt, '2026-08-31');
+  assert.equal(result.policy, '2025111222333');
+  // Une seule lecture du numéro : pas assez sûr, champ vide.
+  assert.equal(
+    docs.parseInsurance({ flat: ['GAT'], policyVotes: [['2025999', 1]] }).policy,
+    null,
+  );
+  // Début seul : fin estimée à un an, signalée.
+  const estimated = docs.parseInsurance({ flat: ['GAT\nValidité Du 10/02/2026'] });
+  assert.equal(estimated.expiresAt, '2027-02-09');
+  assert.equal(estimated.expiresAtEstimated, true);
+});
+
+test('lecture d un document : route, compagnie du référentiel, refus du type', async (t) => {
+  const { call } = await startApi(t);
+  const { token } = await signedDriver(call);
+  const comar = await prisma.company.create({ data: { name: 'COMAR' } });
+  t.mock.method(docs.vehicleDocReader, 'read', async (_buffer, kind) =>
+    kind === 'INSURANCE'
+      ? { insurer: 'COMAR', policy: 'P-1', expiresAt: '2026-08-31', plate: '198 TU 4521' }
+      : { plate: '198 TU 4521', brand: 'Kia', model: 'Rio', year: 2022 },
+  );
+  const photo = (kind) => {
+    const data = new FormData();
+    data.append('kind', kind);
+    data.append('photo', new Blob([PNG], { type: 'image/png' }), 'doc.png');
+    return data;
+  };
+  const insurance = await call('POST', '/vehicles/scan', { token, form: photo('insurance') });
+  assert.equal(insurance.status, 200);
+  assert.equal(insurance.body.extracted.companyId, comar.id);
+  const card = await call('POST', '/vehicles/scan', { token, form: photo('registration') });
+  assert.equal(card.body.extracted.model, 'Rio');
+  const wrong = await call('POST', '/vehicles/scan', { token, form: photo('passeport') });
+  assert.equal(wrong.status, 400);
+  // Rien n'est enregistré.
+  assert.equal(await prisma.vehicle.count(), 0);
 });

@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
@@ -29,38 +31,101 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
 
   final _ocr = VehicleOcrService();
   final _media = AccidentMediaService();
-  bool _scanning = false;
+
+  /// Document en cours de lecture : carte grise ou attestation.
+  _Document? _scanning;
 
   String? _companyId;
   String? _companyName;
 
-  Future<void> _scanCard() async {
-    setState(() => _scanning = true);
+  /// Photo d'un document → l'IA du serveur le lit (plaque de la bande
+  /// verticale comprise) et remplit le formulaire, à vérifier. Hors ligne,
+  /// la carte grise est lue sur le téléphone (ML Kit), moins finement.
+  Future<void> _scan(_Document document) async {
+    final api = AppScope.of(context).api;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _scanning = document);
     try {
-      final photo = await _media.capturePhoto('carte_grise');
-      if (photo != null) {
+      final photo = await _media.capturePhoto(document.fileName);
+      if (photo == null || !mounted) return;
+      Map<String, dynamic> read;
+      try {
+        final body =
+            await api.upload(
+                  '/vehicles/scan',
+                  method: 'POST',
+                  field: 'photo',
+                  bytes: await File(photo).readAsBytes(),
+                  filename: '${document.fileName}.jpg',
+                  fields: {'kind': document.apiValue},
+                )
+                as Map<String, dynamic>;
+        read = body['extracted'] as Map<String, dynamic>;
+      } on ApiException catch (error) {
+        if (!error.isNetwork || document != _Document.registration) rethrow;
         final data = await _ocr.scan(photo);
-        setState(() {
-          if (data.plate.isNotEmpty) _plate.text = data.plate;
-          if (data.brand.isNotEmpty) _brand.text = data.brand;
-          if (data.model.isNotEmpty) _model.text = data.model;
-          if (data.year.isNotEmpty) _year.text = data.year;
-        });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Carte grise analysée avec succès par l’IA !')),
-          );
-        }
+        read = {'plate': data.plate, 'year': int.tryParse(data.year)};
       }
+      if (!mounted) return;
+      final filled = _apply(read);
+      final estimated = read['expiresAtEstimated'] == true;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            filled.isEmpty
+                ? 'Rien n’a pu être lu. Reprenez la photo à plat, bien éclairée.'
+                : 'Lu par l’IA : ${filled.join(', ')}. Vérifiez avant d’enregistrer.'
+                      '${estimated ? ' Fin de validité estimée à un an : vérifiez-la.' : ''}',
+          ),
+        ),
+      );
+    } on ApiException catch (error) {
+      messenger.showSnackBar(SnackBar(content: Text(error.message)));
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors du scan IA : $e')),
-        );
-      }
+      messenger.showSnackBar(SnackBar(content: Text('Lecture impossible : $e')));
     } finally {
-      if (mounted) setState(() => _scanning = false);
+      if (mounted) setState(() => _scanning = null);
     }
+  }
+
+  /// Remplit les champs lus ; renvoie leurs noms pour le message.
+  List<String> _apply(Map<String, dynamic> read) {
+    final filled = <String>[];
+    void put(TextEditingController field, Object? value, String label) {
+      final text = value?.toString().trim() ?? '';
+      if (text.isEmpty) return;
+      field.text = text;
+      filled.add(label);
+    }
+
+    String? displayDate(Object? iso) {
+      final date = DateTime.tryParse(iso?.toString() ?? '');
+      if (date == null) return null;
+      String two(int n) => n.toString().padLeft(2, '0');
+      return '${two(date.day)}/${two(date.month)}/${date.year}';
+    }
+
+    setState(() {
+      put(_plate, read['plate'], 'immatriculation');
+      put(_brand, read['brand'], 'marque');
+      put(_model, read['model'], 'modèle');
+      put(_year, read['year'], 'année');
+      put(_policy, read['policy'], 'n° de contrat');
+      put(_insuranceExpiry, displayDate(read['expiresAt']), 'fin de validité');
+      final companyId = read['companyId'] as String?;
+      if (companyId != null) {
+        _companyId = companyId;
+        _companyName = read['insurer'] as String?;
+        _insurer.text = _companyName ?? '';
+        filled.add('assureur');
+      } else if (read['insurer'] != null) {
+        // Assureur reconnu mais absent du référentiel : à choisir, ou à
+        // faire ajouter par un administrateur.
+        _insurer.text = read['insurer'] as String;
+        filled.add('assureur (${read['insurer']}, à choisir dans la liste)');
+      }
+    });
+    return filled;
   }
 
   // Contrôleurs de saisie
@@ -148,7 +213,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Scanner la carte grise avec l’IA',
+                            'Scanner vos documents avec l’IA',
                             style: TextStyle(fontWeight: FontWeight.w900),
                           ),
                         ),
@@ -156,25 +221,37 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                     ),
                     const SizedBox(height: 5),
                     const Text(
-                      'Remplissez automatiquement les informations par reconnaissance optique on-device.',
+                      'Une photo de la carte grise ou de l’attestation d’assurance : l’IA remplit le formulaire, vous vérifiez.',
                       style: TextStyle(color: AppColors.textMuted),
                     ),
                     const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: _scanning ? null : _scanCard,
-                        icon: _scanning
-                            ? const SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.camera_alt_outlined),
-                        label: Text(
-                          _scanning ? 'Analyse IA en cours…' : 'Photographier la carte grise',
+                    for (final document in _Document.values) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: (document == _Document.registration
+                            ? FilledButton.icon
+                            : OutlinedButton.icon)(
+                          key: ValueKey('scan-${document.apiValue}'),
+                          onPressed: _scanning != null
+                              ? null
+                              : () => _scan(document),
+                          icon: _scanning == document
+                              ? const SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Icon(document.icon),
+                          label: Text(
+                            _scanning == document
+                                ? 'Lecture en cours… (jusqu’à 30 s)'
+                                : document.label,
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                    ],
                   ],
                 ),
               ),
@@ -292,6 +369,8 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
             // ── Assurance ──────────────────────────────────────────────────
             _Section(label: 'Contrat d\'assurance'),
             CompanyPicker(
+              // Recréé quand une attestation lue choisit la compagnie.
+              key: ValueKey(_companyId),
               companyId: _companyId,
               withAgency: false,
               required: true,
@@ -572,4 +651,14 @@ class _DropdownField<T> extends StatelessWidget {
         .toList(),
     onChanged: onChanged,
   );
+}
+
+/// Documents que l'IA sait lire pour remplir le formulaire.
+enum _Document {
+  registration('REGISTRATION', 'carte_grise', 'Photographier la carte grise', Icons.directions_car_outlined),
+  insurance('INSURANCE', 'attestation_assurance', 'Photographier l’attestation d’assurance', Icons.verified_user_outlined);
+
+  const _Document(this.apiValue, this.fileName, this.label, this.icon);
+  final String apiValue, fileName, label;
+  final IconData icon;
 }

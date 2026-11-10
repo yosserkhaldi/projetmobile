@@ -20,6 +20,8 @@ const ENGINES = {
       tessedit_pageseg_mode: '6',
     },
   },
+  // Texte épars (carte grise, attestation photographiées à la main).
+  sparse: { lang: 'eng', params: { tessedit_pageseg_mode: '11' } },
   // Numéro du permis : chiffres et barre seulement.
   digits: {
     lang: 'eng',
@@ -69,10 +71,53 @@ async function mrzImage(upright, from) {
     .toBuffer();
 }
 
-async function recognize(lang, image) {
+export async function recognize(lang, image) {
   const worker = await workerFor(lang);
   const { data } = await worker.recognize(image);
   return data.text ?? '';
+}
+
+/**
+ * Chiffres écrits à côté d'un libellé (« Contrat N° ») : le libellé est
+ * repéré sur l'image, puis plusieurs zones autour (à droite, dessous) sont
+ * relues en chiffres seulement. Renvoie les lectures qui ont la forme
+ * [pattern], avec leur nombre d'apparitions, de la plus fréquente à la moins.
+ */
+export async function recognizeNear(image, label, pattern) {
+  const words = [];
+  for (const engine of ['sparse']) {
+    const worker = await workerFor(engine);
+    const { data } = await worker.recognize(image, {}, { blocks: true });
+    for (const block of data.blocks ?? []) {
+      for (const paragraph of block.paragraphs) {
+        for (const line of paragraph.lines) words.push(...line.words);
+      }
+    }
+  }
+  const { width, height } = await sharp(image).metadata();
+  const votes = new Map();
+  const anchors = words.filter((w) => label.test(w.text.replace(/[^A-Za-zéÉ]/g, '')));
+  for (const word of anchors) {
+    const h = Math.max(20, word.bbox.y1 - word.bbox.y0);
+    for (const dy of [-0.6, -0.2, 0.3, 0.8]) {
+      for (const [dx, span] of [[1, 14], [-0.5, 20]]) {
+        const left = Math.max(0, Math.round(dx > 0 ? word.bbox.x1 : word.bbox.x0 + dx * h));
+        const top = Math.max(0, Math.round((dy < 0 ? word.bbox.y0 : word.bbox.y1) + dy * h));
+        const zone = {
+          left,
+          top,
+          width: Math.min(width - left, Math.round(h * span)),
+          height: Math.min(height - top, Math.round(h * 2)),
+        };
+        if (zone.width < 20 || zone.height < 10) continue;
+        const crop = await sharp(image).extract(zone).resize({ height: 160 }).normalise().png().toBuffer();
+        const text = (await recognize('digits', crop)).replace(/\s/g, '');
+        const match = text.match(pattern);
+        if (match) votes.set(match[0], (votes.get(match[0]) ?? 0) + 1);
+      }
+    }
+  }
+  return [...votes.entries()].sort((a, b) => b[1] - a[1]);
 }
 
 /** Image en niveaux de gris, agrandie et contrastée : l'OCR lit mieux. */

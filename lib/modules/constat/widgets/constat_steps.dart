@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/network/api_client.dart';
+import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
@@ -180,8 +184,8 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
     try {
       final path = await _media.capturePhoto('permis_conducteur_b');
       if (path == null || !mounted) return;
-      final data = await _ocr.scan(path);
-      if (!mounted) return;
+      final data = await _read(path);
+      if (data == null || !mounted) return;
       if (data.rawText.isEmpty) {
         _message(
           'Aucun texte détecté. Reprenez la photo avec plus de lumière.',
@@ -206,6 +210,42 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       }
     } finally {
       if (mounted) setState(() => _scanning = false);
+    }
+  }
+
+  /// Lecture par l'IA du serveur, la même que pour le permis du profil.
+  /// Hors ligne : la lecture du téléphone (ML Kit), moins précise. null si
+  /// la photo est refusée (message affiché).
+  Future<DrivingLicenseData?> _read(String path) async {
+    final api = AppScope.of(context).api;
+    final bytes = await File(path).readAsBytes();
+    try {
+      final body =
+          await api.upload(
+                '/accidents/license-scan',
+                method: 'POST',
+                field: 'photo',
+                bytes: bytes,
+                filename: 'permis.jpg',
+              )
+              as Map<String, dynamic>;
+      final license = body['license'] as Map<String, dynamic>;
+      final name = [license['firstName'], license['lastName']]
+          .whereType<String>()
+          .where((part) => part.trim().isNotEmpty)
+          .join(' ');
+      return DrivingLicenseData(
+        fullName: name,
+        licenseNumber: license['number'] as String? ?? '',
+        expiryDate: DateField.normalize(license['expiresAt'] as String? ?? ''),
+        rawText: '',
+      );
+    } on ApiException catch (error) {
+      if (!error.isNetwork) {
+        _message(error.message);
+        return null;
+      }
+      return _ocr.scan(path);
     }
   }
 

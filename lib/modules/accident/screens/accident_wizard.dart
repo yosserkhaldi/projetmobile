@@ -70,6 +70,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
       await vehicles.syncWithServer();
       if (!mounted) return;
       VehicleChoice.preselect(draft, vehicles.vehicles);
+      _fillDriverA();
       setState(() {});
     });
   }
@@ -151,6 +152,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
   };
 
   void _touch() {
+    _fillDriverA();
     draft.touch();
     _persistDraft();
     setState(() {});
@@ -191,15 +193,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
       return;
     }
     _sending = true;
-    // Conducteur A : le profil et le véhicule choisi, pas des valeurs fictives.
-    draft
-      ..driverAName = user!.name
-      ..driverALicense = user.licenseNumber ?? ''
-      ..driverAPlate = vehicle.plate
-      ..driverAVehicle = '${vehicle.brand} ${vehicle.model}'
-      ..driverAInsurer = vehicle.companyName ?? vehicle.insurerName
-      ..driverAPolicy = vehicle.policy
-      ..driverACompanyId = vehicle.companyId;
+    _fillDriverA();
 
     // Dialogue d'attente pendant la génération et le scellement
     showDialog(
@@ -350,6 +344,28 @@ class _AccidentWizardState extends State<AccidentWizard> {
         ),
       ),
     );
+  }
+
+  /// Conducteur A : le profil et le véhicule choisi, pas des valeurs fictives.
+  /// Rempli dès que possible, pour que l'aperçu du PDF (avant la signature)
+  /// les montre aussi.
+  void _fillDriverA() {
+    final stores = AppScope.of(context);
+    final user = stores.users.currentUser;
+    if (user != null) {
+      draft
+        ..driverAName = user.name
+        ..driverALicense = user.licenseNumber ?? '';
+    }
+    final vehicle = _vehicle(stores.vehicles.vehicles);
+    if (vehicle != null) {
+      draft
+        ..driverAPlate = vehicle.plate
+        ..driverAVehicle = '${vehicle.brand} ${vehicle.model}'
+        ..driverAInsurer = vehicle.companyName ?? vehicle.insurerName
+        ..driverAPolicy = vehicle.policy
+        ..driverACompanyId = vehicle.companyId;
+    }
   }
 
   Vehicle? _vehicle(List<Vehicle> vehicles) =>

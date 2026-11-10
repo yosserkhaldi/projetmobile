@@ -2,8 +2,12 @@ import { Router } from 'express';
 import { z } from 'zod';
 
 import { HttpError } from '../../lib/errors.js';
+import { faceEngine } from '../../lib/face.js';
+import { documentReader } from '../../lib/ocr.js';
 import { prisma } from '../../lib/prisma.js';
+import { singleImage } from '../../lib/uploads.js';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { aiQuota } from '../../middleware/quota.js';
 
 const router = Router();
 
@@ -43,6 +47,42 @@ async function ownedAccident(id, userId) {
 }
 
 router.use(requireAuth, requireRole('DRIVER'));
+
+/**
+ * Permis du conducteur B, lu par la même IA que celui du profil (module 1) :
+ * photo remise à l'endroit, libellés de la carte, formats 2017 et ancien.
+ * Rien n'est enregistré : la lecture remplit le formulaire, que le
+ * conducteur vérifie. Une pièce qui n'est pas un permis est refusée.
+ */
+router.post('/license-scan', aiQuota({ max: 30 }), singleImage('photo'), async (req, res) => {
+  const buffer = req.file.buffer;
+  const face = await faceEngine.analyze(buffer).catch(() => ({}));
+  const read = await documentReader.read(buffer, 'LICENSE', face);
+  const looksLikeLicense =
+    read.kind === 'LICENSE' || /^\d{2}\/\d{5,8}$/.test(read.number ?? '');
+  if (!looksLikeLicense) {
+    throw new HttpError(
+      422,
+      'NOT_A_LICENSE',
+      read.kind === 'PASSPORT'
+        ? 'Cette photo montre un passeport, pas un permis de conduire.'
+        : read.kind === 'CIN'
+          ? "Cette photo montre une carte d'identité, pas un permis de conduire."
+          : 'Aucun permis de conduire reconnu sur cette photo. Reprenez-la à plat, bien éclairée, la carte entière dans le cadre.',
+    );
+  }
+  res.json({
+    license: {
+      lastName: read.lastName ?? null,
+      firstName: read.firstName ?? null,
+      number: read.number ?? null,
+      categories: read.categories ?? [],
+      issuedAt: read.issuedAt ?? null,
+      expiresAt: read.expiresAt ?? null,
+      birthDate: read.birthDate ?? null,
+    },
+  });
+});
 
 router.get('/', async (req, res) => {
   const status = req.query.status?.toString().toUpperCase();

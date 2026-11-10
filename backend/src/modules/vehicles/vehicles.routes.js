@@ -1,6 +1,11 @@
 import { Router } from 'express';
 
+import { HttpError } from '../../lib/errors.js';
+import { singleImage } from '../../lib/uploads.js';
+import { vehicleDocReader } from '../../lib/vehicleDocs.js';
+import { prisma } from '../../lib/prisma.js';
 import { requireAuth } from '../../middleware/auth.js';
+import { aiQuota } from '../../middleware/quota.js';
 import {
   createVehicleSchema,
   listVehiclesSchema,
@@ -34,6 +39,28 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const data = createVehicleSchema.parse(req.body);
   res.status(201).json(await vehicles.createVehicle(req.user.id, data));
+});
+
+/**
+ * POST /api/vehicles/scan
+ * Lit une carte grise (kind=REGISTRATION) ou une attestation d'assurance
+ * (kind=INSURANCE) pour pré-remplir le formulaire. Rien n'est enregistré.
+ * L'assureur lu est rapproché des compagnies du référentiel (module 1).
+ */
+router.post('/scan', aiQuota({ max: 30 }), singleImage('photo'), async (req, res) => {
+  const kind = String(req.body.kind ?? '').toUpperCase();
+  if (!['REGISTRATION', 'INSURANCE'].includes(kind)) {
+    throw new HttpError(400, 'VALIDATION_ERROR', 'Type de document invalide.');
+  }
+  const extracted = await vehicleDocReader.read(req.file.buffer, kind);
+  if (kind === 'INSURANCE' && extracted.insurer) {
+    const key = extracted.insurer.split(' ')[0].toUpperCase();
+    const companies = await prisma.company.findMany({ select: { id: true, name: true } });
+    const company = companies.find((c) => c.name.toUpperCase().includes(key));
+    extracted.companyId = company?.id ?? null;
+    if (company) extracted.insurer = company.name;
+  }
+  res.json({ kind, extracted });
 });
 
 // ── Alertes d'échéance ────────────────────────────────────────────────────────
