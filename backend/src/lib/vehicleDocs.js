@@ -63,12 +63,9 @@ export function brandIn(text) {
  * verticale de la carte grise. La série a 1 à 3 chiffres, le numéro 1 à 4.
  */
 export function formatPlate(first, second) {
-  const [series, number] =
-    first.length <= 3 && second.length === 4
-      ? [first, second]
-      : second.length <= 3 && first.length === 4
-        ? [second, first]
-        : [first, second];
+  // Le numéro a 4 chiffres, la série au plus 3 : l'ordre lu peut être inversé.
+  const swapped = second.length <= 3 && first.length === 4;
+  const [series, number] = swapped ? [second, first] : [first, second];
   return `${Number(series)} TU ${number}`;
 }
 
@@ -154,7 +151,7 @@ export function parseRegistration({ flat, turned = [] }) {
   const today = new Date().toISOString().slice(0, 10);
   const firstRegistration =
     (dpmcLine && datesIn(dpmcLine)[0]) ??
-    datesIn(flat.join('\n')).filter((d) => d <= today).sort().at(-1) ??
+    datesIn(flat.join('\n')).filter((d) => d <= today).sort(byText).at(-1) ??
     null;
 
   return {
@@ -180,6 +177,9 @@ export function insurerIn(text) {
   return null;
 }
 
+/** Ordre des dates ISO (AAAA-MM-JJ) : celui du texte. */
+const byText = (a, b) => a.localeCompare(b);
+
 /** Un an moins un jour : la durée des contrats automobiles annuels. */
 function oneYearAfter(iso) {
   const date = new Date(`${iso}T00:00:00Z`);
@@ -198,7 +198,7 @@ export function parseInsurance({ flat, turned = [], policyVotes = [] }) {
   const text = all.join('\n');
 
   let policy = null;
-  const inText = text.match(/contrat\s*n\S*\s*[:.]?\s*(\d{8,16})/i)?.[1];
+  const inText = /contrat\s{0,3}n\S{0,3}[\s:.]{0,4}(\d{8,16})/i.exec(text)?.[1];
   const best = policyVotes[0];
   if (inText) policy = inText;
   else if (best && (best[1] >= 2 || text.includes(best[0]))) policy = best[0];
@@ -209,7 +209,7 @@ export function parseInsurance({ flat, turned = [], policyVotes = [] }) {
     }
     return null;
   };
-  const dates = [...new Set(datesIn(text))].sort();
+  const dates = [...new Set(datesIn(text))].sort(byText);
   // Contrat annuel : deux dates à un an (moins un jour) l'une de l'autre sont
   // le début et la fin. Sinon la date du libellé « Au », ou la plus tardive
   // de l'attestation (la fin de validité) ; le début reste alors vide plutôt
@@ -219,7 +219,7 @@ export function parseInsurance({ flat, turned = [], policyVotes = [] }) {
   const startsAt = pair ?? from ?? null;
   let expiresAt = pair
     ? oneYearAfter(pair)
-    : (dateOf(/\bau\b/i) ?? dates.filter((d) => !from || d > from).at(-1) ?? null);
+    : (dateOf(/\bau\b/i) ?? dates.findLast((d) => !from || d > from) ?? null);
   // Fin illisible : un an après le début, signalé comme estimé.
   const expiresAtEstimated = !expiresAt && Boolean(startsAt);
   if (expiresAtEstimated) expiresAt = oneYearAfter(startsAt);

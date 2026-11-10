@@ -54,6 +54,14 @@ router.use(requireAuth, requireRole('DRIVER'));
  * Rien n'est enregistré : la lecture remplit le formulaire, que le
  * conducteur vérifie. Une pièce qui n'est pas un permis est refusée.
  */
+/** Message selon la pièce reconnue à la place du permis. */
+const NOT_A_LICENSE = {
+  PASSPORT: 'Cette photo montre un passeport, pas un permis de conduire.',
+  CIN: "Cette photo montre une carte d'identité, pas un permis de conduire.",
+  OTHER:
+    'Aucun permis de conduire reconnu sur cette photo. Reprenez-la à plat, bien éclairée, la carte entière dans le cadre.',
+};
+
 router.post('/license-scan', aiQuota({ max: 30 }), singleImage('photo'), async (req, res) => {
   const buffer = req.file.buffer;
   const face = await faceEngine.analyze(buffer).catch(() => ({}));
@@ -61,15 +69,7 @@ router.post('/license-scan', aiQuota({ max: 30 }), singleImage('photo'), async (
   const looksLikeLicense =
     read.kind === 'LICENSE' || /^\d{2}\/\d{5,8}$/.test(read.number ?? '');
   if (!looksLikeLicense) {
-    throw new HttpError(
-      422,
-      'NOT_A_LICENSE',
-      read.kind === 'PASSPORT'
-        ? 'Cette photo montre un passeport, pas un permis de conduire.'
-        : read.kind === 'CIN'
-          ? "Cette photo montre une carte d'identité, pas un permis de conduire."
-          : 'Aucun permis de conduire reconnu sur cette photo. Reprenez-la à plat, bien éclairée, la carte entière dans le cadre.',
-    );
+    throw new HttpError(422, 'NOT_A_LICENSE', NOT_A_LICENSE[read.kind] ?? NOT_A_LICENSE.OTHER);
   }
   res.json({
     license: {
