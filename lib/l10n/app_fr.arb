@@ -1219,5 +1219,69 @@
   "revokeIdentityTitle": "Annuler la vérification d'identité ?",
   "revokeIdentityBody": "Les photos de la pièce seront effacées. Le conducteur voit le motif et peut refaire une demande tout de suite.",
   "identityRevoked": "Vérification annulée",
-  "reasonLabel": "Motif"
+  "reasonLabel": "Motif",
+  "onbSkip": "Passer",
+  "onbLater": "Plus tard",
+  "onbContinue": "Continuer",
+  "onbBack": "Étape précédente",
+  "onbProgress": "Étape {current} sur {total}",
+  "@onbProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onbWelcomeEyebrow": "Compte créé",
+  "onbWelcomeTitle": "Bienvenue,\n{name}",
+  "@onbWelcomeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "onbWelcomeBody": "Deux minutes pour préparer votre compte, et vous serez prêt le jour où vous en aurez besoin.",
+  "onbWelcomeStart": "Préparer mon compte",
+  "onbWelcomeSkip": "Je le ferai plus tard",
+  "onbLicenseTitle": "Ajoutez votre permis",
+  "onbLicenseBody": "Une photo suffit : l'IA lit le numéro, les catégories et la date. Il servira à remplir vos constats.",
+  "onbLicenseScan": "Photographier mon permis",
+  "onbLicenseRescan": "Reprendre la photo",
+  "onbLicenseReading": "Lecture du permis…",
+  "onbLicenseRead": "Lu par l'IA",
+  "onbLicenseUnread": "La carte n'a pas pu être lue. Vous compléterez les informations depuis votre profil.",
+  "onbLicenseTip": "À plat, bien éclairé, sans reflet.",
+  "onbIdentityTitle": "Vérifiez votre identité",
+  "onbIdentityBody": "Pour signer vos constats en toute confiance. Comptez deux minutes.",
+  "onbIdentityStep1": "Une pièce : CIN, permis ou passeport",
+  "onbIdentityStep2": "Votre visage, en tournant la tête",
+  "onbIdentityStep3": "L'IA compare, en quelques secondes",
+  "onbIdentityStart": "Vérifier maintenant",
+  "onbIdentityLicenseHint": "Votre permis peut servir de pièce : inutile de le reprendre en photo.",
+  "onbIdentityPrivacy": "Vos photos sont analysées sur nos serveurs, sans service extérieur.",
+  "onbBiometricTitle": "Connexion en un geste",
+  "onbBiometricBody": "Ouvrez l'application avec votre empreinte ou votre visage, sans retaper votre mot de passe.",
+  "onbBiometricEnable": "Activer",
+  "onbDoneTitle": "Tout est prêt,\n{name}",
+  "@onbDoneTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "onbDoneBody": "Vous pouvez déclarer un accident à tout moment, même sans réseau.",
+  "onbDoneLater": "Le reste se termine depuis votre profil, quand vous voulez.",
+  "onbDoneStart": "Accéder à l'application",
+  "onbItemPhone": "Téléphone",
+  "onbItemLicense": "Permis de conduire",
+  "onbItemIdentity": "Identité",
+  "onbItemBiometric": "Connexion biométrique",
+  "onbStateDone": "Fait",
+  "onbStatePending": "En vérification",
+  "onbStateTodo": "À faire"
 }

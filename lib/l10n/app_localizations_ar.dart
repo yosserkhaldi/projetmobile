@@ -2287,4 +2287,135 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get reasonLabel => 'السبب';
+
+  @override
+  String get onbSkip => 'تخطي';
+
+  @override
+  String get onbLater => 'لاحقا';
+
+  @override
+  String get onbContinue => 'متابعة';
+
+  @override
+  String get onbBack => 'الخطوة السابقة';
+
+  @override
+  String onbProgress(int current, int total) {
+    return 'الخطوة $current من $total';
+  }
+
+  @override
+  String get onbWelcomeEyebrow => 'تم إنشاء الحساب';
+
+  @override
+  String onbWelcomeTitle(String name) {
+    return 'مرحبا،\n$name';
+  }
+
+  @override
+  String get onbWelcomeBody =>
+      'دقيقتان لتجهيز حسابك، وستكون مستعدا يوم تحتاج إليه.';
+
+  @override
+  String get onbWelcomeStart => 'تجهيز حسابي';
+
+  @override
+  String get onbWelcomeSkip => 'سأفعل ذلك لاحقا';
+
+  @override
+  String get onbLicenseTitle => 'أضف رخصة القيادة';
+
+  @override
+  String get onbLicenseBody =>
+      'صورة واحدة تكفي: يقرأ الذكاء الاصطناعي الرقم والأصناف والتاريخ. ستُستعمل لملء محاضرك.';
+
+  @override
+  String get onbLicenseScan => 'تصوير رخصتي';
+
+  @override
+  String get onbLicenseRescan => 'إعادة التصوير';
+
+  @override
+  String get onbLicenseReading => 'جار قراءة الرخصة…';
+
+  @override
+  String get onbLicenseRead => 'قرأها الذكاء الاصطناعي';
+
+  @override
+  String get onbLicenseUnread =>
+      'تعذرت قراءة البطاقة. ستكمل المعلومات من ملفك الشخصي.';
+
+  @override
+  String get onbLicenseTip => 'على سطح مستو، بإضاءة جيدة ودون انعكاس.';
+
+  @override
+  String get onbIdentityTitle => 'تحقق من هويتك';
+
+  @override
+  String get onbIdentityBody => 'لتوقيع محاضرك بكل ثقة. يستغرق ذلك دقيقتين.';
+
+  @override
+  String get onbIdentityStep1 => 'وثيقة: بطاقة تعريف أو رخصة أو جواز سفر';
+
+  @override
+  String get onbIdentityStep2 => 'وجهك، مع إدارة الرأس';
+
+  @override
+  String get onbIdentityStep3 => 'يقارن الذكاء الاصطناعي في ثوان';
+
+  @override
+  String get onbIdentityStart => 'التحقق الآن';
+
+  @override
+  String get onbIdentityLicenseHint =>
+      'يمكن استعمال رخصتك كوثيقة: لا حاجة لتصويرها مجددا.';
+
+  @override
+  String get onbIdentityPrivacy => 'تُحلل صورك على خوادمنا دون أي خدمة خارجية.';
+
+  @override
+  String get onbBiometricTitle => 'الدخول بلمسة واحدة';
+
+  @override
+  String get onbBiometricBody =>
+      'افتح التطبيق ببصمتك أو وجهك دون إعادة كتابة كلمة المرور.';
+
+  @override
+  String get onbBiometricEnable => 'تفعيل';
+
+  @override
+  String onbDoneTitle(String name) {
+    return 'كل شيء جاهز،\n$name';
+  }
+
+  @override
+  String get onbDoneBody => 'يمكنك التصريح بحادث في أي وقت، حتى دون شبكة.';
+
+  @override
+  String get onbDoneLater => 'يمكنك إكمال الباقي من ملفك الشخصي متى شئت.';
+
+  @override
+  String get onbDoneStart => 'الدخول إلى التطبيق';
+
+  @override
+  String get onbItemPhone => 'الهاتف';
+
+  @override
+  String get onbItemLicense => 'رخصة القيادة';
+
+  @override
+  String get onbItemIdentity => 'الهوية';
+
+  @override
+  String get onbItemBiometric => 'الدخول البيومتري';
+
+  @override
+  String get onbStateDone => 'تم';
+
+  @override
+  String get onbStatePending => 'قيد التحقق';
+
+  @override
+  String get onbStateTodo => 'للإنجاز';
 }

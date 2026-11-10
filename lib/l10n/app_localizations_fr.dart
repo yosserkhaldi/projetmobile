@@ -2316,4 +2316,139 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get reasonLabel => 'Motif';
+
+  @override
+  String get onbSkip => 'Passer';
+
+  @override
+  String get onbLater => 'Plus tard';
+
+  @override
+  String get onbContinue => 'Continuer';
+
+  @override
+  String get onbBack => 'Étape précédente';
+
+  @override
+  String onbProgress(int current, int total) {
+    return 'Étape $current sur $total';
+  }
+
+  @override
+  String get onbWelcomeEyebrow => 'Compte créé';
+
+  @override
+  String onbWelcomeTitle(String name) {
+    return 'Bienvenue,\n$name';
+  }
+
+  @override
+  String get onbWelcomeBody =>
+      'Deux minutes pour préparer votre compte, et vous serez prêt le jour où vous en aurez besoin.';
+
+  @override
+  String get onbWelcomeStart => 'Préparer mon compte';
+
+  @override
+  String get onbWelcomeSkip => 'Je le ferai plus tard';
+
+  @override
+  String get onbLicenseTitle => 'Ajoutez votre permis';
+
+  @override
+  String get onbLicenseBody =>
+      'Une photo suffit : l\'IA lit le numéro, les catégories et la date. Il servira à remplir vos constats.';
+
+  @override
+  String get onbLicenseScan => 'Photographier mon permis';
+
+  @override
+  String get onbLicenseRescan => 'Reprendre la photo';
+
+  @override
+  String get onbLicenseReading => 'Lecture du permis…';
+
+  @override
+  String get onbLicenseRead => 'Lu par l\'IA';
+
+  @override
+  String get onbLicenseUnread =>
+      'La carte n\'a pas pu être lue. Vous compléterez les informations depuis votre profil.';
+
+  @override
+  String get onbLicenseTip => 'À plat, bien éclairé, sans reflet.';
+
+  @override
+  String get onbIdentityTitle => 'Vérifiez votre identité';
+
+  @override
+  String get onbIdentityBody =>
+      'Pour signer vos constats en toute confiance. Comptez deux minutes.';
+
+  @override
+  String get onbIdentityStep1 => 'Une pièce : CIN, permis ou passeport';
+
+  @override
+  String get onbIdentityStep2 => 'Votre visage, en tournant la tête';
+
+  @override
+  String get onbIdentityStep3 => 'L\'IA compare, en quelques secondes';
+
+  @override
+  String get onbIdentityStart => 'Vérifier maintenant';
+
+  @override
+  String get onbIdentityLicenseHint =>
+      'Votre permis peut servir de pièce : inutile de le reprendre en photo.';
+
+  @override
+  String get onbIdentityPrivacy =>
+      'Vos photos sont analysées sur nos serveurs, sans service extérieur.';
+
+  @override
+  String get onbBiometricTitle => 'Connexion en un geste';
+
+  @override
+  String get onbBiometricBody =>
+      'Ouvrez l\'application avec votre empreinte ou votre visage, sans retaper votre mot de passe.';
+
+  @override
+  String get onbBiometricEnable => 'Activer';
+
+  @override
+  String onbDoneTitle(String name) {
+    return 'Tout est prêt,\n$name';
+  }
+
+  @override
+  String get onbDoneBody =>
+      'Vous pouvez déclarer un accident à tout moment, même sans réseau.';
+
+  @override
+  String get onbDoneLater =>
+      'Le reste se termine depuis votre profil, quand vous voulez.';
+
+  @override
+  String get onbDoneStart => 'Accéder à l\'application';
+
+  @override
+  String get onbItemPhone => 'Téléphone';
+
+  @override
+  String get onbItemLicense => 'Permis de conduire';
+
+  @override
+  String get onbItemIdentity => 'Identité';
+
+  @override
+  String get onbItemBiometric => 'Connexion biométrique';
+
+  @override
+  String get onbStateDone => 'Fait';
+
+  @override
+  String get onbStatePending => 'En vérification';
+
+  @override
+  String get onbStateTodo => 'À faire';
 }

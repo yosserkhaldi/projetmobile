@@ -234,9 +234,18 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pump(const Duration(seconds: 1));
       expect(backend.bodies['POST /auth/phone/verify'], {'code': '123456'});
-      expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
       expect(backend.stores.users.currentUser!.phoneVerified, isTrue);
       expect(backend.bodies['POST /auth/register']!['consent'], isTrue);
+
+      // Compte créé : l'accueil s'ouvre, puis l'application.
+      await tester.pumpAndSettle();
+      expect(find.text('Bienvenue,\nSami'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('onb-skip-all')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('onb-finish')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
+      expect(backend.storage.values['onboarding_user'], isNull);
     });
 
     testWidgets('mot de passe : jauge de robustesse et confirmation', (
@@ -286,6 +295,159 @@ void main() {
       await tester.tap(find.text('Créer mon compte'));
       await tester.pumpAndSettle();
       expect(find.text('E-mail ou téléphone déjà utilisé.'), findsOneWidget);
+    });
+  });
+
+  group('accueil après inscription', () {
+    /// Compte qui n'a pas fini l'accueil sur ce téléphone, puis connexion.
+    Future<FakeBackend> openOnboarding(
+      WidgetTester tester, {
+      FakeBackend? backend,
+    }) async {
+      final fake = backend ?? FakeBackend();
+      fake.storage.values['onboarding_user'] = 'u1';
+      await pumpApp(tester, fake);
+      await signIn(tester);
+      return fake;
+    }
+
+    Future<void> tapKey(WidgetTester tester, String key) async {
+      await tester.tap(find.byKey(Key(key)));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('bienvenue : prénom et promesses de l application', (
+      tester,
+    ) async {
+      await openOnboarding(tester);
+      expect(find.byKey(const Key('onboarding')), findsOneWidget);
+      expect(find.text('Bienvenue,\nSami'), findsOneWidget);
+      expect(find.byKey(const Key('onb-start')), findsOneWidget);
+      // Pas encore la barre de navigation de l'application.
+      expect(find.byType(NavigationBar), findsNothing);
+    });
+
+    testWidgets('permis : photo lue par l IA, enregistrée en continuant', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = await openOnboarding(tester);
+      await tapKey(tester, 'onb-start');
+      expect(find.text('Ajoutez votre permis'), findsOneWidget);
+      expect(find.bySemanticsLabel('Étape 1 sur 3'), findsOneWidget);
+
+      await tapKey(tester, 'onb-primary');
+      expect(backend.requests, contains('PUT /users/me/license-photo'));
+      expect(find.byKey(const Key('onb-license-result')), findsOneWidget);
+      expect(find.text('12/345678'), findsOneWidget);
+      expect(find.text('B+E'), findsOneWidget);
+
+      await tapKey(tester, 'onb-primary');
+      expect(backend.bodies['PATCH /users/me'], {
+        'licenseNumber': '12/345678',
+        'licenseCategory': 'B, B+E',
+        'licenseIssuedAt': '2018-06-15',
+      });
+      // Étape suivante : l'identité, avec le permis comme pièce possible.
+      expect(find.text('Vérifiez votre identité'), findsOneWidget);
+      expect(
+        find.textContaining('Votre permis peut servir de pièce'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('permis d une autre personne : refusé, on peut reprendre', (
+      tester,
+    ) async {
+      photoPicker = (_) async => XFile.fromData(tinyPng, name: 'permis.png');
+      addTearDown(() => photoPicker = (_) async => null);
+      final backend = FakeBackend()
+        ..failures['PUT /users/me/license-photo'] = (
+          422,
+          'LICENSE_NOT_YOURS',
+          'Ce permis ne semble pas être le vôtre.',
+        );
+      await openOnboarding(tester, backend: backend);
+      await tapKey(tester, 'onb-start');
+      await tapKey(tester, 'onb-primary');
+      expect(
+        find.text('Ce permis ne semble pas être le vôtre.'),
+        findsOneWidget,
+      );
+      // Toujours sur l'étape : nouvelle photo ou plus tard.
+      expect(find.text('Photographier mon permis'), findsOneWidget);
+      expect(find.text('Plus tard'), findsOneWidget);
+    });
+
+    testWidgets('empreinte activée, puis récapitulatif', (tester) async {
+      final backend = await openOnboarding(tester);
+      await tapKey(tester, 'onb-start');
+      await tapKey(tester, 'onb-secondary'); // permis : plus tard
+      await tapKey(tester, 'onb-secondary'); // identité : plus tard
+      expect(find.text('Connexion en un geste'), findsOneWidget);
+
+      await tapKey(tester, 'onb-primary');
+      expect(backend.requests, contains('POST /auth/biometric'));
+      expect(find.byKey(const Key('onb-biometric-on')), findsOneWidget);
+      await tapKey(tester, 'onb-primary');
+
+      final summary = find.byKey(const Key('onb-summary'));
+      expect(summary, findsOneWidget);
+      expect(
+        find.descendant(of: summary, matching: find.text('Fait')),
+        findsNWidgets(2), // téléphone et empreinte
+      );
+      expect(
+        find.descendant(of: summary, matching: find.text('À faire')),
+        findsNWidgets(2), // permis et identité
+      );
+      expect(
+        find.textContaining('Le reste se termine depuis votre profil'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('passer : récapitulatif, puis l application', (tester) async {
+      final backend = await openOnboarding(tester);
+      await tapKey(tester, 'onb-start');
+      await tapKey(tester, 'onb-skip');
+      expect(find.byKey(const Key('onb-summary')), findsOneWidget);
+
+      await tapKey(tester, 'onb-finish');
+      expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(backend.storage.values['onboarding_user'], isNull);
+      expect(backend.stores.users.needsOnboarding, isFalse);
+    });
+
+    testWidgets('retour : étape précédente', (tester) async {
+      await openOnboarding(tester);
+      await tapKey(tester, 'onb-start');
+      await tapKey(tester, 'onb-secondary');
+      expect(find.text('Vérifiez votre identité'), findsOneWidget);
+      await tapKey(tester, 'onb-back');
+      expect(find.text('Ajoutez votre permis'), findsOneWidget);
+      await tapKey(tester, 'onb-back');
+      expect(find.text('Bienvenue,\nSami'), findsOneWidget);
+    });
+
+    testWidgets('sans capteur : pas d étape empreinte', (tester) async {
+      final backend = FakeBackend()..biometric.available = false;
+      await openOnboarding(tester, backend: backend);
+      await tapKey(tester, 'onb-start');
+      await tapKey(tester, 'onb-secondary');
+      await tapKey(tester, 'onb-secondary');
+      // Directement le récapitulatif, sans la ligne biométrique.
+      expect(find.byKey(const Key('onb-summary')), findsOneWidget);
+      expect(find.text('Connexion biométrique'), findsNothing);
+    });
+
+    testWidgets('connexion habituelle : pas d accueil', (tester) async {
+      await pumpApp(tester, FakeBackend());
+      await signIn(tester);
+      expect(find.byKey(const Key('onboarding')), findsNothing);
+      expect(find.textContaining('Bonjour, Sami'), findsOneWidget);
     });
   });
 

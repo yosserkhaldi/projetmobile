@@ -2297,4 +2297,139 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reasonLabel => 'Reason';
+
+  @override
+  String get onbSkip => 'Skip';
+
+  @override
+  String get onbLater => 'Later';
+
+  @override
+  String get onbContinue => 'Continue';
+
+  @override
+  String get onbBack => 'Previous step';
+
+  @override
+  String onbProgress(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get onbWelcomeEyebrow => 'Account created';
+
+  @override
+  String onbWelcomeTitle(String name) {
+    return 'Welcome,\n$name';
+  }
+
+  @override
+  String get onbWelcomeBody =>
+      'Two minutes to set up your account, and you\'ll be ready the day you need it.';
+
+  @override
+  String get onbWelcomeStart => 'Set up my account';
+
+  @override
+  String get onbWelcomeSkip => 'I\'ll do it later';
+
+  @override
+  String get onbLicenseTitle => 'Add your licence';
+
+  @override
+  String get onbLicenseBody =>
+      'One photo is enough: the AI reads the number, categories and date. It will fill in your accident reports.';
+
+  @override
+  String get onbLicenseScan => 'Take a photo of my licence';
+
+  @override
+  String get onbLicenseRescan => 'Retake the photo';
+
+  @override
+  String get onbLicenseReading => 'Reading the licence…';
+
+  @override
+  String get onbLicenseRead => 'Read by the AI';
+
+  @override
+  String get onbLicenseUnread =>
+      'The card could not be read. You\'ll fill in the details from your profile.';
+
+  @override
+  String get onbLicenseTip => 'Flat, well lit, no glare.';
+
+  @override
+  String get onbIdentityTitle => 'Verify your identity';
+
+  @override
+  String get onbIdentityBody =>
+      'So you can sign your accident reports with confidence. It takes two minutes.';
+
+  @override
+  String get onbIdentityStep1 => 'A document: ID card, licence or passport';
+
+  @override
+  String get onbIdentityStep2 => 'Your face, turning your head';
+
+  @override
+  String get onbIdentityStep3 => 'The AI compares, in a few seconds';
+
+  @override
+  String get onbIdentityStart => 'Verify now';
+
+  @override
+  String get onbIdentityLicenseHint =>
+      'Your licence can be used as the document: no need to photograph it again.';
+
+  @override
+  String get onbIdentityPrivacy =>
+      'Your photos are analysed on our servers, with no outside service.';
+
+  @override
+  String get onbBiometricTitle => 'Sign in with one touch';
+
+  @override
+  String get onbBiometricBody =>
+      'Open the app with your fingerprint or face, without typing your password again.';
+
+  @override
+  String get onbBiometricEnable => 'Turn on';
+
+  @override
+  String onbDoneTitle(String name) {
+    return 'You\'re all set,\n$name';
+  }
+
+  @override
+  String get onbDoneBody =>
+      'You can report an accident at any time, even without signal.';
+
+  @override
+  String get onbDoneLater =>
+      'You can finish the rest from your profile whenever you like.';
+
+  @override
+  String get onbDoneStart => 'Go to the app';
+
+  @override
+  String get onbItemPhone => 'Phone';
+
+  @override
+  String get onbItemLicense => 'Driving licence';
+
+  @override
+  String get onbItemIdentity => 'Identity';
+
+  @override
+  String get onbItemBiometric => 'Biometric sign-in';
+
+  @override
+  String get onbStateDone => 'Done';
+
+  @override
+  String get onbStatePending => 'Being checked';
+
+  @override
+  String get onbStateTodo => 'To do';
 }

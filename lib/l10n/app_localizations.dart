@@ -4173,6 +4173,246 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Motif'**
   String get reasonLabel;
+
+  /// No description provided for @onbSkip.
+  ///
+  /// In fr, this message translates to:
+  /// **'Passer'**
+  String get onbSkip;
+
+  /// No description provided for @onbLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus tard'**
+  String get onbLater;
+
+  /// No description provided for @onbContinue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer'**
+  String get onbContinue;
+
+  /// No description provided for @onbBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étape précédente'**
+  String get onbBack;
+
+  /// No description provided for @onbProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étape {current} sur {total}'**
+  String onbProgress(int current, int total);
+
+  /// No description provided for @onbWelcomeEyebrow.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte créé'**
+  String get onbWelcomeEyebrow;
+
+  /// No description provided for @onbWelcomeTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue,\n{name}'**
+  String onbWelcomeTitle(String name);
+
+  /// No description provided for @onbWelcomeBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Deux minutes pour préparer votre compte, et vous serez prêt le jour où vous en aurez besoin.'**
+  String get onbWelcomeBody;
+
+  /// No description provided for @onbWelcomeStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Préparer mon compte'**
+  String get onbWelcomeStart;
+
+  /// No description provided for @onbWelcomeSkip.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je le ferai plus tard'**
+  String get onbWelcomeSkip;
+
+  /// No description provided for @onbLicenseTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez votre permis'**
+  String get onbLicenseTitle;
+
+  /// No description provided for @onbLicenseBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une photo suffit : l\'IA lit le numéro, les catégories et la date. Il servira à remplir vos constats.'**
+  String get onbLicenseBody;
+
+  /// No description provided for @onbLicenseScan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photographier mon permis'**
+  String get onbLicenseScan;
+
+  /// No description provided for @onbLicenseRescan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Reprendre la photo'**
+  String get onbLicenseRescan;
+
+  /// No description provided for @onbLicenseReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture du permis…'**
+  String get onbLicenseReading;
+
+  /// No description provided for @onbLicenseRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu par l\'IA'**
+  String get onbLicenseRead;
+
+  /// No description provided for @onbLicenseUnread.
+  ///
+  /// In fr, this message translates to:
+  /// **'La carte n\'a pas pu être lue. Vous compléterez les informations depuis votre profil.'**
+  String get onbLicenseUnread;
+
+  /// No description provided for @onbLicenseTip.
+  ///
+  /// In fr, this message translates to:
+  /// **'À plat, bien éclairé, sans reflet.'**
+  String get onbLicenseTip;
+
+  /// No description provided for @onbIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez votre identité'**
+  String get onbIdentityTitle;
+
+  /// No description provided for @onbIdentityBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour signer vos constats en toute confiance. Comptez deux minutes.'**
+  String get onbIdentityBody;
+
+  /// No description provided for @onbIdentityStep1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une pièce : CIN, permis ou passeport'**
+  String get onbIdentityStep1;
+
+  /// No description provided for @onbIdentityStep2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre visage, en tournant la tête'**
+  String get onbIdentityStep2;
+
+  /// No description provided for @onbIdentityStep3.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'IA compare, en quelques secondes'**
+  String get onbIdentityStep3;
+
+  /// No description provided for @onbIdentityStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifier maintenant'**
+  String get onbIdentityStart;
+
+  /// No description provided for @onbIdentityLicenseHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre permis peut servir de pièce : inutile de le reprendre en photo.'**
+  String get onbIdentityLicenseHint;
+
+  /// No description provided for @onbIdentityPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos photos sont analysées sur nos serveurs, sans service extérieur.'**
+  String get onbIdentityPrivacy;
+
+  /// No description provided for @onbBiometricTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion en un geste'**
+  String get onbBiometricTitle;
+
+  /// No description provided for @onbBiometricBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrez l\'application avec votre empreinte ou votre visage, sans retaper votre mot de passe.'**
+  String get onbBiometricBody;
+
+  /// No description provided for @onbBiometricEnable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer'**
+  String get onbBiometricEnable;
+
+  /// No description provided for @onbDoneTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout est prêt,\n{name}'**
+  String onbDoneTitle(String name);
+
+  /// No description provided for @onbDoneBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous pouvez déclarer un accident à tout moment, même sans réseau.'**
+  String get onbDoneBody;
+
+  /// No description provided for @onbDoneLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le reste se termine depuis votre profil, quand vous voulez.'**
+  String get onbDoneLater;
+
+  /// No description provided for @onbDoneStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accéder à l\'application'**
+  String get onbDoneStart;
+
+  /// No description provided for @onbItemPhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléphone'**
+  String get onbItemPhone;
+
+  /// No description provided for @onbItemLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis de conduire'**
+  String get onbItemLicense;
+
+  /// No description provided for @onbItemIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité'**
+  String get onbItemIdentity;
+
+  /// No description provided for @onbItemBiometric.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion biométrique'**
+  String get onbItemBiometric;
+
+  /// No description provided for @onbStateDone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fait'**
+  String get onbStateDone;
+
+  /// No description provided for @onbStatePending.
+  ///
+  /// In fr, this message translates to:
+  /// **'En vérification'**
+  String get onbStatePending;
+
+  /// No description provided for @onbStateTodo.
+  ///
+  /// In fr, this message translates to:
+  /// **'À faire'**
+  String get onbStateTodo;
 }
 
 class _AppLocalizationsDelegate

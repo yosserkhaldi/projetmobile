@@ -60,6 +60,9 @@ class UserStore extends ChangeNotifier {
   static const _languageKey = 'app_language';
   static const _themeKey = 'theme_mode';
 
+  /// Compte qui vient d'être créé sur ce téléphone et n'a pas fini l'accueil.
+  static const _onboardingKey = 'onboarding_user';
+
   final ApiClient _api;
   final SessionStorage _storage;
   final BiometricAuth _biometric;
@@ -102,6 +105,22 @@ class UserStore extends ChangeNotifier {
   /// La connexion biométrique est activée sur ce téléphone.
   bool biometricEnabled = false;
 
+  String? _onboardingUserId;
+
+  /// Accueil après l'inscription (permis, identité, empreinte) pas encore
+  /// terminé : repris au prochain lancement s'il est interrompu.
+  bool get needsOnboarding =>
+      status == AuthStatus.signedIn &&
+      currentUser != null &&
+      currentUser!.id == _onboardingUserId;
+
+  /// Fin de l'accueil, terminé ou passé : l'application s'ouvre normalement.
+  Future<void> finishOnboarding() async {
+    _onboardingUserId = null;
+    notifyListeners();
+    await _storage.delete(_onboardingKey);
+  }
+
   // Photos déjà téléchargées, par identifiant de photo.
   final _photoCache = <String, Uint8List>{};
 
@@ -127,6 +146,7 @@ class UserStore extends ChangeNotifier {
       biometricAvailable = await _biometric.isAvailable();
       biometricEnabled =
           biometricAvailable && await _storage.read(_deviceKey) != null;
+      _onboardingUserId = await _storage.read(_onboardingKey);
       if (await _api.hasStoredSession()) {
         await _restoreSession();
       } else {
@@ -188,7 +208,11 @@ class UserStore extends ChangeNotifier {
         'consent': true,
       },
     );
-    await _startSession(session as Map<String, dynamic>);
+    // Nouveau compte : l'accueil s'ouvre une fois le téléphone vérifié.
+    final user = (session as Map<String, dynamic>)['user'] as Map;
+    _onboardingUserId = user['id'] as String;
+    await _storage.write(_onboardingKey, _onboardingUserId!);
+    await _startSession(session);
   }
 
   Future<void> logout() async {
