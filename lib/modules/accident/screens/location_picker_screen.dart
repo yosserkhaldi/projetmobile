@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_dragmarker/flutter_map_dragmarker.dart';
 import 'package:latlong2/latlong.dart';
 
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_location_service.dart';
 
 class LocationPickerScreen extends StatefulWidget {
@@ -105,7 +105,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                                 ? Icons.edit_location_alt
                                 : Icons.location_on,
                             size: 56,
-                            color: AppColors.primary,
+                            color: context.palette.primaryText,
                           ),
                           onDragEnd: (_, point) => _selectPoint(point),
                         ),
@@ -147,15 +147,15 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           ),
           Container(
             width: double.infinity,
-            color: AppColors.surface,
+            color: context.palette.surface,
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'LIEU SÉLECTIONNÉ',
                   style: TextStyle(
-                    color: AppColors.textMuted,
+                    color: context.palette.textMuted,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: .6,
@@ -171,13 +171,13 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 Text(
                   '${_point.latitude.toStringAsFixed(6)}, '
                   '${_point.longitude.toStringAsFixed(6)}',
-                  style: const TextStyle(color: AppColors.textMuted),
+                  style: TextStyle(color: context.palette.textMuted),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 6),
                   Text(
                     _error!,
-                    style: const TextStyle(color: AppColors.errorText),
+                    style: TextStyle(color: context.palette.errorText),
                   ),
                 ],
                 const SizedBox(height: 12),

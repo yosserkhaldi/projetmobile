@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
-import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/vehicle_form_screen.dart';
@@ -58,10 +58,10 @@ class VehicleChoice extends StatelessWidget {
       key: const ValueKey('vehicle-choice'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           'VOTRE VÉHICULE',
           style: TextStyle(
-            color: AppColors.textMuted,
+            color: context.palette.textMuted,
             fontSize: 12,
             fontWeight: FontWeight.w800,
             letterSpacing: .5,
@@ -70,16 +70,16 @@ class VehicleChoice extends StatelessWidget {
         const SizedBox(height: 8),
         if (vehicles.isEmpty)
           Card(
-            color: AppColors.warningBg,
+            color: context.palette.warningBg,
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Ajoutez votre véhicule et son assureur : c’est à lui que le constat est transmis.',
                     style: TextStyle(
-                      color: AppColors.warningText,
+                      color: context.palette.warningText,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -129,7 +129,7 @@ class _VehicleTile extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: selected ? AppColors.primary : AppColors.border,
+          color: selected ? context.palette.primaryText : context.palette.border,
           width: selected ? 2 : 1,
         ),
       ),
@@ -143,7 +143,7 @@ class _VehicleTile extends StatelessWidget {
             children: [
               Icon(
                 selected ? Icons.radio_button_checked : Icons.radio_button_off,
-                color: selected ? AppColors.primary : AppColors.textMuted,
+                color: selected ? context.palette.primaryText : context.palette.textMuted,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -161,7 +161,7 @@ class _VehicleTile extends StatelessWidget {
                           : '${insurer.isEmpty ? 'Assureur non renseigné' : insurer} · '
                                 'jusqu’au ${VehicleChoice._date(vehicle.insuranceExpiry)}',
                       style: TextStyle(
-                        color: expired ? AppColors.errorText : AppColors.textMuted,
+                        color: expired ? context.palette.errorText : context.palette.textMuted,
                         fontWeight: expired ? FontWeight.w800 : FontWeight.w500,
                       ),
                     ),

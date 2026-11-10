@@ -25,7 +25,7 @@ class VehicleStore extends ChangeNotifier {
   final List<Vehicle> _vehicles = [];
 
   bool _loaded = false;
-  bool _loading = false;
+  Future<void>? _initializing;
 
   List<Vehicle> get vehicles =>
       _vehicles.where((v) => !v.archived).toList();
@@ -84,10 +84,12 @@ class VehicleStore extends ChangeNotifier {
 
   // ── Initialisation ────────────────────────────────────────────────────────
 
-  /// Charge les véhicules depuis SQLite au démarrage.
-  Future<void> initialize() async {
-    if (_loaded || _loading) return;
-    _loading = true;
+  /// Charge les véhicules depuis SQLite au démarrage. Un deuxième appel
+  /// attend le premier : la synchronisation ne commence qu'une fois la base
+  /// lue, sinon la lecture effacerait ce qu'elle vient d'ajouter.
+  Future<void> initialize() => _initializing ??= _load();
+
+  Future<void> _load() async {
     try {
       final rows = await _db.loadAll();
       _vehicles
@@ -95,7 +97,6 @@ class VehicleStore extends ChangeNotifier {
         ..addAll(rows);
       _loaded = true;
     } finally {
-      _loading = false;
       notifyListeners();
     }
   }
@@ -204,6 +205,7 @@ class VehicleStore extends ChangeNotifier {
   /// À la déconnexion : les véhicules ne restent pas pour le compte suivant
   /// sur ce téléphone. Ils sont sur le serveur et reviennent à la connexion.
   Future<void> clear() async {
+    await initialize();
     _vehicles.clear();
     notifyListeners();
     await _db.deleteAll();

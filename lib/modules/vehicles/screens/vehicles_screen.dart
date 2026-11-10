@@ -26,6 +26,11 @@ class _VehiclesScreenState extends State<VehiclesScreen>
   void initState() {
     super.initState();
     _tabs = TabController(length: 2, vsync: this);
+    // Ajoutés depuis un autre téléphone ou par le serveur : repris à
+    // l'ouverture, et en tirant la liste vers le bas.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AppScope.of(context).vehicles.syncWithServer();
+    });
   }
 
   @override
@@ -121,10 +126,19 @@ class _VehicleList extends StatelessWidget {
   final bool archived;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => RefreshIndicator(
+    onRefresh: AppScope.of(context).vehicles.syncWithServer,
+    child: _list(context),
+  );
+
+  Widget _list(BuildContext context) {
     if (vehicles.isEmpty) {
-      return Center(
-        child: Column(
+      // Défilable, pour pouvoir tirer vers le bas même sans véhicule.
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: 120),
+          Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
@@ -141,10 +155,12 @@ class _VehicleList extends StatelessWidget {
             ),
           ],
         ),
+        ],
       );
     }
 
     return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       itemCount: vehicles.length,
       itemBuilder: (_, i) => _VehicleCard(vehicle: vehicles[i]),

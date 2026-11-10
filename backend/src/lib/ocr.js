@@ -176,7 +176,15 @@ export function parseMrz(text) {
   const birth = line2.slice(13, 19);
   const expiry = line2.slice(21, 27);
   return {
-    number: candidates.length === 1 ? candidates[0] : null,
+    // Plusieurs lectures passent le chiffre de contrôle : on garde celle qui a
+    // la forme d'un numéro de passeport (lettres puis chiffres, « X1234567 »).
+    // L'utilisateur la voit dans le champ et peut la corriger.
+    number:
+      candidates.length === 1
+        ? candidates[0]
+        : (candidates.filter((c) => /^[A-Z]{1,2}\d{6,8}$/.test(c)).length === 1
+            ? candidates.find((c) => /^[A-Z]{1,2}\d{6,8}$/.test(c))
+            : null),
     numberCandidates: candidates,
     // Ligne des noms brute : les « < » mal lus (K, L) n'empêchent pas d'y
     // retrouver le nom du compte.
