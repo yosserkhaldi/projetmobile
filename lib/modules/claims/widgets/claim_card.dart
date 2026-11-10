@@ -9,16 +9,21 @@ import 'package:mon_constat_digital/modules/claims/widgets/motion.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 
+const _mono = 'JetBrainsMono';
+
 class ClaimCard extends StatelessWidget {
   const ClaimCard(this.claim, {this.insight, super.key});
   final Claim claim;
 
   /// Affiche ce qui rend le dossier prioritaire, pour l'agent.
   final ClaimInsight? insight;
+
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final meta = TextStyle(color: p.textMuted, fontSize: 13);
+    return InkPanel(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -27,64 +32,83 @@ class ClaimCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   claim.id,
-                  style: const TextStyle(
-                    fontFamily: 'JetBrainsMono',
-                    fontWeight: FontWeight.w700,
+                  style: TextStyle(
+                    fontFamily: _mono,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: p.textMuted,
                   ),
                 ),
               ),
               ClaimStatusChip(claim.status),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             '${context.t.claimValue(claim.type)} • '
             '${context.t.claimValue(claim.severity)}',
-          ),
-          const SizedBox(height: 4),
-          Text(claim.place, style: TextStyle(color: context.palette.textMuted)),
-          Text(
-            claim.date,
             style: TextStyle(
-              color: context.palette.textMuted,
-              fontFamily: 'JetBrainsMono',
-              fontSize: 12,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: p.text,
             ),
           ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  claim.place,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: meta,
+                ),
+              ),
+              Text('  ·  ', style: meta),
+              Text(
+                claim.date,
+                style: meta.copyWith(
+                  fontFamily: _mono,
+                  fontSize: 12,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
           if (insight case final insight? when insight.isForAgent) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             _PriorityBar(insight.priority),
             if (insight.reasons.isNotEmpty || claim.companyId == null) ...[
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
+              // Une seule ligne qui défile : la carte garde sa hauteur.
+              XStrip(
+                gap: 6,
                 children: [
-                  for (final reason in insight.reasons) _ReasonChip(reason),
+                  for (final reason in insight.reasons)
+                    QuietTag(reason, color: p.text, dot: ClaimsColors.critical),
                   // Visible de tous les agents tant que l'assureur manque.
                   if (claim.companyId == null)
-                    _ReasonChip(
+                    QuietTag(
                       context.t.claimsNoCompany,
-                      color: ClaimsColors.sky,
-                      icon: Icons.domain_disabled_outlined,
+                      color: p.text,
+                      dot: ClaimsColors.info,
                     ),
                 ],
               ),
             ],
             if (insight.nextAction != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Row(
                 children: [
-                  const Icon(
-                    Icons.arrow_circle_right,
-                    size: 18,
-                    color: ClaimsColors.indigo,
-                  ),
-                  const SizedBox(width: 6),
+                  Icon(Icons.arrow_forward, size: 16, color: p.primaryText),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       insight.nextAction!,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: p.primaryText,
+                      ),
                     ),
                   ),
                 ],
@@ -93,72 +117,39 @@ class ClaimCard extends StatelessWidget {
           ],
         ],
       ),
-    ),
-  );
+    );
+  }
 }
 
-/// Score de priorité de 0 à 100 : vert, ambre, puis corail.
+/// Score de priorité de 0 à 100, coloré par seuils comme une jauge Grafana.
 class _PriorityBar extends StatelessWidget {
   const _PriorityBar(this.score);
   final int score;
 
   @override
   Widget build(BuildContext context) {
-    final color = score >= 60
-        ? ClaimsColors.coral
-        : score >= 30
-        ? ClaimsColors.amber
-        : ClaimsColors.teal;
+    final color = ClaimsColors.threshold(score);
     return Row(
       children: [
         Text(
           context.t.claimsPriorityScore('$score'),
           style: TextStyle(
-            color: color,
+            color: context.palette.textMuted,
+            fontFamily: _mono,
             fontSize: 12,
-            fontWeight: FontWeight.w800,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 12),
         Expanded(
-          child: GrowingBar(value: score / 100, color: color, height: 8),
+          child: GrowingBar(
+            value: score / 100,
+            color: color,
+            height: 4,
+            track: context.palette.surfaceAlt,
+          ),
         ),
       ],
     );
   }
-}
-
-class _ReasonChip extends StatelessWidget {
-  const _ReasonChip(
-    this.text, {
-    this.color = ClaimsColors.coral,
-    this.icon = Icons.flag,
-  });
-  final String text;
-  final Color color;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: .15),
-      borderRadius: BorderRadius.circular(99),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 13, color: color),
-        const SizedBox(width: 4),
-        Text(
-          text,
-          style: TextStyle(
-            color: color,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    ),
-  );
 }

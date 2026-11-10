@@ -418,7 +418,7 @@ class _DecisionCardState extends State<_DecisionCard> {
         children: [
           Text(
             context.t.claimsDecision,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           Text(
@@ -441,7 +441,7 @@ class _DecisionCardState extends State<_DecisionCard> {
           ),
           const SizedBox(height: 8),
           ClipRRect(
-            borderRadius: BorderRadius.circular(99),
+            borderRadius: BorderRadius.circular(2),
             child: SizedBox(
               height: 8,
               child: Row(

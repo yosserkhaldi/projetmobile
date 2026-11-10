@@ -1,35 +1,6 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
-/// Couleurs vives du module 5, lisibles en clair comme en sombre.
-abstract final class ClaimsColors {
-  static const violet = Color(0xFF7C5CFF);
-  static const teal = Color(0xFF14B8A6);
-  static const coral = Color(0xFFFF6B6B);
-  static const amber = Color(0xFFF5A524);
-  static const sky = Color(0xFF38BDF8);
-  static const pink = Color(0xFFEC4899);
-  static const lime = Color(0xFF84CC16);
-  static const indigo = Color(0xFF4F6BED);
-
-  static const series = [violet, teal, amber, coral, sky, pink, lime, indigo];
-
-  /// Carte de suivi du conducteur : du bleu nuit vers le turquoise.
-  static const guidance = LinearGradient(
-    begin: AlignmentDirectional.topStart,
-    end: AlignmentDirectional.bottomEnd,
-    colors: [Color(0xFF4338CA), Color(0xFF7C3AED), Color(0xFF0D9488)],
-    stops: [0, .55, 1],
-  );
-
-  /// Ce qu'a écrit un modèle de langage : violet vers rose.
-  static const ai = LinearGradient(
-    begin: AlignmentDirectional.topStart,
-    end: AlignmentDirectional.bottomEnd,
-    colors: [violet, pink],
-  );
-}
+export 'ink.dart';
 
 /// Vrai quand l'utilisateur a demandé moins d'animations au système.
 bool reduceMotion(BuildContext context) =>
@@ -57,99 +28,6 @@ class CountUp extends StatelessWidget {
   }
 }
 
-/// Respiration : grossit et pâlit doucement, pour ce qui attend une réponse.
-class Breathing extends StatefulWidget {
-  const Breathing({required this.child, super.key});
-  final Widget child;
-
-  @override
-  State<Breathing> createState() => _BreathingState();
-}
-
-class _BreathingState extends State<Breathing>
-    with SingleTickerProviderStateMixin {
-  late final controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1400),
-  );
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (reduceMotion(context)) {
-      controller.stop();
-    } else if (!controller.isAnimating) {
-      controller.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: controller,
-    builder: (_, child) {
-      final v = Curves.easeInOut.transform(controller.value);
-      return Opacity(
-        opacity: 1 - v * .25,
-        child: Transform.scale(scale: 1 + v * .06, child: child),
-      );
-    },
-    child: widget.child,
-  );
-}
-
-/// Flottement : monte et descend de quelques pixels, en boucle.
-class Floating extends StatefulWidget {
-  const Floating({required this.child, this.height = 4, super.key});
-  final Widget child;
-  final double height;
-
-  @override
-  State<Floating> createState() => _FloatingState();
-}
-
-class _FloatingState extends State<Floating>
-    with SingleTickerProviderStateMixin {
-  late final controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2400),
-  );
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (reduceMotion(context)) {
-      controller.stop();
-    } else if (!controller.isAnimating) {
-      controller.repeat();
-    }
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: controller,
-    builder: (_, child) => Transform.translate(
-      offset: Offset(
-        0,
-        math.sin(controller.value * 2 * math.pi) * widget.height,
-      ),
-      child: child,
-    ),
-    child: widget.child,
-  );
-}
-
 /// Apparition : fondu et glissement vers le haut, avec un retard [index].
 class Appear extends StatelessWidget {
   const Appear({required this.child, this.index = 0, super.key});
@@ -161,12 +39,12 @@ class Appear extends StatelessWidget {
     if (reduceMotion(context)) return child;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 380 + index * 70),
+      duration: Duration(milliseconds: 280 + index.clamp(0, 6) * 40),
       curve: Curves.easeOutCubic,
       builder: (_, v, child) => Opacity(
         opacity: v,
         child: Transform.translate(
-          offset: Offset(0, (1 - v) * 14),
+          offset: Offset(0, (1 - v) * 8),
           child: child,
         ),
       ),
@@ -192,26 +70,18 @@ class GrowingBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget bar(double v) => ClipRRect(
-      borderRadius: BorderRadius.circular(height),
+      borderRadius: BorderRadius.circular(2),
       child: SizedBox(
         height: height,
         child: Stack(
           children: [
             Positioned.fill(
-              child: ColoredBox(color: track ?? color.withValues(alpha: .15)),
+              child: ColoredBox(color: track ?? color.withValues(alpha: .12)),
             ),
             FractionallySizedBox(
               widthFactor: v.clamp(0, 1),
               alignment: AlignmentDirectional.centerStart,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [color.withValues(alpha: .75), color],
-                  ),
-                  borderRadius: BorderRadius.circular(height),
-                ),
-                child: const SizedBox.expand(),
-              ),
+              child: ColoredBox(color: color, child: const SizedBox.expand()),
             ),
           ],
         ),

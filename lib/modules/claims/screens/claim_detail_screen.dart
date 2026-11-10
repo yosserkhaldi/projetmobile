@@ -50,121 +50,114 @@ class ClaimDetail extends StatelessWidget {
     final files = claim.documents
         .where((d) => d.kind != ClaimDocument.expertReport)
         .toList();
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(claim.id),
-        actions: [
-          if (online)
+    return ClaimsStyle(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(claim.id),
+          actions: [
+            if (online)
+              IconButton(
+                tooltip: t.claimsAssistant,
+                onPressed: () => open(context, AssistantScreen(claim)),
+                icon: const Icon(Icons.support_agent),
+              ),
             IconButton(
-              tooltip: t.claimsAssistant,
-              onPressed: () => open(context, AssistantScreen(claim)),
-              icon: const Icon(Icons.support_agent),
+              tooltip: t.claimsMessaging,
+              onPressed: () => open(context, ChatScreen(claim)),
+              icon: const Icon(Icons.chat_outlined),
             ),
-          IconButton(
-            tooltip: t.claimsMessaging,
-            onPressed: () => open(context, ChatScreen(claim)),
-            icon: const Icon(Icons.chat_outlined),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          ClaimCard(claim),
-          if (insight != null && agentMode && insight.isForAgent) ...[
-            const SizedBox(height: 12),
-            AnalysisCard(claim, insight),
           ],
-          if (insight?.headline != null && !agentMode) ...[
-            const SizedBox(height: 12),
-            GuidanceCard(insight!, status: claim.status),
-          ],
-          if (claim.status == ClaimStatus.closed ||
-              claim.status == ClaimStatus.rejected) ...[
-            const SizedBox(height: 12),
-            _DecisionSummary(claim),
-            if (!agentMode)
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: TextButton.icon(
-                  onPressed: () => open(context, ChatScreen(claim)),
-                  icon: const Icon(Icons.forum_outlined),
-                  label: Text(t.claimsQuestionOnDecision),
-                ),
-              ),
-          ],
-          if (requests.isNotEmpty) ...[
-            _Title(t.claimsRequestedDocuments),
-            ...requests.map(
-              (request) => Card(
-                color: context.palette.warningBg,
-                child: ListTile(
-                  leading: Icon(
-                    Icons.priority_high,
-                    color: context.palette.warningText,
+        ),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          children: [
+            ClaimCard(claim),
+            if (insight != null && agentMode && insight.isForAgent) ...[
+              const SizedBox(height: 12),
+              AnalysisCard(claim, insight),
+            ],
+            if (insight?.headline != null && !agentMode) ...[
+              const SizedBox(height: 12),
+              GuidanceCard(insight!, status: claim.status),
+            ],
+            if (claim.status == ClaimStatus.closed ||
+                claim.status == ClaimStatus.rejected) ...[
+              const SizedBox(height: 12),
+              _DecisionSummary(claim),
+              if (!agentMode)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton.icon(
+                    onPressed: () => open(context, ChatScreen(claim)),
+                    icon: const Icon(Icons.forum_outlined),
+                    label: Text(t.claimsQuestionOnDecision),
                   ),
-                  title: Text(t.claimValue(request.label)),
-                  subtitle: request.note.isEmpty ? null : Text(request.note),
-                  trailing: agentMode
-                      ? null
-                      : TextButton(
-                          onPressed: () => _upload(context, request: request),
-                          child: Text(t.claimsUpload),
-                        ),
+                ),
+            ],
+            if (requests.isNotEmpty) ...[
+              _Title(t.claimsRequestedDocuments),
+              ...requests.map(
+                (request) => Card(
+                  color: context.palette.warningBg,
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.priority_high,
+                      color: context.palette.warningText,
+                    ),
+                    title: Text(t.claimValue(request.label)),
+                    subtitle: request.note.isEmpty ? null : Text(request.note),
+                    trailing: agentMode
+                        ? null
+                        : TextButton(
+                            onPressed: () => _upload(context, request: request),
+                            child: Text(t.claimsUpload),
+                          ),
+                  ),
                 ),
               ),
-            ),
+            ],
+            if (claim.expertName != null) ...[
+              _Title(t.claimsExpertiseTitle),
+              ExpertiseCard(
+                claim,
+                role: agentMode ? UserRole.agent : UserRole.driver,
+              ),
+            ],
+            if (reports.isNotEmpty ||
+                (claim.status == ClaimStatus.expertise && !agentMode)) ...[
+              _Title(t.claimValue(ClaimDocument.expertReport)),
+              _ReportSection(reports, online: online),
+            ],
+            _Title(t.claimsTimeline),
+            ClaimTimeline(claim),
+            _Title(t.claimsConstat),
+            _ConstatSummary(claim),
+            _Title(t.claimsDocuments),
+            // Les pièces en bande horizontale : une ligne, quel que soit
+            // leur nombre.
+            if (files.isNotEmpty)
+              XStrip(
+                children: [
+                  for (final document in files)
+                    _DocumentTile(document, online: online),
+                ],
+              ),
+            if (files.isEmpty && agentMode)
+              Text(
+                t.claimsNoDocument,
+                style: TextStyle(color: context.palette.textMuted),
+              ),
+            if (!ClaimStatus.isFinal(claim.status) && !agentMode) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => _upload(context),
+                icon: const Icon(Icons.upload_file),
+                label: Text(t.claimsUploadDocument),
+              ),
+            ],
+            if (agentMode) ...[_Title(t.claimsHandling), AgentPanel(claim)],
           ],
-          if (claim.expertName != null) ...[
-            _Title(t.claimsExpertiseTitle),
-            ExpertiseCard(
-              claim,
-              role: agentMode ? UserRole.agent : UserRole.driver,
-            ),
-          ],
-          if (reports.isNotEmpty ||
-              (claim.status == ClaimStatus.expertise && !agentMode)) ...[
-            _Title(t.claimValue(ClaimDocument.expertReport)),
-            _ReportSection(reports, online: online),
-          ],
-          _Title(t.claimsTimeline),
-          ClaimTimeline(claim),
-          _Title(t.claimsConstat),
-          _ConstatSummary(claim),
-          _Title(t.claimsDocuments),
-          ...files.map(
-            (document) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(_iconOf(document.kind)),
-              title: Text(document.name),
-              subtitle: Text(_describe(t, document)),
-              trailing: online
-                  ? IconButton(
-                      tooltip: t.claimsDownload,
-                      onPressed: () => saveFromServer(
-                        context,
-                        kind: 'document',
-                        id: document.id,
-                        name: document.name,
-                      ),
-                      icon: const Icon(Icons.download),
-                    )
-                  : null,
-            ),
-          ),
-          if (files.isEmpty && agentMode)
-            Text(
-              t.claimsNoDocument,
-              style: TextStyle(color: context.palette.textMuted),
-            ),
-          if (!ClaimStatus.isFinal(claim.status) && !agentMode)
-            OutlinedButton.icon(
-              onPressed: () => _upload(context),
-              icon: const Icon(Icons.upload_file),
-              label: Text(t.claimsUploadDocument),
-            ),
-          if (agentMode) ...[_Title(t.claimsHandling), AgentPanel(claim)],
-        ],
+        ),
       ),
     );
   }
@@ -207,32 +200,16 @@ class _ReportSection extends StatelessWidget {
         style: TextStyle(color: context.palette.textMuted),
       );
     }
+    final p = context.palette;
     return Appear(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              ClaimsColors.teal.withValues(alpha: .22),
-              ClaimsColors.sky.withValues(alpha: .12),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: ClaimsColors.teal.withValues(alpha: .55)),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 6),
+      child: InkPanel(
+        padding: const EdgeInsets.symmetric(vertical: 4),
         child: Column(
           children: [
             for (final report in reports)
               ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: ClaimsColors.teal,
-                  foregroundColor: Colors.white,
-                  child: Icon(Icons.verified_outlined),
-                ),
-                title: Text(
-                  report.name,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
+                leading: Icon(Icons.verified_outlined, color: p.successText),
+                title: Text(report.name),
                 subtitle: Text(
                   report.analysis == null
                       ? t.claimsReportReceived
@@ -247,9 +224,67 @@ class _ReportSection extends StatelessWidget {
                           id: report.id,
                           name: report.name,
                         ),
-                        icon: const Icon(Icons.download),
+                        icon: const Icon(Icons.download, size: 20),
                       )
                     : null,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Une pièce : icône, nom, ce que le modèle y a lu, téléchargement.
+class _DocumentTile extends StatelessWidget {
+  const _DocumentTile(this.document, {required this.online});
+  final ClaimDocument document;
+  final bool online;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final p = context.palette;
+    return SizedBox(
+      width: 232,
+      child: InkPanel(
+        padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(_iconOf(document.kind), size: 20, color: p.textMuted),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    document.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _describe(t, document),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: p.textMuted),
+                  ),
+                ],
+              ),
+            ),
+            if (online)
+              IconButton(
+                tooltip: t.claimsDownload,
+                visualDensity: VisualDensity.compact,
+                onPressed: () => saveFromServer(
+                  context,
+                  kind: 'document',
+                  id: document.id,
+                  name: document.name,
+                ),
+                icon: Icon(Icons.download, size: 18, color: p.textMuted),
               ),
           ],
         ),
@@ -263,13 +298,7 @@ class _Title extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: 20, bottom: 10),
-    child: Text(
-      text,
-      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-    ),
-  );
+  Widget build(BuildContext context) => SectionTitle(text);
 }
 
 class _DecisionSummary extends StatelessWidget {
@@ -290,7 +319,7 @@ class _DecisionSummary extends StatelessWidget {
           children: [
             Text(
               rejected ? t.claimsRejectedTitle : t.claimsClosedTitle,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             if (claim.decisionReason != null)
               Text(t.claimsReason(claim.decisionReason!)),
@@ -339,7 +368,7 @@ class _ConstatSummary extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: t.claimsLabelColon(label),
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    style: TextStyle(color: context.palette.textMuted),
                   ),
                   TextSpan(text: value),
                 ],

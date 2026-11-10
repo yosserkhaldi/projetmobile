@@ -78,7 +78,7 @@ class _Step extends StatelessWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    fontWeight: current ? FontWeight.w800 : FontWeight.w600,
+                    fontWeight: current ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
                 if (date != null)

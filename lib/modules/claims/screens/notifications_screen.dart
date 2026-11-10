@@ -55,7 +55,7 @@ class NotificationsScreen extends StatelessWidget {
                   title: Text(
                     t.claimNotification(item.body),
                     style: TextStyle(
-                      fontWeight: item.read ? FontWeight.w500 : FontWeight.w800,
+                      fontWeight: item.read ? FontWeight.w400 : FontWeight.w600,
                     ),
                   ),
                   subtitle: Text(formatDateTime(item.createdAt)),
