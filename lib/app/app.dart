@@ -60,11 +60,19 @@ class _MonConstatAppState extends State<MonConstatApp>
     }
   }
 
-  /// À la déconnexion, ferme les écrans ouverts au-dessus de l'accueil.
+  /// À la déconnexion, ferme les écrans ouverts au-dessus de l'accueil, et
+  /// efface les véhicules et le brouillon d'accident de ce téléphone : le
+  /// compte suivant ne doit pas les voir. À la connexion, les véhicules du
+  /// compte reviennent du serveur.
   void _onUsersChanged() {
     final status = stores.users.status;
     if (_lastStatus == AuthStatus.signedIn && status == AuthStatus.signedOut) {
       _navigator.currentState?.popUntil((route) => route.isFirst);
+      unawaited(stores.vehicles.clear());
+      stores.accidents.clearDraft();
+    }
+    if (_lastStatus != AuthStatus.signedIn && status == AuthStatus.signedIn) {
+      unawaited(stores.vehicles.syncWithServer());
     }
     _lastStatus = status;
   }

@@ -44,6 +44,15 @@ class AccidentPdfService {
             ),
             ('Témoin', _join([draft.witnessName, draft.witnessPhone])),
           ]),
+          _title('Conducteur A'),
+          _table([
+            ('Nom', draft.driverAName),
+            ('Permis', draft.driverALicense),
+            ('Véhicule', draft.driverAVehicle),
+            ('Immatriculation', draft.driverAPlate),
+            ('Assurance', draft.driverAInsurer),
+            ('Police', draft.driverAPolicy),
+          ]),
           _title('Conducteur B'),
           _table([
             ('Nom', draft.driverBName),

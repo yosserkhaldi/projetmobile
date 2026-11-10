@@ -11,6 +11,7 @@ import 'package:mon_constat_digital/core/network/token_storage.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/modules/users/data/biometric_auth.dart';
 import 'package:mon_constat_digital/modules/users/data/users_database.dart';
+import 'package:mon_constat_digital/modules/vehicles/data/vehicle_database.dart';
 import 'package:mon_constat_digital/modules/users/screens/liveness_screen.dart';
 import 'package:mon_constat_digital/modules/users/services/face_guide.dart';
 
@@ -79,6 +80,33 @@ Map<String, dynamic> userJson({
   'licenseCategory': null,
   'licenseIssuedAt': null,
   'company': null,
+};
+
+/// Véhicule tel que /api/vehicles le renvoie (assuré chez STAR par défaut).
+Map<String, dynamic> vehicleJson({
+  String id = '11111111-1111-4111-8111-111111111111',
+  String plate = '245 TU 8812',
+  String insuranceExpiry = '2030-03-31',
+  String? companyId = 'c-star',
+  String insurerName = 'STAR Assurances',
+}) => {
+  'id': id,
+  'plate': plate,
+  'brand': 'Peugeot',
+  'model': '208',
+  'year': 2021,
+  'policy': 'STAR-55821',
+  'insurerName': insurerName,
+  'companyId': companyId,
+  'insuranceExpiry': insuranceExpiry,
+  'technicalExpiry': null,
+  'color': null,
+  'mileage': null,
+  'type': 'CAR',
+  'fuel': 'PETROL',
+  'claimCount': 0,
+  'archived': false,
+  'createdAt': '2026-11-01T10:00:00.000Z',
 };
 
 /// Imite l'API sans réseau. `user` est le compte renvoyé à la connexion.
@@ -150,6 +178,9 @@ class FakeBackend {
   ];
   List<Map<String, dynamic>> pendingIdentities = [];
 
+  /// Véhicules du compte sur le serveur (module 2).
+  List<Map<String, dynamic>> vehicles = [];
+
   /// Permis signalés par l'IA, en attente d'un administrateur.
   List<Map<String, dynamic>> licenseReviews = [];
 
@@ -186,6 +217,8 @@ class FakeBackend {
     storage: storage,
     biometric: biometric,
     usersDb: usersDb,
+    // Véhicules en mémoire : pas de fichier SQLite dans les tests.
+    vehicleDb: VehicleDatabase(NativeDatabase.memory()),
     deviceHeaders: (_) async => {
       'X-Device-Id': 'device-test',
       'X-Device-Name': 'Pixel de test',
@@ -443,6 +476,43 @@ class FakeBackend {
         },
       };
       return _json(200, {'user': decided});
+    }
+    // Véhicules (module 2).
+    if (route == 'GET /vehicles') {
+      final archived = request.url.queryParameters['archived'] == 'true';
+      return _json(200, {
+        'vehicles': [
+          for (final v in vehicles)
+            if ((v['archived'] == true) == archived) v,
+        ],
+      });
+    }
+    if (route == 'POST /vehicles') {
+      final created = {
+        ...vehicleJson(),
+        ...bodies[route]!,
+        'id': bodies[route]!['id'] ?? 'srv-${vehicles.length + 1}',
+      };
+      vehicles = [...vehicles.where((v) => v['id'] != created['id']), created];
+      return _json(201, created);
+    }
+    final vehicle = RegExp(r'^/vehicles/([^/]+)$').firstMatch(path);
+    if (vehicle != null) {
+      final index = vehicles.indexWhere((v) => v['id'] == vehicle[1]);
+      if (index == -1) {
+        return _json(404, {
+          'error': {
+            'code': 'VEHICLE_NOT_FOUND',
+            'message': 'Véhicule introuvable.',
+          },
+        });
+      }
+      if (request.method == 'DELETE') {
+        vehicles.removeAt(index);
+        return http.Response('', 204);
+      }
+      vehicles[index] = {...vehicles[index], ...?bodies[route]};
+      return _json(200, vehicles[index]);
     }
     // Administration du permis et de l'identité d'un compte.
     if (route == 'GET /users/licenses/review') {
