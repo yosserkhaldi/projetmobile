@@ -102,7 +102,7 @@ export const updateProfileSchema = z
     ),
     licenseCategory: z.preprocess(
       emptyToNull,
-      z.string().trim().max(20).nullable(),
+      z.string().trim().max(60, 'Catégories du permis : 60 caractères maximum.').nullable(),
     ),
     licenseIssuedAt,
   })

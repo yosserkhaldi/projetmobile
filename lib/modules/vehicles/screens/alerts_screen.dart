@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/vehicle_detail_screen.dart';
 import 'package:mon_constat_digital/modules/vehicles/state/vehicle_store.dart';
 import 'package:mon_constat_digital/shared/navigation.dart';
@@ -21,7 +22,7 @@ class AlertsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Alertes d\'échéance'),
+        title: Text(context.t.vehAlertsTitle),
         actions: [
           if (alerts.isNotEmpty)
             Padding(
@@ -55,7 +56,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Aucune alerte active',
+            context.t.vehAlertsEmptyTitle,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -64,7 +65,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Tous vos contrats et visites techniques\nsont à jour.',
+            context.t.vehAlertsEmptyBody,
             textAlign: TextAlign.center,
             style: TextStyle(color: p.textMuted),
           ),
@@ -91,7 +92,7 @@ class _AlertList extends StatelessWidget {
       children: [
         if (expired.isNotEmpty) ...[
           _GroupHeader(
-            label: 'Expiré(s)',
+            label: context.t.vehAlertsGroupExpired,
             icon: Icons.dangerous_outlined,
             color: AppColors.errorText,
           ),
@@ -100,7 +101,7 @@ class _AlertList extends StatelessWidget {
         ],
         if (expiring.isNotEmpty) ...[
           _GroupHeader(
-            label: 'Expire bientôt',
+            label: context.t.vehAlertsGroupExpiring,
             icon: Icons.warning_amber_rounded,
             color: AppColors.accent,
           ),
@@ -184,7 +185,7 @@ class _AlertCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      alert.title,
+                      alert.titleIn(context.t),
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
@@ -243,7 +244,9 @@ class _DaysChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
     ),
     child: Text(
-      days < 0 ? '${-days}j\ndépassé' : '${days}j',
+      days < 0
+          ? context.t.vehDaysOverdue(-days)
+          : context.t.vehDaysShort(days),
       textAlign: TextAlign.center,
       style: TextStyle(
         fontSize: 11,
@@ -276,19 +279,19 @@ class _SummaryBanner extends StatelessWidget {
         children: [
           _SummaryItem(
             count: expired,
-            label: 'Expirés',
+            label: context.t.vehAlertsSummaryExpired,
             color: AppColors.errorText,
           ),
           Container(width: 1, height: 32, color: p.border),
           _SummaryItem(
             count: expiring,
-            label: 'Proches',
+            label: context.t.vehAlertsSummaryNear,
             color: p.warningText,
           ),
           Container(width: 1, height: 32, color: p.border),
           _SummaryItem(
             count: alerts.length,
-            label: 'Total',
+            label: context.t.vehAlertsSummaryTotal,
             color: p.text,
           ),
         ],

@@ -45,34 +45,37 @@ void main() {
       );
     });
 
-    test('calcule un signaturesHash déterministe sensible à toute altération', () {
-      final sigA = [
-        [
-          {'x': 0.1, 'y': 0.5},
-          {'x': 0.9, 'y': 0.5},
-        ],
-      ];
-      final sigB = [
-        [
-          {'x': 0.2, 'y': 0.6},
-          {'x': 0.8, 'y': 0.4},
-        ],
-      ];
-      final sigBTampered = [
-        [
-          {'x': 0.21, 'y': 0.6},
-          {'x': 0.8, 'y': 0.4},
-        ],
-      ];
+    test(
+      'calcule un signaturesHash déterministe sensible à toute altération',
+      () {
+        final sigA = [
+          [
+            {'x': 0.1, 'y': 0.5},
+            {'x': 0.9, 'y': 0.5},
+          ],
+        ];
+        final sigB = [
+          [
+            {'x': 0.2, 'y': 0.6},
+            {'x': 0.8, 'y': 0.4},
+          ],
+        ];
+        final sigBTampered = [
+          [
+            {'x': 0.21, 'y': 0.6},
+            {'x': 0.8, 'y': 0.4},
+          ],
+        ];
 
-      final h1 = service.computeSignaturesHash(sigA, sigB);
-      final h2 = service.computeSignaturesHash(sigA, sigB);
-      final hTampered = service.computeSignaturesHash(sigA, sigBTampered);
+        final h1 = service.computeSignaturesHash(sigA, sigB);
+        final h2 = service.computeSignaturesHash(sigA, sigB);
+        final hTampered = service.computeSignaturesHash(sigA, sigBTampered);
 
-      expect(h1.length, equals(64));
-      expect(h1, equals(h2));
-      expect(hTampered, isNot(equals(h1)));
-    });
+        expect(h1.length, equals(64));
+        expect(h1, equals(h2));
+        expect(hTampered, isNot(equals(h1)));
+      },
+    );
   });
 
   group('Constat Model', () {
@@ -94,7 +97,8 @@ void main() {
         occurredAt: now,
         circumstancesA: ['1 - En stationnement'],
         circumstancesB: ['2 - Quittait un stationnement'],
-        qrCodeBase64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+        qrCodeBase64:
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
         jwsToken: 'header.payload.signature',
         verifierUrl: 'https://verifier.mon-constat.tn/#token',
       );
@@ -110,120 +114,140 @@ void main() {
       expect(decoded.circumstancesB, contains('2 - Quittait un stationnement'));
       expect(decoded.qrCodeBase64, equals(constat.qrCodeBase64));
       expect(decoded.jwsToken, equals('header.payload.signature'));
-      expect(decoded.verifierUrl, equals('https://verifier.mon-constat.tn/#token'));
+      expect(
+        decoded.verifierUrl,
+        equals('https://verifier.mon-constat.tn/#token'),
+      );
     });
   });
 
   group('ConstatStore 2-step seal & finalizePdf', () {
-    test('envoie deferEmail + signaturesHash puis finalise avec les octets ECDSA exacts', () async {
-      TestWidgetsFlutterBinding.ensureInitialized();
+    test(
+      'envoie deferEmail + signaturesHash puis finalise avec les octets ECDSA exacts',
+      () async {
+        TestWidgetsFlutterBinding.ensureInitialized();
 
-      const tinyPngB64 =
-          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-      final finalizedSignedPdf = Uint8List.fromList(
-        utf8.encode('%PDF-1.5\n%signed-by-ecdsa-server\n%%EOF\n'),
-      );
-      Map<String, dynamic>? sealPayload;
-      bool finalizeCalled = false;
+        const tinyPngB64 =
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+        final finalizedSignedPdf = Uint8List.fromList(
+          utf8.encode('%PDF-1.5\n%signed-by-ecdsa-server\n%%EOF\n'),
+        );
+        Map<String, dynamic>? sealPayload;
+        bool finalizeCalled = false;
 
-      final mockClient = MockClient((request) async {
-        if (request.method == 'POST' && request.url.path.endsWith('/constats')) {
-          final bodyStr = utf8.decode(request.bodyBytes, allowMalformed: true);
-          final dataMatch = RegExp(r'name="data"\r\n\r\n(\{[\s\S]*?\})\r\n').firstMatch(bodyStr);
-          if (dataMatch != null) {
-            sealPayload = jsonDecode(dataMatch.group(1)!) as Map<String, dynamic>;
+        final mockClient = MockClient((request) async {
+          if (request.method == 'POST' &&
+              request.url.path.endsWith('/constats')) {
+            final bodyStr = utf8.decode(
+              request.bodyBytes,
+              allowMalformed: true,
+            );
+            final dataMatch = RegExp(
+              r'name="data"\r\n\r\n(\{[\s\S]*?\})\r\n',
+            ).firstMatch(bodyStr);
+            if (dataMatch != null) {
+              sealPayload =
+                  jsonDecode(dataMatch.group(1)!) as Map<String, dynamic>;
+            }
+            return http.Response(
+              jsonEncode({
+                'constat': {
+                  'id': 'c1111111-1111-4111-8111-111111111111',
+                  'userId': 'u1111111-1111-4111-8111-111111111111',
+                  'status': 'SIGNED',
+                  'sha256Hash': sealPayload?['sha256Hash'] ?? 'a'.repeat(64),
+                  'pdfUrl':
+                      '/api/constats/c1111111-1111-4111-8111-111111111111/pdf',
+                  'driverAName': 'Sami Ben Ali',
+                  'driverAPlate': '180 TN 1234',
+                  'driverAInsurer': 'STAR',
+                  'driverBName': 'Karim Trabelsi',
+                  'driverBPlate': '210 TN 5678',
+                  'driverBInsurer': 'GAT',
+                  'place': 'Tunis',
+                  'occurredAt': '2026-11-10T14:30:00.000Z',
+                  'qrCodeBase64': tinyPngB64,
+                  'jwsToken': 'h.p.s',
+                  'verifierUrl':
+                      'https://verif-constat-digital.vercel.app/#h.p.s',
+                },
+              }),
+              201,
+              headers: {'content-type': 'application/json'},
+            );
           }
-          return http.Response(
-            jsonEncode({
-              'constat': {
-                'id': 'c1111111-1111-4111-8111-111111111111',
-                'userId': 'u1111111-1111-4111-8111-111111111111',
-                'status': 'SIGNED',
-                'sha256Hash': sealPayload?['sha256Hash'] ?? 'a'.repeat(64),
-                'pdfUrl': '/api/constats/c1111111-1111-4111-8111-111111111111/pdf',
-                'driverAName': 'Sami Ben Ali',
-                'driverAPlate': '180 TN 1234',
-                'driverAInsurer': 'STAR',
-                'driverBName': 'Karim Trabelsi',
-                'driverBPlate': '210 TN 5678',
-                'driverBInsurer': 'GAT',
-                'place': 'Tunis',
-                'occurredAt': '2026-11-10T14:30:00.000Z',
-                'qrCodeBase64': tinyPngB64,
-                'jwsToken': 'h.p.s',
-                'verifierUrl': 'https://verif-constat-digital.vercel.app/#h.p.s',
-              },
-            }),
-            201,
-            headers: {'content-type': 'application/json'},
-          );
-        }
 
-        if (request.method == 'POST' &&
-            request.url.path.endsWith('/constats/c1111111-1111-4111-8111-111111111111/finalize-pdf')) {
-          finalizeCalled = true;
-          return http.Response.bytes(
-            finalizedSignedPdf,
-            200,
-            headers: {'content-type': 'application/pdf'},
-          );
-        }
+          if (request.method == 'POST' &&
+              request.url.path.endsWith(
+                '/constats/c1111111-1111-4111-8111-111111111111/finalize-pdf',
+              )) {
+            finalizeCalled = true;
+            return http.Response.bytes(
+              finalizedSignedPdf,
+              200,
+              headers: {'content-type': 'application/pdf'},
+            );
+          }
 
-        return http.Response('{}', 404);
-      });
+          return http.Response('{}', 404);
+        });
 
-      final api = ApiClient(
-        storage: _TestStorage(),
-        httpClient: mockClient,
-        baseUrl: 'http://localhost:3000/api',
-      );
-      final store = ConstatStore(api: api);
-      final draft = AccidentDraft()
-        ..place = 'Tunis'
-        ..driverBName = 'Karim Trabelsi'
-        ..driverBPlate = '210 TN 5678'
-        ..driverBInsurer = 'GAT'
-        ..driverBPolicy = 'POL-GAT-882'
-        ..driverASignature.add([
-          {'x': 0.1, 'y': 0.5},
-          {'x': 0.8, 'y': 0.5},
-        ])
-        ..driverBSignature.add([
-          {'x': 0.2, 'y': 0.4},
-          {'x': 0.7, 'y': 0.6},
-        ]);
+        final api = ApiClient(
+          storage: _TestStorage(),
+          httpClient: mockClient,
+          baseUrl: 'http://localhost:3000/api',
+        );
+        final store = ConstatStore(api: api);
+        final draft = AccidentDraft()
+          ..place = 'Tunis'
+          ..driverBName = 'Karim Trabelsi'
+          ..driverBPlate = '210 TN 5678'
+          ..driverBInsurer = 'GAT'
+          ..driverBPolicy = 'POL-GAT-882'
+          ..driverASignature.add([
+            {'x': 0.1, 'y': 0.5},
+            {'x': 0.8, 'y': 0.5},
+          ])
+          ..driverBSignature.add([
+            {'x': 0.2, 'y': 0.4},
+            {'x': 0.7, 'y': 0.6},
+          ]);
 
-      final sealed = await store.sealAndSubmit(
-        draft: draft,
-        driverAName: 'Sami Ben Ali',
-        driverAPlate: '180 TN 1234',
-        driverAInsurer: 'STAR',
-        driverAPolicy: 'POL-STAR-441',
-        driverA: const ConstatDriverAData(
-          fullName: 'Sami Ben Ali',
-          plate: '180 TN 1234',
-          insurerName: 'STAR',
-          policyNumber: 'POL-STAR-441',
-          vehicleBrand: 'Peugeot',
-          vehicleModel: '208',
-        ),
-      );
+        final sealed = await store.sealAndSubmit(
+          draft: draft,
+          driverAName: 'Sami Ben Ali',
+          driverAPlate: '180 TN 1234',
+          driverAInsurer: 'STAR',
+          driverAPolicy: 'POL-STAR-441',
+          driverA: const ConstatDriverAData(
+            fullName: 'Sami Ben Ali',
+            plate: '180 TN 1234',
+            insurerName: 'STAR',
+            policyNumber: 'POL-STAR-441',
+            vehicleBrand: 'Peugeot',
+            vehicleModel: '208',
+          ),
+        );
 
-      expect(sealPayload, isNotNull);
-      expect(sealPayload!['deferEmail'], isTrue);
-      expect(sealPayload!['signaturesHash'], hasLength(64));
-      expect(sealPayload!['driverASignedAt'], isNotEmpty);
-      expect(sealPayload!['driverAPolicy'], equals('POL-STAR-441'));
-      expect(sealPayload!['driverBPolicy'], equals('POL-GAT-882'));
-      expect(finalizeCalled, isTrue);
-      expect(sealed.id, equals('c1111111-1111-4111-8111-111111111111'));
-      expect(store.lastSealedPdfBytes, equals(finalizedSignedPdf));
-    });
+        expect(sealPayload, isNotNull);
+        expect(sealPayload!['deferEmail'], isTrue);
+        expect(sealPayload!['signaturesHash'], hasLength(64));
+        expect(sealPayload!['driverASignedAt'], isNotEmpty);
+        expect(sealPayload!['driverAPolicy'], equals('POL-STAR-441'));
+        expect(sealPayload!['driverBPolicy'], equals('POL-GAT-882'));
+        expect(finalizeCalled, isTrue);
+        expect(sealed.id, equals('c1111111-1111-4111-8111-111111111111'));
+        expect(store.lastSealedPdfBytes, equals(finalizedSignedPdf));
+      },
+    );
   });
 
   group('ConstatSealedScreen UI', () {
-    testWidgets('masque la carte technique SHA-256 à l’écran final', (tester) async {
-      final hash = '67b9a4529c651f75f146235f9321f440020c8bed08728ccdeab5b72d5bf68768';
+    testWidgets('masque la carte technique SHA-256 à l’écran final', (
+      tester,
+    ) async {
+      final hash =
+          '67b9a4529c651f75f146235f9321f440020c8bed08728ccdeab5b72d5bf68768';
       final constat = Constat(
         id: 'c1234567-0000-0000-0000-000000000001',
         userId: 'u1234567-0000-0000-0000-000000000001',
@@ -245,6 +269,9 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('fr'),
           theme: ThemeData(extensions: const [AppPalette.light]),
           home: ConstatSealedScreen(constat: constat, draft: draft),
         ),
@@ -263,18 +290,27 @@ void main() {
   });
 
   group('Compatibilité circonstances FTUSA <-> Module 5', () {
-    test('reconnaît les libellés numérotés FTUSA dans ResponsibilityProposal et ClaimsText', () {
-      final proposal = ResponsibilityProposal.fromBoxes(
-        ['1 - En stationnement / À l’arrêt'],
-        ['14 - Reculait'],
-      );
-      expect(proposal.driverA, equals(0));
-      expect(proposal.basis, equals(ProposalBasis.faultB));
+    test(
+      'reconnaît les libellés numérotés FTUSA dans ResponsibilityProposal et ClaimsText',
+      () {
+        final proposal = ResponsibilityProposal.fromBoxes(
+          ['1 - En stationnement / À l’arrêt'],
+          ['14 - Reculait'],
+        );
+        expect(proposal.driverA, equals(0));
+        expect(proposal.basis, equals(ProposalBasis.faultB));
 
-      final en = lookupAppLocalizations(const Locale('en'));
-      expect(en.claimValue('1 - En stationnement / À l’arrêt'), equals('Parked'));
-      expect(en.claimValue('10 - Changeait de file'), equals('Changing lanes'));
-    });
+        final en = lookupAppLocalizations(const Locale('en'));
+        expect(
+          en.claimValue('1 - En stationnement / À l’arrêt'),
+          equals('Parked'),
+        );
+        expect(
+          en.claimValue('10 - Changeait de file'),
+          equals('Changing lanes'),
+        );
+      },
+    );
   });
 }
 

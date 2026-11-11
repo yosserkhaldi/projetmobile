@@ -43,12 +43,21 @@ class AccidentLocationService {
       );
     }
 
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        timeLimit: Duration(seconds: 20),
-      ),
-    );
+    // Dernière position connue, si elle est récente et précise : immédiate.
+    // Sinon une nouvelle mesure (jusqu'à 20 s sans services Google).
+    final last = await Geolocator.getLastKnownPosition();
+    final fresh =
+        last != null &&
+        DateTime.now().difference(last.timestamp).inMinutes < 2 &&
+        last.accuracy <= 100;
+    final position = fresh
+        ? last
+        : await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: Duration(seconds: 20),
+            ),
+          );
 
     return resolveCoordinates(
       position.latitude,

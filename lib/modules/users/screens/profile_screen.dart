@@ -226,7 +226,12 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             TextButton.icon(
-              onPressed: users.logout,
+              onPressed: () async {
+                // Véhicules modifiés hors ligne : envoyés tant que la
+                // session est ouverte.
+                await AppScope.of(context).vehicles.syncWithServer();
+                await users.logout();
+              },
               style: TextButton.styleFrom(
                 foregroundColor: context.palette.errorText,
                 minimumSize: const Size.fromHeight(52),
@@ -1009,6 +1014,11 @@ class _IdentitySheet extends StatefulWidget {
 class _IdentitySheetState extends State<_IdentitySheet> with FormActions {
   late final _firstName = TextEditingController(text: widget.user.firstName);
   late final _lastName = TextEditingController(text: widget.user.lastName);
+
+  /// Identité vérifiée ou en cours de vérification : le nom suit la pièce.
+  bool get _nameLocked =>
+      widget.user.identity.status == IdentityStatus.verified ||
+      widget.user.identity.status == IdentityStatus.pending;
   late final _phone = TextEditingController(text: widget.user.phone);
 
   @override
@@ -1027,8 +1037,11 @@ class _IdentitySheetState extends State<_IdentitySheet> with FormActions {
     final offline = context.t.savedOffline;
     submit(() async {
       final online = await users.updateProfile({
-        'firstName': _firstName.text.trim(),
-        'lastName': _lastName.text.trim(),
+        // Nom vérifié sur la pièce d'identité : il n'est plus envoyé.
+        if (!_nameLocked) ...{
+          'firstName': _firstName.text.trim(),
+          'lastName': _lastName.text.trim(),
+        },
         'phone': _phone.text.trim(),
       });
       navigator.pop();
@@ -1054,13 +1067,24 @@ class _IdentitySheetState extends State<_IdentitySheet> with FormActions {
               label: t.firstNameLabel,
               controller: _firstName,
               validator: validators.required,
+              readOnly: _nameLocked,
+              suffixIcon: _nameLocked ? const Icon(Icons.lock_outline) : null,
             ),
             const SizedBox(height: 14),
             LabeledField(
               label: t.lastNameLabel,
               controller: _lastName,
               validator: validators.required,
+              readOnly: _nameLocked,
+              suffixIcon: _nameLocked ? const Icon(Icons.lock_outline) : null,
             ),
+            if (_nameLocked) ...[
+              const SizedBox(height: 6),
+              Text(
+                t.nameLockedNotice,
+                style: TextStyle(fontSize: 12, color: context.palette.textMuted),
+              ),
+            ],
             const SizedBox(height: 14),
             LabeledField(
               label: t.phoneLabel,

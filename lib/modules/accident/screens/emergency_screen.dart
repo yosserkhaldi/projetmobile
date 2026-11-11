@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 
 class EmergencyScreen extends StatelessWidget {
   const EmergencyScreen({super.key});
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Numéros d’urgence')),
+    appBar: AppBar(title: Text(context.t.accEmergencyNumbers)),
     body: ListView(
       padding: const EdgeInsets.all(16),
-      children: const [
+      children: [
         ListTile(
-          leading: CircleAvatar(child: Text('190')),
-          title: Text('SAMU'),
-          trailing: Icon(Icons.call),
+          leading: const CircleAvatar(child: Text('190')),
+          title: Text(context.t.accSamu),
+          trailing: const Icon(Icons.call),
         ),
         ListTile(
-          leading: CircleAvatar(child: Text('197')),
-          title: Text('Police'),
-          trailing: Icon(Icons.call),
+          leading: const CircleAvatar(child: Text('197')),
+          title: Text(context.t.accPolice),
+          trailing: const Icon(Icons.call),
         ),
         ListTile(
-          leading: CircleAvatar(child: Text('198')),
-          title: Text('Protection civile'),
-          trailing: Icon(Icons.call),
+          leading: const CircleAvatar(child: Text('198')),
+          title: Text(context.t.accCivilProtection),
+          trailing: const Icon(Icons.call),
         ),
       ],
     ),

@@ -46,6 +46,10 @@ class ApiClient {
   static const _refreshKey = 'refresh_token';
   static const _timeout = Duration(seconds: 15);
 
+  /// Envoi de photos : transfert, puis lecture par l'IA du serveur (OCR,
+  /// visage), qui dépasse souvent 15 s.
+  static const uploadTimeout = Duration(seconds: 90);
+
   final SessionStorage _storage;
   final http.Client _http;
   final String _baseUrl;
@@ -101,6 +105,7 @@ class ApiClient {
     required String filename,
     Map<String, String> fields = const {},
     String method = 'PUT',
+    Duration timeout = uploadTimeout,
   }) async {
     final response = await _execute(
       () => http.MultipartRequest(method, _uri(path))
@@ -108,6 +113,7 @@ class ApiClient {
         ..files.add(
           http.MultipartFile.fromBytes(field, bytes, filename: filename),
         ),
+      timeout: timeout,
     );
     return _decode(response);
   }
@@ -119,8 +125,9 @@ class ApiClient {
     required List<List<int>> files,
     Map<String, String> fields = const {},
     String method = 'POST',
+    Duration timeout = uploadTimeout,
   }) async {
-    final response = await _execute(() {
+    final response = await _execute(timeout: timeout, () {
       final request = http.MultipartRequest(method, _uri(path))
         ..fields.addAll(fields);
       for (final (index, bytes) in files.indexed) {

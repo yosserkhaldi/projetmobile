@@ -21,7 +21,13 @@ class AccidentDraft {
   /// envoyée.
   String? serverId;
 
-  String place = 'Position GPS détectée — Tunis';
+  /// Identifiant de la déclaration pour le serveur, créé avec le brouillon
+  /// et gardé avec lui : un nouvel envoi met à jour la même déclaration au
+  /// lieu d'en créer une seconde.
+  String clientId = 'acc-${DateTime.now().microsecondsSinceEpoch}';
+
+  /// Vide jusqu'à la position GPS ou la saisie : jamais un lieu inventé.
+  String place = '';
   double? latitude;
   double? longitude;
   double? locationAccuracy;
@@ -75,6 +81,7 @@ class AccidentDraft {
   Map<String, Object?> toDatabaseMap({required int currentStep}) => {
     'id': 1,
     'current_step': currentStep,
+    'client_id': clientId,
     'vehicle_id': vehicleId,
     'place': place,
     'latitude': latitude,
@@ -120,6 +127,7 @@ class AccidentDraft {
 
   factory AccidentDraft.fromDatabaseMap(Map<String, Object?> row) {
     final draft = AccidentDraft()
+      ..clientId = row['client_id'] as String? ?? 'acc-${DateTime.now().microsecondsSinceEpoch}'
       ..vehicleId = row['vehicle_id'] as String?
       ..place = row['place'] as String? ?? ''
       ..latitude = (row['latitude'] as num?)?.toDouble()

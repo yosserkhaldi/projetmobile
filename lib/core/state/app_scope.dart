@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/modules/constat/services/pending_seals.dart';
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/network/device_identity.dart';
 import 'package:mon_constat_digital/core/network/token_storage.dart';
@@ -75,7 +76,9 @@ class AppStores {
       claims: claims,
       messages: messages,
       users: users,
-    );
+    )
+      // Constats signés hors ligne : scellés dès que le réseau revient.
+      ..onFlushed = () => PendingSeals.retry(this);
   }
 
   late final Listenable listenable;

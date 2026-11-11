@@ -200,6 +200,25 @@ export const createClaim = (tx, user, input) => {
   })();
 };
 
+/**
+ * Constat scellé après coup (déclaré hors ligne) : rattaché au sinistre du
+ * conducteur, avec une étape dans la chronologie et un avis à l'agent.
+ */
+export async function attachConstat(tx, user, id, input) {
+  const claim = await load(tx, id, user);
+  if (claim.driverId !== user.id) throw notFound();
+  const constatId = await constatOf(tx, user.id, input.constatId);
+  if (!constatId) throw badRequest('Constat introuvable.');
+  if (claim.constatId === constatId) return reply(tx, id, user);
+  if (claim.constatId) throw conflict('Ce sinistre a déjà son constat.');
+  await tx.claim.update({ where: { id }, data: { constatId } });
+  await tx.claimEvent.create({
+    data: { claimId: id, label: 'Constat scellé et transmis (après synchronisation)' },
+  });
+  await notify(tx, claim, 'agent', `${id} : constat scellé reçu`);
+  return reply(tx, id, user);
+}
+
 export async function takeCharge(tx, user, id) {
   const claim = await load(tx, id, user);
   await move(tx, claim, Status.inReview, {

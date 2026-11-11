@@ -4,6 +4,7 @@ import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_theme.dart';
 import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/users/models/app_user.dart';
+import 'package:mon_constat_digital/modules/users/widgets/activity_panel.dart';
 
 /// Les blocs du tableau de bord, assemblés différemment sur téléphone (liste)
 /// et sur la console d'administration (grille).
@@ -200,20 +201,8 @@ DashboardSections dashboardSections(
       ),
     ),
     ai: _aiPanel(context, stats['identityAi'] as Map<String, dynamic>?),
-    accidents: DashPanel(
-      title: t.dashAccidentsTitle,
-      child: Row(
-        children: [
-          Icon(Icons.map_outlined, size: 36, color: p.textMuted),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              t.dashAccidentsPending,
-              style: TextStyle(color: p.textMuted, height: 1.4),
-            ),
-          ),
-        ],
-      ),
+    accidents: ActivityPanel(
+      activity: stats['activity'] as Map<String, dynamic>?,
     ),
   );
 }

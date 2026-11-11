@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_media_service.dart';
 import 'package:mon_constat_digital/modules/users/widgets/company_picker.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
@@ -43,6 +44,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   Future<void> _scan(_Document document) async {
     final api = AppScope.of(context).api;
     final messenger = ScaffoldMessenger.of(context);
+    final t = context.t;
     setState(() => _scanning = document);
     try {
       final photo = await _media.capturePhoto(document.fileName);
@@ -72,16 +74,16 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         SnackBar(
           content: Text(
             filled.isEmpty
-                ? 'Rien n’a pu être lu. Reprenez la photo à plat, bien éclairée.'
-                : 'Lu par l’IA : ${filled.join(', ')}. Vérifiez avant d’enregistrer.'
-                      '${estimated ? ' Fin de validité estimée à un an : vérifiez-la.' : ''}',
+                ? t.vehScanNothing
+                : t.vehScanRead(filled.join(', ')) +
+                      (estimated ? ' ${t.vehScanEstimated}' : ''),
           ),
         ),
       );
     } on ApiException catch (error) {
       messenger.showSnackBar(SnackBar(content: Text(error.message)));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Lecture impossible : $e')));
+      messenger.showSnackBar(SnackBar(content: Text(t.vehScanFailed('$e'))));
     } finally {
       if (mounted) setState(() => _scanning = null);
     }
@@ -98,7 +100,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           )
         : Icon(document.icon);
     final label = Text(
-      busy ? 'Lecture en cours… (jusqu’à 30 s)' : document.label,
+      busy ? context.t.vehScanBusy : document.labelIn(context.t),
     );
     final onPressed = _scanning != null ? null : () => _scan(document);
     final buttonKey = ValueKey(key ?? 'scan-${document.apiValue}');
@@ -122,6 +124,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
 
   /// Remplit les champs lus ; renvoie leurs noms pour le message.
   List<String> _apply(Map<String, dynamic> read) {
+    final t = context.t;
     final filled = <String>[];
     void put(TextEditingController field, Object? value, String label) {
       final text = value?.toString().trim() ?? '';
@@ -138,23 +141,23 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     }
 
     setState(() {
-      put(_plate, read['plate'], 'immatriculation');
-      put(_brand, read['brand'], 'marque');
-      put(_model, read['model'], 'modèle');
-      put(_year, read['year'], 'année');
-      put(_policy, read['policy'], 'n° de contrat');
-      put(_insuranceExpiry, displayDate(read['expiresAt']), 'fin de validité');
+      put(_plate, read['plate'], t.vehReadPlate);
+      put(_brand, read['brand'], t.vehReadBrand);
+      put(_model, read['model'], t.vehReadModel);
+      put(_year, read['year'], t.vehReadYear);
+      put(_policy, read['policy'], t.vehReadPolicy);
+      put(_insuranceExpiry, displayDate(read['expiresAt']), t.vehReadExpiry);
       final companyId = read['companyId'] as String?;
       if (companyId != null) {
         _companyId = companyId;
         _companyName = read['insurer'] as String?;
         _insurer.text = _companyName ?? '';
-        filled.add('assureur');
+        filled.add(t.vehReadInsurer);
       } else if (read['insurer'] != null) {
         // Assureur reconnu mais absent du référentiel : à choisir, ou à
         // faire ajouter par un administrateur.
         _insurer.text = read['insurer'] as String;
-        filled.add('assureur (${read['insurer']}, à choisir dans la liste)');
+        filled.add(t.vehReadInsurerToPick(read['insurer'] as String));
       }
     });
     return filled;
@@ -220,9 +223,10 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEdit ? 'Modifier le véhicule' : 'Ajouter un véhicule'),
+        title: Text(_isEdit ? t.vehEditVehicle : t.vehAddVehicle),
       ),
       body: Form(
         key: _form,
@@ -244,17 +248,17 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                         ),
                         const
                         SizedBox(width: 8),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Scanner vos documents avec l’IA',
-                            style: TextStyle(fontWeight: FontWeight.w900),
+                            t.vehScanTitle,
+                            style: const TextStyle(fontWeight: FontWeight.w900),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      'Une photo de la carte grise ou de l’attestation d’assurance : l’IA remplit le formulaire, vous vérifiez.',
+                      t.vehScanBody,
                       style: TextStyle(color: context.palette.textMuted),
                     ),
                     const SizedBox(height: 10),
@@ -268,11 +272,11 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
             ),
             const SizedBox(height: 16),
             // ── Identification ─────────────────────────────────────────────
-            _Section(label: 'Identification du véhicule'),
+            _Section(label: t.vehSectionIdentification),
             _Field(
               controller: _plate,
-              label: 'Immatriculation *',
-              hint: 'Ex : 215 تونس 4521',
+              label: t.vehPlateRequired,
+              hint: t.vehPlateHint,
               icon: Icons.confirmation_number_outlined,
               validator: _required,
               textCapitalization: TextCapitalization.characters,
@@ -283,7 +287,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 Expanded(
                   child: _Field(
                     controller: _brand,
-                    label: 'Marque *',
+                    label: t.vehBrandRequired,
                     hint: 'Peugeot',
                     icon: Icons.branding_watermark_outlined,
                     validator: _required,
@@ -293,7 +297,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 Expanded(
                   child: _Field(
                     controller: _model,
-                    label: 'Modèle *',
+                    label: t.vehModelRequired,
                     hint: '208',
                     icon: Icons.directions_car_outlined,
                     validator: _required,
@@ -307,7 +311,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 Expanded(
                   child: _Field(
                     controller: _year,
-                    label: 'Année *',
+                    label: t.vehYearRequired,
                     hint: '2021',
                     icon: Icons.calendar_today_outlined,
                     keyboardType: TextInputType.number,
@@ -322,8 +326,8 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 Expanded(
                   child: _Field(
                     controller: _color,
-                    label: 'Couleur',
-                    hint: 'Blanc',
+                    label: t.vehColor,
+                    hint: t.vehColorHint,
                     icon: Icons.palette_outlined,
                   ),
                 ),
@@ -336,14 +340,14 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
               children: [
                 Expanded(
                   child: _DropdownField<VehicleType>(
-                    label: 'Type',
+                    label: t.vehType,
                     value: _type,
-                    items: const {
-                      VehicleType.car: 'Voiture',
-                      VehicleType.moto: 'Moto',
-                      VehicleType.truck: 'Camion',
-                      VehicleType.van: 'Camionnette',
-                      VehicleType.other: 'Autre',
+                    items: {
+                      VehicleType.car: t.vehTypeCar,
+                      VehicleType.moto: t.vehTypeMoto,
+                      VehicleType.truck: t.vehTypeTruck,
+                      VehicleType.van: t.vehTypeVan,
+                      VehicleType.other: t.vehOther,
                     },
                     onChanged: (v) => setState(() => _type = v!),
                   ),
@@ -351,14 +355,14 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _DropdownField<FuelType>(
-                    label: 'Carburant',
+                    label: t.vehFuel,
                     value: _fuel,
-                    items: const {
-                      FuelType.petrol: 'Essence',
-                      FuelType.diesel: 'Diesel',
-                      FuelType.electric: 'Électrique',
-                      FuelType.hybrid: 'Hybride',
-                      FuelType.other: 'Autre',
+                    items: {
+                      FuelType.petrol: t.vehFuelPetrol,
+                      FuelType.diesel: t.vehFuelDiesel,
+                      FuelType.electric: t.vehFuelElectric,
+                      FuelType.hybrid: t.vehFuelHybrid,
+                      FuelType.other: t.vehOther,
                     },
                     onChanged: (v) => setState(() => _fuel = v!),
                   ),
@@ -368,16 +372,16 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
             const SizedBox(height: 12),
             _Field(
               controller: _mileage,
-              label: 'Kilométrage',
+              label: t.vehMileage,
               hint: '75000',
               icon: Icons.speed_outlined,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              suffix: const Text('km'),
+              suffix: Text(t.vehKmUnit),
             ),
 
             // ── Assurance ──────────────────────────────────────────────────
-            _Section(label: 'Contrat d\'assurance'),
+            _Section(label: t.vehInsuranceContract),
             CompanyPicker(
               // Recréé quand une attestation lue choisit la compagnie.
               key: ValueKey(_companyId),
@@ -395,7 +399,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
             const SizedBox(height: 12),
             _Field(
               controller: _policy,
-              label: 'N° de police *',
+              label: t.vehPolicyNumberRequired,
               hint: 'POL-884521',
               icon: Icons.article_outlined,
               validator: _required,
@@ -403,16 +407,16 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
             const SizedBox(height: 12),
             _DateField(
               controller: _insuranceExpiry,
-              label: 'Date d\'expiration assurance *',
+              label: t.vehInsuranceExpiryRequired,
               icon: Icons.event_outlined,
               validator: _dateValidator,
             ),
 
             // ── Visite technique ───────────────────────────────────────────
-            _Section(label: 'Visite technique'),
+            _Section(label: t.vehTechnicalInspection),
             _DateField(
               controller: _technicalExpiry,
-              label: 'Prochaine visite technique',
+              label: t.vehNextInspectionField,
               icon: Icons.build_outlined,
               validator: null,
             ),
@@ -432,7 +436,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                       ),
                     )
                   : const Icon(Icons.save_outlined),
-              label: Text(_isEdit ? 'Enregistrer les modifications' : 'Ajouter le véhicule'),
+              label: Text(_isEdit ? t.vehSaveChanges : t.vehAddVehicleButton),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
               ),
@@ -474,10 +478,21 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         createdAt: widget.existing?.createdAt,
       );
 
-      if (_isEdit) {
-        await store.updateVehicle(vehicle);
-      } else {
-        await store.addVehicle(vehicle);
+      try {
+        if (_isEdit) {
+          await store.updateVehicle(vehicle);
+        } else {
+          await store.addVehicle(vehicle);
+        }
+      } on ApiException catch (error) {
+        // Refus du serveur (plaque déjà enregistrée…) : le formulaire reste
+        // ouvert pour corriger.
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error.message)));
+        }
+        return;
       }
 
       if (mounted) Navigator.pop(context);
@@ -489,21 +504,21 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   // ── Validators ─────────────────────────────────────────────────────────────
 
   String? _required(String? v) =>
-      (v == null || v.trim().isEmpty) ? 'Champ obligatoire.' : null;
+      (v == null || v.trim().isEmpty) ? context.t.vehFieldRequired : null;
 
   String? _yearValidator(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Champ obligatoire.';
+    if (v == null || v.trim().isEmpty) return context.t.vehFieldRequired;
     final y = int.tryParse(v.trim());
     if (y == null || y < 1950 || y > DateTime.now().year + 1) {
-      return 'Année invalide.';
+      return context.t.vehYearInvalid;
     }
     return null;
   }
 
   String? _dateValidator(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Champ obligatoire.';
+    if (v == null || v.trim().isEmpty) return context.t.vehFieldRequired;
     final parsed = DateTime.tryParse(_parseDate(v.trim()));
-    return parsed == null ? 'Format JJ/MM/AAAA.' : null;
+    return parsed == null ? context.t.vehDateFormat : null;
   }
 
   // ── Utils ───────────────────────────────────────────────────────────────────
@@ -610,7 +625,7 @@ class _DateField extends StatelessWidget {
     controller: controller,
     decoration: InputDecoration(
       labelText: label,
-      hintText: 'JJ/MM/AAAA',
+      hintText: context.t.vehDateHint,
       prefixIcon: Icon(icon),
       suffixIcon: IconButton(
         icon: const Icon(Icons.calendar_today, size: 20),
@@ -655,9 +670,16 @@ class _DropdownField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DropdownButtonFormField<T>(
     value: value,
+    // Demi-largeur : un libellé long (« Électrique ») débordait.
+    isExpanded: true,
     decoration: InputDecoration(labelText: label),
     items: items.entries
-        .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+        .map(
+          (e) => DropdownMenuItem(
+            value: e.key,
+            child: Text(e.value, overflow: TextOverflow.ellipsis),
+          ),
+        )
         .toList(),
     onChanged: onChanged,
   );
@@ -665,10 +687,16 @@ class _DropdownField<T> extends StatelessWidget {
 
 /// Documents que l'IA sait lire pour remplir le formulaire.
 enum _Document {
-  registration('REGISTRATION', 'carte_grise', 'Photographier la carte grise', Icons.directions_car_outlined),
-  insurance('INSURANCE', 'attestation_assurance', 'Photographier l’attestation d’assurance', Icons.verified_user_outlined);
+  registration('REGISTRATION', 'carte_grise', Icons.directions_car_outlined),
+  insurance('INSURANCE', 'attestation_assurance', Icons.verified_user_outlined);
 
-  const _Document(this.apiValue, this.fileName, this.label, this.icon);
-  final String apiValue, fileName, label;
+  const _Document(this.apiValue, this.fileName, this.icon);
+  final String apiValue, fileName;
   final IconData icon;
+
+  /// Libellé du bouton, dans la langue [t].
+  String labelIn(AppLocalizations t) => switch (this) {
+    _Document.registration => t.vehScanRegistration,
+    _Document.insurance => t.vehScanInsurance,
+  };
 }

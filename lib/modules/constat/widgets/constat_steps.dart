@@ -6,12 +6,13 @@ import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_media_service.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/accident/services/driving_license_ocr_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_review.dart';
-import 'package:mon_constat_digital/modules/constat/screens/guest_qr_screen.dart';
+import 'package:mon_constat_digital/modules/claims/l10n/claims_text.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/signature_box.dart';
 import 'package:mon_constat_digital/modules/users/widgets/company_picker.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
@@ -42,10 +43,8 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
         color: context.palette.primaryTint,
         child: ListTile(
           leading: Icon(Icons.screen_lock_portrait),
-          title: Text('Informations du conducteur B'),
-          subtitle: Text(
-            'Données nécessaires au constat, isolées de votre profil.',
-          ),
+          title: Text(context.t.cstDriverBTitle),
+          subtitle: Text(context.t.cstDriverBSubtitle),
         ),
       ),
       const SizedBox(height: 10),
@@ -65,7 +64,7 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Scanner le permis avec l’IA',
+                      context.t.cstScanLicenseAi,
                       style: TextStyle(fontWeight: FontWeight.w900),
                     ),
                   ),
@@ -73,7 +72,7 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
               ),
               const SizedBox(height: 5),
               Text(
-                'La photo est analysée localement. Vérifiez toujours les données détectées.',
+                context.t.cstScanLicenseHint,
                 style: TextStyle(color: context.palette.textMuted),
               ),
               const SizedBox(height: 10),
@@ -88,7 +87,9 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
                         )
                       : const Icon(Icons.camera_alt_outlined),
                   label: Text(
-                    _scanning ? 'Analyse en cours…' : 'Photographier le permis',
+                    _scanning
+                        ? context.t.cstScanning
+                        : context.t.cstTakeLicensePhoto,
                   ),
                 ),
               ),
@@ -99,7 +100,7 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       const SizedBox(height: 12),
       _DriverField(
         initialValue: widget.draft.driverBName,
-        label: 'Nom complet *',
+        label: context.t.cstFullNameRequired,
         icon: Icons.person_outline,
         onChanged: (value) {
           widget.draft.driverBName = value;
@@ -109,7 +110,7 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       const SizedBox(height: 12),
       _DriverField(
         initialValue: widget.draft.driverBPermit,
-        label: 'Numéro de permis',
+        label: context.t.cstLicenseNumber,
         icon: Icons.badge_outlined,
         onChanged: (value) {
           widget.draft.driverBPermit = value;
@@ -120,7 +121,7 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       DateField(
         key: const ValueKey('driver-b-permit-expiry'),
         value: widget.draft.driverBPermitExpiry,
-        label: 'Date de validité du permis',
+        label: context.t.cstLicenseExpiry,
         onChanged: (value) {
           widget.draft.driverBPermitExpiry = value;
           widget.onChanged();
@@ -130,7 +131,7 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       const SizedBox(height: 12),
       _DriverField(
         initialValue: widget.draft.driverBPlate,
-        label: 'Immatriculation *',
+        label: context.t.cstPlateRequired,
         icon: Icons.directions_car_outlined,
         capitalization: TextCapitalization.characters,
         onChanged: (value) {
@@ -140,7 +141,7 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       ),
       const SizedBox(height: 18),
       Text(
-        'ASSURANCE',
+        context.t.cstInsuranceSection,
         style: TextStyle(
           color: context.palette.textMuted,
           fontSize: 12,
@@ -166,27 +167,13 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       const SizedBox(height: 12),
       _DriverField(
         initialValue: widget.draft.driverBPolicy,
-        label: 'N° de police / attestation d’assurance',
+        label: context.t.cstPolicyNumber,
         icon: Icons.verified_user_outlined,
         capitalization: TextCapitalization.characters,
         onChanged: (value) {
           widget.draft.driverBPolicy = value;
           widget.onChanged();
         },
-      ),
-      const SizedBox(height: 16),
-      SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => GuestQrScreen(draft: widget.draft),
-            ),
-          ),
-          icon: const Icon(Icons.qr_code_2),
-          label: const Text('Partager par QR code avec le conducteur B'),
-        ),
       ),
     ],
   );
@@ -199,9 +186,7 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
       final data = await _read(path);
       if (data == null || !mounted) return;
       if (data.rawText.isEmpty) {
-        _message(
-          'Aucun texte détecté. Reprenez la photo avec plus de lumière.',
-        );
+        _message(context.t.cstNoTextDetected);
         return;
       }
       final confirmed = await showDialog<DrivingLicenseData>(
@@ -215,10 +200,10 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
         ..driverBPermitExpiry = confirmed.expiryDate;
       widget.onChanged();
       setState(() {});
-      _message('Permis analysé. Vérifiez les champs avant de continuer.');
+      _message(context.t.cstLicenseScanned);
     } catch (_) {
       if (mounted) {
-        _message('Analyse impossible. Vérifiez la photo et réessayez.');
+        _message(context.t.cstScanFailed);
       }
     } finally {
       if (mounted) setState(() => _scanning = false);
@@ -296,35 +281,37 @@ class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Vérifier les données détectées'),
+    title: Text(context.t.cstReviewDetectedData),
     content: SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'L’OCR peut faire des erreurs. Corrigez les champs avant confirmation.',
+            context.t.cstOcrWarning,
             style: TextStyle(color: context.palette.textMuted),
           ),
           const SizedBox(height: 14),
           TextField(
             controller: _name,
-            decoration: const InputDecoration(labelText: 'Nom complet'),
+            decoration: InputDecoration(labelText: context.t.cstFullName),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _number,
-            decoration: const InputDecoration(labelText: 'Numéro du permis'),
+            decoration: InputDecoration(
+              labelText: context.t.cstLicenseNumberDialog,
+            ),
           ),
           const SizedBox(height: 10),
           DateField(
             value: _expiry,
-            label: 'Date de validité',
+            label: context.t.cstExpiryDate,
             onChanged: (value) => setState(() => _expiry = value),
           ),
           const SizedBox(height: 12),
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
-            title: const Text('Texte reconnu par ML Kit'),
+            title: Text(context.t.cstRecognizedText),
             children: [
               SelectableText(
                 widget.data.rawText,
@@ -341,7 +328,7 @@ class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Annuler'),
+        child: Text(context.t.cstCancel),
       ),
       FilledButton(
         onPressed: () => Navigator.pop(
@@ -353,7 +340,7 @@ class _LicenseReviewDialogState extends State<_LicenseReviewDialog> {
             rawText: widget.data.rawText,
           ),
         ),
-        child: const Text('Utiliser ces données'),
+        child: Text(context.t.cstUseThisData),
       ),
     ],
   );
@@ -427,7 +414,7 @@ class DateField extends StatelessWidget {
         suffixIcon: value.isEmpty
             ? const Icon(Icons.calendar_month_outlined)
             : IconButton(
-                tooltip: 'Effacer la date',
+                tooltip: context.t.cstClearDate,
                 icon: const Icon(Icons.close),
                 onPressed: () => onChanged(''),
               ),
@@ -525,6 +512,32 @@ class CircumstancesStep extends StatelessWidget {
     '17 - N’avait pas observé un signal de priorité',
   ];
 
+  /// Libellé affiché d'une case : [choices] reste en français (valeur
+  /// enregistrée et envoyée au serveur), seul l'affichage est traduit.
+  static String _choiceLabel(AppLocalizations t, int index) {
+    final text = switch (index) {
+      0 => t.cstCircumstance1,
+      1 => t.cstCircumstance2,
+      2 => t.cstCircumstance3,
+      3 => t.cstCircumstance4,
+      4 => t.cstCircumstance5,
+      5 => t.cstCircumstance6,
+      6 => t.cstCircumstance7,
+      7 => t.cstCircumstance8,
+      8 => t.cstCircumstance9,
+      9 => t.cstCircumstance10,
+      10 => t.cstCircumstance11,
+      11 => t.cstCircumstance12,
+      12 => t.cstCircumstance13,
+      13 => t.cstCircumstance14,
+      14 => t.cstCircumstance15,
+      15 => t.cstCircumstance16,
+      16 => t.cstCircumstance17,
+      _ => choices[index].substring('${index + 1} - '.length),
+    };
+    return '${index + 1} - $text';
+  }
+
   bool _isSelected(Set<String> selected, int index, String fullLabel) {
     if (selected.contains(fullLabel)) return true;
     final prefix = '${index + 1} - ';
@@ -559,13 +572,13 @@ class CircumstancesStep extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Circonstances de l’accident (FTUSA)',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+      Text(
+        context.t.cstCircumstancesTitle,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 4),
       Text(
-        'Cochez la ou les cases utiles pour le véhicule A (bleu) et le véhicule B (ambre).',
+        context.t.cstCircumstancesHint,
         style: TextStyle(color: context.palette.textMuted),
       ),
       const SizedBox(height: 12),
@@ -579,7 +592,7 @@ class CircumstancesStep extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                'Véhicule A : ${draft.circumstancesA.length} case(s)',
+                context.t.cstBoxesA(draft.circumstancesA.length),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: context.palette.primaryText,
@@ -598,7 +611,7 @@ class CircumstancesStep extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                'Véhicule B : ${draft.circumstancesB.length} case(s)',
+                context.t.cstBoxesB(draft.circumstancesB.length),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: context.palette.warningText,
@@ -618,9 +631,9 @@ class CircumstancesStep extends StatelessWidget {
             Container(
               color: context.palette.hero,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-              child: const Row(
+              child: Row(
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     width: 42,
                     child: Text(
                       'A',
@@ -633,16 +646,16 @@ class CircumstancesStep extends StatelessWidget {
                   ),
                   Expanded(
                     child: Text(
-                      '12. Circonstances',
+                      context.t.cstCircumstancesHeader,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
                         fontSize: 13,
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 42,
                     child: Text(
                       'B',
@@ -680,7 +693,7 @@ class CircumstancesStep extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(
-                          choices[i],
+                          _choiceLabel(context.t, i),
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -713,8 +726,8 @@ class CircumstancesStep extends StatelessWidget {
           draft.observations = value;
           onChanged();
         },
-        decoration: const InputDecoration(
-          labelText: 'Observations complémentaires',
+        decoration: InputDecoration(
+          labelText: context.t.cstObservations,
           alignLabelWithHint: true,
         ),
       ),
@@ -731,15 +744,15 @@ class SketchStep extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Croquis et point de choc',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+      Text(
+        context.t.cstSketchTitle,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 12),
       DrawingField(
         strokes: draft.sketchStrokes,
-        title: 'Croquis de l’accident',
-        hint: 'Dessinez les voies, les véhicules et leur direction',
+        title: context.t.cstSketchFieldTitle,
+        hint: context.t.cstSketchHint,
         icon: Icons.draw_outlined,
         onChanged: () {
           draft.sketchConfirmed = draft.sketchStrokes.isNotEmpty;
@@ -747,18 +760,19 @@ class SketchStep extends StatelessWidget {
         },
       ),
       const SizedBox(height: 18),
-      const Text(
-        'Zone de choc sur votre véhicule',
-        style: TextStyle(fontWeight: FontWeight.w800),
+      Text(
+        context.t.cstImpactZoneTitle,
+        style: const TextStyle(fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 10),
       Wrap(
         spacing: 8,
         runSpacing: 8,
+        // Valeurs enregistrées en français ; seul l'affichage est traduit.
         children: ['Avant', 'Arrière', 'Côté gauche', 'Côté droit']
             .map(
               (zone) => FilterChip(
-                label: Text(zone),
+                label: Text(context.t.claimValue(zone)),
                 selected: draft.impactZones.contains(zone),
                 selectedColor: context.palette.primaryTint,
                 checkmarkColor: context.palette.primaryText,
@@ -790,10 +804,10 @@ class SignatureStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      const Text('Relisez les informations puis signez dans les deux zones.'),
+      Text(context.t.cstSignInstructions),
       const SizedBox(height: 16),
       SignatureBox(
-        'Signature conducteur A',
+        context.t.cstSignatureA,
         strokes: draft.driverASignature,
         onChanged: () {
           draft.driverASigned = draft.driverASignature.isNotEmpty;
@@ -802,7 +816,7 @@ class SignatureStep extends StatelessWidget {
       ),
       const SizedBox(height: 14),
       SignatureBox(
-        'Signature conducteur B',
+        context.t.cstSignatureB,
         strokes: draft.driverBSignature,
         onChanged: () {
           draft.driverBSigned = draft.driverBSignature.isNotEmpty;
@@ -812,13 +826,11 @@ class SignatureStep extends StatelessWidget {
       const SizedBox(height: 14),
       AccidentReview(draft: draft, driverA: driverA),
       const SizedBox(height: 14),
-      const Card(
+      Card(
         child: ListTile(
-          leading: Icon(Icons.lock),
-          title: Text('Verrouillage SHA-256'),
-          subtitle: Text(
-            'Le constat sera rendu infalsifiable après la double signature.',
-          ),
+          leading: const Icon(Icons.lock),
+          title: Text(context.t.cstShaLock),
+          subtitle: Text(context.t.cstShaLockHint),
         ),
       ),
     ],

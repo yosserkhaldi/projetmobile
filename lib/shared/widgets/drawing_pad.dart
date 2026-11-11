@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:flutter/services.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 
 
 class DrawingPad extends StatefulWidget {
@@ -25,13 +26,15 @@ class DrawingPreview extends StatelessWidget {
   const DrawingPreview({
     required this.strokes,
     this.height = 110,
-    this.emptyLabel = 'Non renseigné',
+    this.emptyLabel,
     super.key,
   });
 
   final List<List<Map<String, double>>> strokes;
   final double height;
-  final String emptyLabel;
+
+  /// Texte du cadre vide ; par défaut « Non renseigné » dans la langue choisie.
+  final String? emptyLabel;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -49,7 +52,7 @@ class DrawingPreview extends StatelessWidget {
         child: strokes.isEmpty
             ? Center(
                 child: Text(
-                  emptyLabel,
+                  emptyLabel ?? context.t.cstNotProvided,
                   style: TextStyle(color: context.palette.textMuted),
                 ),
               )
@@ -136,7 +139,7 @@ class _DrawingPadState extends State<DrawingPad> {
               widget.onChanged();
             },
             icon: const Icon(Icons.delete_outline),
-            label: const Text('Effacer'),
+            label: Text(context.t.cstClear),
           ),
         ),
     ],
@@ -234,7 +237,7 @@ class DrawingField extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Touchez pour dessiner en plein écran',
+                            context.t.cstTapToDrawFullscreen,
                             style: TextStyle(
                               color: context.palette.primaryText,
                               fontSize: 12.5,
@@ -258,12 +261,12 @@ class DrawingField extends StatelessWidget {
                   onChanged();
                 },
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Effacer'),
+                label: Text(context.t.cstClear),
               ),
               TextButton.icon(
                 onPressed: () => _open(context),
                 icon: const Icon(Icons.edit_outlined),
-                label: const Text('Modifier'),
+                label: Text(context.t.cstEdit),
               ),
             ],
           ),
@@ -316,21 +319,21 @@ class _FullscreenDrawingPageState extends State<FullscreenDrawingPage> {
     backgroundColor: context.palette.surfaceAlt,
     appBar: AppBar(
       leading: IconButton(
-        tooltip: 'Fermer sans enregistrer',
+        tooltip: context.t.cstCloseWithoutSaving,
         icon: const Icon(Icons.close),
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(widget.title),
       actions: [
         IconButton(
-          tooltip: 'Annuler le dernier trait',
+          tooltip: context.t.cstUndoLastStroke,
           onPressed: _strokes.isEmpty
               ? null
               : () => setState(_strokes.removeLast),
           icon: const Icon(Icons.undo),
         ),
         IconButton(
-          tooltip: 'Tout effacer',
+          tooltip: context.t.cstClearAll,
           onPressed: _strokes.isEmpty ? null : () => setState(_strokes.clear),
           icon: const Icon(Icons.delete_outline),
         ),
@@ -340,7 +343,7 @@ class _FullscreenDrawingPageState extends State<FullscreenDrawingPage> {
             key: const ValueKey('drawing-done'),
             onPressed: () => Navigator.pop(context, _strokes),
             icon: const Icon(Icons.check),
-            label: const Text('Terminé'),
+            label: Text(context.t.cstDone),
           ),
         ),
       ],

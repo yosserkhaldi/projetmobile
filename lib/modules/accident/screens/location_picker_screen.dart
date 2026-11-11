@@ -4,6 +4,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_dragmarker/flutter_map_dragmarker.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/accident/l10n/accident_text.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_location_service.dart';
 
 class LocationPickerScreen extends StatefulWidget {
@@ -55,7 +57,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Lieu de l’accident')),
+    appBar: AppBar(title: Text(context.t.accAccidentPlace)),
     body: SafeArea(
       child: Column(
         children: [
@@ -66,10 +68,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => _search(),
               decoration: InputDecoration(
-                hintText: 'Rechercher une adresse',
+                hintText: context.t.accSearchAddress,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: IconButton(
-                  tooltip: 'Rechercher',
+                  tooltip: context.t.accSearch,
                   onPressed: _loading ? null : _search,
                   icon: const Icon(Icons.arrow_forward),
                 ),
@@ -91,7 +93,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                       urlTemplate:
                           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName:
-                          'com.example.flutter_workshops_5sae1_2627',
+                          'tn.monconstat.app',
                     ),
                     DragMarkers(
                       markers: [
@@ -118,7 +120,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   bottom: 12,
                   child: FloatingActionButton.small(
                     heroTag: 'gps-location',
-                    tooltip: 'Ma position',
+                    tooltip: context.t.accMyPosition,
                     onPressed: _loading ? null : _useMyLocation,
                     child: const Icon(Icons.my_location),
                   ),
@@ -153,7 +155,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'LIEU SÉLECTIONNÉ',
+                  context.t.accSelectedPlace,
                   style: TextStyle(
                     color: context.palette.textMuted,
                     fontSize: 11,
@@ -169,8 +171,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 Text(
-                  '${_point.latitude.toStringAsFixed(6)}, '
-                  '${_point.longitude.toStringAsFixed(6)}',
+                  ltr(
+                    '${_point.latitude.toStringAsFixed(6)}, '
+                    '${_point.longitude.toStringAsFixed(6)}',
+                  ),
                   style: TextStyle(color: context.palette.textMuted),
                 ),
                 if (_error != null) ...[
@@ -186,7 +190,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   child: FilledButton.icon(
                     onPressed: _loading ? null : _confirm,
                     icon: const Icon(Icons.check),
-                    label: const Text('Confirmer ce lieu'),
+                    label: Text(context.t.accConfirmPlace),
                   ),
                 ),
               ],
@@ -207,7 +211,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   Future<void> _search() async {
     final query = _searchController.text.trim();
     if (query.length < 3) {
-      setState(() => _error = 'Saisissez au moins 3 caractères.');
+      setState(() => _error = context.t.accMinChars);
       return;
     }
     await _run(() async {
@@ -238,10 +242,12 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     try {
       await operation();
     } on AccidentLocationException catch (error) {
-      if (mounted) setState(() => _error = error.message);
+      if (mounted) {
+        setState(() => _error = context.t.accidentLocationError(error.message));
+      }
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'Impossible de récupérer ce lieu.');
+        setState(() => _error = context.t.accPlaceFetchFailed);
       }
     } finally {
       if (mounted) setState(() => _loading = false);

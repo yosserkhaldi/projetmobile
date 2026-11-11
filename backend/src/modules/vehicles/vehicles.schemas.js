@@ -59,9 +59,9 @@ export const listVehiclesSchema = z.object({
   page: z
     .string()
     .optional()
-    .transform((v) => (v ? Math.max(1, parseInt(v, 10)) : 1)),
+    .transform((v) => Math.max(1, parseInt(v ?? '1', 10) || 1)),
   pageSize: z
     .string()
     .optional()
-    .transform((v) => Math.min(50, Math.max(1, parseInt(v ?? '20', 10)))),
+    .transform((v) => Math.min(50, Math.max(1, parseInt(v ?? '20', 10) || 20))),
 });

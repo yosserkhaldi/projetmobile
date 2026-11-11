@@ -2489,4 +2489,1431 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get claimsTimelineCollapse => 'عرض أقل';
+
+  @override
+  String get dashClaimsTotal => 'الملفات';
+
+  @override
+  String get dashClaimsOpen => 'قيد المعالجة';
+
+  @override
+  String get dashClaimsClosed => 'مغلقة';
+
+  @override
+  String get dashAvgClose => 'متوسط مدة الإغلاق';
+
+  @override
+  String dashDays(String days) {
+    return '$days ي';
+  }
+
+  @override
+  String dashIndemnities(String amount) {
+    return 'التعويضات المدفوعة: $amount د.ت';
+  }
+
+  @override
+  String get dashByStatus => 'حسب الحالة';
+
+  @override
+  String get dashBySeverity => 'حسب الخطورة';
+
+  @override
+  String get dashByCompany => 'حسب شركة التأمين';
+
+  @override
+  String get dashByMonth => 'الملفات خلال الأشهر الستة الأخيرة';
+
+  @override
+  String dashHotspots(int count) {
+    return 'أماكن الحوادث المصرّح بها ($count)';
+  }
+
+  @override
+  String get dashNoPoints => 'لا يوجد تصريح محدد الموقع بعد.';
+
+  @override
+  String get dashNoCompany => 'دون شركة';
+
+  @override
+  String get vehAddVehicle => 'إضافة مركبة';
+
+  @override
+  String get vehEditVehicle => 'تعديل المركبة';
+
+  @override
+  String get vehEdit => 'تعديل';
+
+  @override
+  String get vehArchive => 'أرشفة';
+
+  @override
+  String get vehUnarchive => 'إلغاء الأرشفة';
+
+  @override
+  String get vehDelete => 'حذف';
+
+  @override
+  String get vehCancel => 'إلغاء';
+
+  @override
+  String get vehInsurance => 'التأمين';
+
+  @override
+  String get vehInsuranceContract => 'عقد التأمين';
+
+  @override
+  String get vehTechnicalInspection => 'الفحص الفني';
+
+  @override
+  String get vehMileage => 'عدد الكيلومترات';
+
+  @override
+  String vehMileageValue(int thousands) {
+    return '$thousands 000 كم';
+  }
+
+  @override
+  String get vehType => 'النوع';
+
+  @override
+  String get vehFuel => 'الوقود';
+
+  @override
+  String get vehYear => 'السنة';
+
+  @override
+  String get vehColor => 'اللون';
+
+  @override
+  String get vehPolicyNumber => 'رقم الوثيقة';
+
+  @override
+  String get vehExpiredBadge => 'منتهي';
+
+  @override
+  String get vehStatusOk => 'ساري';
+
+  @override
+  String vehDaysShort(int days) {
+    return '$days يوم';
+  }
+
+  @override
+  String vehDaysOverdue(int days) {
+    return '$days يوم\nتأخير';
+  }
+
+  @override
+  String get vehDateHint => 'يوم/شهر/سنة';
+
+  @override
+  String get vehTypeCar => 'سيارة';
+
+  @override
+  String get vehTypeMoto => 'دراجة نارية';
+
+  @override
+  String get vehTypeTruck => 'شاحنة';
+
+  @override
+  String get vehTypeVan => 'شاحنة صغيرة';
+
+  @override
+  String get vehOther => 'أخرى';
+
+  @override
+  String get vehFuelPetrol => 'بنزين';
+
+  @override
+  String get vehFuelDiesel => 'ديزل';
+
+  @override
+  String get vehFuelElectric => 'كهربائي';
+
+  @override
+  String get vehFuelHybrid => 'هجين';
+
+  @override
+  String get vehAlertsTitle => 'تنبيهات انتهاء الصلاحية';
+
+  @override
+  String get vehAlertsEmptyTitle => 'لا توجد تنبيهات نشطة';
+
+  @override
+  String get vehAlertsEmptyBody => 'جميع عقودك وفحوصاتك الفنية\nمحدَّثة.';
+
+  @override
+  String get vehAlertsGroupExpired => 'منتهية';
+
+  @override
+  String get vehAlertsGroupExpiring => 'تنتهي قريبًا';
+
+  @override
+  String get vehAlertsSummaryExpired => 'منتهية';
+
+  @override
+  String get vehAlertsSummaryNear => 'قريبة';
+
+  @override
+  String get vehAlertsSummaryTotal => 'المجموع';
+
+  @override
+  String get vehAlertInsuranceExpired => 'التأمين منتهي الصلاحية';
+
+  @override
+  String vehAlertInsuranceExpiring(int days) {
+    return 'ينتهي التأمين خلال $days يوم';
+  }
+
+  @override
+  String get vehAlertTechnicalExpired => 'الفحص الفني منتهي الصلاحية';
+
+  @override
+  String vehAlertTechnicalExpiring(int days) {
+    return 'الفحص الفني خلال $days يوم';
+  }
+
+  @override
+  String get vehListTitle => 'المركبات والعقود';
+
+  @override
+  String vehListActiveCount(int count) {
+    return 'المركبات النشطة: $count';
+  }
+
+  @override
+  String vehTabActive(int count) {
+    return 'النشطة ($count)';
+  }
+
+  @override
+  String vehTabArchived(int count) {
+    return 'المؤرشفة ($count)';
+  }
+
+  @override
+  String get vehEmptyArchived => 'لا توجد مركبات مؤرشفة';
+
+  @override
+  String get vehEmptyActive => 'أضف مركبتك الأولى';
+
+  @override
+  String vehPolicyValue(String policy) {
+    return 'الوثيقة $policy';
+  }
+
+  @override
+  String get vehAiAnalysis => 'تحليل بالذكاء الاصطناعي';
+
+  @override
+  String get vehDeleteTitle => 'حذف هذه المركبة؟';
+
+  @override
+  String vehDeleteBody(String name, String plate) {
+    return 'سيتم حذف $name ($plate) نهائيًا.';
+  }
+
+  @override
+  String get vehSectionInfo => 'المعلومات';
+
+  @override
+  String get vehRenew => 'تجديد';
+
+  @override
+  String get vehInsurer => 'شركة التأمين';
+
+  @override
+  String get vehExpiry => 'تاريخ الانتهاء';
+
+  @override
+  String get vehPremiumTitle => 'قسط التأمين المقدَّر (ذكاء اصطناعي)';
+
+  @override
+  String vehPremiumValue(String amount) {
+    return '$amount د.ت / سنويًا';
+  }
+
+  @override
+  String get vehNextInspection => 'الفحص القادم';
+
+  @override
+  String get vehClaimsHistory => 'سجل الحوادث';
+
+  @override
+  String get vehClaimsDeclared => 'الحوادث المصرَّح بها';
+
+  @override
+  String get vehRenewTitle => 'تجديد عقد التأمين';
+
+  @override
+  String get vehExpiryDate => 'تاريخ الانتهاء';
+
+  @override
+  String get vehRenewInvalid =>
+      'تاريخ غير صالح (يوم/شهر/سنة) أو رقم الوثيقة مفقود.';
+
+  @override
+  String get vehRenewSuccess => 'تم تجديد عقد التأمين بنجاح!';
+
+  @override
+  String get vehRiskTitle => 'تحليل المخاطر بالذكاء الاصطناعي';
+
+  @override
+  String get vehRiskSubtitle => 'محسوب من بياناتك المحلية';
+
+  @override
+  String get vehRiskFactors => 'العوامل المكتشفة';
+
+  @override
+  String get vehRecommendations => 'التوصيات';
+
+  @override
+  String get vehPhotoTitle => 'صورة المركبة';
+
+  @override
+  String get vehAddPhoto => 'إضافة صورة';
+
+  @override
+  String get vehTakePhoto => 'التقاط صورة';
+
+  @override
+  String get vehPickFromGallery => 'اختيار من المعرض';
+
+  @override
+  String get vehRiskVeryOld => 'مركبة قديمة جدًا';
+
+  @override
+  String get vehRiskVeryOldDesc => 'أكثر من 20 سنة — خطر ميكانيكي مرتفع.';
+
+  @override
+  String get vehRiskOld => 'مركبة قديمة';
+
+  @override
+  String vehRiskOldDesc(int age) {
+    return '$age سنة — يُنصح بالصيانة الدورية.';
+  }
+
+  @override
+  String get vehRiskMidAge => 'مركبة متوسطة العمر';
+
+  @override
+  String vehRiskMidAgeDesc(int age) {
+    return '$age سنة — تحقَّق من البطاقة الرمادية.';
+  }
+
+  @override
+  String vehRiskInsExpiredDesc(int days) {
+    return 'منتهية منذ $days يوم — القيادة غير قانونية.';
+  }
+
+  @override
+  String get vehRiskInsCritical => 'التأمين في وضع حرج';
+
+  @override
+  String vehRiskInsCriticalDesc(int days) {
+    return 'ينتهي خلال $days يوم — جدِّد بشكل عاجل.';
+  }
+
+  @override
+  String get vehRiskInsSoon => 'التأمين على وشك الانتهاء';
+
+  @override
+  String vehRiskExpiresIn(int days) {
+    return 'ينتهي خلال $days يوم.';
+  }
+
+  @override
+  String get vehRiskTechExpired => 'الفحص الفني منتهي الصلاحية';
+
+  @override
+  String vehRiskExpiredSince(int days) {
+    return 'منتهٍ منذ $days يوم.';
+  }
+
+  @override
+  String get vehRiskTechImminent => 'الفحص الفني وشيك';
+
+  @override
+  String vehRiskInDays(int days) {
+    return 'خلال $days يوم.';
+  }
+
+  @override
+  String get vehRiskTechNear => 'الفحص الفني قريب';
+
+  @override
+  String get vehRiskTechUnknown => 'تاريخ الفحص الفني غير معروف';
+
+  @override
+  String get vehRiskTechUnknownDesc => 'أضف التاريخ لمتابعة دقيقة.';
+
+  @override
+  String get vehRiskKmVeryHigh => 'عدد كيلومترات مرتفع جدًا';
+
+  @override
+  String vehRiskKmVeryHighDesc(int thousands) {
+    return '$thousands 000 كم — تآكل كبير.';
+  }
+
+  @override
+  String get vehRiskKmHigh => 'عدد كيلومترات مرتفع';
+
+  @override
+  String get vehRiskKmModerate => 'عدد كيلومترات متوسط';
+
+  @override
+  String vehRiskKmDesc(int thousands) {
+    return '$thousands 000 كم.';
+  }
+
+  @override
+  String get vehRiskClaimsHigh => 'سجل حوادث مرتفع';
+
+  @override
+  String vehRiskClaimsHighDesc(int count) {
+    return 'عدد الحوادث المسجَّلة: $count.';
+  }
+
+  @override
+  String get vehRiskClaimsMulti => 'حوادث متعددة';
+
+  @override
+  String get vehRiskClaimsMultiDesc => 'حادثان مسجَّلان.';
+
+  @override
+  String get vehRiskClaimsOne => 'حادث سابق';
+
+  @override
+  String get vehRiskClaimsOneDesc => 'حادث واحد مسجَّل.';
+
+  @override
+  String get vehRiskOldDiesel => 'محرك ديزل قديم';
+
+  @override
+  String get vehRiskOldDieselDesc => 'خطر الجسيمات الدقيقة وتآكل أكبر للمحرك.';
+
+  @override
+  String get vehRecRenewNow => 'جدِّد تأمينك فورًا.';
+
+  @override
+  String get vehRecSeeInsurer =>
+      'حدِّد موعدًا مع شركة التأمين خلال الأيام القادمة.';
+
+  @override
+  String get vehRecTechNow => 'أجرِ الفحص الفني في أقرب وقت.';
+
+  @override
+  String get vehRecTechSchedule => 'حدِّد موعد الفحص الفني قريبًا.';
+
+  @override
+  String get vehRecTechAddDate => 'أضف تاريخ الفحص الفني القادم.';
+
+  @override
+  String get vehRecFullCheck => 'قم بفحص شامل لدى ميكانيكي معتمد.';
+
+  @override
+  String get vehRecBeltBrakes => 'افحص حزام التوقيت وفحمات الفرامل.';
+
+  @override
+  String get vehRecDefensive => 'اعتمد القيادة الوقائية للحدِّ من الحوادث.';
+
+  @override
+  String get vehRecAddMileage => 'أدخل عدد الكيلومترات لتحليل أدق.';
+
+  @override
+  String get vehRecAllGood => 'مركبتك في وضع سليم. واصل الصيانة الدورية.';
+
+  @override
+  String get vehScanNothing =>
+      'تعذَّرت قراءة أي شيء. أعد التقاط الصورة والمستند مسطَّح وفي إضاءة جيدة.';
+
+  @override
+  String vehScanRead(String fields) {
+    return 'قرأها الذكاء الاصطناعي: $fields. تحقَّق قبل الحفظ.';
+  }
+
+  @override
+  String get vehScanEstimated =>
+      'تاريخ انتهاء الصلاحية مقدَّر بسنة واحدة: تحقَّق منه.';
+
+  @override
+  String vehScanFailed(String error) {
+    return 'تعذَّرت القراءة: $error';
+  }
+
+  @override
+  String get vehScanBusy => 'جارٍ القراءة… (حتى 30 ث)';
+
+  @override
+  String get vehScanRegistration => 'تصوير البطاقة الرمادية';
+
+  @override
+  String get vehScanInsurance => 'تصوير شهادة التأمين';
+
+  @override
+  String get vehReadPlate => 'رقم التسجيل';
+
+  @override
+  String get vehReadBrand => 'العلامة التجارية';
+
+  @override
+  String get vehReadModel => 'الطراز';
+
+  @override
+  String get vehReadYear => 'السنة';
+
+  @override
+  String get vehReadPolicy => 'رقم العقد';
+
+  @override
+  String get vehReadExpiry => 'تاريخ انتهاء الصلاحية';
+
+  @override
+  String get vehReadInsurer => 'شركة التأمين';
+
+  @override
+  String vehReadInsurerToPick(String insurer) {
+    return 'شركة التأمين ($insurer، اخترها من القائمة)';
+  }
+
+  @override
+  String get vehScanTitle => 'امسح مستنداتك بالذكاء الاصطناعي';
+
+  @override
+  String get vehScanBody =>
+      'صورة للبطاقة الرمادية أو لشهادة التأمين: يملأ الذكاء الاصطناعي النموذج وأنت تتحقَّق.';
+
+  @override
+  String get vehSectionIdentification => 'بيانات المركبة';
+
+  @override
+  String get vehPlateRequired => 'رقم التسجيل *';
+
+  @override
+  String get vehPlateHint => 'مثال: 215 تونس 4521';
+
+  @override
+  String get vehBrandRequired => 'العلامة التجارية *';
+
+  @override
+  String get vehModelRequired => 'الطراز *';
+
+  @override
+  String get vehYearRequired => 'السنة *';
+
+  @override
+  String get vehColorHint => 'أبيض';
+
+  @override
+  String get vehKmUnit => 'كم';
+
+  @override
+  String get vehPolicyNumberRequired => 'رقم الوثيقة *';
+
+  @override
+  String get vehInsuranceExpiryRequired => 'تاريخ انتهاء التأمين *';
+
+  @override
+  String get vehNextInspectionField => 'الفحص الفني القادم';
+
+  @override
+  String get vehSaveChanges => 'حفظ التعديلات';
+
+  @override
+  String get vehAddVehicleButton => 'إضافة المركبة';
+
+  @override
+  String get vehFieldRequired => 'حقل إلزامي.';
+
+  @override
+  String get vehYearInvalid => 'سنة غير صالحة.';
+
+  @override
+  String get vehDateFormat => 'الصيغة: يوم/شهر/سنة.';
+
+  @override
+  String get accStepContext => 'السياق';
+
+  @override
+  String get accStepContextHint => 'المكان والوقت والظروف';
+
+  @override
+  String get accStepDescription => 'الوصف';
+
+  @override
+  String get accStepDescriptionHint => 'النوع والخطورة والشهود';
+
+  @override
+  String get accStepEvidence => 'الأدلة';
+
+  @override
+  String get accStepEvidenceHint => 'صور وفيديو وتسجيل صوتي';
+
+  @override
+  String get accStepDriverBHint => 'الهوية والتأمين';
+
+  @override
+  String get accStepCircumstances => 'ملابسات الحادث';
+
+  @override
+  String get accStepCircumstancesHint => 'الخانات والملاحظات';
+
+  @override
+  String get accStepSketch => 'الرسم التخطيطي';
+
+  @override
+  String get accStepSketchHint => 'نقطة الاصطدام والرسم';
+
+  @override
+  String get accStepSignatures => 'التوقيعات';
+
+  @override
+  String get accStepSignaturesHint => 'المصادقة والإرسال';
+
+  @override
+  String accStepOf(int step, int total) {
+    return 'الخطوة $step من $total';
+  }
+
+  @override
+  String accMinutesLeft(int minutes) {
+    return '~$minutes د';
+  }
+
+  @override
+  String get accDriverA => 'السائق A';
+
+  @override
+  String get accDriverB => 'السائق B';
+
+  @override
+  String get accNewDeclaration => 'تصريح جديد';
+
+  @override
+  String get accDraft => 'مسودة';
+
+  @override
+  String get accFinishDriverBFirst => 'أكمل أولًا بيانات السائق B.';
+
+  @override
+  String get accContinue => 'متابعة';
+
+  @override
+  String get accContinueToReport => 'المتابعة إلى المحضر';
+
+  @override
+  String get accIAmDriverB => 'أنا السائق B';
+
+  @override
+  String get accFinishAndReturnPhone => 'إنهاء وإرجاع الهاتف';
+
+  @override
+  String get accSignAndSend => 'التوقيع والإرسال';
+
+  @override
+  String get accIAmDriverA => 'أنا السائق A';
+
+  @override
+  String get accBack => 'رجوع';
+
+  @override
+  String get accDraftSaved => 'تم حفظ المسودة على هذا الجهاز';
+
+  @override
+  String get accThanks => 'شكرًا!';
+
+  @override
+  String get accReturnPhoneText =>
+      'أرجِع الآن الهاتف إلى السائق A. سيوقّع السائقان معًا في نهاية المحضر.';
+
+  @override
+  String get accChooseVehicleFirst => 'اختر سيارتك في الخطوة الأولى.';
+
+  @override
+  String get accSealingTitle => 'الختم التشفيري للمحضر…';
+
+  @override
+  String get accSealingHint => 'حساب بصمة SHA-256 والإرسال';
+
+  @override
+  String accSealFailed(String error) {
+    return 'تعذّر ختم المحضر: $error';
+  }
+
+  @override
+  String get accVerifyIdentityTitle => 'تحقّق من هويتك للتوقيع';
+
+  @override
+  String get accVerifyIdentityText =>
+      'المحضر يُلزم السائقَين معًا: يجب التحقق من هويتك قبل التوقيع. تبقى مسودتك محفوظة.';
+
+  @override
+  String get accLater => 'لاحقًا';
+
+  @override
+  String get accVerifyIdentity => 'التحقق من هويتي';
+
+  @override
+  String get accCheckPlace => 'تحقّق من مكان الحادث.';
+
+  @override
+  String get accWitnessPhoneInvalid => 'أضف رقمًا صالحًا للشاهد.';
+
+  @override
+  String get accMinPhotos => 'أضف صورتين على الأقل قبل المتابعة.';
+
+  @override
+  String get accDriverBIncomplete =>
+      'أكمل اسم السائق B ورقم تسجيل سيارته وتأمينه.';
+
+  @override
+  String get accCircumstanceRequired =>
+      'اختر خانة واحدة على الأقل للسيارة A أو B.';
+
+  @override
+  String get accSketchRequired => 'أكّد الرسم التخطيطي ومنطقة اصطدام.';
+
+  @override
+  String get accSignaturesRequired => 'يجب أن يوقّع السائقان على المحضر.';
+
+  @override
+  String accLocalDraftSaved(String time) {
+    return 'مسودة محلية • حُفظت على الساعة $time';
+  }
+
+  @override
+  String get accHandoverTitle => 'سلّم الهاتف إلى السائق B';
+
+  @override
+  String get accHandoverText =>
+      'يُدخل بنفسه هويته ورخصة سياقته وسيارته وتأمينه.';
+
+  @override
+  String get accHandoverHidden =>
+      'تبقى معلوماتك مخفية: العودة إلى الخطوات السابقة مقفلة أثناء إدخاله لبياناته.';
+
+  @override
+  String get accHandoverScan =>
+      'يمكنه تصوير رخصته: يملأ الذكاء الاصطناعي الخانات.';
+
+  @override
+  String get accHandoverReturn => 'في النهاية، يُرجع إليك الهاتف.';
+
+  @override
+  String get accChooseVehicle =>
+      'اختر سيارتك: شركة تأمينها هي التي تتلقى المحضر.';
+
+  @override
+  String accInsuranceExpired(String vehicle, String date) {
+    return 'انتهى عقد تأمين $vehicle بتاريخ $date. جدّده في قسم السيارات قبل التصريح.';
+  }
+
+  @override
+  String get accYourVehicle => 'سيارتك';
+
+  @override
+  String get accAddVehicleHint =>
+      'أضف سيارتك وشركة تأمينها: إليها يُرسَل المحضر.';
+
+  @override
+  String get accAddMyVehicle => 'إضافة سيارتي';
+
+  @override
+  String accContractExpiredOn(String date) {
+    return 'انتهى العقد بتاريخ $date';
+  }
+
+  @override
+  String get accInsurerMissing => 'شركة التأمين غير محددة';
+
+  @override
+  String accInsuredUntil(String insurer, String date) {
+    return '$insurer · حتى $date';
+  }
+
+  @override
+  String get accWhereWhen => 'أين ومتى؟';
+
+  @override
+  String get accWhereWhenHint => 'تحقّق من المعلومات المكتشفة تلقائيًا.';
+
+  @override
+  String get accPlaceRequired => 'أدخل مكان الحادث';
+
+  @override
+  String get accAccidentPlace => 'مكان الحادث';
+
+  @override
+  String get accChooseOnMap => 'الاختيار على الخريطة';
+
+  @override
+  String accGpsLine(String coords, int accuracy) {
+    return 'GPS $coords • الدقة ±$accuracy م';
+  }
+
+  @override
+  String get accDateTime => 'التاريخ والساعة';
+
+  @override
+  String get accWeather => 'الطقس';
+
+  @override
+  String get accRoad => 'حالة الطريق';
+
+  @override
+  String get accLight => 'الإضاءة';
+
+  @override
+  String get accPlaceConfirmed => 'تم تأكيد مكان الحادث وحفظه.';
+
+  @override
+  String get accPositionUnavailable =>
+      'الموقع غير متاح. أعد المحاولة بعد لحظة.';
+
+  @override
+  String get accPositionDetected => 'تم تحديد الموقع';
+
+  @override
+  String accUseDetectedQuestion(String place) {
+    return '$place\n\nهل تريد استعمال هذا الموقع؟';
+  }
+
+  @override
+  String get accChooseAnother => 'اختيار موقع آخر';
+
+  @override
+  String get accUsePosition => 'استعمال هذا الموقع';
+
+  @override
+  String get accAutoLocationFailed => 'تعذّر تحديد الموقع تلقائيًا.';
+
+  @override
+  String get accLocationDisabled => 'فعّل خدمة تحديد الموقع GPS في الجهاز.';
+
+  @override
+  String get accLocationDenied => 'تم رفض إذن تحديد الموقع.';
+
+  @override
+  String get accLocationDeniedForever =>
+      'اسمح بتحديد الموقع في إعدادات التطبيق.';
+
+  @override
+  String get accAddressNotFound => 'العنوان غير موجود.';
+
+  @override
+  String get accValueSunny => 'مشمس';
+
+  @override
+  String get accValueRain => 'مطر';
+
+  @override
+  String get accValueFog => 'ضباب';
+
+  @override
+  String get accValueDry => 'جافة';
+
+  @override
+  String get accValueWet => 'مبللة';
+
+  @override
+  String get accValueSlippery => 'زلقة';
+
+  @override
+  String get accValueDay => 'نهار';
+
+  @override
+  String get accValueDusk => 'غسق';
+
+  @override
+  String get accValueNightLit => 'ليل مع إنارة';
+
+  @override
+  String get accValueNightDark => 'ليل دون إنارة';
+
+  @override
+  String get accEvidenceOverview => 'نظرة شاملة';
+
+  @override
+  String get accEvidenceDamageA => 'أضرار السيارة A';
+
+  @override
+  String get accEvidenceDamageB => 'أضرار السيارة B';
+
+  @override
+  String get accEvidencePlates => 'لوحات التسجيل';
+
+  @override
+  String get accWhatHappened => 'ماذا حدث؟';
+
+  @override
+  String get accWhatHappenedHint =>
+      'تساعد هذه المعلومات على إعطاء الأولوية لملفك.';
+
+  @override
+  String get accAccidentType => 'نوع الحادث';
+
+  @override
+  String get accSeverity => 'الخطورة';
+
+  @override
+  String get accVehicles => 'السيارات';
+
+  @override
+  String get accInjured => 'الجرحى';
+
+  @override
+  String get accSecureArea => 'أمّن المكان واتصل بالنجدة';
+
+  @override
+  String get accSamu => 'الإسعاف (SAMU)';
+
+  @override
+  String get accPolice => 'الشرطة';
+
+  @override
+  String get accCivilProtection => 'الحماية المدنية';
+
+  @override
+  String accCalling(String number) {
+    return 'الاتصال بالرقم $number';
+  }
+
+  @override
+  String get accWitnessOptional => 'شاهد (اختياري)';
+
+  @override
+  String get accWitnessName => 'اسم الشاهد';
+
+  @override
+  String get accPhone => 'الهاتف';
+
+  @override
+  String get accGuidedPhotos => 'صور موجَّهة';
+
+  @override
+  String accPhotosProgress(int count) {
+    return '$count/4 لقطات مضافة • لقطتان على الأقل';
+  }
+
+  @override
+  String get accPhotoSaved => 'تم حفظ الصورة • المس لإعادة التصوير';
+
+  @override
+  String get accTapToOpenCamera => 'المس لفتح الكاميرا';
+
+  @override
+  String get accSceneVideo => 'فيديو مكان الحادث';
+
+  @override
+  String get accOpeningCamera => 'جارٍ فتح الكاميرا…';
+
+  @override
+  String get accVideoSaved => 'تم حفظ الفيديو • المس لتشغيله';
+
+  @override
+  String get accFilmScene => 'صوّر مكان الحادث • 30 ثانية كحد أقصى';
+
+  @override
+  String get accStopRecording => 'إيقاف التسجيل';
+
+  @override
+  String get accVoiceNote => 'تسجيل صوتي';
+
+  @override
+  String get accRecordingInProgress => 'جارٍ التسجيل… المس للإيقاف';
+
+  @override
+  String get accVoiceNoteSaved => 'تم حفظ التسجيل • المس للاستماع';
+
+  @override
+  String get accDescribeByVoice => 'صِف ما حدث بصوتك';
+
+  @override
+  String get accVideoSaveFailed => 'تعذّر تسجيل الفيديو.';
+
+  @override
+  String get accMicPermission =>
+      'اسمح باستعمال الميكروفون لتسجيل ملاحظة صوتية.';
+
+  @override
+  String get accMicFailed => 'تعذّر تشغيل الميكروفون.';
+
+  @override
+  String get accVideoMissing => 'لم يعد الفيديو موجودًا. يمكنك إعادة تصويره.';
+
+  @override
+  String get accVoiceNoteMissing =>
+      'لم يعد التسجيل الصوتي موجودًا. يمكنك إعادته.';
+
+  @override
+  String get accListen => 'استماع';
+
+  @override
+  String get accRedoRecording => 'إعادة التسجيل';
+
+  @override
+  String get accDelete => 'حذف';
+
+  @override
+  String get accPause => 'إيقاف مؤقت';
+
+  @override
+  String get accPlay => 'تشغيل';
+
+  @override
+  String get accSummary => 'ملخّص';
+
+  @override
+  String accSummaryCounts(int vehicles, int injured, int photos) {
+    return 'السيارات: $vehicles • الجرحى: $injured • الصور: $photos';
+  }
+
+  @override
+  String get accReportCompleted => 'اكتمل المحضر';
+
+  @override
+  String get accReviewHint => 'تحقّق من كل المعلومات قبل الإرسال.';
+
+  @override
+  String get accSectionAccident => 'الحادث';
+
+  @override
+  String get accPlace => 'المكان';
+
+  @override
+  String get accType => 'النوع';
+
+  @override
+  String get accConditions => 'الأحوال';
+
+  @override
+  String get accVehiclesInjured => 'السيارات / الجرحى';
+
+  @override
+  String accVehiclesInjuredValue(int vehicles, int injured) {
+    return 'السيارات: $vehicles • الجرحى: $injured';
+  }
+
+  @override
+  String get accWitness => 'الشاهد';
+
+  @override
+  String get accSectionDriverA => 'السائق والسيارة A';
+
+  @override
+  String get accName => 'الاسم';
+
+  @override
+  String get accLicense => 'الرخصة';
+
+  @override
+  String get accVehicle => 'السيارة';
+
+  @override
+  String get accPlate => 'رقم التسجيل';
+
+  @override
+  String get accInsurance => 'التأمين';
+
+  @override
+  String get accPolicyNumber => 'رقم عقد التأمين';
+
+  @override
+  String get accLicenseExpiry => 'صلاحية الرخصة';
+
+  @override
+  String get accObservations => 'الملاحظات';
+
+  @override
+  String get accImpactZones => 'مناطق الاصطدام';
+
+  @override
+  String get accPhotos => 'الصور';
+
+  @override
+  String get accSketchMissing => 'الرسم التخطيطي غير موجود';
+
+  @override
+  String get accPdfFailed => 'تعذّر إنشاء ملف PDF. أعد المحاولة.';
+
+  @override
+  String get accPdfTitle => 'المحضر بصيغة PDF';
+
+  @override
+  String get accPdfHint =>
+      'يتضمن المستند المعلومات الرسمية والصور والرسم التخطيطي والتوقيعات.';
+
+  @override
+  String get accPreview => 'معاينة';
+
+  @override
+  String get accShare => 'مشاركة';
+
+  @override
+  String get accNotProvided => 'غير محدد';
+
+  @override
+  String get accNoPhotos => 'لا توجد صور محفوظة.';
+
+  @override
+  String get accMyDeclarations => 'تصريحاتي';
+
+  @override
+  String get accMyDeclarationsHint => 'المسودات والملفات المرسلة';
+
+  @override
+  String get accDraftInProgress => 'مسودة قيد الإنجاز';
+
+  @override
+  String get accResume => 'استئناف';
+
+  @override
+  String get accSentDeclarations => 'التصريحات المرسلة';
+
+  @override
+  String get accNoSentDeclarations => 'لا توجد تصريحات مرسلة.';
+
+  @override
+  String get accDeleteDraftTitle => 'حذف المسودة؟';
+
+  @override
+  String get accDeleteDraftText => 'ستضيع المعلومات غير المرسلة.';
+
+  @override
+  String get accCancel => 'إلغاء';
+
+  @override
+  String get accEmergencyNumbers => 'أرقام الطوارئ';
+
+  @override
+  String get accSearchAddress => 'ابحث عن عنوان';
+
+  @override
+  String get accSearch => 'بحث';
+
+  @override
+  String get accMyPosition => 'موقعي';
+
+  @override
+  String get accSelectedPlace => 'المكان المحدد';
+
+  @override
+  String get accConfirmPlace => 'تأكيد هذا المكان';
+
+  @override
+  String get accMinChars => 'أدخل 3 أحرف على الأقل.';
+
+  @override
+  String get accPlaceFetchFailed => 'تعذّر جلب هذا المكان.';
+
+  @override
+  String get cstNotProvided => 'غير محدد';
+
+  @override
+  String get cstClear => 'مسح';
+
+  @override
+  String get cstEdit => 'تعديل';
+
+  @override
+  String get cstTapToDrawFullscreen => 'المس للرسم في وضع ملء الشاشة';
+
+  @override
+  String get cstCloseWithoutSaving => 'إغلاق دون حفظ';
+
+  @override
+  String get cstUndoLastStroke => 'التراجع عن آخر خط';
+
+  @override
+  String get cstClearAll => 'مسح الكل';
+
+  @override
+  String get cstDone => 'تم';
+
+  @override
+  String get cstSignHint => 'وقّع بإصبعك أو بالقلم';
+
+  @override
+  String get cstGuestModeTitle => 'وضع الضيف — السائق ب';
+
+  @override
+  String get cstShareWithDriverB => 'المشاركة مع السائق ب';
+
+  @override
+  String get cstGuestQrInstructions =>
+      'اطلب من السائق ب مسح رمز QR هذا بهاتفه الذكي للتحقق من معلوماته ومتابعة التصريح مباشرة.';
+
+  @override
+  String get cstNoInstallRequired => 'لا يحتاج السائق ب إلى تثبيت التطبيق.';
+
+  @override
+  String get cstGuestLinkCopied => 'تم نسخ رابط الضيف إلى الحافظة!';
+
+  @override
+  String get cstCopyGuestLink => 'نسخ رابط دخول الضيف';
+
+  @override
+  String get cstContinueOnThisDevice => 'مواصلة الإدخال على هذا الجهاز';
+
+  @override
+  String get cstSealedTitle => 'المحضر مختوم';
+
+  @override
+  String get cstSealedOnPhone => 'المحضر مختوم على الهاتف';
+
+  @override
+  String get cstSealedAndSent => 'المحضر مختوم ومُرسَل';
+
+  @override
+  String get cstSealedOfflineHint =>
+      'لا توجد شبكة: سيتم إرساله وتوقيعه من الخادم فور عودة الاتصال.';
+
+  @override
+  String get cstSealedOnlineHint =>
+      'وثيقة رسمية غير قابلة للتعديل وموقّعة من الطرفين.';
+
+  @override
+  String get cstOfflineCertification => 'شهادة دون اتصال (JWS)';
+
+  @override
+  String get cstScanQrToVerify =>
+      'امسح رمز QR هذا للتحقق من صحة المحضر وسلامته دون الاتصال بالخادم.';
+
+  @override
+  String get cstCertifiedQr => 'رمز QR موثّق';
+
+  @override
+  String get cstEcdsaCertified => 'توقيع ECDSA P-256 موثّق — تحقق دون أي تبعية';
+
+  @override
+  String get cstVehicleA => 'المركبة أ';
+
+  @override
+  String get cstVehicleB => 'المركبة ب';
+
+  @override
+  String get cstDriverA => 'السائق أ';
+
+  @override
+  String get cstDriverB => 'السائق ب';
+
+  @override
+  String get cstPlateA => 'رقم تسجيل المركبة أ';
+
+  @override
+  String get cstPlateB => 'رقم تسجيل المركبة ب';
+
+  @override
+  String get cstInsurerA => 'تأمين المركبة أ';
+
+  @override
+  String get cstInsurerB => 'تأمين المركبة ب';
+
+  @override
+  String cstPolicyLine(String policy) {
+    return 'الوثيقة: $policy';
+  }
+
+  @override
+  String get cstViewOfficialPdf => 'عرض النسخة الرسمية (PDF)';
+
+  @override
+  String get cstShareSealed => 'مشاركة المحضر المختوم';
+
+  @override
+  String get cstBackToHome => 'العودة إلى الرئيسية';
+
+  @override
+  String cstPdfPreviewError(String error) {
+    return 'خطأ في معاينة PDF: $error';
+  }
+
+  @override
+  String cstPdfShareError(String error) {
+    return 'خطأ في مشاركة PDF: $error';
+  }
+
+  @override
+  String get cstDriverBTitle => 'معلومات السائق ب';
+
+  @override
+  String get cstDriverBSubtitle =>
+      'بيانات ضرورية للمحضر، منفصلة عن ملفك الشخصي.';
+
+  @override
+  String get cstScanLicenseAi => 'مسح رخصة السياقة بالذكاء الاصطناعي';
+
+  @override
+  String get cstScanLicenseHint =>
+      'يتم تحليل الصورة محليًا. تحقّق دائمًا من البيانات المكتشفة.';
+
+  @override
+  String get cstScanning => 'جارٍ التحليل…';
+
+  @override
+  String get cstTakeLicensePhoto => 'تصوير رخصة السياقة';
+
+  @override
+  String get cstFullNameRequired => 'الاسم الكامل *';
+
+  @override
+  String get cstLicenseNumber => 'رقم رخصة السياقة';
+
+  @override
+  String get cstLicenseExpiry => 'تاريخ صلاحية رخصة السياقة';
+
+  @override
+  String get cstPlateRequired => 'رقم التسجيل *';
+
+  @override
+  String get cstInsuranceSection => 'التأمين';
+
+  @override
+  String get cstPolicyNumber => 'رقم وثيقة / شهادة التأمين';
+
+  @override
+  String get cstNoTextDetected =>
+      'لم يتم اكتشاف أي نص. أعد التقاط الصورة بإضاءة أفضل.';
+
+  @override
+  String get cstLicenseScanned =>
+      'تم تحليل الرخصة. تحقّق من الحقول قبل المتابعة.';
+
+  @override
+  String get cstScanFailed => 'تعذّر التحليل. تحقّق من الصورة وأعد المحاولة.';
+
+  @override
+  String get cstReviewDetectedData => 'التحقق من البيانات المكتشفة';
+
+  @override
+  String get cstOcrWarning =>
+      'قد يخطئ التعرف الآلي على النص. صحّح الحقول قبل التأكيد.';
+
+  @override
+  String get cstFullName => 'الاسم الكامل';
+
+  @override
+  String get cstLicenseNumberDialog => 'رقم رخصة السياقة';
+
+  @override
+  String get cstExpiryDate => 'تاريخ الصلاحية';
+
+  @override
+  String get cstRecognizedText => 'النص الذي تعرّف عليه ML Kit';
+
+  @override
+  String get cstCancel => 'إلغاء';
+
+  @override
+  String get cstUseThisData => 'استخدام هذه البيانات';
+
+  @override
+  String get cstClearDate => 'مسح التاريخ';
+
+  @override
+  String get cstCircumstancesTitle => 'ظروف الحادث (FTUSA)';
+
+  @override
+  String get cstCircumstancesHint =>
+      'ضع علامة في الخانات المناسبة للمركبة أ (بالأزرق) وللمركبة ب (بالكهرماني).';
+
+  @override
+  String cstBoxesA(int count) {
+    return 'المركبة أ: $count خانة';
+  }
+
+  @override
+  String cstBoxesB(int count) {
+    return 'المركبة ب: $count خانة';
+  }
+
+  @override
+  String get cstCircumstancesHeader => '12. الظروف';
+
+  @override
+  String get cstCircumstance1 => 'متوقف / في حالة توقف';
+
+  @override
+  String get cstCircumstance2 => 'يغادر مكان الوقوف / يفتح بابًا';
+
+  @override
+  String get cstCircumstance3 => 'يدخل مكان الوقوف';
+
+  @override
+  String get cstCircumstance4 => 'يخرج من موقف سيارات أو مكان خاص أو مسلك';
+
+  @override
+  String get cstCircumstance5 => 'يدخل إلى موقف سيارات أو مكان خاص أو مسلك';
+
+  @override
+  String get cstCircumstance6 => 'يدخل إلى ساحة دوران';
+
+  @override
+  String get cstCircumstance7 => 'يسير في ساحة دوران';
+
+  @override
+  String get cstCircumstance8 => 'اصطدم من الخلف (نفس الاتجاه، نفس المسلك)';
+
+  @override
+  String get cstCircumstance9 => 'يسير في نفس الاتجاه على مسلك مختلف';
+
+  @override
+  String get cstCircumstance10 => 'يغيّر المسلك';
+
+  @override
+  String get cstCircumstance11 => 'يتجاوز';
+
+  @override
+  String get cstCircumstance12 => 'ينعطف إلى اليمين';
+
+  @override
+  String get cstCircumstance13 => 'ينعطف إلى اليسار';
+
+  @override
+  String get cstCircumstance14 => 'يرجع إلى الخلف';
+
+  @override
+  String get cstCircumstance15 => 'يتعدّى على الطريق في الاتجاه المعاكس';
+
+  @override
+  String get cstCircumstance16 => 'قادم من اليمين (في مفترق طرق)';
+
+  @override
+  String get cstCircumstance17 => 'لم يحترم إشارة الأولوية';
+
+  @override
+  String get cstObservations => 'ملاحظات إضافية';
+
+  @override
+  String get cstSketchTitle => 'الرسم التخطيطي ونقطة الاصطدام';
+
+  @override
+  String get cstSketchFieldTitle => 'الرسم التخطيطي للحادث';
+
+  @override
+  String get cstSketchHint => 'ارسم المسالك والمركبات واتجاه سيرها';
+
+  @override
+  String get cstImpactZoneTitle => 'منطقة الاصطدام في مركبتك';
+
+  @override
+  String get cstSignInstructions => 'راجع المعلومات ثم وقّع في الخانتين.';
+
+  @override
+  String get cstSignatureA => 'توقيع السائق أ';
+
+  @override
+  String get cstSignatureB => 'توقيع السائق ب';
+
+  @override
+  String get cstShaLock => 'قفل SHA-256';
+
+  @override
+  String get cstShaLockHint =>
+      'يصبح المحضر غير قابل للتزوير بعد توقيع الطرفين.';
+
+  @override
+  String get nameLockedNotice =>
+      'تم التحقق من الاسم عبر بطاقة الهوية: لم يعد بالإمكان تعديله.';
 }

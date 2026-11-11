@@ -6,6 +6,8 @@ import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:video_player/video_player.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/accident/l10n/accident_text.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/screens/location_picker_screen.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_location_service.dart';
@@ -44,10 +46,10 @@ class _ContextStepState extends State<ContextStep> {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const _SectionIntro(
+      _SectionIntro(
         icon: Icons.location_on_outlined,
-        title: 'Où et quand ?',
-        text: 'Vérifiez les informations détectées automatiquement.',
+        title: context.t.accWhereWhen,
+        text: context.t.accWhereWhenHint,
       ),
       TextFormField(
         controller: widget.place,
@@ -56,13 +58,13 @@ class _ContextStepState extends State<ContextStep> {
           widget.onChanged();
         },
         validator: (value) => value == null || value.trim().length < 3
-            ? 'Indiquez le lieu de l’accident'
+            ? context.t.accPlaceRequired
             : null,
         decoration: InputDecoration(
-          labelText: 'Lieu de l’accident',
+          labelText: context.t.accAccidentPlace,
           prefixIcon: const Icon(Icons.location_on_outlined),
           suffixIcon: IconButton(
-            tooltip: 'Choisir sur la carte',
+            tooltip: context.t.accChooseOnMap,
             onPressed: _locating ? null : _chooseLocation,
             icon: _locating
                 ? const Padding(
@@ -94,9 +96,13 @@ class _ContextStepState extends State<ContextStep> {
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(
-            'GPS ${widget.draft.latitude!.toStringAsFixed(6)}, '
-            '${widget.draft.longitude!.toStringAsFixed(6)} • '
-            'précision ±${(widget.draft.locationAccuracy ?? 0).round()} m',
+            context.t.accGpsLine(
+              ltr(
+                '${widget.draft.latitude!.toStringAsFixed(6)}, '
+                '${widget.draft.longitude!.toStringAsFixed(6)}',
+              ),
+              (widget.draft.locationAccuracy ?? 0).round(),
+            ),
             style: TextStyle(
               color: context.palette.successText,
               fontSize: 12,
@@ -130,15 +136,18 @@ class _ContextStepState extends State<ContextStep> {
           widget.onChanged();
         },
         child: InputDecorator(
-          decoration: const InputDecoration(
-            labelText: 'Date et heure',
-            prefixIcon: Icon(Icons.schedule_outlined),
+          decoration: InputDecoration(
+            labelText: context.t.accDateTime,
+            prefixIcon: const Icon(Icons.schedule_outlined),
           ),
-          child: Text(_dateTime(widget.draft.occurredAt)),
+          child: Text(ltr(_dateTime(widget.draft.occurredAt))),
         ),
       ),
       const SizedBox(height: 18),
-      const Text('Météo', style: TextStyle(fontWeight: FontWeight.w800)),
+      Text(
+        context.t.accWeather,
+        style: const TextStyle(fontWeight: FontWeight.w800),
+      ),
       const SizedBox(height: 8),
       _Choices(
         values: const ['Ensoleillé', 'Pluie', 'Brouillard'],
@@ -149,7 +158,10 @@ class _ContextStepState extends State<ContextStep> {
         },
       ),
       const SizedBox(height: 16),
-      const Text('Chaussée', style: TextStyle(fontWeight: FontWeight.w800)),
+      Text(
+        context.t.accRoad,
+        style: const TextStyle(fontWeight: FontWeight.w800),
+      ),
       const SizedBox(height: 8),
       _Choices(
         values: const ['Sèche', 'Mouillée', 'Glissante'],
@@ -161,21 +173,25 @@ class _ContextStepState extends State<ContextStep> {
       ),
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: widget.draft.light,
-        items: const [
-          'Jour',
-          'Crépuscule',
-          'Nuit éclairée',
-          'Nuit sombre',
-        ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        // Valeur enregistrée en français, libellé dans la langue de l'écran.
+        items: const ['Jour', 'Crépuscule', 'Nuit éclairée', 'Nuit sombre']
+            .map(
+              (e) => DropdownMenuItem(
+                value: e,
+                child: Text(context.t.accidentValue(e)),
+              ),
+            )
+            .toList(),
         onChanged: (value) {
           if (value == null) return;
           widget.draft.light = value;
           widget.onChanged();
         },
-        decoration: const InputDecoration(
-          labelText: 'Luminosité',
-          prefixIcon: Icon(Icons.light_mode_outlined),
+        decoration: InputDecoration(
+          labelText: context.t.accLight,
+          prefixIcon: const Icon(Icons.light_mode_outlined),
         ),
       ),
     ],
@@ -201,16 +217,18 @@ class _ContextStepState extends State<ContextStep> {
       if (!mounted) return;
       _applyLocation(location);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lieu de l’accident confirmé et sauvegardé.'),
-        ),
+        SnackBar(content: Text(context.t.accPlaceConfirmed)),
       );
     } on AccidentLocationException catch (error) {
-      if (mounted) setState(() => _locationError = error.message);
+      if (mounted) {
+        setState(
+          () => _locationError = context.t.accidentLocationError(error.message),
+        );
+      }
     } catch (_) {
       if (mounted) {
         setState(() {
-          _locationError = 'Position indisponible. Réessayez dans un instant.';
+          _locationError = context.t.accPositionUnavailable;
         });
       }
     } finally {
@@ -226,24 +244,29 @@ class _ContextStepState extends State<ContextStep> {
     });
     try {
       final detected = await _locationService.determineLocation();
-      if (!mounted) return;
+      if (!mounted) {
+        // Étape déjà quittée : la position trouvée est gardée (sans le
+        // dialogue), sauf si un lieu a été saisi entre-temps.
+        if (widget.draft.latitude == null && widget.draft.place.trim().isEmpty) {
+          _applyLocation(detected);
+        }
+        return;
+      }
       final useDetected = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
         builder: (dialogContext) => AlertDialog(
           icon: Icon(Icons.my_location, color: context.palette.primaryText),
-          title: const Text('Position détectée'),
-          content: Text(
-            '${detected.label}\n\nVoulez-vous utiliser cette localisation ?',
-          ),
+          title: Text(dialogContext.t.accPositionDetected),
+          content: Text(dialogContext.t.accUseDetectedQuestion(detected.label)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Choisir une autre'),
+              child: Text(dialogContext.t.accChooseAnother),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Utiliser cette position'),
+              child: Text(dialogContext.t.accUsePosition),
             ),
           ],
         ),
@@ -265,10 +288,14 @@ class _ContextStepState extends State<ContextStep> {
         if (selected != null && mounted) _applyLocation(selected);
       }
     } on AccidentLocationException catch (error) {
-      if (mounted) setState(() => _locationError = error.message);
+      if (mounted) {
+        setState(
+          () => _locationError = context.t.accidentLocationError(error.message),
+        );
+      }
     } catch (_) {
       if (mounted) {
-        setState(() => _locationError = 'Localisation automatique impossible.');
+        setState(() => _locationError = context.t.accAutoLocationFailed);
       }
     } finally {
       if (mounted) setState(() => _locating = false);
@@ -308,48 +335,62 @@ class DescriptionStep extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const _SectionIntro(
+      _SectionIntro(
         icon: Icons.car_crash_outlined,
-        title: 'Que s’est-il passé ?',
-        text: 'Ces informations permettent de prioriser votre dossier.',
+        title: context.t.accWhatHappened,
+        text: context.t.accWhatHappenedHint,
       ),
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: draft.type,
-        items: const [
-          'Collision',
-          'Sortie de route',
-          'Piéton',
-          'Accident matériel',
-          'Autre',
-        ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        // Valeur enregistrée en français, libellé dans la langue de l'écran.
+        items:
+            const [
+                  'Collision',
+                  'Sortie de route',
+                  'Piéton',
+                  'Accident matériel',
+                  'Autre',
+                ]
+                .map(
+                  (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(context.t.accidentValue(e)),
+                  ),
+                )
+                .toList(),
         onChanged: (value) {
           if (value == null) return;
           draft.type = value;
           onChanged();
         },
-        decoration: const InputDecoration(labelText: "Type d'accident"),
+        decoration: InputDecoration(labelText: context.t.accAccidentType),
       ),
       const SizedBox(height: 12),
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: draft.severity,
-        items: const [
-          'Matériel',
-          'Léger',
-          'Grave',
-        ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        items: const ['Matériel', 'Léger', 'Grave']
+            .map(
+              (e) => DropdownMenuItem(
+                value: e,
+                child: Text(context.t.accidentValue(e)),
+              ),
+            )
+            .toList(),
         onChanged: (value) {
           if (value == null) return;
           draft.severity = value;
           onChanged();
         },
-        decoration: const InputDecoration(labelText: 'Gravité'),
+        decoration: InputDecoration(labelText: context.t.accSeverity),
       ),
       const SizedBox(height: 16),
       Row(
         children: [
           Expanded(
             child: _Counter(
-              label: 'Véhicules',
+              label: context.t.accVehicles,
               value: draft.vehicleCount,
               minimum: 1,
               onChanged: (value) {
@@ -361,7 +402,7 @@ class DescriptionStep extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: _Counter(
-              label: 'Blessés',
+              label: context.t.accInjured,
               value: draft.injuredCount,
               minimum: 0,
               onChanged: (value) {
@@ -382,7 +423,7 @@ class DescriptionStep extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sécurisez la zone et appelez les secours',
+                  context.t.accSecureArea,
                   style: TextStyle(
                     color: context.palette.errorText,
                     fontWeight: FontWeight.w800,
@@ -392,10 +433,10 @@ class DescriptionStep extends StatelessWidget {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: const [
-                    _EmergencyChip('SAMU', '190'),
-                    _EmergencyChip('Police', '197'),
-                    _EmergencyChip('Protection civile', '198'),
+                  children: [
+                    _EmergencyChip(context.t.accSamu, '190'),
+                    _EmergencyChip(context.t.accPolice, '197'),
+                    _EmergencyChip(context.t.accCivilProtection, '198'),
                   ],
                 ),
               ],
@@ -404,9 +445,9 @@ class DescriptionStep extends StatelessWidget {
         ),
       ],
       const SizedBox(height: 18),
-      const Text(
-        'Témoin (optionnel)',
-        style: TextStyle(fontWeight: FontWeight.w800),
+      Text(
+        context.t.accWitnessOptional,
+        style: const TextStyle(fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 8),
       TextField(
@@ -415,9 +456,9 @@ class DescriptionStep extends StatelessWidget {
           draft.witnessName = value;
           onChanged();
         },
-        decoration: const InputDecoration(
-          labelText: 'Nom du témoin',
-          prefixIcon: Icon(Icons.person_outline),
+        decoration: InputDecoration(
+          labelText: context.t.accWitnessName,
+          prefixIcon: const Icon(Icons.person_outline),
         ),
       ),
       const SizedBox(height: 12),
@@ -428,9 +469,9 @@ class DescriptionStep extends StatelessWidget {
           draft.witnessPhone = value;
           onChanged();
         },
-        decoration: const InputDecoration(
-          labelText: 'Téléphone',
-          prefixIcon: Icon(Icons.phone_outlined),
+        decoration: InputDecoration(
+          labelText: context.t.accPhone,
+          prefixIcon: const Icon(Icons.phone_outlined),
         ),
       ),
     ],
@@ -469,8 +510,8 @@ class _EvidenceStepState extends State<EvidenceStep> {
     children: [
       _SectionIntro(
         icon: Icons.add_a_photo_outlined,
-        title: 'Photos guidées',
-        text: '${draft.evidenceCount}/4 vues ajoutées • 2 minimum requises',
+        title: context.t.accGuidedPhotos,
+        text: context.t.accPhotosProgress(draft.evidenceCount),
       ),
       ...draft.evidence.entries.map(
         (entry) => Padding(
@@ -497,14 +538,15 @@ class _EvidenceStepState extends State<EvidenceStep> {
                       )
                     : null,
               ),
+              // La clé reste en français (brouillon, fichiers, PDF).
               title: Text(
-                entry.key,
+                context.t.accidentValue(entry.key),
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
               subtitle: Text(
                 entry.value
-                    ? 'Photo enregistrée • touchez pour reprendre'
-                    : 'Touchez pour ouvrir la caméra',
+                    ? context.t.accPhotoSaved
+                    : context.t.accTapToOpenCamera,
               ),
               trailing: Icon(
                 entry.value ? Icons.refresh : Icons.add_circle_outline,
@@ -523,12 +565,12 @@ class _EvidenceStepState extends State<EvidenceStep> {
       const SizedBox(height: 8),
       _MediaTile(
         icon: Icons.videocam_outlined,
-        title: 'Vidéo de la scène',
+        title: context.t.accSceneVideo,
         subtitle: _capturingVideo
-            ? 'Ouverture de la caméra…'
+            ? context.t.accOpeningCamera
             : draft.videoAdded
-            ? 'Vidéo enregistrée • touchez pour la lire'
-            : 'Filmez la scène • 30 secondes maximum',
+            ? context.t.accVideoSaved
+            : context.t.accFilmScene,
         selected: draft.videoAdded,
         onTap: _capturingVideo
             ? null
@@ -538,12 +580,14 @@ class _EvidenceStepState extends State<EvidenceStep> {
       ),
       _MediaTile(
         icon: _recording ? Icons.stop_circle_outlined : Icons.mic_none_outlined,
-        title: _recording ? 'Arrêter l’enregistrement' : 'Note vocale',
+        title: _recording
+            ? context.t.accStopRecording
+            : context.t.accVoiceNote,
         subtitle: _recording
-            ? 'Enregistrement en cours… touchez pour arrêter'
+            ? context.t.accRecordingInProgress
             : draft.voiceNoteAdded
-            ? 'Note enregistrée • touchez pour écouter'
-            : 'Décrivez la scène avec votre voix',
+            ? context.t.accVoiceNoteSaved
+            : context.t.accDescribeByVoice,
         selected: draft.voiceNoteAdded,
         active: _recording,
         onTap: _recording
@@ -568,7 +612,7 @@ class _EvidenceStepState extends State<EvidenceStep> {
       onChanged();
       setState(() {});
     } catch (_) {
-      if (mounted) _message('Impossible d’enregistrer la vidéo.');
+      if (mounted) _message(context.t.accVideoSaveFailed);
     } finally {
       if (mounted) setState(() => _capturingVideo = false);
     }
@@ -580,13 +624,13 @@ class _EvidenceStepState extends State<EvidenceStep> {
       final allowed = await _voiceRecorder.start(destination);
       if (!mounted) return;
       if (!allowed) {
-        _message('Autorisez le microphone pour enregistrer une note vocale.');
+        _message(context.t.accMicPermission);
         return;
       }
       draft.voiceNotePath = destination;
       setState(() => _recording = true);
     } catch (_) {
-      if (mounted) _message('Impossible de démarrer le microphone.');
+      if (mounted) _message(context.t.accMicFailed);
     }
   }
 
@@ -604,7 +648,7 @@ class _EvidenceStepState extends State<EvidenceStep> {
     final file = File(draft.videoPath);
     if (draft.videoPath.isEmpty || !await file.exists()) {
       _clearVideo();
-      _message('La vidéo n’existe plus. Vous pouvez la reprendre.');
+      if (mounted) _message(context.t.accVideoMissing);
       return;
     }
     if (!mounted) return;
@@ -619,7 +663,7 @@ class _EvidenceStepState extends State<EvidenceStep> {
     final file = File(draft.voiceNotePath);
     if (draft.voiceNotePath.isEmpty || !await file.exists()) {
       _clearAudio();
-      _message('La note vocale n’existe plus. Vous pouvez la refaire.');
+      if (mounted) _message(context.t.accVoiceNoteMissing);
       return;
     }
     if (!mounted) return;
@@ -631,14 +675,17 @@ class _EvidenceStepState extends State<EvidenceStep> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Note vocale',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+              Text(
+                sheetContext.t.accVoiceNote,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
               const SizedBox(height: 14),
               ListTile(
                 leading: const Icon(Icons.play_circle_outline),
-                title: const Text('Écouter'),
+                title: Text(sheetContext.t.accListen),
                 onTap: () async {
                   Navigator.pop(sheetContext);
                   await _audioPlayer.play(
@@ -648,7 +695,7 @@ class _EvidenceStepState extends State<EvidenceStep> {
               ),
               ListTile(
                 leading: const Icon(Icons.refresh),
-                title: const Text('Refaire l’enregistrement'),
+                title: Text(sheetContext.t.accRedoRecording),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _clearAudio();
@@ -660,7 +707,7 @@ class _EvidenceStepState extends State<EvidenceStep> {
                   Icons.delete_outline,
                   color: AppColors.errorSolid,
                 ),
-                title: const Text('Supprimer'),
+                title: Text(sheetContext.t.accDelete),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _clearAudio();
@@ -728,7 +775,7 @@ class _VideoPreviewDialogState extends State<_VideoPreviewDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Vidéo de la scène'),
+    title: Text(context.t.accSceneVideo),
     content: _controller.value.isInitialized
         ? AspectRatio(
             aspectRatio: _controller.value.aspectRatio,
@@ -745,7 +792,7 @@ class _VideoPreviewDialogState extends State<_VideoPreviewDialog> {
           Navigator.pop(context);
         },
         icon: const Icon(Icons.delete_outline),
-        label: const Text('Supprimer'),
+        label: Text(context.t.accDelete),
       ),
       FilledButton.icon(
         onPressed: _controller.value.isInitialized
@@ -760,7 +807,9 @@ class _VideoPreviewDialogState extends State<_VideoPreviewDialog> {
         icon: Icon(
           _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
         ),
-        label: Text(_controller.value.isPlaying ? 'Pause' : 'Lire'),
+        label: Text(
+          _controller.value.isPlaying ? context.t.accPause : context.t.accPlay,
+        ),
       ),
     ],
   );
@@ -777,16 +826,16 @@ class AccidentSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'RÉCAPITULATIF',
-            style: TextStyle(
+          Text(
+            context.t.accSummary,
+            style: const TextStyle(
               color: AppColors.onDarkFaint,
               fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 10),
           Text(
-            draft.type,
+            context.t.accidentValue(draft.type),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
@@ -800,9 +849,18 @@ class AccidentSummary extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${draft.weather} • ${draft.road} • ${draft.light}\n'
-            '${draft.vehicleCount} véhicule(s) • ${draft.injuredCount} blessé(s) • '
-            '${draft.evidenceCount} photo(s)',
+            [
+              [
+                draft.weather,
+                draft.road,
+                draft.light,
+              ].map(context.t.accidentValue).join(' • '),
+              context.t.accSummaryCounts(
+                draft.vehicleCount,
+                draft.injuredCount,
+                draft.evidenceCount,
+              ),
+            ].join('\n'),
             style: const TextStyle(color: AppColors.onDarkStrong, height: 1.5),
           ),
         ],
@@ -827,7 +885,7 @@ class _Choices extends StatelessWidget {
     children: values
         .map(
           (value) => ChoiceChip(
-            label: Text(value),
+            label: Text(context.t.accidentValue(value)),
             selected: selected == value,
             onSelected: (_) => onSelected(value),
           ),
@@ -888,7 +946,7 @@ class _EmergencyChip extends StatelessWidget {
     label: Text('$label $number'),
     onPressed: () => ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text('Appel du $number'))),
+    ).showSnackBar(SnackBar(content: Text(context.t.accCalling(number)))),
   );
 }
 

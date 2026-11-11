@@ -10,6 +10,7 @@ import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/claims/widgets/appointment_alerts.dart';
 import 'package:mon_constat_digital/modules/users/screens/auth_screen.dart';
 import 'package:mon_constat_digital/modules/users/screens/onboarding_screen.dart';
+import 'package:mon_constat_digital/modules/constat/services/pending_seals.dart';
 import 'package:mon_constat_digital/modules/users/state/user_store.dart';
 
 class MonConstatApp extends StatefulWidget {
@@ -60,6 +61,7 @@ class _MonConstatAppState extends State<MonConstatApp>
       stores.users.syncPending();
       if (stores.users.status == AuthStatus.signedIn) {
         unawaited(stores.vehicles.syncWithServer());
+        unawaited(PendingSeals.retry(stores));
       }
     }
   }
@@ -77,6 +79,8 @@ class _MonConstatAppState extends State<MonConstatApp>
     }
     if (_lastStatus != AuthStatus.signedIn && status == AuthStatus.signedIn) {
       unawaited(stores.vehicles.syncWithServer());
+      // Constats signés hors ligne : scellés maintenant sur le serveur.
+      unawaited(PendingSeals.retry(stores));
     }
     _lastStatus = status;
   }
