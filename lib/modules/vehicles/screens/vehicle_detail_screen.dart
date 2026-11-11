@@ -7,6 +7,7 @@ import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/vehicle_form_screen.dart';
 import 'package:mon_constat_digital/modules/vehicles/services/vehicle_ai_service.dart';
@@ -25,7 +26,8 @@ class VehicleDetailScreen extends StatelessWidget {
       (v) => v.id == vehicle.id,
       orElse: () => vehicle,
     );
-    final risk = store.riskScoreFor(current);
+    final t = context.t;
+    final risk = store.riskScoreFor(current, t);
 
     return Scaffold(
       body: CustomScrollView(
@@ -44,7 +46,7 @@ class VehicleDetailScreen extends StatelessWidget {
             actions: [
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
-                tooltip: 'Modifier',
+                tooltip: t.vehEdit,
                 onPressed: () {
                   open(context, VehicleFormScreen(existing: current));
                 },
@@ -90,34 +92,34 @@ class VehicleDetailScreen extends StatelessWidget {
 
                   // ── Informations véhicule ────────────────────────────────
                   _InfoSection(
-                    title: 'Informations',
+                    title: t.vehSectionInfo,
                     items: [
                       _InfoItem(
                         icon: Icons.directions_car_outlined,
-                        label: 'Type',
-                        value: _typeLabel(current.type),
+                        label: t.vehType,
+                        value: _typeLabel(t, current.type),
                       ),
                       _InfoItem(
                         icon: Icons.local_gas_station_outlined,
-                        label: 'Carburant',
-                        value: _fuelLabel(current.fuel),
+                        label: t.vehFuel,
+                        value: _fuelLabel(t, current.fuel),
                       ),
                       _InfoItem(
                         icon: Icons.calendar_today_outlined,
-                        label: 'Année',
+                        label: t.vehYear,
                         value: current.year,
                       ),
                       if (current.color != null)
                         _InfoItem(
                           icon: Icons.palette_outlined,
-                          label: 'Couleur',
+                          label: t.vehColor,
                           value: current.color!,
                         ),
                       if (current.mileage != null)
                         _InfoItem(
                           icon: Icons.speed_outlined,
-                          label: 'Kilométrage',
-                          value: '${current.mileage! ~/ 1000} 000 km',
+                          label: t.vehMileage,
+                          value: t.vehMileageValue(current.mileage! ~/ 1000),
                         ),
                     ],
                   ),
@@ -128,7 +130,7 @@ class VehicleDetailScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Contrat d\'assurance',
+                        t.vehInsuranceContract,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -138,7 +140,7 @@ class VehicleDetailScreen extends StatelessWidget {
                       TextButton.icon(
                         onPressed: () => _showRenewDialog(context, current),
                         icon: const Icon(Icons.refresh, size: 16),
-                        label: const Text('Renouveler'),
+                        label: Text(t.vehRenew),
                       ),
                     ],
                   ),
@@ -149,17 +151,17 @@ class VehicleDetailScreen extends StatelessWidget {
                       if (current.insurerName.isNotEmpty)
                         _InfoItem(
                           icon: Icons.business_outlined,
-                          label: 'Assureur',
+                          label: t.vehInsurer,
                           value: current.insurerName,
                         ),
                       _InfoItem(
                         icon: Icons.article_outlined,
-                        label: 'N° de police',
+                        label: t.vehPolicyNumber,
                         value: current.policy,
                       ),
                       _InfoItem(
                         icon: Icons.event_outlined,
-                        label: 'Expiration',
+                        label: t.vehExpiry,
                         value: _fmtDate(current.insuranceExpiry),
                         statusDays: current.daysUntilInsuranceExpiry,
                       ),
@@ -181,16 +183,20 @@ class VehicleDetailScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Prime d’assurance estimée (IA)',
-                                style: TextStyle(
+                              Text(
+                                t.vehPremiumTitle,
+                                style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.successText,
                                 ),
                               ),
                               Text(
-                                '${VehicleAiService.instance.estimateAnnualPremium(current, risk).toStringAsFixed(0)} TND / an',
+                                t.vehPremiumValue(
+                                  VehicleAiService.instance
+                                      .estimateAnnualPremium(current, risk)
+                                      .toStringAsFixed(0),
+                                ),
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w900,
@@ -207,11 +213,11 @@ class VehicleDetailScreen extends StatelessWidget {
                   if (current.technicalExpiry != null) ...[
                     const SizedBox(height: 20),
                     _InfoSection(
-                      title: 'Visite technique',
+                      title: t.vehTechnicalInspection,
                       items: [
                         _InfoItem(
                           icon: Icons.build_outlined,
-                          label: 'Prochaine visite',
+                          label: t.vehNextInspection,
                           value: _fmtDate(current.technicalExpiry!),
                           statusDays: current.daysUntilTechnicalExpiry,
                         ),
@@ -222,11 +228,11 @@ class VehicleDetailScreen extends StatelessWidget {
                   if (current.claimCount > 0) ...[
                     const SizedBox(height: 20),
                     _InfoSection(
-                      title: 'Historique sinistres',
+                      title: t.vehClaimsHistory,
                       items: [
                         _InfoItem(
                           icon: Icons.report_outlined,
-                          label: 'Sinistres déclarés',
+                          label: t.vehClaimsDeclared,
                           value: '${current.claimCount}',
                         ),
                       ],
@@ -260,6 +266,7 @@ class VehicleDetailScreen extends StatelessWidget {
 
   Future<void> _showRenewDialog(BuildContext context, Vehicle vehicle) async {
     final store = AppScope.of(context).vehicles;
+    final t = context.t;
     final policyController = TextEditingController(text: vehicle.policy);
     final expiryController = TextEditingController(
       text: _fmtDate(vehicle.insuranceExpiry),
@@ -268,21 +275,21 @@ class VehicleDetailScreen extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Renouveler le contrat d’assurance'),
+        title: Text(t.vehRenewTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: policyController,
-              decoration: const InputDecoration(labelText: 'N° de police'),
+              decoration: InputDecoration(labelText: t.vehPolicyNumber),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: expiryController,
               keyboardType: TextInputType.datetime,
-              decoration: const InputDecoration(
-                labelText: 'Date d’expiration',
-                hintText: 'JJ/MM/AAAA',
+              decoration: InputDecoration(
+                labelText: t.vehExpiryDate,
+                hintText: t.vehDateHint,
               ),
             ),
           ],
@@ -290,11 +297,11 @@ class VehicleDetailScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler'),
+            child: Text(t.vehCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Renouveler'),
+            child: Text(t.vehRenew),
           ),
         ],
       ),
@@ -306,9 +313,7 @@ class VehicleDetailScreen extends StatelessWidget {
       final expiry = _isoDate(expiryController.text);
       if (expiry == null || policyController.text.trim().isEmpty) {
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Date invalide (JJ/MM/AAAA) ou n° de police manquant.'),
-          ),
+          SnackBar(content: Text(t.vehRenewInvalid)),
         );
         return;
       }
@@ -323,7 +328,7 @@ class VehicleDetailScreen extends StatelessWidget {
         return;
       }
       messenger.showSnackBar(
-        const SnackBar(content: Text('Contrat d’assurance renouvelé avec succès !')),
+        SnackBar(content: Text(t.vehRenewSuccess)),
       );
     }
   }
@@ -345,21 +350,21 @@ class VehicleDetailScreen extends StatelessWidget {
     return '$y-${two(m)}-${two(d)}';
   }
 
-  String _typeLabel(VehicleType t) => const {
-    VehicleType.car: 'Voiture',
-    VehicleType.moto: 'Moto',
-    VehicleType.truck: 'Camion',
-    VehicleType.van: 'Camionnette',
-    VehicleType.other: 'Autre',
-  }[t]!;
+  String _typeLabel(AppLocalizations t, VehicleType type) => switch (type) {
+    VehicleType.car => t.vehTypeCar,
+    VehicleType.moto => t.vehTypeMoto,
+    VehicleType.truck => t.vehTypeTruck,
+    VehicleType.van => t.vehTypeVan,
+    VehicleType.other => t.vehOther,
+  };
 
-  String _fuelLabel(FuelType f) => const {
-    FuelType.petrol: 'Essence',
-    FuelType.diesel: 'Diesel',
-    FuelType.electric: 'Électrique',
-    FuelType.hybrid: 'Hybride',
-    FuelType.other: 'Autre',
-  }[f]!;
+  String _fuelLabel(AppLocalizations t, FuelType f) => switch (f) {
+    FuelType.petrol => t.vehFuelPetrol,
+    FuelType.diesel => t.vehFuelDiesel,
+    FuelType.electric => t.vehFuelElectric,
+    FuelType.hybrid => t.vehFuelHybrid,
+    FuelType.other => t.vehOther,
+  };
 }
 
 // ── Hero avec photo ────────────────────────────────────────────────────────────
@@ -446,15 +451,15 @@ class _RiskScoreCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Analyse de risque IA',
-                      style: TextStyle(
+                    Text(
+                      context.t.vehRiskTitle,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
-                      'Calculé depuis vos données locales',
+                      context.t.vehRiskSubtitle,
                       style: TextStyle(fontSize: 11, color: p.textMuted),
                     ),
                   ],
@@ -468,7 +473,7 @@ class _RiskScoreCard extends StatelessWidget {
           if (risk.factors.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
-              'Facteurs détectés',
+              context.t.vehRiskFactors,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -650,16 +655,16 @@ class _InfoItem extends StatelessWidget {
       final d = statusDays!;
       if (d < 0) {
         badgeColor = AppColors.errorText;
-        badgeText = 'EXPIRÉ';
+        badgeText = context.t.vehExpiredBadge;
       } else if (d <= 7) {
         badgeColor = AppColors.errorText;
-        badgeText = '${d}j';
+        badgeText = context.t.vehDaysShort(d);
       } else if (d <= 30) {
         badgeColor = p.warningText;
-        badgeText = '${d}j';
+        badgeText = context.t.vehDaysShort(d);
       } else {
         badgeColor = AppColors.successText;
-        badgeText = 'OK';
+        badgeText = context.t.vehStatusOk;
       }
     }
 
@@ -717,7 +722,7 @@ class _RecommendationsList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Recommandations',
+          context.t.vehRecommendations,
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
@@ -779,7 +784,7 @@ class _PhotoSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Photo du véhicule',
+          context.t.vehPhotoTitle,
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
@@ -827,7 +832,7 @@ class _AddPhotoButton extends StatelessWidget {
         }
       },
       icon: const Icon(Icons.add_a_photo_outlined),
-      label: const Text('Ajouter une photo'),
+      label: Text(context.t.vehAddPhoto),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
       ),
@@ -843,12 +848,12 @@ class _AddPhotoButton extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined),
-              title: const Text('Prendre une photo'),
+              title: Text(context.t.vehTakePhoto),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Choisir depuis la galerie'),
+              title: Text(context.t.vehPickFromGallery),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
           ],

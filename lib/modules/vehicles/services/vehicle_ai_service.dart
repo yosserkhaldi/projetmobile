@@ -1,3 +1,4 @@
+import 'package:mon_constat_digital/l10n/app_localizations.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 
 /// Résultat du score de risque IA.
@@ -53,32 +54,33 @@ class VehicleAiService {
   static const _instance = VehicleAiService._();
   static VehicleAiService get instance => _instance;
 
-  /// Calcule le score de risque pour un véhicule donné.
-  RiskScore analyze(Vehicle v) {
+  /// Calcule le score de risque pour un véhicule donné ; libellés et
+  /// conseils dans la langue [t].
+  RiskScore analyze(Vehicle v, AppLocalizations t) {
     final factors = <RiskFactor>[];
     var score = 0;
 
     // ── 1. Ancienneté du véhicule (max 25 pts) ─────────────────────────────
     final age = v.vehicleAge;
     if (age >= 20) {
-      factors.add(const RiskFactor(
-        label: 'Véhicule très ancien',
+      factors.add(RiskFactor(
+        label: t.vehRiskVeryOld,
         contribution: 25,
-        description: 'Plus de 20 ans — risque mécanique élevé.',
+        description: t.vehRiskVeryOldDesc,
       ));
       score += 25;
     } else if (age >= 15) {
       factors.add(RiskFactor(
-        label: 'Véhicule ancien',
+        label: t.vehRiskOld,
         contribution: 18,
-        description: '$age ans — entretien régulier recommandé.',
+        description: t.vehRiskOldDesc(age),
       ));
       score += 18;
     } else if (age >= 10) {
       factors.add(RiskFactor(
-        label: 'Véhicule d\'âge moyen',
+        label: t.vehRiskMidAge,
         contribution: 10,
-        description: '$age ans — vérifier la carte grise.',
+        description: t.vehRiskMidAgeDesc(age),
       ));
       score += 10;
     }
@@ -87,24 +89,23 @@ class VehicleAiService {
     final insExpi = v.daysUntilInsuranceExpiry;
     if (insExpi < 0) {
       factors.add(RiskFactor(
-        label: 'Assurance EXPIRÉE',
+        label: t.vehAlertInsuranceExpired,
         contribution: 30,
-        description:
-            'Expirée depuis ${-insExpi} jour(s) — circuler est illégal.',
+        description: t.vehRiskInsExpiredDesc(-insExpi),
       ));
       score += 30;
     } else if (insExpi <= 7) {
       factors.add(RiskFactor(
-        label: 'Assurance critique',
+        label: t.vehRiskInsCritical,
         contribution: 22,
-        description: 'Expire dans $insExpi jour(s) — renouvelez d\'urgence.',
+        description: t.vehRiskInsCriticalDesc(insExpi),
       ));
       score += 22;
     } else if (insExpi <= 30) {
       factors.add(RiskFactor(
-        label: 'Assurance bientôt expirée',
+        label: t.vehRiskInsSoon,
         contribution: 12,
-        description: 'Expire dans $insExpi jour(s).',
+        description: t.vehRiskExpiresIn(insExpi),
       ));
       score += 12;
     }
@@ -114,32 +115,32 @@ class VehicleAiService {
     if (techDays != null) {
       if (techDays < 0) {
         factors.add(RiskFactor(
-          label: 'Visite technique expirée',
+          label: t.vehRiskTechExpired,
           contribution: 20,
-          description: 'Expirée depuis ${-techDays} jour(s).',
+          description: t.vehRiskExpiredSince(-techDays),
         ));
         score += 20;
       } else if (techDays <= 15) {
         factors.add(RiskFactor(
-          label: 'Visite technique imminente',
+          label: t.vehRiskTechImminent,
           contribution: 14,
-          description: 'Dans $techDays jour(s).',
+          description: t.vehRiskInDays(techDays),
         ));
         score += 14;
       } else if (techDays <= 30) {
         factors.add(RiskFactor(
-          label: 'Visite technique proche',
+          label: t.vehRiskTechNear,
           contribution: 8,
-          description: 'Dans $techDays jour(s).',
+          description: t.vehRiskInDays(techDays),
         ));
         score += 8;
       }
     } else {
       // Date inconnue = risque modéré
-      factors.add(const RiskFactor(
-        label: 'Visite technique inconnue',
+      factors.add(RiskFactor(
+        label: t.vehRiskTechUnknown,
         contribution: 6,
-        description: 'Ajoutez la date pour un suivi précis.',
+        description: t.vehRiskTechUnknownDesc,
       ));
       score += 6;
     }
@@ -149,23 +150,23 @@ class VehicleAiService {
     if (km != null) {
       if (km > 200000) {
         factors.add(RiskFactor(
-          label: 'Kilométrage très élevé',
+          label: t.vehRiskKmVeryHigh,
           contribution: 15,
-          description: '${km ~/ 1000} 000 km — usure importante.',
+          description: t.vehRiskKmVeryHighDesc(km ~/ 1000),
         ));
         score += 15;
       } else if (km > 150000) {
         factors.add(RiskFactor(
-          label: 'Kilométrage élevé',
+          label: t.vehRiskKmHigh,
           contribution: 9,
-          description: '${km ~/ 1000} 000 km.',
+          description: t.vehRiskKmDesc(km ~/ 1000),
         ));
         score += 9;
       } else if (km > 100000) {
         factors.add(RiskFactor(
-          label: 'Kilométrage modéré',
+          label: t.vehRiskKmModerate,
           contribution: 4,
-          description: '${km ~/ 1000} 000 km.',
+          description: t.vehRiskKmDesc(km ~/ 1000),
         ));
         score += 4;
       }
@@ -175,33 +176,33 @@ class VehicleAiService {
     final claims = v.claimCount;
     if (claims >= 3) {
       factors.add(RiskFactor(
-        label: 'Historique sinistres élevé',
+        label: t.vehRiskClaimsHigh,
         contribution: 15,
-        description: '$claims sinistre(s) enregistré(s).',
+        description: t.vehRiskClaimsHighDesc(claims),
       ));
       score += 15;
     } else if (claims == 2) {
-      factors.add(const RiskFactor(
-        label: 'Sinistres multiples',
+      factors.add(RiskFactor(
+        label: t.vehRiskClaimsMulti,
         contribution: 8,
-        description: '2 sinistres enregistrés.',
+        description: t.vehRiskClaimsMultiDesc,
       ));
       score += 8;
     } else if (claims == 1) {
-      factors.add(const RiskFactor(
-        label: 'Sinistre précédent',
+      factors.add(RiskFactor(
+        label: t.vehRiskClaimsOne,
         contribution: 3,
-        description: '1 sinistre enregistré.',
+        description: t.vehRiskClaimsOneDesc,
       ));
       score += 3;
     }
 
     // ── 6. Type de carburant (max 5 pts) ───────────────────────────────────
     if (v.fuel == FuelType.diesel && age >= 10) {
-      factors.add(const RiskFactor(
-        label: 'Diesel ancien',
+      factors.add(RiskFactor(
+        label: t.vehRiskOldDiesel,
         contribution: 5,
-        description: 'Risque de particules et usure moteur accrue.',
+        description: t.vehRiskOldDieselDesc,
       ));
       score += 5;
     }
@@ -213,7 +214,7 @@ class VehicleAiService {
       score: finalScore,
       level: _level(finalScore),
       factors: factors,
-      recommendations: _recommendations(v, factors),
+      recommendations: _recommendations(v, factors, t),
     );
   }
 
@@ -224,41 +225,45 @@ class VehicleAiService {
     return RiskLevel.low;
   }
 
-  static List<String> _recommendations(Vehicle v, List<RiskFactor> factors) {
+  static List<String> _recommendations(
+    Vehicle v,
+    List<RiskFactor> factors,
+    AppLocalizations t,
+  ) {
     final recs = <String>[];
 
     if (v.isInsuranceExpired || v.daysUntilInsuranceExpiry <= 7) {
-      recs.add('Renouvelez votre assurance immédiatement.');
+      recs.add(t.vehRecRenewNow);
     } else if (v.isInsuranceUrgent) {
-      recs.add('Prenez rendez-vous avec votre assureur dans les prochains jours.');
+      recs.add(t.vehRecSeeInsurer);
     }
 
     if (v.isTechnicalExpired) {
-      recs.add('Effectuez votre visite technique au plus tôt.');
+      recs.add(t.vehRecTechNow);
     } else if (v.isTechnicalUrgent) {
-      recs.add('Programmez votre visite technique prochainement.');
+      recs.add(t.vehRecTechSchedule);
     } else if (v.technicalExpiry == null) {
-      recs.add('Ajoutez la date de votre prochaine visite technique.');
+      recs.add(t.vehRecTechAddDate);
     }
 
     if (v.vehicleAge >= 15) {
-      recs.add('Faites une vérification complète chez un garagiste agréé.');
+      recs.add(t.vehRecFullCheck);
     }
 
     if (v.mileage != null && v.mileage! > 150000) {
-      recs.add('Vérifiez la courroie de distribution et les plaquettes de frein.');
+      recs.add(t.vehRecBeltBrakes);
     }
 
     if (v.claimCount >= 2) {
-      recs.add('Envisagez une conduite défensive pour réduire les sinistres.');
+      recs.add(t.vehRecDefensive);
     }
 
     if (v.mileage == null) {
-      recs.add('Renseignez le kilométrage pour une analyse plus précise.');
+      recs.add(t.vehRecAddMileage);
     }
 
     if (recs.isEmpty) {
-      recs.add('Votre véhicule est en règle. Continuez l\'entretien régulier.');
+      recs.add(t.vehRecAllGood);
     }
 
     return recs;

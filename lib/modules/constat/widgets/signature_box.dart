@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
 
 class SignatureBox extends StatelessWidget {
@@ -23,7 +24,7 @@ class SignatureBox extends StatelessWidget {
       DrawingField(
         strokes: strokes,
         title: label,
-        hint: 'Signez avec votre doigt ou le curseur',
+        hint: context.t.cstSignHint,
         icon: Icons.draw_outlined,
         onChanged: onChanged,
       ),

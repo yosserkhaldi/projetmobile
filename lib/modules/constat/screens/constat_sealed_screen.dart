@@ -6,6 +6,7 @@ import 'package:printing/printing.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/constat/models/constat.dart';
@@ -27,11 +28,12 @@ class ConstatSealedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final t = context.t;
 
     return Scaffold(
       backgroundColor: palette.canvas,
       appBar: AppBar(
-        title: const Text('Constat scellé'),
+        title: Text(t.cstSealedTitle),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
@@ -72,8 +74,8 @@ class ConstatSealedScreen extends StatelessWidget {
                     const SizedBox(height: 14),
                     Text(
                       constat.id.startsWith('local-')
-                          ? 'Constat scellé sur le téléphone'
-                          : 'Constat scellé et transmis',
+                          ? t.cstSealedOnPhone
+                          : t.cstSealedAndSent,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w800,
@@ -83,9 +85,8 @@ class ConstatSealedScreen extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       constat.id.startsWith('local-')
-                          ? 'Pas de réseau : il sera transmis et signé par le '
-                                'serveur dès le retour de la connexion.'
-                          : 'Document officiel inaltérable signé bilatéralement.',
+                          ? t.cstSealedOfflineHint
+                          : t.cstSealedOnlineHint,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: palette.textMuted, fontSize: 13),
                     ),
@@ -117,7 +118,7 @@ class ConstatSealedScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'CERTIFICATION HORS-LIGNE (JWS)',
+                          t.cstOfflineCertification,
                           style: TextStyle(
                             color: palette.text,
                             fontWeight: FontWeight.w800,
@@ -129,7 +130,7 @@ class ConstatSealedScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Scannez ce QR Code pour certifier l’authenticité et l’intégrité du constat sans connexion au serveur.',
+                      t.cstScanQrToVerify,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: palette.textMuted, fontSize: 12),
                     ),
@@ -164,18 +165,18 @@ class ConstatSealedScreen extends StatelessWidget {
                               width: 200,
                               height: 200,
                               color: AppColors.canvas,
-                              child: const Column(
+                              child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.qr_code_scanner,
                                     size: 64,
                                     color: AppColors.primary,
                                   ),
-                                  SizedBox(height: 8),
+                                  const SizedBox(height: 8),
                                   Text(
-                                    'QR Code Certifié',
-                                    style: TextStyle(
+                                    t.cstCertifiedQr,
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 12,
                                       color: AppColors.primary,
@@ -195,18 +196,18 @@ class ConstatSealedScreen extends StatelessWidget {
                         color: AppColors.successBg,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.shield_outlined,
                             color: AppColors.successText,
                             size: 18,
                           ),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Signature ECDSA P-256 certifiée — Zero-Dependency Verification',
-                              style: TextStyle(
+                              t.cstEcdsaCertified,
+                              style: const TextStyle(
                                 color: AppColors.successText,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -253,7 +254,7 @@ class ConstatSealedScreen extends StatelessWidget {
                             ),
                             SizedBox(width: 6),
                             Text(
-                              'Véhicule A',
+                              t.cstVehicleA,
                               style: TextStyle(
                                 color: context.palette.primaryText,
                                 fontWeight: FontWeight.w800,
@@ -266,13 +267,13 @@ class ConstatSealedScreen extends StatelessWidget {
                         Text(
                           constat.driverAName.isNotEmpty
                               ? constat.driverAName
-                              : 'Conducteur A',
+                              : t.cstDriverA,
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         Text(
                           constat.driverAPlate.isNotEmpty
                               ? constat.driverAPlate
-                              : 'Immatriculation A',
+                              : t.cstPlateA,
                           style: TextStyle(
                             fontFamily: 'JetBrains Mono',
                             fontSize: 12,
@@ -282,13 +283,13 @@ class ConstatSealedScreen extends StatelessWidget {
                         Text(
                           constat.driverAInsurer.isNotEmpty
                               ? constat.driverAInsurer
-                              : 'Assurance A',
+                              : t.cstInsurerA,
                           style: TextStyle(fontSize: 12, color: context.palette.textMuted),
                         ),
                         if (constat.driverAPolicy != null &&
                             constat.driverAPolicy!.isNotEmpty)
                           Text(
-                            'Police : ${constat.driverAPolicy}',
+                            t.cstPolicyLine(ltr(constat.driverAPolicy!)),
                             style: const TextStyle(
                               fontSize: 11,
                               color: AppColors.textMuted,
@@ -328,7 +329,7 @@ class ConstatSealedScreen extends StatelessWidget {
                             ),
                             SizedBox(width: 6),
                             Text(
-                              'Véhicule B',
+                              t.cstVehicleB,
                               style: TextStyle(
                                 color: context.palette.warningText,
                                 fontWeight: FontWeight.w800,
@@ -341,13 +342,13 @@ class ConstatSealedScreen extends StatelessWidget {
                         Text(
                           constat.driverBName.isNotEmpty
                               ? constat.driverBName
-                              : 'Conducteur B',
+                              : t.cstDriverB,
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         Text(
                           constat.driverBPlate.isNotEmpty
                               ? constat.driverBPlate
-                              : 'Immatriculation B',
+                              : t.cstPlateB,
                           style: TextStyle(
                             fontFamily: 'JetBrains Mono',
                             fontSize: 12,
@@ -357,13 +358,13 @@ class ConstatSealedScreen extends StatelessWidget {
                         Text(
                           constat.driverBInsurer.isNotEmpty
                               ? constat.driverBInsurer
-                              : 'Assurance B',
+                              : t.cstInsurerB,
                           style: TextStyle(fontSize: 12, color: context.palette.textMuted),
                         ),
                         if (constat.driverBPolicy != null &&
                             constat.driverBPolicy!.isNotEmpty)
                           Text(
-                            'Police : ${constat.driverBPolicy}',
+                            t.cstPolicyLine(ltr(constat.driverBPolicy!)),
                             style: const TextStyle(
                               fontSize: 11,
                               color: AppColors.textMuted,
@@ -381,18 +382,18 @@ class ConstatSealedScreen extends StatelessWidget {
             FilledButton.icon(
               onPressed: () => _viewPdf(context),
               icon: const Icon(Icons.picture_as_pdf),
-              label: const Text('Consulter l’exemplaire officiel (PDF)'),
+              label: Text(t.cstViewOfficialPdf),
             ),
             const SizedBox(height: 10),
             OutlinedButton.icon(
               onPressed: () => _sharePdf(context),
               icon: const Icon(Icons.share_outlined),
-              label: const Text('Partager le constat scellé'),
+              label: Text(t.cstShareSealed),
             ),
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
-              child: const Text('Retour à l’accueil'),
+              child: Text(t.cstBackToHome),
             ),
           ],
         ),
@@ -439,7 +440,7 @@ class ConstatSealedScreen extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur aperçu PDF : $e')),
+          SnackBar(content: Text(context.t.cstPdfPreviewError('$e'))),
         );
       }
     }
@@ -455,7 +456,7 @@ class ConstatSealedScreen extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur partage PDF : $e')),
+          SnackBar(content: Text(context.t.cstPdfShareError('$e'))),
         );
       }
     }

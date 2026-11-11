@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
+import 'package:mon_constat_digital/modules/accident/l10n/accident_text.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
@@ -32,93 +34,107 @@ class AccidentReview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolvedA = _resolveDriverA(context);
+    final t = context.t;
     return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Divider(height: 32),
-      Text('Constat complété', style: Theme.of(context).textTheme.titleLarge),
+      Text(t.accReportCompleted, style: Theme.of(context).textTheme.titleLarge),
       Text(
-        'Vérifiez toutes les informations avant la transmission.',
+        t.accReviewHint,
         style: TextStyle(color: context.palette.textMuted),
       ),
       const SizedBox(height: 14),
       _PdfActions(draft: draft, service: _pdf, driverA: resolvedA),
       const SizedBox(height: 14),
       _Section(
-        title: 'Accident',
+        title: t.accSectionAccident,
         icon: Icons.car_crash_outlined,
         rows: [
-          ('Lieu', draft.place),
-          ('Date et heure', _dateTime(draft.occurredAt)),
-          ('Type', '${draft.type} • ${draft.severity}'),
-          ('Conditions', '${draft.weather} • ${draft.road} • ${draft.light}'),
+          (t.accPlace, draft.place),
+          (t.accDateTime, ltr(_dateTime(draft.occurredAt))),
           (
-            'Véhicules / blessés',
-            '${draft.vehicleCount} véhicule(s) • ${draft.injuredCount} blessé(s)',
+            t.accType,
+            '${t.accidentValue(draft.type)} • '
+                '${t.accidentValue(draft.severity)}',
+          ),
+          (
+            t.accConditions,
+            [
+              draft.weather,
+              draft.road,
+              draft.light,
+            ].map(t.accidentValue).join(' • '),
+          ),
+          (
+            t.accVehiclesInjured,
+            t.accVehiclesInjuredValue(draft.vehicleCount, draft.injuredCount),
           ),
           if (draft.witnessName.isNotEmpty)
-            ('Témoin', '${draft.witnessName} ${draft.witnessPhone}'),
+            (t.accWitness, '${draft.witnessName} ${draft.witnessPhone}'),
         ],
       ),
       _Section(
-        title: 'Conducteur & Véhicule A',
+        title: t.accSectionDriverA,
         icon: Icons.directions_car_filled_outlined,
         rows: [
-          if (resolvedA.fullName.isNotEmpty) ('Nom', resolvedA.fullName),
-          if (resolvedA.phone.isNotEmpty) ('Téléphone', resolvedA.phone),
+          if (resolvedA.fullName.isNotEmpty) (t.accName, resolvedA.fullName),
+          if (resolvedA.phone.isNotEmpty) (t.accPhone, resolvedA.phone),
           if (resolvedA.licenseNumber.isNotEmpty)
-            ('Permis', resolvedA.licenseNumber),
+            (t.accLicense, resolvedA.licenseNumber),
           if (resolvedA.vehicleLabel.isNotEmpty)
-            ('Véhicule', resolvedA.vehicleLabel),
-          if (resolvedA.plate.isNotEmpty) ('Immatriculation', resolvedA.plate),
+            (t.accVehicle, resolvedA.vehicleLabel),
+          if (resolvedA.plate.isNotEmpty) (t.accPlate, resolvedA.plate),
           if (resolvedA.insurerName.isNotEmpty)
-            ('Assurance', resolvedA.insurerName),
+            (t.accInsurance, resolvedA.insurerName),
           if (resolvedA.policyNumber.isNotEmpty)
-            ('N° de police', resolvedA.policyNumber),
+            (t.accPolicyNumber, resolvedA.policyNumber),
         ],
       ),
       _Section(
-        title: 'Conducteur B',
+        title: t.accDriverB,
         icon: Icons.person_outline,
         rows: [
-          ('Nom', draft.driverBName),
-          if (draft.driverBPermit.isNotEmpty) ('Permis', draft.driverBPermit),
+          (t.accName, draft.driverBName),
+          if (draft.driverBPermit.isNotEmpty)
+            (t.accLicense, draft.driverBPermit),
           if (draft.driverBPermitExpiry.isNotEmpty)
-            ('Validité du permis', draft.driverBPermitExpiry),
-          ('Immatriculation', draft.driverBPlate),
-          ('Assurance', draft.driverBInsurer),
+            (t.accLicenseExpiry, draft.driverBPermitExpiry),
+          (t.accPlate, draft.driverBPlate),
+          (t.accInsurance, draft.driverBInsurer),
           if (draft.driverBPolicy.isNotEmpty)
-            ('N° de police', draft.driverBPolicy),
+            (t.accPolicyNumber, draft.driverBPolicy),
         ],
       ),
       _Section(
-        title: 'Circonstances',
+        title: t.accStepCircumstances,
         icon: Icons.fact_check_outlined,
         rows: [
-          ('Conducteur A', draft.circumstancesA.join(', ')),
-          ('Conducteur B', draft.circumstancesB.join(', ')),
+          // Cases et zones enregistrées en français, traduites à l'affichage.
+          (t.accDriverA, t.accidentValues(draft.circumstancesA)),
+          (t.accDriverB, t.accidentValues(draft.circumstancesB)),
           if (draft.observations.isNotEmpty)
-            ('Observations', draft.observations),
-          ('Zones de choc', draft.impactZones.join(', ')),
+            (t.accObservations, draft.observations),
+          (t.accImpactZones, t.accidentValues(draft.impactZones)),
         ],
       ),
-      const _ReviewTitle('Photos'),
+      _ReviewTitle(t.accPhotos),
       _PhotoGrid(draft: draft),
       const SizedBox(height: 16),
-      const _ReviewTitle('Croquis'),
+      _ReviewTitle(t.accStepSketch),
       DrawingPreview(
         strokes: draft.sketchStrokes,
         height: 160,
-        emptyLabel: 'Croquis manquant',
+        emptyLabel: t.accSketchMissing,
       ),
       const SizedBox(height: 16),
-      const _ReviewTitle('Signatures'),
+      _ReviewTitle(t.accStepSignatures),
       Row(
         children: [
           Expanded(
             child: Column(
               children: [
-                const Text('Conducteur A'),
+                Text(t.accDriverA),
                 const SizedBox(height: 5),
                 DrawingPreview(strokes: draft.driverASignature),
               ],
@@ -128,7 +144,7 @@ class AccidentReview extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                const Text('Conducteur B'),
+                Text(t.accDriverB),
                 const SizedBox(height: 5),
                 DrawingPreview(strokes: draft.driverBSignature),
               ],
@@ -172,9 +188,7 @@ class _PdfActionsState extends State<_PdfActions> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Impossible de générer le PDF. Réessayez.'),
-          ),
+          SnackBar(content: Text(context.t.accPdfFailed)),
         );
       }
     } finally {
@@ -196,7 +210,7 @@ class _PdfActionsState extends State<_PdfActions> {
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Constat PDF',
+                  context.t.accPdfTitle,
                   style: TextStyle(fontWeight: FontWeight.w900),
                 ),
               ),
@@ -204,7 +218,7 @@ class _PdfActionsState extends State<_PdfActions> {
           ),
           const SizedBox(height: 5),
           Text(
-            'Le document reprend les informations officielles, photos, croquis et signatures.',
+            context.t.accPdfHint,
             style: TextStyle(color: context.palette.textMuted),
           ),
           const SizedBox(height: 12),
@@ -222,7 +236,7 @@ class _PdfActionsState extends State<_PdfActions> {
                       ),
                     ),
                     icon: const Icon(Icons.visibility_outlined),
-                    label: const Text('Aperçu'),
+                    label: Text(context.t.accPreview),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -235,7 +249,7 @@ class _PdfActionsState extends State<_PdfActions> {
                       ),
                     ),
                     icon: const Icon(Icons.share_outlined),
-                    label: const Text('Partager'),
+                    label: Text(context.t.accShare),
                   ),
                 ),
               ],
@@ -283,7 +297,7 @@ class _Section extends StatelessWidget {
                   ),
                   Expanded(
                     child: Text(
-                      row.$2.isEmpty ? 'Non renseigné' : row.$2,
+                      row.$2.isEmpty ? context.t.accNotProvided : row.$2,
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -317,7 +331,7 @@ class _PhotoGrid extends StatelessWidget {
           (entry) => entry.value != null && File(entry.value!).existsSync(),
         )
         .toList();
-    if (photos.isEmpty) return const Text('Aucune photo enregistrée.');
+    if (photos.isEmpty) return Text(context.t.accNoPhotos);
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -340,7 +354,7 @@ class _PhotoGrid extends StatelessWidget {
                 color: Colors.black54,
                 padding: const EdgeInsets.all(6),
                 child: Text(
-                  photos[index].key,
+                  context.t.accidentValue(photos[index].key),
                   style: const TextStyle(color: Colors.white, fontSize: 11),
                 ),
               ),

@@ -6,6 +6,7 @@ import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/alerts_screen.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/vehicle_detail_screen.dart';
@@ -50,8 +51,8 @@ class _VehiclesScreenState extends State<VehiclesScreen>
       child: Column(
         children: [
           PageHead(
-            'Véhicules & contrats',
-            subtitle: '${store.vehicles.length} véhicule(s) actif(s)',
+            context.t.vehListTitle,
+            subtitle: context.t.vehListActiveCount(store.vehicles.length),
             actions: [
               if (alerts > 0)
                 Badge(
@@ -66,7 +67,7 @@ class _VehiclesScreenState extends State<VehiclesScreen>
                   open(context, const VehicleFormScreen());
                 },
                 icon: const Icon(Icons.add),
-                tooltip: 'Ajouter un véhicule',
+                tooltip: context.t.vehAddVehicle,
               ),
             ],
           ),
@@ -82,7 +83,7 @@ class _VehiclesScreenState extends State<VehiclesScreen>
                     const Icon(Icons.directions_car, size: 18),
                     const SizedBox(width: 6),
                     Text(
-                      'Actifs (${store.vehicles.length})',
+                      context.t.vehTabActive(store.vehicles.length),
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ],
@@ -95,7 +96,7 @@ class _VehiclesScreenState extends State<VehiclesScreen>
                     const Icon(Icons.archive_outlined, size: 18),
                     const SizedBox(width: 6),
                     Text(
-                      'Archivés (${store.archived.length})',
+                      context.t.vehTabArchived(store.archived.length),
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ],
@@ -150,8 +151,8 @@ class _VehicleList extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               archived
-                  ? 'Aucun véhicule archivé'
-                  : 'Ajoutez votre premier véhicule',
+                  ? context.t.vehEmptyArchived
+                  : context.t.vehEmptyActive,
               style: TextStyle(color: context.palette.textMuted, fontSize: 16),
             ),
           ],
@@ -178,7 +179,8 @@ class _VehicleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = AppScope.of(context).vehicles;
-    final risk = store.riskScoreFor(vehicle);
+    final t = context.t;
+    final risk = store.riskScoreFor(vehicle, t);
     final p = context.palette;
 
     final (riskColor, riskIcon) = switch (risk.level) {
@@ -287,9 +289,9 @@ class _VehicleCard extends StatelessWidget {
                 children: [
                   _ContractRow(
                     icon: Icons.verified_user_outlined,
-                    label: 'Assurance',
+                    label: t.vehInsurance,
                     value: vehicle.insurerName.isEmpty
-                        ? 'Police ${vehicle.policy}'
+                        ? t.vehPolicyValue(ltr(vehicle.policy))
                         : vehicle.insurerName,
                     badge: _ExpiryBadge(days: vehicle.daysUntilInsuranceExpiry),
                   ),
@@ -297,7 +299,7 @@ class _VehicleCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     _ContractRow(
                       icon: Icons.build_outlined,
-                      label: 'Visite technique',
+                      label: t.vehTechnicalInspection,
                       value: _fmtDate(vehicle.technicalExpiry!),
                       badge: _ExpiryBadge(
                         days: vehicle.daysUntilTechnicalExpiry ?? 9999,
@@ -308,8 +310,8 @@ class _VehicleCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     _ContractRow(
                       icon: Icons.speed_outlined,
-                      label: 'Kilométrage',
-                      value: '${vehicle.mileage! ~/ 1000} 000 km',
+                      label: t.vehMileage,
+                      value: t.vehMileageValue(vehicle.mileage! ~/ 1000),
                     ),
                   ],
                 ],
@@ -329,7 +331,7 @@ class _VehicleCard extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.analytics_outlined, size: 18),
-                    label: const Text('Analyse IA'),
+                    label: Text(t.vehAiAnalysis),
                   ),
                   const Spacer(),
                   _VehicleMenu(vehicle: vehicle),
@@ -415,27 +417,27 @@ class _ExpiryBadge extends StatelessWidget {
     final p = context.palette;
     if (days < 0) {
       return _Badge(
-        label: 'EXPIRÉ',
+        label: context.t.vehExpiredBadge,
         bg: p.errorBg,
         fg: p.errorText,
       );
     }
     if (days <= 7) {
       return _Badge(
-        label: '${days}j',
+        label: context.t.vehDaysShort(days),
         bg: AppColors.errorBg,
         fg: AppColors.errorText,
       );
     }
     if (days <= 30) {
       return _Badge(
-        label: '${days}j',
+        label: context.t.vehDaysShort(days),
         bg: p.warningBg,
         fg: p.warningText,
       );
     }
     return _Badge(
-      label: '${days}j',
+      label: context.t.vehDaysShort(days),
       bg: AppColors.successBg,
       fg: AppColors.successText,
     );
@@ -496,9 +498,9 @@ class _VehicleMenu extends StatelessWidget {
       itemBuilder: (_) => [
         PopupMenuItem(
           value: 'edit',
-          child: const ListTile(
-            leading: Icon(Icons.edit_outlined),
-            title: Text('Modifier'),
+          child: ListTile(
+            leading: const Icon(Icons.edit_outlined),
+            title: Text(context.t.vehEdit),
             dense: true,
           ),
         ),
@@ -506,18 +508,23 @@ class _VehicleMenu extends StatelessWidget {
           value: 'archive',
           child: ListTile(
             leading: const Icon(Icons.archive_outlined),
-            title: Text(vehicle.archived ? 'Désarchiver' : 'Archiver'),
+            title: Text(
+              vehicle.archived ? context.t.vehUnarchive : context.t.vehArchive,
+            ),
             dense: true,
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'delete',
           child: ListTile(
-            leading: Icon(Icons.delete_outline, color: AppColors.errorSolid),
+            leading: const Icon(
+              Icons.delete_outline,
+              color: AppColors.errorSolid,
+            ),
             title: Text(
-              'Supprimer',
-              style: TextStyle(color: AppColors.errorSolid),
+              context.t.vehDelete,
+              style: const TextStyle(color: AppColors.errorSolid),
             ),
             dense: true,
           ),
@@ -530,22 +537,24 @@ class _VehicleMenu extends StatelessWidget {
     return await showDialog<bool>(
           context: context,
           builder: (_) => AlertDialog(
-            title: const Text('Supprimer ce véhicule ?'),
+            title: Text(context.t.vehDeleteTitle),
             content: Text(
-              '${vehicle.brand} ${vehicle.model} (${vehicle.plate}) '
-              'sera définitivement supprimé.',
+              context.t.vehDeleteBody(
+                '${vehicle.brand} ${vehicle.model}',
+                ltr(vehicle.plate),
+              ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Annuler'),
+                child: Text(context.t.vehCancel),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.errorSolid,
                 ),
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Supprimer'),
+                child: Text(context.t.vehDelete),
               ),
             ],
           ),

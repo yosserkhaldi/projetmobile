@@ -1343,5 +1343,744 @@
     }
   },
   "dashNoPoints": "Aucune déclaration localisée pour l’instant.",
-  "dashNoCompany": "Sans compagnie"
+  "dashNoCompany": "Sans compagnie",
+  "vehAddVehicle": "Ajouter un véhicule",
+  "vehEditVehicle": "Modifier le véhicule",
+  "vehEdit": "Modifier",
+  "vehArchive": "Archiver",
+  "vehUnarchive": "Désarchiver",
+  "vehDelete": "Supprimer",
+  "vehCancel": "Annuler",
+  "vehInsurance": "Assurance",
+  "vehInsuranceContract": "Contrat d'assurance",
+  "vehTechnicalInspection": "Visite technique",
+  "vehMileage": "Kilométrage",
+  "vehMileageValue": "{thousands} 000 km",
+  "@vehMileageValue": {
+    "placeholders": {
+      "thousands": {
+        "type": "int"
+      }
+    }
+  },
+  "vehType": "Type",
+  "vehFuel": "Carburant",
+  "vehYear": "Année",
+  "vehColor": "Couleur",
+  "vehPolicyNumber": "N° de police",
+  "vehExpiredBadge": "EXPIRÉ",
+  "vehStatusOk": "OK",
+  "vehDaysShort": "{days}j",
+  "@vehDaysShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "vehDaysOverdue": "{days}j\ndépassé",
+  "@vehDaysOverdue": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "vehDateHint": "JJ/MM/AAAA",
+  "vehTypeCar": "Voiture",
+  "vehTypeMoto": "Moto",
+  "vehTypeTruck": "Camion",
+  "vehTypeVan": "Camionnette",
+  "vehOther": "Autre",
+  "vehFuelPetrol": "Essence",
+  "vehFuelDiesel": "Diesel",
+  "vehFuelElectric": "Électrique",
+  "vehFuelHybrid": "Hybride",
+  "vehAlertsTitle": "Alertes d'échéance",
+  "vehAlertsEmptyTitle": "Aucune alerte active",
+  "vehAlertsEmptyBody": "Tous vos contrats et visites techniques\nsont à jour.",
+  "vehAlertsGroupExpired": "Expiré(s)",
+  "vehAlertsGroupExpiring": "Expire bientôt",
+  "vehAlertsSummaryExpired": "Expirés",
+  "vehAlertsSummaryNear": "Proches",
+  "vehAlertsSummaryTotal": "Total",
+  "vehAlertInsuranceExpired": "Assurance EXPIRÉE",
+  "vehAlertInsuranceExpiring": "Assurance expire dans {days} j.",
+  "@vehAlertInsuranceExpiring": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "vehAlertTechnicalExpired": "Visite technique EXPIRÉE",
+  "vehAlertTechnicalExpiring": "Visite technique dans {days} j.",
+  "@vehAlertTechnicalExpiring": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "vehListTitle": "Véhicules & contrats",
+  "vehListActiveCount": "{count} véhicule(s) actif(s)",
+  "@vehListActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vehTabActive": "Actifs ({count})",
+  "@vehTabActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vehTabArchived": "Archivés ({count})",
+  "@vehTabArchived": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vehEmptyArchived": "Aucun véhicule archivé",
+  "vehEmptyActive": "Ajoutez votre premier véhicule",
+  "vehPolicyValue": "Police {policy}",
+  "@vehPolicyValue": {
+    "placeholders": {
+      "policy": {
+        "type": "String"
+      }
+    }
+  },
+  "vehAiAnalysis": "Analyse IA",
+  "vehDeleteTitle": "Supprimer ce véhicule ?",
+  "vehDeleteBody": "{name} ({plate}) sera définitivement supprimé.",
+  "@vehDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "plate": {
+        "type": "String"
+      }
+    }
+  },
+  "vehSectionInfo": "Informations",
+  "vehRenew": "Renouveler",
+  "vehInsurer": "Assureur",
+  "vehExpiry": "Expiration",
+  "vehPremiumTitle": "Prime d’assurance estimée (IA)",
+  "vehPremiumValue": "{amount} TND / an",
+  "@vehPremiumValue": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "vehNextInspection": "Prochaine visite",
+  "vehClaimsHistory": "Historique sinistres",
+  "vehClaimsDeclared": "Sinistres déclarés",
+  "vehRenewTitle": "Renouveler le contrat d’assurance",
+  "vehExpiryDate": "Date d’expiration",
+  "vehRenewInvalid": "Date invalide (JJ/MM/AAAA) ou n° de police manquant.",
+  "vehRenewSuccess": "Contrat d’assurance renouvelé avec succès !",
+  "vehRiskTitle": "Analyse de risque IA",
+  "vehRiskSubtitle": "Calculé depuis vos données locales",
+  "vehRiskFactors": "Facteurs détectés",
+  "vehRecommendations": "Recommandations",
+  "vehPhotoTitle": "Photo du véhicule",
+  "vehAddPhoto": "Ajouter une photo",
+  "vehTakePhoto": "Prendre une photo",
+  "vehPickFromGallery": "Choisir depuis la galerie",
+  "vehRiskVeryOld": "Véhicule très ancien",
+  "vehRiskVeryOldDesc": "Plus de 20 ans — risque mécanique élevé.",
+  "vehRiskOld": "Véhicule ancien",
+  "vehRiskOldDesc": "{age} ans — entretien régulier recommandé.",
+  "@vehRiskOldDesc": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "vehRiskMidAge": "Véhicule d'âge moyen",
+  "vehRiskMidAgeDesc": "{age} ans — vérifier la carte grise.",
+  "@vehRiskMidAgeDesc": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "vehRiskInsExpiredDesc": "Expirée depuis {days} jour(s) — circuler est illégal.",
+  "@vehRiskInsExpiredDesc": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "vehRiskInsCritical": "Assurance critique",
+  "vehRiskInsCriticalDesc": "Expire dans {days} jour(s) — renouvelez d'urgence.",
+  "@vehRiskInsCriticalDesc": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "vehRiskInsSoon": "Assurance bientôt expirée",
+  "vehRiskExpiresIn": "Expire dans {days} jour(s).",
+  "@vehRiskExpiresIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "vehRiskTechExpired": "Visite technique expirée",
+  "vehRiskExpiredSince": "Expirée depuis {days} jour(s).",
+  "@vehRiskExpiredSince": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "vehRiskTechImminent": "Visite technique imminente",
+  "vehRiskInDays": "Dans {days} jour(s).",
+  "@vehRiskInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "vehRiskTechNear": "Visite technique proche",
+  "vehRiskTechUnknown": "Visite technique inconnue",
+  "vehRiskTechUnknownDesc": "Ajoutez la date pour un suivi précis.",
+  "vehRiskKmVeryHigh": "Kilométrage très élevé",
+  "vehRiskKmVeryHighDesc": "{thousands} 000 km — usure importante.",
+  "@vehRiskKmVeryHighDesc": {
+    "placeholders": {
+      "thousands": {
+        "type": "int"
+      }
+    }
+  },
+  "vehRiskKmHigh": "Kilométrage élevé",
+  "vehRiskKmModerate": "Kilométrage modéré",
+  "vehRiskKmDesc": "{thousands} 000 km.",
+  "@vehRiskKmDesc": {
+    "placeholders": {
+      "thousands": {
+        "type": "int"
+      }
+    }
+  },
+  "vehRiskClaimsHigh": "Historique sinistres élevé",
+  "vehRiskClaimsHighDesc": "{count} sinistre(s) enregistré(s).",
+  "@vehRiskClaimsHighDesc": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vehRiskClaimsMulti": "Sinistres multiples",
+  "vehRiskClaimsMultiDesc": "2 sinistres enregistrés.",
+  "vehRiskClaimsOne": "Sinistre précédent",
+  "vehRiskClaimsOneDesc": "1 sinistre enregistré.",
+  "vehRiskOldDiesel": "Diesel ancien",
+  "vehRiskOldDieselDesc": "Risque de particules et usure moteur accrue.",
+  "vehRecRenewNow": "Renouvelez votre assurance immédiatement.",
+  "vehRecSeeInsurer": "Prenez rendez-vous avec votre assureur dans les prochains jours.",
+  "vehRecTechNow": "Effectuez votre visite technique au plus tôt.",
+  "vehRecTechSchedule": "Programmez votre visite technique prochainement.",
+  "vehRecTechAddDate": "Ajoutez la date de votre prochaine visite technique.",
+  "vehRecFullCheck": "Faites une vérification complète chez un garagiste agréé.",
+  "vehRecBeltBrakes": "Vérifiez la courroie de distribution et les plaquettes de frein.",
+  "vehRecDefensive": "Envisagez une conduite défensive pour réduire les sinistres.",
+  "vehRecAddMileage": "Renseignez le kilométrage pour une analyse plus précise.",
+  "vehRecAllGood": "Votre véhicule est en règle. Continuez l'entretien régulier.",
+  "vehScanNothing": "Rien n’a pu être lu. Reprenez la photo à plat, bien éclairée.",
+  "vehScanRead": "Lu par l’IA : {fields}. Vérifiez avant d’enregistrer.",
+  "@vehScanRead": {
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
+  "vehScanEstimated": "Fin de validité estimée à un an : vérifiez-la.",
+  "vehScanFailed": "Lecture impossible : {error}",
+  "@vehScanFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "vehScanBusy": "Lecture en cours… (jusqu’à 30 s)",
+  "vehScanRegistration": "Photographier la carte grise",
+  "vehScanInsurance": "Photographier l’attestation d’assurance",
+  "vehReadPlate": "immatriculation",
+  "vehReadBrand": "marque",
+  "vehReadModel": "modèle",
+  "vehReadYear": "année",
+  "vehReadPolicy": "n° de contrat",
+  "vehReadExpiry": "fin de validité",
+  "vehReadInsurer": "assureur",
+  "vehReadInsurerToPick": "assureur ({insurer}, à choisir dans la liste)",
+  "@vehReadInsurerToPick": {
+    "placeholders": {
+      "insurer": {
+        "type": "String"
+      }
+    }
+  },
+  "vehScanTitle": "Scanner vos documents avec l’IA",
+  "vehScanBody": "Une photo de la carte grise ou de l’attestation d’assurance : l’IA remplit le formulaire, vous vérifiez.",
+  "vehSectionIdentification": "Identification du véhicule",
+  "vehPlateRequired": "Immatriculation *",
+  "vehPlateHint": "Ex : 215 تونس 4521",
+  "vehBrandRequired": "Marque *",
+  "vehModelRequired": "Modèle *",
+  "vehYearRequired": "Année *",
+  "vehColorHint": "Blanc",
+  "vehKmUnit": "km",
+  "vehPolicyNumberRequired": "N° de police *",
+  "vehInsuranceExpiryRequired": "Date d'expiration assurance *",
+  "vehNextInspectionField": "Prochaine visite technique",
+  "vehSaveChanges": "Enregistrer les modifications",
+  "vehAddVehicleButton": "Ajouter le véhicule",
+  "vehFieldRequired": "Champ obligatoire.",
+  "vehYearInvalid": "Année invalide.",
+  "vehDateFormat": "Format JJ/MM/AAAA.",
+  "accStepContext": "Contexte",
+  "accStepContextHint": "Lieu, heure et conditions",
+  "accStepDescription": "Description",
+  "accStepDescriptionHint": "Type, gravité et témoins",
+  "accStepEvidence": "Preuves",
+  "accStepEvidenceHint": "Photos, vidéo et note vocale",
+  "accStepDriverBHint": "Identité et assurance",
+  "accStepCircumstances": "Circonstances",
+  "accStepCircumstancesHint": "Cases et observations",
+  "accStepSketch": "Croquis",
+  "accStepSketchHint": "Choc et schéma",
+  "accStepSignatures": "Signatures",
+  "accStepSignaturesHint": "Validation et transmission",
+  "accStepOf": "Étape {step} sur {total}",
+  "@accStepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "accMinutesLeft": "~{minutes} min",
+  "@accMinutesLeft": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "accDriverA": "Conducteur A",
+  "accDriverB": "Conducteur B",
+  "accNewDeclaration": "Nouvelle déclaration",
+  "accDraft": "Brouillon",
+  "accFinishDriverBFirst": "Terminez d’abord la saisie du conducteur B.",
+  "accContinue": "Continuer",
+  "accContinueToReport": "Continuer vers le constat",
+  "accIAmDriverB": "Je suis le conducteur B",
+  "accFinishAndReturnPhone": "Terminer et rendre le téléphone",
+  "accSignAndSend": "Signer et transmettre",
+  "accIAmDriverA": "Je suis le conducteur A",
+  "accBack": "Retour",
+  "accDraftSaved": "Brouillon enregistré sur cet appareil",
+  "accThanks": "Merci !",
+  "accReturnPhoneText": "Rendez maintenant le téléphone au conducteur A. Les deux conducteurs signeront ensemble à la fin du constat.",
+  "accChooseVehicleFirst": "Choisissez votre véhicule à la première étape.",
+  "accSealingTitle": "Scellement cryptographique du constat…",
+  "accSealingHint": "Calcul du hash SHA-256 et transmission",
+  "accSealFailed": "Le constat n’a pas pu être scellé : {error}",
+  "@accSealFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "accVerifyIdentityTitle": "Vérifiez votre identité pour signer",
+  "accVerifyIdentityText": "Le constat engage les deux conducteurs : votre identité doit être vérifiée avant la signature. Votre brouillon reste enregistré.",
+  "accLater": "Plus tard",
+  "accVerifyIdentity": "Vérifier mon identité",
+  "accCheckPlace": "Vérifiez le lieu de l’accident.",
+  "accWitnessPhoneInvalid": "Ajoutez un numéro valide pour le témoin.",
+  "accMinPhotos": "Ajoutez au moins 2 photos avant de continuer.",
+  "accDriverBIncomplete": "Complétez le nom, l’immatriculation et l’assurance du conducteur B.",
+  "accCircumstanceRequired": "Sélectionnez au moins une circonstance pour le véhicule A ou B.",
+  "accSketchRequired": "Confirmez le croquis et une zone de choc.",
+  "accSignaturesRequired": "Les deux conducteurs doivent signer le constat.",
+  "accLocalDraftSaved": "Brouillon local • sauvegardé à {time}",
+  "@accLocalDraftSaved": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "accHandoverTitle": "Passez le téléphone au conducteur B",
+  "accHandoverText": "Il remplit lui-même son identité, son permis, son véhicule et son assurance.",
+  "accHandoverHidden": "Vos informations restent masquées : le retour aux étapes précédentes est bloqué pendant sa saisie.",
+  "accHandoverScan": "Il peut photographier son permis : l’IA remplit les champs.",
+  "accHandoverReturn": "À la fin, il vous rend le téléphone.",
+  "accChooseVehicle": "Choisissez votre véhicule : son assureur reçoit le constat.",
+  "accInsuranceExpired": "Le contrat d’assurance de {vehicle} a expiré le {date}. Renouvelez-le dans Véhicules avant de déclarer.",
+  "@accInsuranceExpired": {
+    "placeholders": {
+      "vehicle": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accYourVehicle": "VOTRE VÉHICULE",
+  "accAddVehicleHint": "Ajoutez votre véhicule et son assureur : c’est à lui que le constat est transmis.",
+  "accAddMyVehicle": "Ajouter mon véhicule",
+  "accContractExpiredOn": "Contrat expiré le {date}",
+  "@accContractExpiredOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accInsurerMissing": "Assureur non renseigné",
+  "accInsuredUntil": "{insurer} · jusqu’au {date}",
+  "@accInsuredUntil": {
+    "placeholders": {
+      "insurer": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accWhereWhen": "Où et quand ?",
+  "accWhereWhenHint": "Vérifiez les informations détectées automatiquement.",
+  "accPlaceRequired": "Indiquez le lieu de l’accident",
+  "accAccidentPlace": "Lieu de l’accident",
+  "accChooseOnMap": "Choisir sur la carte",
+  "accGpsLine": "GPS {coords} • précision ±{accuracy} m",
+  "@accGpsLine": {
+    "placeholders": {
+      "coords": {
+        "type": "String"
+      },
+      "accuracy": {
+        "type": "int"
+      }
+    }
+  },
+  "accDateTime": "Date et heure",
+  "accWeather": "Météo",
+  "accRoad": "Chaussée",
+  "accLight": "Luminosité",
+  "accPlaceConfirmed": "Lieu de l’accident confirmé et sauvegardé.",
+  "accPositionUnavailable": "Position indisponible. Réessayez dans un instant.",
+  "accPositionDetected": "Position détectée",
+  "accUseDetectedQuestion": "{place}\n\nVoulez-vous utiliser cette localisation ?",
+  "@accUseDetectedQuestion": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "accChooseAnother": "Choisir une autre",
+  "accUsePosition": "Utiliser cette position",
+  "accAutoLocationFailed": "Localisation automatique impossible.",
+  "accLocationDisabled": "Activez la localisation GPS de l’appareil.",
+  "accLocationDenied": "La permission de localisation a été refusée.",
+  "accLocationDeniedForever": "Autorisez la localisation dans les paramètres de l’application.",
+  "accAddressNotFound": "Adresse introuvable.",
+  "accValueSunny": "Ensoleillé",
+  "accValueRain": "Pluie",
+  "accValueFog": "Brouillard",
+  "accValueDry": "Sèche",
+  "accValueWet": "Mouillée",
+  "accValueSlippery": "Glissante",
+  "accValueDay": "Jour",
+  "accValueDusk": "Crépuscule",
+  "accValueNightLit": "Nuit éclairée",
+  "accValueNightDark": "Nuit sombre",
+  "accEvidenceOverview": "Vue d’ensemble",
+  "accEvidenceDamageA": "Dégâts véhicule A",
+  "accEvidenceDamageB": "Dégâts véhicule B",
+  "accEvidencePlates": "Plaques",
+  "accWhatHappened": "Que s’est-il passé ?",
+  "accWhatHappenedHint": "Ces informations permettent de prioriser votre dossier.",
+  "accAccidentType": "Type d'accident",
+  "accSeverity": "Gravité",
+  "accVehicles": "Véhicules",
+  "accInjured": "Blessés",
+  "accSecureArea": "Sécurisez la zone et appelez les secours",
+  "accSamu": "SAMU",
+  "accPolice": "Police",
+  "accCivilProtection": "Protection civile",
+  "accCalling": "Appel du {number}",
+  "@accCalling": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "accWitnessOptional": "Témoin (optionnel)",
+  "accWitnessName": "Nom du témoin",
+  "accPhone": "Téléphone",
+  "accGuidedPhotos": "Photos guidées",
+  "accPhotosProgress": "{count}/4 vues ajoutées • 2 minimum requises",
+  "@accPhotosProgress": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accPhotoSaved": "Photo enregistrée • touchez pour reprendre",
+  "accTapToOpenCamera": "Touchez pour ouvrir la caméra",
+  "accSceneVideo": "Vidéo de la scène",
+  "accOpeningCamera": "Ouverture de la caméra…",
+  "accVideoSaved": "Vidéo enregistrée • touchez pour la lire",
+  "accFilmScene": "Filmez la scène • 30 secondes maximum",
+  "accStopRecording": "Arrêter l’enregistrement",
+  "accVoiceNote": "Note vocale",
+  "accRecordingInProgress": "Enregistrement en cours… touchez pour arrêter",
+  "accVoiceNoteSaved": "Note enregistrée • touchez pour écouter",
+  "accDescribeByVoice": "Décrivez la scène avec votre voix",
+  "accVideoSaveFailed": "Impossible d’enregistrer la vidéo.",
+  "accMicPermission": "Autorisez le microphone pour enregistrer une note vocale.",
+  "accMicFailed": "Impossible de démarrer le microphone.",
+  "accVideoMissing": "La vidéo n’existe plus. Vous pouvez la reprendre.",
+  "accVoiceNoteMissing": "La note vocale n’existe plus. Vous pouvez la refaire.",
+  "accListen": "Écouter",
+  "accRedoRecording": "Refaire l’enregistrement",
+  "accDelete": "Supprimer",
+  "accPause": "Pause",
+  "accPlay": "Lire",
+  "accSummary": "RÉCAPITULATIF",
+  "accSummaryCounts": "{vehicles} véhicule(s) • {injured} blessé(s) • {photos} photo(s)",
+  "@accSummaryCounts": {
+    "placeholders": {
+      "vehicles": {
+        "type": "int"
+      },
+      "injured": {
+        "type": "int"
+      },
+      "photos": {
+        "type": "int"
+      }
+    }
+  },
+  "accReportCompleted": "Constat complété",
+  "accReviewHint": "Vérifiez toutes les informations avant la transmission.",
+  "accSectionAccident": "Accident",
+  "accPlace": "Lieu",
+  "accType": "Type",
+  "accConditions": "Conditions",
+  "accVehiclesInjured": "Véhicules / blessés",
+  "accVehiclesInjuredValue": "{vehicles} véhicule(s) • {injured} blessé(s)",
+  "@accVehiclesInjuredValue": {
+    "placeholders": {
+      "vehicles": {
+        "type": "int"
+      },
+      "injured": {
+        "type": "int"
+      }
+    }
+  },
+  "accWitness": "Témoin",
+  "accSectionDriverA": "Conducteur & Véhicule A",
+  "accName": "Nom",
+  "accLicense": "Permis",
+  "accVehicle": "Véhicule",
+  "accPlate": "Immatriculation",
+  "accInsurance": "Assurance",
+  "accPolicyNumber": "N° de police",
+  "accLicenseExpiry": "Validité du permis",
+  "accObservations": "Observations",
+  "accImpactZones": "Zones de choc",
+  "accPhotos": "Photos",
+  "accSketchMissing": "Croquis manquant",
+  "accPdfFailed": "Impossible de générer le PDF. Réessayez.",
+  "accPdfTitle": "Constat PDF",
+  "accPdfHint": "Le document reprend les informations officielles, photos, croquis et signatures.",
+  "accPreview": "Aperçu",
+  "accShare": "Partager",
+  "accNotProvided": "Non renseigné",
+  "accNoPhotos": "Aucune photo enregistrée.",
+  "accMyDeclarations": "Mes déclarations",
+  "accMyDeclarationsHint": "Brouillons et dossiers transmis",
+  "accDraftInProgress": "BROUILLON EN COURS",
+  "accResume": "Reprendre",
+  "accSentDeclarations": "DÉCLARATIONS TRANSMISES",
+  "accNoSentDeclarations": "Aucune déclaration transmise.",
+  "accDeleteDraftTitle": "Supprimer le brouillon ?",
+  "accDeleteDraftText": "Les informations non transmises seront perdues.",
+  "accCancel": "Annuler",
+  "accEmergencyNumbers": "Numéros d’urgence",
+  "accSearchAddress": "Rechercher une adresse",
+  "accSearch": "Rechercher",
+  "accMyPosition": "Ma position",
+  "accSelectedPlace": "LIEU SÉLECTIONNÉ",
+  "accConfirmPlace": "Confirmer ce lieu",
+  "accMinChars": "Saisissez au moins 3 caractères.",
+  "accPlaceFetchFailed": "Impossible de récupérer ce lieu.",
+  "cstNotProvided": "Non renseigné",
+  "cstClear": "Effacer",
+  "cstEdit": "Modifier",
+  "cstTapToDrawFullscreen": "Touchez pour dessiner en plein écran",
+  "cstCloseWithoutSaving": "Fermer sans enregistrer",
+  "cstUndoLastStroke": "Annuler le dernier trait",
+  "cstClearAll": "Tout effacer",
+  "cstDone": "Terminé",
+  "cstSignHint": "Signez avec votre doigt ou le curseur",
+  "cstGuestModeTitle": "Mode invité — Conducteur B",
+  "cstShareWithDriverB": "Partage avec le conducteur B",
+  "cstGuestQrInstructions": "Faites scanner ce QR code au conducteur B avec son smartphone pour qu’il vérifie ses informations et suive la déclaration en direct.",
+  "cstNoInstallRequired": "Aucune installation d’application requise pour le conducteur B.",
+  "cstGuestLinkCopied": "Lien invité copié dans le presse-papier !",
+  "cstCopyGuestLink": "Copier le lien d’accès invité",
+  "cstContinueOnThisDevice": "Continuer la saisie sur cet appareil",
+  "cstSealedTitle": "Constat scellé",
+  "cstSealedOnPhone": "Constat scellé sur le téléphone",
+  "cstSealedAndSent": "Constat scellé et transmis",
+  "cstSealedOfflineHint": "Pas de réseau : il sera transmis et signé par le serveur dès le retour de la connexion.",
+  "cstSealedOnlineHint": "Document officiel inaltérable signé bilatéralement.",
+  "cstOfflineCertification": "CERTIFICATION HORS-LIGNE (JWS)",
+  "cstScanQrToVerify": "Scannez ce QR Code pour certifier l’authenticité et l’intégrité du constat sans connexion au serveur.",
+  "cstCertifiedQr": "QR Code Certifié",
+  "cstEcdsaCertified": "Signature ECDSA P-256 certifiée — Zero-Dependency Verification",
+  "cstVehicleA": "Véhicule A",
+  "cstVehicleB": "Véhicule B",
+  "cstDriverA": "Conducteur A",
+  "cstDriverB": "Conducteur B",
+  "cstPlateA": "Immatriculation A",
+  "cstPlateB": "Immatriculation B",
+  "cstInsurerA": "Assurance A",
+  "cstInsurerB": "Assurance B",
+  "cstPolicyLine": "Police : {policy}",
+  "@cstPolicyLine": {
+    "placeholders": {
+      "policy": {
+        "type": "String"
+      }
+    }
+  },
+  "cstViewOfficialPdf": "Consulter l’exemplaire officiel (PDF)",
+  "cstShareSealed": "Partager le constat scellé",
+  "cstBackToHome": "Retour à l’accueil",
+  "cstPdfPreviewError": "Erreur aperçu PDF : {error}",
+  "@cstPdfPreviewError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "cstPdfShareError": "Erreur partage PDF : {error}",
+  "@cstPdfShareError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "cstDriverBTitle": "Informations du conducteur B",
+  "cstDriverBSubtitle": "Données nécessaires au constat, isolées de votre profil.",
+  "cstScanLicenseAi": "Scanner le permis avec l’IA",
+  "cstScanLicenseHint": "La photo est analysée localement. Vérifiez toujours les données détectées.",
+  "cstScanning": "Analyse en cours…",
+  "cstTakeLicensePhoto": "Photographier le permis",
+  "cstFullNameRequired": "Nom complet *",
+  "cstLicenseNumber": "Numéro de permis",
+  "cstLicenseExpiry": "Date de validité du permis",
+  "cstPlateRequired": "Immatriculation *",
+  "cstInsuranceSection": "ASSURANCE",
+  "cstPolicyNumber": "N° de police / attestation d’assurance",
+  "cstNoTextDetected": "Aucun texte détecté. Reprenez la photo avec plus de lumière.",
+  "cstLicenseScanned": "Permis analysé. Vérifiez les champs avant de continuer.",
+  "cstScanFailed": "Analyse impossible. Vérifiez la photo et réessayez.",
+  "cstReviewDetectedData": "Vérifier les données détectées",
+  "cstOcrWarning": "L’OCR peut faire des erreurs. Corrigez les champs avant confirmation.",
+  "cstFullName": "Nom complet",
+  "cstLicenseNumberDialog": "Numéro du permis",
+  "cstExpiryDate": "Date de validité",
+  "cstRecognizedText": "Texte reconnu par ML Kit",
+  "cstCancel": "Annuler",
+  "cstUseThisData": "Utiliser ces données",
+  "cstClearDate": "Effacer la date",
+  "cstCircumstancesTitle": "Circonstances de l’accident (FTUSA)",
+  "cstCircumstancesHint": "Cochez la ou les cases utiles pour le véhicule A (bleu) et le véhicule B (ambre).",
+  "cstBoxesA": "Véhicule A : {count} case(s)",
+  "@cstBoxesA": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cstBoxesB": "Véhicule B : {count} case(s)",
+  "@cstBoxesB": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cstCircumstancesHeader": "12. Circonstances",
+  "cstCircumstance1": "En stationnement / À l’arrêt",
+  "cstCircumstance2": "Quittait un stationnement / ouvrait une portière",
+  "cstCircumstance3": "Prenait un stationnement",
+  "cstCircumstance4": "Sortait d’un parking, lieu privé ou chemin",
+  "cstCircumstance5": "S’engageait dans un parking, lieu privé ou chemin",
+  "cstCircumstance6": "S’engageait sur une place à sens giratoire",
+  "cstCircumstance7": "Circulait sur une place à sens giratoire",
+  "cstCircumstance8": "Heurtait à l’arrière (même sens, même file)",
+  "cstCircumstance9": "Roulait dans le même sens sur une file différente",
+  "cstCircumstance10": "Changeait de file",
+  "cstCircumstance11": "Doublait",
+  "cstCircumstance12": "Virait à droite",
+  "cstCircumstance13": "Virait à gauche",
+  "cstCircumstance14": "Reculait",
+  "cstCircumstance15": "Empiétait sur la chaussée en sens inverse",
+  "cstCircumstance16": "Venait de droite (dans un carrefour)",
+  "cstCircumstance17": "N’avait pas observé un signal de priorité",
+  "cstObservations": "Observations complémentaires",
+  "cstSketchTitle": "Croquis et point de choc",
+  "cstSketchFieldTitle": "Croquis de l’accident",
+  "cstSketchHint": "Dessinez les voies, les véhicules et leur direction",
+  "cstImpactZoneTitle": "Zone de choc sur votre véhicule",
+  "cstSignInstructions": "Relisez les informations puis signez dans les deux zones.",
+  "cstSignatureA": "Signature conducteur A",
+  "cstSignatureB": "Signature conducteur B",
+  "cstShaLock": "Verrouillage SHA-256",
+  "cstShaLockHint": "Le constat sera rendu infalsifiable après la double signature."
 }

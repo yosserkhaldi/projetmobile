@@ -2564,4 +2564,1410 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get dashNoCompany => 'Sans compagnie';
+
+  @override
+  String get vehAddVehicle => 'Ajouter un véhicule';
+
+  @override
+  String get vehEditVehicle => 'Modifier le véhicule';
+
+  @override
+  String get vehEdit => 'Modifier';
+
+  @override
+  String get vehArchive => 'Archiver';
+
+  @override
+  String get vehUnarchive => 'Désarchiver';
+
+  @override
+  String get vehDelete => 'Supprimer';
+
+  @override
+  String get vehCancel => 'Annuler';
+
+  @override
+  String get vehInsurance => 'Assurance';
+
+  @override
+  String get vehInsuranceContract => 'Contrat d\'assurance';
+
+  @override
+  String get vehTechnicalInspection => 'Visite technique';
+
+  @override
+  String get vehMileage => 'Kilométrage';
+
+  @override
+  String vehMileageValue(int thousands) {
+    return '$thousands 000 km';
+  }
+
+  @override
+  String get vehType => 'Type';
+
+  @override
+  String get vehFuel => 'Carburant';
+
+  @override
+  String get vehYear => 'Année';
+
+  @override
+  String get vehColor => 'Couleur';
+
+  @override
+  String get vehPolicyNumber => 'N° de police';
+
+  @override
+  String get vehExpiredBadge => 'EXPIRÉ';
+
+  @override
+  String get vehStatusOk => 'OK';
+
+  @override
+  String vehDaysShort(int days) {
+    return '${days}j';
+  }
+
+  @override
+  String vehDaysOverdue(int days) {
+    return '${days}j\ndépassé';
+  }
+
+  @override
+  String get vehDateHint => 'JJ/MM/AAAA';
+
+  @override
+  String get vehTypeCar => 'Voiture';
+
+  @override
+  String get vehTypeMoto => 'Moto';
+
+  @override
+  String get vehTypeTruck => 'Camion';
+
+  @override
+  String get vehTypeVan => 'Camionnette';
+
+  @override
+  String get vehOther => 'Autre';
+
+  @override
+  String get vehFuelPetrol => 'Essence';
+
+  @override
+  String get vehFuelDiesel => 'Diesel';
+
+  @override
+  String get vehFuelElectric => 'Électrique';
+
+  @override
+  String get vehFuelHybrid => 'Hybride';
+
+  @override
+  String get vehAlertsTitle => 'Alertes d\'échéance';
+
+  @override
+  String get vehAlertsEmptyTitle => 'Aucune alerte active';
+
+  @override
+  String get vehAlertsEmptyBody =>
+      'Tous vos contrats et visites techniques\nsont à jour.';
+
+  @override
+  String get vehAlertsGroupExpired => 'Expiré(s)';
+
+  @override
+  String get vehAlertsGroupExpiring => 'Expire bientôt';
+
+  @override
+  String get vehAlertsSummaryExpired => 'Expirés';
+
+  @override
+  String get vehAlertsSummaryNear => 'Proches';
+
+  @override
+  String get vehAlertsSummaryTotal => 'Total';
+
+  @override
+  String get vehAlertInsuranceExpired => 'Assurance EXPIRÉE';
+
+  @override
+  String vehAlertInsuranceExpiring(int days) {
+    return 'Assurance expire dans $days j.';
+  }
+
+  @override
+  String get vehAlertTechnicalExpired => 'Visite technique EXPIRÉE';
+
+  @override
+  String vehAlertTechnicalExpiring(int days) {
+    return 'Visite technique dans $days j.';
+  }
+
+  @override
+  String get vehListTitle => 'Véhicules & contrats';
+
+  @override
+  String vehListActiveCount(int count) {
+    return '$count véhicule(s) actif(s)';
+  }
+
+  @override
+  String vehTabActive(int count) {
+    return 'Actifs ($count)';
+  }
+
+  @override
+  String vehTabArchived(int count) {
+    return 'Archivés ($count)';
+  }
+
+  @override
+  String get vehEmptyArchived => 'Aucun véhicule archivé';
+
+  @override
+  String get vehEmptyActive => 'Ajoutez votre premier véhicule';
+
+  @override
+  String vehPolicyValue(String policy) {
+    return 'Police $policy';
+  }
+
+  @override
+  String get vehAiAnalysis => 'Analyse IA';
+
+  @override
+  String get vehDeleteTitle => 'Supprimer ce véhicule ?';
+
+  @override
+  String vehDeleteBody(String name, String plate) {
+    return '$name ($plate) sera définitivement supprimé.';
+  }
+
+  @override
+  String get vehSectionInfo => 'Informations';
+
+  @override
+  String get vehRenew => 'Renouveler';
+
+  @override
+  String get vehInsurer => 'Assureur';
+
+  @override
+  String get vehExpiry => 'Expiration';
+
+  @override
+  String get vehPremiumTitle => 'Prime d’assurance estimée (IA)';
+
+  @override
+  String vehPremiumValue(String amount) {
+    return '$amount TND / an';
+  }
+
+  @override
+  String get vehNextInspection => 'Prochaine visite';
+
+  @override
+  String get vehClaimsHistory => 'Historique sinistres';
+
+  @override
+  String get vehClaimsDeclared => 'Sinistres déclarés';
+
+  @override
+  String get vehRenewTitle => 'Renouveler le contrat d’assurance';
+
+  @override
+  String get vehExpiryDate => 'Date d’expiration';
+
+  @override
+  String get vehRenewInvalid =>
+      'Date invalide (JJ/MM/AAAA) ou n° de police manquant.';
+
+  @override
+  String get vehRenewSuccess => 'Contrat d’assurance renouvelé avec succès !';
+
+  @override
+  String get vehRiskTitle => 'Analyse de risque IA';
+
+  @override
+  String get vehRiskSubtitle => 'Calculé depuis vos données locales';
+
+  @override
+  String get vehRiskFactors => 'Facteurs détectés';
+
+  @override
+  String get vehRecommendations => 'Recommandations';
+
+  @override
+  String get vehPhotoTitle => 'Photo du véhicule';
+
+  @override
+  String get vehAddPhoto => 'Ajouter une photo';
+
+  @override
+  String get vehTakePhoto => 'Prendre une photo';
+
+  @override
+  String get vehPickFromGallery => 'Choisir depuis la galerie';
+
+  @override
+  String get vehRiskVeryOld => 'Véhicule très ancien';
+
+  @override
+  String get vehRiskVeryOldDesc => 'Plus de 20 ans — risque mécanique élevé.';
+
+  @override
+  String get vehRiskOld => 'Véhicule ancien';
+
+  @override
+  String vehRiskOldDesc(int age) {
+    return '$age ans — entretien régulier recommandé.';
+  }
+
+  @override
+  String get vehRiskMidAge => 'Véhicule d\'âge moyen';
+
+  @override
+  String vehRiskMidAgeDesc(int age) {
+    return '$age ans — vérifier la carte grise.';
+  }
+
+  @override
+  String vehRiskInsExpiredDesc(int days) {
+    return 'Expirée depuis $days jour(s) — circuler est illégal.';
+  }
+
+  @override
+  String get vehRiskInsCritical => 'Assurance critique';
+
+  @override
+  String vehRiskInsCriticalDesc(int days) {
+    return 'Expire dans $days jour(s) — renouvelez d\'urgence.';
+  }
+
+  @override
+  String get vehRiskInsSoon => 'Assurance bientôt expirée';
+
+  @override
+  String vehRiskExpiresIn(int days) {
+    return 'Expire dans $days jour(s).';
+  }
+
+  @override
+  String get vehRiskTechExpired => 'Visite technique expirée';
+
+  @override
+  String vehRiskExpiredSince(int days) {
+    return 'Expirée depuis $days jour(s).';
+  }
+
+  @override
+  String get vehRiskTechImminent => 'Visite technique imminente';
+
+  @override
+  String vehRiskInDays(int days) {
+    return 'Dans $days jour(s).';
+  }
+
+  @override
+  String get vehRiskTechNear => 'Visite technique proche';
+
+  @override
+  String get vehRiskTechUnknown => 'Visite technique inconnue';
+
+  @override
+  String get vehRiskTechUnknownDesc => 'Ajoutez la date pour un suivi précis.';
+
+  @override
+  String get vehRiskKmVeryHigh => 'Kilométrage très élevé';
+
+  @override
+  String vehRiskKmVeryHighDesc(int thousands) {
+    return '$thousands 000 km — usure importante.';
+  }
+
+  @override
+  String get vehRiskKmHigh => 'Kilométrage élevé';
+
+  @override
+  String get vehRiskKmModerate => 'Kilométrage modéré';
+
+  @override
+  String vehRiskKmDesc(int thousands) {
+    return '$thousands 000 km.';
+  }
+
+  @override
+  String get vehRiskClaimsHigh => 'Historique sinistres élevé';
+
+  @override
+  String vehRiskClaimsHighDesc(int count) {
+    return '$count sinistre(s) enregistré(s).';
+  }
+
+  @override
+  String get vehRiskClaimsMulti => 'Sinistres multiples';
+
+  @override
+  String get vehRiskClaimsMultiDesc => '2 sinistres enregistrés.';
+
+  @override
+  String get vehRiskClaimsOne => 'Sinistre précédent';
+
+  @override
+  String get vehRiskClaimsOneDesc => '1 sinistre enregistré.';
+
+  @override
+  String get vehRiskOldDiesel => 'Diesel ancien';
+
+  @override
+  String get vehRiskOldDieselDesc =>
+      'Risque de particules et usure moteur accrue.';
+
+  @override
+  String get vehRecRenewNow => 'Renouvelez votre assurance immédiatement.';
+
+  @override
+  String get vehRecSeeInsurer =>
+      'Prenez rendez-vous avec votre assureur dans les prochains jours.';
+
+  @override
+  String get vehRecTechNow => 'Effectuez votre visite technique au plus tôt.';
+
+  @override
+  String get vehRecTechSchedule =>
+      'Programmez votre visite technique prochainement.';
+
+  @override
+  String get vehRecTechAddDate =>
+      'Ajoutez la date de votre prochaine visite technique.';
+
+  @override
+  String get vehRecFullCheck =>
+      'Faites une vérification complète chez un garagiste agréé.';
+
+  @override
+  String get vehRecBeltBrakes =>
+      'Vérifiez la courroie de distribution et les plaquettes de frein.';
+
+  @override
+  String get vehRecDefensive =>
+      'Envisagez une conduite défensive pour réduire les sinistres.';
+
+  @override
+  String get vehRecAddMileage =>
+      'Renseignez le kilométrage pour une analyse plus précise.';
+
+  @override
+  String get vehRecAllGood =>
+      'Votre véhicule est en règle. Continuez l\'entretien régulier.';
+
+  @override
+  String get vehScanNothing =>
+      'Rien n’a pu être lu. Reprenez la photo à plat, bien éclairée.';
+
+  @override
+  String vehScanRead(String fields) {
+    return 'Lu par l’IA : $fields. Vérifiez avant d’enregistrer.';
+  }
+
+  @override
+  String get vehScanEstimated =>
+      'Fin de validité estimée à un an : vérifiez-la.';
+
+  @override
+  String vehScanFailed(String error) {
+    return 'Lecture impossible : $error';
+  }
+
+  @override
+  String get vehScanBusy => 'Lecture en cours… (jusqu’à 30 s)';
+
+  @override
+  String get vehScanRegistration => 'Photographier la carte grise';
+
+  @override
+  String get vehScanInsurance => 'Photographier l’attestation d’assurance';
+
+  @override
+  String get vehReadPlate => 'immatriculation';
+
+  @override
+  String get vehReadBrand => 'marque';
+
+  @override
+  String get vehReadModel => 'modèle';
+
+  @override
+  String get vehReadYear => 'année';
+
+  @override
+  String get vehReadPolicy => 'n° de contrat';
+
+  @override
+  String get vehReadExpiry => 'fin de validité';
+
+  @override
+  String get vehReadInsurer => 'assureur';
+
+  @override
+  String vehReadInsurerToPick(String insurer) {
+    return 'assureur ($insurer, à choisir dans la liste)';
+  }
+
+  @override
+  String get vehScanTitle => 'Scanner vos documents avec l’IA';
+
+  @override
+  String get vehScanBody =>
+      'Une photo de la carte grise ou de l’attestation d’assurance : l’IA remplit le formulaire, vous vérifiez.';
+
+  @override
+  String get vehSectionIdentification => 'Identification du véhicule';
+
+  @override
+  String get vehPlateRequired => 'Immatriculation *';
+
+  @override
+  String get vehPlateHint => 'Ex : 215 تونس 4521';
+
+  @override
+  String get vehBrandRequired => 'Marque *';
+
+  @override
+  String get vehModelRequired => 'Modèle *';
+
+  @override
+  String get vehYearRequired => 'Année *';
+
+  @override
+  String get vehColorHint => 'Blanc';
+
+  @override
+  String get vehKmUnit => 'km';
+
+  @override
+  String get vehPolicyNumberRequired => 'N° de police *';
+
+  @override
+  String get vehInsuranceExpiryRequired => 'Date d\'expiration assurance *';
+
+  @override
+  String get vehNextInspectionField => 'Prochaine visite technique';
+
+  @override
+  String get vehSaveChanges => 'Enregistrer les modifications';
+
+  @override
+  String get vehAddVehicleButton => 'Ajouter le véhicule';
+
+  @override
+  String get vehFieldRequired => 'Champ obligatoire.';
+
+  @override
+  String get vehYearInvalid => 'Année invalide.';
+
+  @override
+  String get vehDateFormat => 'Format JJ/MM/AAAA.';
+
+  @override
+  String get accStepContext => 'Contexte';
+
+  @override
+  String get accStepContextHint => 'Lieu, heure et conditions';
+
+  @override
+  String get accStepDescription => 'Description';
+
+  @override
+  String get accStepDescriptionHint => 'Type, gravité et témoins';
+
+  @override
+  String get accStepEvidence => 'Preuves';
+
+  @override
+  String get accStepEvidenceHint => 'Photos, vidéo et note vocale';
+
+  @override
+  String get accStepDriverBHint => 'Identité et assurance';
+
+  @override
+  String get accStepCircumstances => 'Circonstances';
+
+  @override
+  String get accStepCircumstancesHint => 'Cases et observations';
+
+  @override
+  String get accStepSketch => 'Croquis';
+
+  @override
+  String get accStepSketchHint => 'Choc et schéma';
+
+  @override
+  String get accStepSignatures => 'Signatures';
+
+  @override
+  String get accStepSignaturesHint => 'Validation et transmission';
+
+  @override
+  String accStepOf(int step, int total) {
+    return 'Étape $step sur $total';
+  }
+
+  @override
+  String accMinutesLeft(int minutes) {
+    return '~$minutes min';
+  }
+
+  @override
+  String get accDriverA => 'Conducteur A';
+
+  @override
+  String get accDriverB => 'Conducteur B';
+
+  @override
+  String get accNewDeclaration => 'Nouvelle déclaration';
+
+  @override
+  String get accDraft => 'Brouillon';
+
+  @override
+  String get accFinishDriverBFirst =>
+      'Terminez d’abord la saisie du conducteur B.';
+
+  @override
+  String get accContinue => 'Continuer';
+
+  @override
+  String get accContinueToReport => 'Continuer vers le constat';
+
+  @override
+  String get accIAmDriverB => 'Je suis le conducteur B';
+
+  @override
+  String get accFinishAndReturnPhone => 'Terminer et rendre le téléphone';
+
+  @override
+  String get accSignAndSend => 'Signer et transmettre';
+
+  @override
+  String get accIAmDriverA => 'Je suis le conducteur A';
+
+  @override
+  String get accBack => 'Retour';
+
+  @override
+  String get accDraftSaved => 'Brouillon enregistré sur cet appareil';
+
+  @override
+  String get accThanks => 'Merci !';
+
+  @override
+  String get accReturnPhoneText =>
+      'Rendez maintenant le téléphone au conducteur A. Les deux conducteurs signeront ensemble à la fin du constat.';
+
+  @override
+  String get accChooseVehicleFirst =>
+      'Choisissez votre véhicule à la première étape.';
+
+  @override
+  String get accSealingTitle => 'Scellement cryptographique du constat…';
+
+  @override
+  String get accSealingHint => 'Calcul du hash SHA-256 et transmission';
+
+  @override
+  String accSealFailed(String error) {
+    return 'Le constat n’a pas pu être scellé : $error';
+  }
+
+  @override
+  String get accVerifyIdentityTitle => 'Vérifiez votre identité pour signer';
+
+  @override
+  String get accVerifyIdentityText =>
+      'Le constat engage les deux conducteurs : votre identité doit être vérifiée avant la signature. Votre brouillon reste enregistré.';
+
+  @override
+  String get accLater => 'Plus tard';
+
+  @override
+  String get accVerifyIdentity => 'Vérifier mon identité';
+
+  @override
+  String get accCheckPlace => 'Vérifiez le lieu de l’accident.';
+
+  @override
+  String get accWitnessPhoneInvalid =>
+      'Ajoutez un numéro valide pour le témoin.';
+
+  @override
+  String get accMinPhotos => 'Ajoutez au moins 2 photos avant de continuer.';
+
+  @override
+  String get accDriverBIncomplete =>
+      'Complétez le nom, l’immatriculation et l’assurance du conducteur B.';
+
+  @override
+  String get accCircumstanceRequired =>
+      'Sélectionnez au moins une circonstance pour le véhicule A ou B.';
+
+  @override
+  String get accSketchRequired => 'Confirmez le croquis et une zone de choc.';
+
+  @override
+  String get accSignaturesRequired =>
+      'Les deux conducteurs doivent signer le constat.';
+
+  @override
+  String accLocalDraftSaved(String time) {
+    return 'Brouillon local • sauvegardé à $time';
+  }
+
+  @override
+  String get accHandoverTitle => 'Passez le téléphone au conducteur B';
+
+  @override
+  String get accHandoverText =>
+      'Il remplit lui-même son identité, son permis, son véhicule et son assurance.';
+
+  @override
+  String get accHandoverHidden =>
+      'Vos informations restent masquées : le retour aux étapes précédentes est bloqué pendant sa saisie.';
+
+  @override
+  String get accHandoverScan =>
+      'Il peut photographier son permis : l’IA remplit les champs.';
+
+  @override
+  String get accHandoverReturn => 'À la fin, il vous rend le téléphone.';
+
+  @override
+  String get accChooseVehicle =>
+      'Choisissez votre véhicule : son assureur reçoit le constat.';
+
+  @override
+  String accInsuranceExpired(String vehicle, String date) {
+    return 'Le contrat d’assurance de $vehicle a expiré le $date. Renouvelez-le dans Véhicules avant de déclarer.';
+  }
+
+  @override
+  String get accYourVehicle => 'VOTRE VÉHICULE';
+
+  @override
+  String get accAddVehicleHint =>
+      'Ajoutez votre véhicule et son assureur : c’est à lui que le constat est transmis.';
+
+  @override
+  String get accAddMyVehicle => 'Ajouter mon véhicule';
+
+  @override
+  String accContractExpiredOn(String date) {
+    return 'Contrat expiré le $date';
+  }
+
+  @override
+  String get accInsurerMissing => 'Assureur non renseigné';
+
+  @override
+  String accInsuredUntil(String insurer, String date) {
+    return '$insurer · jusqu’au $date';
+  }
+
+  @override
+  String get accWhereWhen => 'Où et quand ?';
+
+  @override
+  String get accWhereWhenHint =>
+      'Vérifiez les informations détectées automatiquement.';
+
+  @override
+  String get accPlaceRequired => 'Indiquez le lieu de l’accident';
+
+  @override
+  String get accAccidentPlace => 'Lieu de l’accident';
+
+  @override
+  String get accChooseOnMap => 'Choisir sur la carte';
+
+  @override
+  String accGpsLine(String coords, int accuracy) {
+    return 'GPS $coords • précision ±$accuracy m';
+  }
+
+  @override
+  String get accDateTime => 'Date et heure';
+
+  @override
+  String get accWeather => 'Météo';
+
+  @override
+  String get accRoad => 'Chaussée';
+
+  @override
+  String get accLight => 'Luminosité';
+
+  @override
+  String get accPlaceConfirmed => 'Lieu de l’accident confirmé et sauvegardé.';
+
+  @override
+  String get accPositionUnavailable =>
+      'Position indisponible. Réessayez dans un instant.';
+
+  @override
+  String get accPositionDetected => 'Position détectée';
+
+  @override
+  String accUseDetectedQuestion(String place) {
+    return '$place\n\nVoulez-vous utiliser cette localisation ?';
+  }
+
+  @override
+  String get accChooseAnother => 'Choisir une autre';
+
+  @override
+  String get accUsePosition => 'Utiliser cette position';
+
+  @override
+  String get accAutoLocationFailed => 'Localisation automatique impossible.';
+
+  @override
+  String get accLocationDisabled =>
+      'Activez la localisation GPS de l’appareil.';
+
+  @override
+  String get accLocationDenied =>
+      'La permission de localisation a été refusée.';
+
+  @override
+  String get accLocationDeniedForever =>
+      'Autorisez la localisation dans les paramètres de l’application.';
+
+  @override
+  String get accAddressNotFound => 'Adresse introuvable.';
+
+  @override
+  String get accValueSunny => 'Ensoleillé';
+
+  @override
+  String get accValueRain => 'Pluie';
+
+  @override
+  String get accValueFog => 'Brouillard';
+
+  @override
+  String get accValueDry => 'Sèche';
+
+  @override
+  String get accValueWet => 'Mouillée';
+
+  @override
+  String get accValueSlippery => 'Glissante';
+
+  @override
+  String get accValueDay => 'Jour';
+
+  @override
+  String get accValueDusk => 'Crépuscule';
+
+  @override
+  String get accValueNightLit => 'Nuit éclairée';
+
+  @override
+  String get accValueNightDark => 'Nuit sombre';
+
+  @override
+  String get accEvidenceOverview => 'Vue d’ensemble';
+
+  @override
+  String get accEvidenceDamageA => 'Dégâts véhicule A';
+
+  @override
+  String get accEvidenceDamageB => 'Dégâts véhicule B';
+
+  @override
+  String get accEvidencePlates => 'Plaques';
+
+  @override
+  String get accWhatHappened => 'Que s’est-il passé ?';
+
+  @override
+  String get accWhatHappenedHint =>
+      'Ces informations permettent de prioriser votre dossier.';
+
+  @override
+  String get accAccidentType => 'Type d\'accident';
+
+  @override
+  String get accSeverity => 'Gravité';
+
+  @override
+  String get accVehicles => 'Véhicules';
+
+  @override
+  String get accInjured => 'Blessés';
+
+  @override
+  String get accSecureArea => 'Sécurisez la zone et appelez les secours';
+
+  @override
+  String get accSamu => 'SAMU';
+
+  @override
+  String get accPolice => 'Police';
+
+  @override
+  String get accCivilProtection => 'Protection civile';
+
+  @override
+  String accCalling(String number) {
+    return 'Appel du $number';
+  }
+
+  @override
+  String get accWitnessOptional => 'Témoin (optionnel)';
+
+  @override
+  String get accWitnessName => 'Nom du témoin';
+
+  @override
+  String get accPhone => 'Téléphone';
+
+  @override
+  String get accGuidedPhotos => 'Photos guidées';
+
+  @override
+  String accPhotosProgress(int count) {
+    return '$count/4 vues ajoutées • 2 minimum requises';
+  }
+
+  @override
+  String get accPhotoSaved => 'Photo enregistrée • touchez pour reprendre';
+
+  @override
+  String get accTapToOpenCamera => 'Touchez pour ouvrir la caméra';
+
+  @override
+  String get accSceneVideo => 'Vidéo de la scène';
+
+  @override
+  String get accOpeningCamera => 'Ouverture de la caméra…';
+
+  @override
+  String get accVideoSaved => 'Vidéo enregistrée • touchez pour la lire';
+
+  @override
+  String get accFilmScene => 'Filmez la scène • 30 secondes maximum';
+
+  @override
+  String get accStopRecording => 'Arrêter l’enregistrement';
+
+  @override
+  String get accVoiceNote => 'Note vocale';
+
+  @override
+  String get accRecordingInProgress =>
+      'Enregistrement en cours… touchez pour arrêter';
+
+  @override
+  String get accVoiceNoteSaved => 'Note enregistrée • touchez pour écouter';
+
+  @override
+  String get accDescribeByVoice => 'Décrivez la scène avec votre voix';
+
+  @override
+  String get accVideoSaveFailed => 'Impossible d’enregistrer la vidéo.';
+
+  @override
+  String get accMicPermission =>
+      'Autorisez le microphone pour enregistrer une note vocale.';
+
+  @override
+  String get accMicFailed => 'Impossible de démarrer le microphone.';
+
+  @override
+  String get accVideoMissing =>
+      'La vidéo n’existe plus. Vous pouvez la reprendre.';
+
+  @override
+  String get accVoiceNoteMissing =>
+      'La note vocale n’existe plus. Vous pouvez la refaire.';
+
+  @override
+  String get accListen => 'Écouter';
+
+  @override
+  String get accRedoRecording => 'Refaire l’enregistrement';
+
+  @override
+  String get accDelete => 'Supprimer';
+
+  @override
+  String get accPause => 'Pause';
+
+  @override
+  String get accPlay => 'Lire';
+
+  @override
+  String get accSummary => 'RÉCAPITULATIF';
+
+  @override
+  String accSummaryCounts(int vehicles, int injured, int photos) {
+    return '$vehicles véhicule(s) • $injured blessé(s) • $photos photo(s)';
+  }
+
+  @override
+  String get accReportCompleted => 'Constat complété';
+
+  @override
+  String get accReviewHint =>
+      'Vérifiez toutes les informations avant la transmission.';
+
+  @override
+  String get accSectionAccident => 'Accident';
+
+  @override
+  String get accPlace => 'Lieu';
+
+  @override
+  String get accType => 'Type';
+
+  @override
+  String get accConditions => 'Conditions';
+
+  @override
+  String get accVehiclesInjured => 'Véhicules / blessés';
+
+  @override
+  String accVehiclesInjuredValue(int vehicles, int injured) {
+    return '$vehicles véhicule(s) • $injured blessé(s)';
+  }
+
+  @override
+  String get accWitness => 'Témoin';
+
+  @override
+  String get accSectionDriverA => 'Conducteur & Véhicule A';
+
+  @override
+  String get accName => 'Nom';
+
+  @override
+  String get accLicense => 'Permis';
+
+  @override
+  String get accVehicle => 'Véhicule';
+
+  @override
+  String get accPlate => 'Immatriculation';
+
+  @override
+  String get accInsurance => 'Assurance';
+
+  @override
+  String get accPolicyNumber => 'N° de police';
+
+  @override
+  String get accLicenseExpiry => 'Validité du permis';
+
+  @override
+  String get accObservations => 'Observations';
+
+  @override
+  String get accImpactZones => 'Zones de choc';
+
+  @override
+  String get accPhotos => 'Photos';
+
+  @override
+  String get accSketchMissing => 'Croquis manquant';
+
+  @override
+  String get accPdfFailed => 'Impossible de générer le PDF. Réessayez.';
+
+  @override
+  String get accPdfTitle => 'Constat PDF';
+
+  @override
+  String get accPdfHint =>
+      'Le document reprend les informations officielles, photos, croquis et signatures.';
+
+  @override
+  String get accPreview => 'Aperçu';
+
+  @override
+  String get accShare => 'Partager';
+
+  @override
+  String get accNotProvided => 'Non renseigné';
+
+  @override
+  String get accNoPhotos => 'Aucune photo enregistrée.';
+
+  @override
+  String get accMyDeclarations => 'Mes déclarations';
+
+  @override
+  String get accMyDeclarationsHint => 'Brouillons et dossiers transmis';
+
+  @override
+  String get accDraftInProgress => 'BROUILLON EN COURS';
+
+  @override
+  String get accResume => 'Reprendre';
+
+  @override
+  String get accSentDeclarations => 'DÉCLARATIONS TRANSMISES';
+
+  @override
+  String get accNoSentDeclarations => 'Aucune déclaration transmise.';
+
+  @override
+  String get accDeleteDraftTitle => 'Supprimer le brouillon ?';
+
+  @override
+  String get accDeleteDraftText =>
+      'Les informations non transmises seront perdues.';
+
+  @override
+  String get accCancel => 'Annuler';
+
+  @override
+  String get accEmergencyNumbers => 'Numéros d’urgence';
+
+  @override
+  String get accSearchAddress => 'Rechercher une adresse';
+
+  @override
+  String get accSearch => 'Rechercher';
+
+  @override
+  String get accMyPosition => 'Ma position';
+
+  @override
+  String get accSelectedPlace => 'LIEU SÉLECTIONNÉ';
+
+  @override
+  String get accConfirmPlace => 'Confirmer ce lieu';
+
+  @override
+  String get accMinChars => 'Saisissez au moins 3 caractères.';
+
+  @override
+  String get accPlaceFetchFailed => 'Impossible de récupérer ce lieu.';
+
+  @override
+  String get cstNotProvided => 'Non renseigné';
+
+  @override
+  String get cstClear => 'Effacer';
+
+  @override
+  String get cstEdit => 'Modifier';
+
+  @override
+  String get cstTapToDrawFullscreen => 'Touchez pour dessiner en plein écran';
+
+  @override
+  String get cstCloseWithoutSaving => 'Fermer sans enregistrer';
+
+  @override
+  String get cstUndoLastStroke => 'Annuler le dernier trait';
+
+  @override
+  String get cstClearAll => 'Tout effacer';
+
+  @override
+  String get cstDone => 'Terminé';
+
+  @override
+  String get cstSignHint => 'Signez avec votre doigt ou le curseur';
+
+  @override
+  String get cstGuestModeTitle => 'Mode invité — Conducteur B';
+
+  @override
+  String get cstShareWithDriverB => 'Partage avec le conducteur B';
+
+  @override
+  String get cstGuestQrInstructions =>
+      'Faites scanner ce QR code au conducteur B avec son smartphone pour qu’il vérifie ses informations et suive la déclaration en direct.';
+
+  @override
+  String get cstNoInstallRequired =>
+      'Aucune installation d’application requise pour le conducteur B.';
+
+  @override
+  String get cstGuestLinkCopied => 'Lien invité copié dans le presse-papier !';
+
+  @override
+  String get cstCopyGuestLink => 'Copier le lien d’accès invité';
+
+  @override
+  String get cstContinueOnThisDevice => 'Continuer la saisie sur cet appareil';
+
+  @override
+  String get cstSealedTitle => 'Constat scellé';
+
+  @override
+  String get cstSealedOnPhone => 'Constat scellé sur le téléphone';
+
+  @override
+  String get cstSealedAndSent => 'Constat scellé et transmis';
+
+  @override
+  String get cstSealedOfflineHint =>
+      'Pas de réseau : il sera transmis et signé par le serveur dès le retour de la connexion.';
+
+  @override
+  String get cstSealedOnlineHint =>
+      'Document officiel inaltérable signé bilatéralement.';
+
+  @override
+  String get cstOfflineCertification => 'CERTIFICATION HORS-LIGNE (JWS)';
+
+  @override
+  String get cstScanQrToVerify =>
+      'Scannez ce QR Code pour certifier l’authenticité et l’intégrité du constat sans connexion au serveur.';
+
+  @override
+  String get cstCertifiedQr => 'QR Code Certifié';
+
+  @override
+  String get cstEcdsaCertified =>
+      'Signature ECDSA P-256 certifiée — Zero-Dependency Verification';
+
+  @override
+  String get cstVehicleA => 'Véhicule A';
+
+  @override
+  String get cstVehicleB => 'Véhicule B';
+
+  @override
+  String get cstDriverA => 'Conducteur A';
+
+  @override
+  String get cstDriverB => 'Conducteur B';
+
+  @override
+  String get cstPlateA => 'Immatriculation A';
+
+  @override
+  String get cstPlateB => 'Immatriculation B';
+
+  @override
+  String get cstInsurerA => 'Assurance A';
+
+  @override
+  String get cstInsurerB => 'Assurance B';
+
+  @override
+  String cstPolicyLine(String policy) {
+    return 'Police : $policy';
+  }
+
+  @override
+  String get cstViewOfficialPdf => 'Consulter l’exemplaire officiel (PDF)';
+
+  @override
+  String get cstShareSealed => 'Partager le constat scellé';
+
+  @override
+  String get cstBackToHome => 'Retour à l’accueil';
+
+  @override
+  String cstPdfPreviewError(String error) {
+    return 'Erreur aperçu PDF : $error';
+  }
+
+  @override
+  String cstPdfShareError(String error) {
+    return 'Erreur partage PDF : $error';
+  }
+
+  @override
+  String get cstDriverBTitle => 'Informations du conducteur B';
+
+  @override
+  String get cstDriverBSubtitle =>
+      'Données nécessaires au constat, isolées de votre profil.';
+
+  @override
+  String get cstScanLicenseAi => 'Scanner le permis avec l’IA';
+
+  @override
+  String get cstScanLicenseHint =>
+      'La photo est analysée localement. Vérifiez toujours les données détectées.';
+
+  @override
+  String get cstScanning => 'Analyse en cours…';
+
+  @override
+  String get cstTakeLicensePhoto => 'Photographier le permis';
+
+  @override
+  String get cstFullNameRequired => 'Nom complet *';
+
+  @override
+  String get cstLicenseNumber => 'Numéro de permis';
+
+  @override
+  String get cstLicenseExpiry => 'Date de validité du permis';
+
+  @override
+  String get cstPlateRequired => 'Immatriculation *';
+
+  @override
+  String get cstInsuranceSection => 'ASSURANCE';
+
+  @override
+  String get cstPolicyNumber => 'N° de police / attestation d’assurance';
+
+  @override
+  String get cstNoTextDetected =>
+      'Aucun texte détecté. Reprenez la photo avec plus de lumière.';
+
+  @override
+  String get cstLicenseScanned =>
+      'Permis analysé. Vérifiez les champs avant de continuer.';
+
+  @override
+  String get cstScanFailed =>
+      'Analyse impossible. Vérifiez la photo et réessayez.';
+
+  @override
+  String get cstReviewDetectedData => 'Vérifier les données détectées';
+
+  @override
+  String get cstOcrWarning =>
+      'L’OCR peut faire des erreurs. Corrigez les champs avant confirmation.';
+
+  @override
+  String get cstFullName => 'Nom complet';
+
+  @override
+  String get cstLicenseNumberDialog => 'Numéro du permis';
+
+  @override
+  String get cstExpiryDate => 'Date de validité';
+
+  @override
+  String get cstRecognizedText => 'Texte reconnu par ML Kit';
+
+  @override
+  String get cstCancel => 'Annuler';
+
+  @override
+  String get cstUseThisData => 'Utiliser ces données';
+
+  @override
+  String get cstClearDate => 'Effacer la date';
+
+  @override
+  String get cstCircumstancesTitle => 'Circonstances de l’accident (FTUSA)';
+
+  @override
+  String get cstCircumstancesHint =>
+      'Cochez la ou les cases utiles pour le véhicule A (bleu) et le véhicule B (ambre).';
+
+  @override
+  String cstBoxesA(int count) {
+    return 'Véhicule A : $count case(s)';
+  }
+
+  @override
+  String cstBoxesB(int count) {
+    return 'Véhicule B : $count case(s)';
+  }
+
+  @override
+  String get cstCircumstancesHeader => '12. Circonstances';
+
+  @override
+  String get cstCircumstance1 => 'En stationnement / À l’arrêt';
+
+  @override
+  String get cstCircumstance2 =>
+      'Quittait un stationnement / ouvrait une portière';
+
+  @override
+  String get cstCircumstance3 => 'Prenait un stationnement';
+
+  @override
+  String get cstCircumstance4 => 'Sortait d’un parking, lieu privé ou chemin';
+
+  @override
+  String get cstCircumstance5 =>
+      'S’engageait dans un parking, lieu privé ou chemin';
+
+  @override
+  String get cstCircumstance6 => 'S’engageait sur une place à sens giratoire';
+
+  @override
+  String get cstCircumstance7 => 'Circulait sur une place à sens giratoire';
+
+  @override
+  String get cstCircumstance8 => 'Heurtait à l’arrière (même sens, même file)';
+
+  @override
+  String get cstCircumstance9 =>
+      'Roulait dans le même sens sur une file différente';
+
+  @override
+  String get cstCircumstance10 => 'Changeait de file';
+
+  @override
+  String get cstCircumstance11 => 'Doublait';
+
+  @override
+  String get cstCircumstance12 => 'Virait à droite';
+
+  @override
+  String get cstCircumstance13 => 'Virait à gauche';
+
+  @override
+  String get cstCircumstance14 => 'Reculait';
+
+  @override
+  String get cstCircumstance15 => 'Empiétait sur la chaussée en sens inverse';
+
+  @override
+  String get cstCircumstance16 => 'Venait de droite (dans un carrefour)';
+
+  @override
+  String get cstCircumstance17 => 'N’avait pas observé un signal de priorité';
+
+  @override
+  String get cstObservations => 'Observations complémentaires';
+
+  @override
+  String get cstSketchTitle => 'Croquis et point de choc';
+
+  @override
+  String get cstSketchFieldTitle => 'Croquis de l’accident';
+
+  @override
+  String get cstSketchHint =>
+      'Dessinez les voies, les véhicules et leur direction';
+
+  @override
+  String get cstImpactZoneTitle => 'Zone de choc sur votre véhicule';
+
+  @override
+  String get cstSignInstructions =>
+      'Relisez les informations puis signez dans les deux zones.';
+
+  @override
+  String get cstSignatureA => 'Signature conducteur A';
+
+  @override
+  String get cstSignatureB => 'Signature conducteur B';
+
+  @override
+  String get cstShaLock => 'Verrouillage SHA-256';
+
+  @override
+  String get cstShaLockHint =>
+      'Le constat sera rendu infalsifiable après la double signature.';
 }

@@ -50,6 +50,15 @@ Future<void> signIn(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Lieu de l'accident : le GPS est coupé dans les tests, il est saisi.
+Future<void> typePlace(WidgetTester tester) async {
+  await tester.enterText(
+    find.widgetWithText(TextFormField, 'Lieu de l’accident'),
+    'Avenue Habib Bourguiba, Tunis',
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   group('connexion', () {
     testWidgets('conducteur : accès aux cinq onglets', (tester) async {
@@ -2240,6 +2249,7 @@ void main() {
     await signIn(tester);
     await tester.tap(find.text('Commencer une déclaration'));
     await tester.pumpAndSettle();
+    await typePlace(tester);
 
     await tester.tap(find.text('Continuer'));
     await tester.pumpAndSettle();
@@ -2300,10 +2310,12 @@ void main() {
     await tester.tap(find.text('Commencer une déclaration'));
     await tester.pumpAndSettle();
     // Seul véhicule : choisi d'office, mais son contrat a expiré.
-    expect(find.textContaining('Contrat expiré le 31/01/2025'), findsOneWidget);
+    // La date est isolée de gauche à droite (lecture en arabe).
+    expect(find.textContaining('Contrat expiré le'), findsOneWidget);
+    expect(find.textContaining('31/01/2025'), findsWidgets);
     await tester.tap(find.text('Continuer'));
     await tester.pump();
-    expect(find.textContaining('a expiré le 31/01/2025'), findsOneWidget);
+    expect(find.textContaining('a expiré le'), findsOneWidget);
     expect(find.text('Que s’est-il passé ?'), findsNothing);
   });
 
@@ -2340,6 +2352,7 @@ void main() {
     await signIn(tester);
     await tester.tap(find.text('Commencer une déclaration'));
     await tester.pumpAndSettle();
+    await typePlace(tester);
     await tester.tap(find.text('Continuer'));
     await tester.pumpAndSettle();
     expect(find.text('Que s’est-il passé ?'), findsOneWidget);

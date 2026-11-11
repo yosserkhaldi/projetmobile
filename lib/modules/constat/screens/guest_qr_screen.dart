@@ -4,6 +4,7 @@ import 'package:qr/qr.dart';
 
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 
 class GuestQrScreen extends StatelessWidget {
@@ -20,7 +21,7 @@ class GuestQrScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: palette.canvas,
       appBar: AppBar(
-        title: const Text('Mode invité — Conducteur B'),
+        title: Text(context.t.cstGuestModeTitle),
       ),
       body: SafeArea(
         child: ListView(
@@ -36,10 +37,10 @@ class GuestQrScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 12,
                           backgroundColor: AppColors.accent,
                           child: Text(
@@ -51,16 +52,16 @@ class GuestQrScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
-                          'Partage avec le conducteur B',
-                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                          context.t.cstShareWithDriverB,
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Faites scanner ce QR code au conducteur B avec son smartphone pour qu’il vérifie ses informations et suive la déclaration en direct.',
+                      context.t.cstGuestQrInstructions,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: palette.textMuted, fontSize: 13),
                     ),
@@ -101,7 +102,7 @@ class GuestQrScreen extends StatelessWidget {
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Aucune installation d’application requise pour le conducteur B.',
+                              context.t.cstNoInstallRequired,
                               style: TextStyle(
                                 color: context.palette.primaryText,
                                 fontSize: 12,
@@ -121,17 +122,17 @@ class GuestQrScreen extends StatelessWidget {
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: inviteLink));
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Lien invité copié dans le presse-papier !')),
+                  SnackBar(content: Text(context.t.cstGuestLinkCopied)),
                 );
               },
               icon: const Icon(Icons.link),
-              label: const Text('Copier le lien d’accès invité'),
+              label: Text(context.t.cstCopyGuestLink),
             ),
             const SizedBox(height: 10),
             FilledButton.icon(
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.check),
-              label: const Text('Continuer la saisie sur cet appareil'),
+              label: Text(context.t.cstContinueOnThisDevice),
             ),
           ],
         ),

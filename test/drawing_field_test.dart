@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/constat_steps.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
@@ -8,6 +9,9 @@ Future<List<List<Map<String, double>>>> pumpField(WidgetTester tester) async {
   var changes = 0;
   await tester.pumpWidget(
     MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('fr'),
       home: Scaffold(
         body: ListView(
           children: [
@@ -94,6 +98,9 @@ void main() {
     var value = '';
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('fr'),
         home: Scaffold(
           body: StatefulBuilder(
             builder: (context, setState) => DateField(

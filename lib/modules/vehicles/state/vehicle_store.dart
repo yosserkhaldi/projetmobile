@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
+import 'package:mon_constat_digital/l10n/app_localizations.dart';
 import 'package:mon_constat_digital/modules/vehicles/data/vehicle_database.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 import 'package:mon_constat_digital/modules/vehicles/services/vehicle_ai_service.dart';
@@ -295,9 +296,9 @@ class VehicleStore extends ChangeNotifier {
 
   // ── IA ────────────────────────────────────────────────────────────────────
 
-  /// Score de risque IA pour un véhicule donné.
-  RiskScore riskScoreFor(Vehicle v) =>
-      VehicleAiService.instance.analyze(v);
+  /// Score de risque IA pour un véhicule donné, textes dans la langue [t].
+  RiskScore riskScoreFor(Vehicle v, AppLocalizations t) =>
+      VehicleAiService.instance.analyze(v, t);
 
   // ── Dispose ───────────────────────────────────────────────────────────────
 
@@ -333,13 +334,13 @@ class VehicleAlert {
   bool get isExpired =>
       kind == AlertKind.insuranceExpired || kind == AlertKind.technicalExpired;
 
-  String get title => switch (kind) {
-    AlertKind.insuranceExpired => 'Assurance EXPIRÉE',
+  String titleIn(AppLocalizations t) => switch (kind) {
+    AlertKind.insuranceExpired => t.vehAlertInsuranceExpired,
     AlertKind.insuranceExpiring =>
-      'Assurance expire dans $daysRemaining j.',
-    AlertKind.technicalExpired => 'Visite technique EXPIRÉE',
+      t.vehAlertInsuranceExpiring(daysRemaining),
+    AlertKind.technicalExpired => t.vehAlertTechnicalExpired,
     AlertKind.technicalExpiring =>
-      'Visite technique dans $daysRemaining j.',
+      t.vehAlertTechnicalExpiring(daysRemaining),
   };
 
   String get subtitle => '${vehicle.brand} ${vehicle.model} · ${vehicle.plate}';

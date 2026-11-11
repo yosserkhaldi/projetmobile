@@ -4605,6 +4605,2532 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Sans compagnie'**
   String get dashNoCompany;
+
+  /// No description provided for @vehAddVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter un véhicule'**
+  String get vehAddVehicle;
+
+  /// No description provided for @vehEditVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier le véhicule'**
+  String get vehEditVehicle;
+
+  /// No description provided for @vehEdit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier'**
+  String get vehEdit;
+
+  /// No description provided for @vehArchive.
+  ///
+  /// In fr, this message translates to:
+  /// **'Archiver'**
+  String get vehArchive;
+
+  /// No description provided for @vehUnarchive.
+  ///
+  /// In fr, this message translates to:
+  /// **'Désarchiver'**
+  String get vehUnarchive;
+
+  /// No description provided for @vehDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer'**
+  String get vehDelete;
+
+  /// No description provided for @vehCancel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get vehCancel;
+
+  /// No description provided for @vehInsurance.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assurance'**
+  String get vehInsurance;
+
+  /// No description provided for @vehInsuranceContract.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contrat d\'assurance'**
+  String get vehInsuranceContract;
+
+  /// No description provided for @vehTechnicalInspection.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visite technique'**
+  String get vehTechnicalInspection;
+
+  /// No description provided for @vehMileage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Kilométrage'**
+  String get vehMileage;
+
+  /// No description provided for @vehMileageValue.
+  ///
+  /// In fr, this message translates to:
+  /// **'{thousands} 000 km'**
+  String vehMileageValue(int thousands);
+
+  /// No description provided for @vehType.
+  ///
+  /// In fr, this message translates to:
+  /// **'Type'**
+  String get vehType;
+
+  /// No description provided for @vehFuel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Carburant'**
+  String get vehFuel;
+
+  /// No description provided for @vehYear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Année'**
+  String get vehYear;
+
+  /// No description provided for @vehColor.
+  ///
+  /// In fr, this message translates to:
+  /// **'Couleur'**
+  String get vehColor;
+
+  /// No description provided for @vehPolicyNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de police'**
+  String get vehPolicyNumber;
+
+  /// No description provided for @vehExpiredBadge.
+  ///
+  /// In fr, this message translates to:
+  /// **'EXPIRÉ'**
+  String get vehExpiredBadge;
+
+  /// No description provided for @vehStatusOk.
+  ///
+  /// In fr, this message translates to:
+  /// **'OK'**
+  String get vehStatusOk;
+
+  /// No description provided for @vehDaysShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'{days}j'**
+  String vehDaysShort(int days);
+
+  /// No description provided for @vehDaysOverdue.
+  ///
+  /// In fr, this message translates to:
+  /// **'{days}j\ndépassé'**
+  String vehDaysOverdue(int days);
+
+  /// No description provided for @vehDateHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'JJ/MM/AAAA'**
+  String get vehDateHint;
+
+  /// No description provided for @vehTypeCar.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voiture'**
+  String get vehTypeCar;
+
+  /// No description provided for @vehTypeMoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moto'**
+  String get vehTypeMoto;
+
+  /// No description provided for @vehTypeTruck.
+  ///
+  /// In fr, this message translates to:
+  /// **'Camion'**
+  String get vehTypeTruck;
+
+  /// No description provided for @vehTypeVan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Camionnette'**
+  String get vehTypeVan;
+
+  /// No description provided for @vehOther.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre'**
+  String get vehOther;
+
+  /// No description provided for @vehFuelPetrol.
+  ///
+  /// In fr, this message translates to:
+  /// **'Essence'**
+  String get vehFuelPetrol;
+
+  /// No description provided for @vehFuelDiesel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Diesel'**
+  String get vehFuelDiesel;
+
+  /// No description provided for @vehFuelElectric.
+  ///
+  /// In fr, this message translates to:
+  /// **'Électrique'**
+  String get vehFuelElectric;
+
+  /// No description provided for @vehFuelHybrid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hybride'**
+  String get vehFuelHybrid;
+
+  /// No description provided for @vehAlertsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Alertes d\'échéance'**
+  String get vehAlertsTitle;
+
+  /// No description provided for @vehAlertsEmptyTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune alerte active'**
+  String get vehAlertsEmptyTitle;
+
+  /// No description provided for @vehAlertsEmptyBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous vos contrats et visites techniques\nsont à jour.'**
+  String get vehAlertsEmptyBody;
+
+  /// No description provided for @vehAlertsGroupExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expiré(s)'**
+  String get vehAlertsGroupExpired;
+
+  /// No description provided for @vehAlertsGroupExpiring.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expire bientôt'**
+  String get vehAlertsGroupExpiring;
+
+  /// No description provided for @vehAlertsSummaryExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expirés'**
+  String get vehAlertsSummaryExpired;
+
+  /// No description provided for @vehAlertsSummaryNear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Proches'**
+  String get vehAlertsSummaryNear;
+
+  /// No description provided for @vehAlertsSummaryTotal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Total'**
+  String get vehAlertsSummaryTotal;
+
+  /// No description provided for @vehAlertInsuranceExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assurance EXPIRÉE'**
+  String get vehAlertInsuranceExpired;
+
+  /// No description provided for @vehAlertInsuranceExpiring.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assurance expire dans {days} j.'**
+  String vehAlertInsuranceExpiring(int days);
+
+  /// No description provided for @vehAlertTechnicalExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visite technique EXPIRÉE'**
+  String get vehAlertTechnicalExpired;
+
+  /// No description provided for @vehAlertTechnicalExpiring.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visite technique dans {days} j.'**
+  String vehAlertTechnicalExpiring(int days);
+
+  /// No description provided for @vehListTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicules & contrats'**
+  String get vehListTitle;
+
+  /// No description provided for @vehListActiveCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} véhicule(s) actif(s)'**
+  String vehListActiveCount(int count);
+
+  /// No description provided for @vehTabActive.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actifs ({count})'**
+  String vehTabActive(int count);
+
+  /// No description provided for @vehTabArchived.
+  ///
+  /// In fr, this message translates to:
+  /// **'Archivés ({count})'**
+  String vehTabArchived(int count);
+
+  /// No description provided for @vehEmptyArchived.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun véhicule archivé'**
+  String get vehEmptyArchived;
+
+  /// No description provided for @vehEmptyActive.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez votre premier véhicule'**
+  String get vehEmptyActive;
+
+  /// No description provided for @vehPolicyValue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Police {policy}'**
+  String vehPolicyValue(String policy);
+
+  /// No description provided for @vehAiAnalysis.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse IA'**
+  String get vehAiAnalysis;
+
+  /// No description provided for @vehDeleteTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer ce véhicule ?'**
+  String get vehDeleteTitle;
+
+  /// No description provided for @vehDeleteBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} ({plate}) sera définitivement supprimé.'**
+  String vehDeleteBody(String name, String plate);
+
+  /// No description provided for @vehSectionInfo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Informations'**
+  String get vehSectionInfo;
+
+  /// No description provided for @vehRenew.
+  ///
+  /// In fr, this message translates to:
+  /// **'Renouveler'**
+  String get vehRenew;
+
+  /// No description provided for @vehInsurer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assureur'**
+  String get vehInsurer;
+
+  /// No description provided for @vehExpiry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expiration'**
+  String get vehExpiry;
+
+  /// No description provided for @vehPremiumTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prime d’assurance estimée (IA)'**
+  String get vehPremiumTitle;
+
+  /// No description provided for @vehPremiumValue.
+  ///
+  /// In fr, this message translates to:
+  /// **'{amount} TND / an'**
+  String vehPremiumValue(String amount);
+
+  /// No description provided for @vehNextInspection.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prochaine visite'**
+  String get vehNextInspection;
+
+  /// No description provided for @vehClaimsHistory.
+  ///
+  /// In fr, this message translates to:
+  /// **'Historique sinistres'**
+  String get vehClaimsHistory;
+
+  /// No description provided for @vehClaimsDeclared.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sinistres déclarés'**
+  String get vehClaimsDeclared;
+
+  /// No description provided for @vehRenewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Renouveler le contrat d’assurance'**
+  String get vehRenewTitle;
+
+  /// No description provided for @vehExpiryDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date d’expiration'**
+  String get vehExpiryDate;
+
+  /// No description provided for @vehRenewInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date invalide (JJ/MM/AAAA) ou n° de police manquant.'**
+  String get vehRenewInvalid;
+
+  /// No description provided for @vehRenewSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contrat d’assurance renouvelé avec succès !'**
+  String get vehRenewSuccess;
+
+  /// No description provided for @vehRiskTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse de risque IA'**
+  String get vehRiskTitle;
+
+  /// No description provided for @vehRiskSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Calculé depuis vos données locales'**
+  String get vehRiskSubtitle;
+
+  /// No description provided for @vehRiskFactors.
+  ///
+  /// In fr, this message translates to:
+  /// **'Facteurs détectés'**
+  String get vehRiskFactors;
+
+  /// No description provided for @vehRecommendations.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandations'**
+  String get vehRecommendations;
+
+  /// No description provided for @vehPhotoTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo du véhicule'**
+  String get vehPhotoTitle;
+
+  /// No description provided for @vehAddPhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter une photo'**
+  String get vehAddPhoto;
+
+  /// No description provided for @vehTakePhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prendre une photo'**
+  String get vehTakePhoto;
+
+  /// No description provided for @vehPickFromGallery.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisir depuis la galerie'**
+  String get vehPickFromGallery;
+
+  /// No description provided for @vehRiskVeryOld.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicule très ancien'**
+  String get vehRiskVeryOld;
+
+  /// No description provided for @vehRiskVeryOldDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus de 20 ans — risque mécanique élevé.'**
+  String get vehRiskVeryOldDesc;
+
+  /// No description provided for @vehRiskOld.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicule ancien'**
+  String get vehRiskOld;
+
+  /// No description provided for @vehRiskOldDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'{age} ans — entretien régulier recommandé.'**
+  String vehRiskOldDesc(int age);
+
+  /// No description provided for @vehRiskMidAge.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicule d\'âge moyen'**
+  String get vehRiskMidAge;
+
+  /// No description provided for @vehRiskMidAgeDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'{age} ans — vérifier la carte grise.'**
+  String vehRiskMidAgeDesc(int age);
+
+  /// No description provided for @vehRiskInsExpiredDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expirée depuis {days} jour(s) — circuler est illégal.'**
+  String vehRiskInsExpiredDesc(int days);
+
+  /// No description provided for @vehRiskInsCritical.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assurance critique'**
+  String get vehRiskInsCritical;
+
+  /// No description provided for @vehRiskInsCriticalDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expire dans {days} jour(s) — renouvelez d\'urgence.'**
+  String vehRiskInsCriticalDesc(int days);
+
+  /// No description provided for @vehRiskInsSoon.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assurance bientôt expirée'**
+  String get vehRiskInsSoon;
+
+  /// No description provided for @vehRiskExpiresIn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expire dans {days} jour(s).'**
+  String vehRiskExpiresIn(int days);
+
+  /// No description provided for @vehRiskTechExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visite technique expirée'**
+  String get vehRiskTechExpired;
+
+  /// No description provided for @vehRiskExpiredSince.
+  ///
+  /// In fr, this message translates to:
+  /// **'Expirée depuis {days} jour(s).'**
+  String vehRiskExpiredSince(int days);
+
+  /// No description provided for @vehRiskTechImminent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visite technique imminente'**
+  String get vehRiskTechImminent;
+
+  /// No description provided for @vehRiskInDays.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dans {days} jour(s).'**
+  String vehRiskInDays(int days);
+
+  /// No description provided for @vehRiskTechNear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visite technique proche'**
+  String get vehRiskTechNear;
+
+  /// No description provided for @vehRiskTechUnknown.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visite technique inconnue'**
+  String get vehRiskTechUnknown;
+
+  /// No description provided for @vehRiskTechUnknownDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez la date pour un suivi précis.'**
+  String get vehRiskTechUnknownDesc;
+
+  /// No description provided for @vehRiskKmVeryHigh.
+  ///
+  /// In fr, this message translates to:
+  /// **'Kilométrage très élevé'**
+  String get vehRiskKmVeryHigh;
+
+  /// No description provided for @vehRiskKmVeryHighDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'{thousands} 000 km — usure importante.'**
+  String vehRiskKmVeryHighDesc(int thousands);
+
+  /// No description provided for @vehRiskKmHigh.
+  ///
+  /// In fr, this message translates to:
+  /// **'Kilométrage élevé'**
+  String get vehRiskKmHigh;
+
+  /// No description provided for @vehRiskKmModerate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Kilométrage modéré'**
+  String get vehRiskKmModerate;
+
+  /// No description provided for @vehRiskKmDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'{thousands} 000 km.'**
+  String vehRiskKmDesc(int thousands);
+
+  /// No description provided for @vehRiskClaimsHigh.
+  ///
+  /// In fr, this message translates to:
+  /// **'Historique sinistres élevé'**
+  String get vehRiskClaimsHigh;
+
+  /// No description provided for @vehRiskClaimsHighDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} sinistre(s) enregistré(s).'**
+  String vehRiskClaimsHighDesc(int count);
+
+  /// No description provided for @vehRiskClaimsMulti.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sinistres multiples'**
+  String get vehRiskClaimsMulti;
+
+  /// No description provided for @vehRiskClaimsMultiDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'2 sinistres enregistrés.'**
+  String get vehRiskClaimsMultiDesc;
+
+  /// No description provided for @vehRiskClaimsOne.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sinistre précédent'**
+  String get vehRiskClaimsOne;
+
+  /// No description provided for @vehRiskClaimsOneDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'1 sinistre enregistré.'**
+  String get vehRiskClaimsOneDesc;
+
+  /// No description provided for @vehRiskOldDiesel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Diesel ancien'**
+  String get vehRiskOldDiesel;
+
+  /// No description provided for @vehRiskOldDieselDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Risque de particules et usure moteur accrue.'**
+  String get vehRiskOldDieselDesc;
+
+  /// No description provided for @vehRecRenewNow.
+  ///
+  /// In fr, this message translates to:
+  /// **'Renouvelez votre assurance immédiatement.'**
+  String get vehRecRenewNow;
+
+  /// No description provided for @vehRecSeeInsurer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prenez rendez-vous avec votre assureur dans les prochains jours.'**
+  String get vehRecSeeInsurer;
+
+  /// No description provided for @vehRecTechNow.
+  ///
+  /// In fr, this message translates to:
+  /// **'Effectuez votre visite technique au plus tôt.'**
+  String get vehRecTechNow;
+
+  /// No description provided for @vehRecTechSchedule.
+  ///
+  /// In fr, this message translates to:
+  /// **'Programmez votre visite technique prochainement.'**
+  String get vehRecTechSchedule;
+
+  /// No description provided for @vehRecTechAddDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez la date de votre prochaine visite technique.'**
+  String get vehRecTechAddDate;
+
+  /// No description provided for @vehRecFullCheck.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faites une vérification complète chez un garagiste agréé.'**
+  String get vehRecFullCheck;
+
+  /// No description provided for @vehRecBeltBrakes.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez la courroie de distribution et les plaquettes de frein.'**
+  String get vehRecBeltBrakes;
+
+  /// No description provided for @vehRecDefensive.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envisagez une conduite défensive pour réduire les sinistres.'**
+  String get vehRecDefensive;
+
+  /// No description provided for @vehRecAddMileage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Renseignez le kilométrage pour une analyse plus précise.'**
+  String get vehRecAddMileage;
+
+  /// No description provided for @vehRecAllGood.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre véhicule est en règle. Continuez l\'entretien régulier.'**
+  String get vehRecAllGood;
+
+  /// No description provided for @vehScanNothing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rien n’a pu être lu. Reprenez la photo à plat, bien éclairée.'**
+  String get vehScanNothing;
+
+  /// No description provided for @vehScanRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu par l’IA : {fields}. Vérifiez avant d’enregistrer.'**
+  String vehScanRead(String fields);
+
+  /// No description provided for @vehScanEstimated.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fin de validité estimée à un an : vérifiez-la.'**
+  String get vehScanEstimated;
+
+  /// No description provided for @vehScanFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture impossible : {error}'**
+  String vehScanFailed(String error);
+
+  /// No description provided for @vehScanBusy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture en cours… (jusqu’à 30 s)'**
+  String get vehScanBusy;
+
+  /// No description provided for @vehScanRegistration.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photographier la carte grise'**
+  String get vehScanRegistration;
+
+  /// No description provided for @vehScanInsurance.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photographier l’attestation d’assurance'**
+  String get vehScanInsurance;
+
+  /// No description provided for @vehReadPlate.
+  ///
+  /// In fr, this message translates to:
+  /// **'immatriculation'**
+  String get vehReadPlate;
+
+  /// No description provided for @vehReadBrand.
+  ///
+  /// In fr, this message translates to:
+  /// **'marque'**
+  String get vehReadBrand;
+
+  /// No description provided for @vehReadModel.
+  ///
+  /// In fr, this message translates to:
+  /// **'modèle'**
+  String get vehReadModel;
+
+  /// No description provided for @vehReadYear.
+  ///
+  /// In fr, this message translates to:
+  /// **'année'**
+  String get vehReadYear;
+
+  /// No description provided for @vehReadPolicy.
+  ///
+  /// In fr, this message translates to:
+  /// **'n° de contrat'**
+  String get vehReadPolicy;
+
+  /// No description provided for @vehReadExpiry.
+  ///
+  /// In fr, this message translates to:
+  /// **'fin de validité'**
+  String get vehReadExpiry;
+
+  /// No description provided for @vehReadInsurer.
+  ///
+  /// In fr, this message translates to:
+  /// **'assureur'**
+  String get vehReadInsurer;
+
+  /// No description provided for @vehReadInsurerToPick.
+  ///
+  /// In fr, this message translates to:
+  /// **'assureur ({insurer}, à choisir dans la liste)'**
+  String vehReadInsurerToPick(String insurer);
+
+  /// No description provided for @vehScanTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Scanner vos documents avec l’IA'**
+  String get vehScanTitle;
+
+  /// No description provided for @vehScanBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une photo de la carte grise ou de l’attestation d’assurance : l’IA remplit le formulaire, vous vérifiez.'**
+  String get vehScanBody;
+
+  /// No description provided for @vehSectionIdentification.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identification du véhicule'**
+  String get vehSectionIdentification;
+
+  /// No description provided for @vehPlateRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Immatriculation *'**
+  String get vehPlateRequired;
+
+  /// No description provided for @vehPlateHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ex : 215 تونس 4521'**
+  String get vehPlateHint;
+
+  /// No description provided for @vehBrandRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Marque *'**
+  String get vehBrandRequired;
+
+  /// No description provided for @vehModelRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modèle *'**
+  String get vehModelRequired;
+
+  /// No description provided for @vehYearRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Année *'**
+  String get vehYearRequired;
+
+  /// No description provided for @vehColorHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Blanc'**
+  String get vehColorHint;
+
+  /// No description provided for @vehKmUnit.
+  ///
+  /// In fr, this message translates to:
+  /// **'km'**
+  String get vehKmUnit;
+
+  /// No description provided for @vehPolicyNumberRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de police *'**
+  String get vehPolicyNumberRequired;
+
+  /// No description provided for @vehInsuranceExpiryRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date d\'expiration assurance *'**
+  String get vehInsuranceExpiryRequired;
+
+  /// No description provided for @vehNextInspectionField.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prochaine visite technique'**
+  String get vehNextInspectionField;
+
+  /// No description provided for @vehSaveChanges.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrer les modifications'**
+  String get vehSaveChanges;
+
+  /// No description provided for @vehAddVehicleButton.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter le véhicule'**
+  String get vehAddVehicleButton;
+
+  /// No description provided for @vehFieldRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Champ obligatoire.'**
+  String get vehFieldRequired;
+
+  /// No description provided for @vehYearInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Année invalide.'**
+  String get vehYearInvalid;
+
+  /// No description provided for @vehDateFormat.
+  ///
+  /// In fr, this message translates to:
+  /// **'Format JJ/MM/AAAA.'**
+  String get vehDateFormat;
+
+  /// No description provided for @accStepContext.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contexte'**
+  String get accStepContext;
+
+  /// No description provided for @accStepContextHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu, heure et conditions'**
+  String get accStepContextHint;
+
+  /// No description provided for @accStepDescription.
+  ///
+  /// In fr, this message translates to:
+  /// **'Description'**
+  String get accStepDescription;
+
+  /// No description provided for @accStepDescriptionHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Type, gravité et témoins'**
+  String get accStepDescriptionHint;
+
+  /// No description provided for @accStepEvidence.
+  ///
+  /// In fr, this message translates to:
+  /// **'Preuves'**
+  String get accStepEvidence;
+
+  /// No description provided for @accStepEvidenceHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photos, vidéo et note vocale'**
+  String get accStepEvidenceHint;
+
+  /// No description provided for @accStepDriverBHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identité et assurance'**
+  String get accStepDriverBHint;
+
+  /// No description provided for @accStepCircumstances.
+  ///
+  /// In fr, this message translates to:
+  /// **'Circonstances'**
+  String get accStepCircumstances;
+
+  /// No description provided for @accStepCircumstancesHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cases et observations'**
+  String get accStepCircumstancesHint;
+
+  /// No description provided for @accStepSketch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Croquis'**
+  String get accStepSketch;
+
+  /// No description provided for @accStepSketchHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choc et schéma'**
+  String get accStepSketchHint;
+
+  /// No description provided for @accStepSignatures.
+  ///
+  /// In fr, this message translates to:
+  /// **'Signatures'**
+  String get accStepSignatures;
+
+  /// No description provided for @accStepSignaturesHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Validation et transmission'**
+  String get accStepSignaturesHint;
+
+  /// No description provided for @accStepOf.
+  ///
+  /// In fr, this message translates to:
+  /// **'Étape {step} sur {total}'**
+  String accStepOf(int step, int total);
+
+  /// No description provided for @accMinutesLeft.
+  ///
+  /// In fr, this message translates to:
+  /// **'~{minutes} min'**
+  String accMinutesLeft(int minutes);
+
+  /// No description provided for @accDriverA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conducteur A'**
+  String get accDriverA;
+
+  /// No description provided for @accDriverB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conducteur B'**
+  String get accDriverB;
+
+  /// No description provided for @accNewDeclaration.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelle déclaration'**
+  String get accNewDeclaration;
+
+  /// No description provided for @accDraft.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brouillon'**
+  String get accDraft;
+
+  /// No description provided for @accFinishDriverBFirst.
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminez d’abord la saisie du conducteur B.'**
+  String get accFinishDriverBFirst;
+
+  /// No description provided for @accContinue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer'**
+  String get accContinue;
+
+  /// No description provided for @accContinueToReport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer vers le constat'**
+  String get accContinueToReport;
+
+  /// No description provided for @accIAmDriverB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je suis le conducteur B'**
+  String get accIAmDriverB;
+
+  /// No description provided for @accFinishAndReturnPhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminer et rendre le téléphone'**
+  String get accFinishAndReturnPhone;
+
+  /// No description provided for @accSignAndSend.
+  ///
+  /// In fr, this message translates to:
+  /// **'Signer et transmettre'**
+  String get accSignAndSend;
+
+  /// No description provided for @accIAmDriverA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je suis le conducteur A'**
+  String get accIAmDriverA;
+
+  /// No description provided for @accBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour'**
+  String get accBack;
+
+  /// No description provided for @accDraftSaved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brouillon enregistré sur cet appareil'**
+  String get accDraftSaved;
+
+  /// No description provided for @accThanks.
+  ///
+  /// In fr, this message translates to:
+  /// **'Merci !'**
+  String get accThanks;
+
+  /// No description provided for @accReturnPhoneText.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendez maintenant le téléphone au conducteur A. Les deux conducteurs signeront ensemble à la fin du constat.'**
+  String get accReturnPhoneText;
+
+  /// No description provided for @accChooseVehicleFirst.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisissez votre véhicule à la première étape.'**
+  String get accChooseVehicleFirst;
+
+  /// No description provided for @accSealingTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Scellement cryptographique du constat…'**
+  String get accSealingTitle;
+
+  /// No description provided for @accSealingHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Calcul du hash SHA-256 et transmission'**
+  String get accSealingHint;
+
+  /// No description provided for @accSealFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le constat n’a pas pu être scellé : {error}'**
+  String accSealFailed(String error);
+
+  /// No description provided for @accVerifyIdentityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez votre identité pour signer'**
+  String get accVerifyIdentityTitle;
+
+  /// No description provided for @accVerifyIdentityText.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le constat engage les deux conducteurs : votre identité doit être vérifiée avant la signature. Votre brouillon reste enregistré.'**
+  String get accVerifyIdentityText;
+
+  /// No description provided for @accLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus tard'**
+  String get accLater;
+
+  /// No description provided for @accVerifyIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifier mon identité'**
+  String get accVerifyIdentity;
+
+  /// No description provided for @accCheckPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez le lieu de l’accident.'**
+  String get accCheckPlace;
+
+  /// No description provided for @accWitnessPhoneInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez un numéro valide pour le témoin.'**
+  String get accWitnessPhoneInvalid;
+
+  /// No description provided for @accMinPhotos.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez au moins 2 photos avant de continuer.'**
+  String get accMinPhotos;
+
+  /// No description provided for @accDriverBIncomplete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Complétez le nom, l’immatriculation et l’assurance du conducteur B.'**
+  String get accDriverBIncomplete;
+
+  /// No description provided for @accCircumstanceRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionnez au moins une circonstance pour le véhicule A ou B.'**
+  String get accCircumstanceRequired;
+
+  /// No description provided for @accSketchRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmez le croquis et une zone de choc.'**
+  String get accSketchRequired;
+
+  /// No description provided for @accSignaturesRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les deux conducteurs doivent signer le constat.'**
+  String get accSignaturesRequired;
+
+  /// No description provided for @accLocalDraftSaved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brouillon local • sauvegardé à {time}'**
+  String accLocalDraftSaved(String time);
+
+  /// No description provided for @accHandoverTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Passez le téléphone au conducteur B'**
+  String get accHandoverTitle;
+
+  /// No description provided for @accHandoverText.
+  ///
+  /// In fr, this message translates to:
+  /// **'Il remplit lui-même son identité, son permis, son véhicule et son assurance.'**
+  String get accHandoverText;
+
+  /// No description provided for @accHandoverHidden.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos informations restent masquées : le retour aux étapes précédentes est bloqué pendant sa saisie.'**
+  String get accHandoverHidden;
+
+  /// No description provided for @accHandoverScan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Il peut photographier son permis : l’IA remplit les champs.'**
+  String get accHandoverScan;
+
+  /// No description provided for @accHandoverReturn.
+  ///
+  /// In fr, this message translates to:
+  /// **'À la fin, il vous rend le téléphone.'**
+  String get accHandoverReturn;
+
+  /// No description provided for @accChooseVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisissez votre véhicule : son assureur reçoit le constat.'**
+  String get accChooseVehicle;
+
+  /// No description provided for @accInsuranceExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le contrat d’assurance de {vehicle} a expiré le {date}. Renouvelez-le dans Véhicules avant de déclarer.'**
+  String accInsuranceExpired(String vehicle, String date);
+
+  /// No description provided for @accYourVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'VOTRE VÉHICULE'**
+  String get accYourVehicle;
+
+  /// No description provided for @accAddVehicleHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez votre véhicule et son assureur : c’est à lui que le constat est transmis.'**
+  String get accAddVehicleHint;
+
+  /// No description provided for @accAddMyVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter mon véhicule'**
+  String get accAddMyVehicle;
+
+  /// No description provided for @accContractExpiredOn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Contrat expiré le {date}'**
+  String accContractExpiredOn(String date);
+
+  /// No description provided for @accInsurerMissing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assureur non renseigné'**
+  String get accInsurerMissing;
+
+  /// No description provided for @accInsuredUntil.
+  ///
+  /// In fr, this message translates to:
+  /// **'{insurer} · jusqu’au {date}'**
+  String accInsuredUntil(String insurer, String date);
+
+  /// No description provided for @accWhereWhen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Où et quand ?'**
+  String get accWhereWhen;
+
+  /// No description provided for @accWhereWhenHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez les informations détectées automatiquement.'**
+  String get accWhereWhenHint;
+
+  /// No description provided for @accPlaceRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indiquez le lieu de l’accident'**
+  String get accPlaceRequired;
+
+  /// No description provided for @accAccidentPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu de l’accident'**
+  String get accAccidentPlace;
+
+  /// No description provided for @accChooseOnMap.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisir sur la carte'**
+  String get accChooseOnMap;
+
+  /// No description provided for @accGpsLine.
+  ///
+  /// In fr, this message translates to:
+  /// **'GPS {coords} • précision ±{accuracy} m'**
+  String accGpsLine(String coords, int accuracy);
+
+  /// No description provided for @accDateTime.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date et heure'**
+  String get accDateTime;
+
+  /// No description provided for @accWeather.
+  ///
+  /// In fr, this message translates to:
+  /// **'Météo'**
+  String get accWeather;
+
+  /// No description provided for @accRoad.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chaussée'**
+  String get accRoad;
+
+  /// No description provided for @accLight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Luminosité'**
+  String get accLight;
+
+  /// No description provided for @accPlaceConfirmed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu de l’accident confirmé et sauvegardé.'**
+  String get accPlaceConfirmed;
+
+  /// No description provided for @accPositionUnavailable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Position indisponible. Réessayez dans un instant.'**
+  String get accPositionUnavailable;
+
+  /// No description provided for @accPositionDetected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Position détectée'**
+  String get accPositionDetected;
+
+  /// No description provided for @accUseDetectedQuestion.
+  ///
+  /// In fr, this message translates to:
+  /// **'{place}\n\nVoulez-vous utiliser cette localisation ?'**
+  String accUseDetectedQuestion(String place);
+
+  /// No description provided for @accChooseAnother.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisir une autre'**
+  String get accChooseAnother;
+
+  /// No description provided for @accUsePosition.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser cette position'**
+  String get accUsePosition;
+
+  /// No description provided for @accAutoLocationFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Localisation automatique impossible.'**
+  String get accAutoLocationFailed;
+
+  /// No description provided for @accLocationDisabled.
+  ///
+  /// In fr, this message translates to:
+  /// **'Activez la localisation GPS de l’appareil.'**
+  String get accLocationDisabled;
+
+  /// No description provided for @accLocationDenied.
+  ///
+  /// In fr, this message translates to:
+  /// **'La permission de localisation a été refusée.'**
+  String get accLocationDenied;
+
+  /// No description provided for @accLocationDeniedForever.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autorisez la localisation dans les paramètres de l’application.'**
+  String get accLocationDeniedForever;
+
+  /// No description provided for @accAddressNotFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Adresse introuvable.'**
+  String get accAddressNotFound;
+
+  /// No description provided for @accValueSunny.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ensoleillé'**
+  String get accValueSunny;
+
+  /// No description provided for @accValueRain.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pluie'**
+  String get accValueRain;
+
+  /// No description provided for @accValueFog.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brouillard'**
+  String get accValueFog;
+
+  /// No description provided for @accValueDry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sèche'**
+  String get accValueDry;
+
+  /// No description provided for @accValueWet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mouillée'**
+  String get accValueWet;
+
+  /// No description provided for @accValueSlippery.
+  ///
+  /// In fr, this message translates to:
+  /// **'Glissante'**
+  String get accValueSlippery;
+
+  /// No description provided for @accValueDay.
+  ///
+  /// In fr, this message translates to:
+  /// **'Jour'**
+  String get accValueDay;
+
+  /// No description provided for @accValueDusk.
+  ///
+  /// In fr, this message translates to:
+  /// **'Crépuscule'**
+  String get accValueDusk;
+
+  /// No description provided for @accValueNightLit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nuit éclairée'**
+  String get accValueNightLit;
+
+  /// No description provided for @accValueNightDark.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nuit sombre'**
+  String get accValueNightDark;
+
+  /// No description provided for @accEvidenceOverview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vue d’ensemble'**
+  String get accEvidenceOverview;
+
+  /// No description provided for @accEvidenceDamageA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dégâts véhicule A'**
+  String get accEvidenceDamageA;
+
+  /// No description provided for @accEvidenceDamageB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dégâts véhicule B'**
+  String get accEvidenceDamageB;
+
+  /// No description provided for @accEvidencePlates.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plaques'**
+  String get accEvidencePlates;
+
+  /// No description provided for @accWhatHappened.
+  ///
+  /// In fr, this message translates to:
+  /// **'Que s’est-il passé ?'**
+  String get accWhatHappened;
+
+  /// No description provided for @accWhatHappenedHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ces informations permettent de prioriser votre dossier.'**
+  String get accWhatHappenedHint;
+
+  /// No description provided for @accAccidentType.
+  ///
+  /// In fr, this message translates to:
+  /// **'Type d\'accident'**
+  String get accAccidentType;
+
+  /// No description provided for @accSeverity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Gravité'**
+  String get accSeverity;
+
+  /// No description provided for @accVehicles.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicules'**
+  String get accVehicles;
+
+  /// No description provided for @accInjured.
+  ///
+  /// In fr, this message translates to:
+  /// **'Blessés'**
+  String get accInjured;
+
+  /// No description provided for @accSecureArea.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sécurisez la zone et appelez les secours'**
+  String get accSecureArea;
+
+  /// No description provided for @accSamu.
+  ///
+  /// In fr, this message translates to:
+  /// **'SAMU'**
+  String get accSamu;
+
+  /// No description provided for @accPolice.
+  ///
+  /// In fr, this message translates to:
+  /// **'Police'**
+  String get accPolice;
+
+  /// No description provided for @accCivilProtection.
+  ///
+  /// In fr, this message translates to:
+  /// **'Protection civile'**
+  String get accCivilProtection;
+
+  /// No description provided for @accCalling.
+  ///
+  /// In fr, this message translates to:
+  /// **'Appel du {number}'**
+  String accCalling(String number);
+
+  /// No description provided for @accWitnessOptional.
+  ///
+  /// In fr, this message translates to:
+  /// **'Témoin (optionnel)'**
+  String get accWitnessOptional;
+
+  /// No description provided for @accWitnessName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du témoin'**
+  String get accWitnessName;
+
+  /// No description provided for @accPhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléphone'**
+  String get accPhone;
+
+  /// No description provided for @accGuidedPhotos.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photos guidées'**
+  String get accGuidedPhotos;
+
+  /// No description provided for @accPhotosProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count}/4 vues ajoutées • 2 minimum requises'**
+  String accPhotosProgress(int count);
+
+  /// No description provided for @accPhotoSaved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo enregistrée • touchez pour reprendre'**
+  String get accPhotoSaved;
+
+  /// No description provided for @accTapToOpenCamera.
+  ///
+  /// In fr, this message translates to:
+  /// **'Touchez pour ouvrir la caméra'**
+  String get accTapToOpenCamera;
+
+  /// No description provided for @accSceneVideo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vidéo de la scène'**
+  String get accSceneVideo;
+
+  /// No description provided for @accOpeningCamera.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouverture de la caméra…'**
+  String get accOpeningCamera;
+
+  /// No description provided for @accVideoSaved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vidéo enregistrée • touchez pour la lire'**
+  String get accVideoSaved;
+
+  /// No description provided for @accFilmScene.
+  ///
+  /// In fr, this message translates to:
+  /// **'Filmez la scène • 30 secondes maximum'**
+  String get accFilmScene;
+
+  /// No description provided for @accStopRecording.
+  ///
+  /// In fr, this message translates to:
+  /// **'Arrêter l’enregistrement'**
+  String get accStopRecording;
+
+  /// No description provided for @accVoiceNote.
+  ///
+  /// In fr, this message translates to:
+  /// **'Note vocale'**
+  String get accVoiceNote;
+
+  /// No description provided for @accRecordingInProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrement en cours… touchez pour arrêter'**
+  String get accRecordingInProgress;
+
+  /// No description provided for @accVoiceNoteSaved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Note enregistrée • touchez pour écouter'**
+  String get accVoiceNoteSaved;
+
+  /// No description provided for @accDescribeByVoice.
+  ///
+  /// In fr, this message translates to:
+  /// **'Décrivez la scène avec votre voix'**
+  String get accDescribeByVoice;
+
+  /// No description provided for @accVideoSaveFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d’enregistrer la vidéo.'**
+  String get accVideoSaveFailed;
+
+  /// No description provided for @accMicPermission.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autorisez le microphone pour enregistrer une note vocale.'**
+  String get accMicPermission;
+
+  /// No description provided for @accMicFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de démarrer le microphone.'**
+  String get accMicFailed;
+
+  /// No description provided for @accVideoMissing.
+  ///
+  /// In fr, this message translates to:
+  /// **'La vidéo n’existe plus. Vous pouvez la reprendre.'**
+  String get accVideoMissing;
+
+  /// No description provided for @accVoiceNoteMissing.
+  ///
+  /// In fr, this message translates to:
+  /// **'La note vocale n’existe plus. Vous pouvez la refaire.'**
+  String get accVoiceNoteMissing;
+
+  /// No description provided for @accListen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Écouter'**
+  String get accListen;
+
+  /// No description provided for @accRedoRecording.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refaire l’enregistrement'**
+  String get accRedoRecording;
+
+  /// No description provided for @accDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer'**
+  String get accDelete;
+
+  /// No description provided for @accPause.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pause'**
+  String get accPause;
+
+  /// No description provided for @accPlay.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lire'**
+  String get accPlay;
+
+  /// No description provided for @accSummary.
+  ///
+  /// In fr, this message translates to:
+  /// **'RÉCAPITULATIF'**
+  String get accSummary;
+
+  /// No description provided for @accSummaryCounts.
+  ///
+  /// In fr, this message translates to:
+  /// **'{vehicles} véhicule(s) • {injured} blessé(s) • {photos} photo(s)'**
+  String accSummaryCounts(int vehicles, int injured, int photos);
+
+  /// No description provided for @accReportCompleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat complété'**
+  String get accReportCompleted;
+
+  /// No description provided for @accReviewHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez toutes les informations avant la transmission.'**
+  String get accReviewHint;
+
+  /// No description provided for @accSectionAccident.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accident'**
+  String get accSectionAccident;
+
+  /// No description provided for @accPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieu'**
+  String get accPlace;
+
+  /// No description provided for @accType.
+  ///
+  /// In fr, this message translates to:
+  /// **'Type'**
+  String get accType;
+
+  /// No description provided for @accConditions.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conditions'**
+  String get accConditions;
+
+  /// No description provided for @accVehiclesInjured.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicules / blessés'**
+  String get accVehiclesInjured;
+
+  /// No description provided for @accVehiclesInjuredValue.
+  ///
+  /// In fr, this message translates to:
+  /// **'{vehicles} véhicule(s) • {injured} blessé(s)'**
+  String accVehiclesInjuredValue(int vehicles, int injured);
+
+  /// No description provided for @accWitness.
+  ///
+  /// In fr, this message translates to:
+  /// **'Témoin'**
+  String get accWitness;
+
+  /// No description provided for @accSectionDriverA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conducteur & Véhicule A'**
+  String get accSectionDriverA;
+
+  /// No description provided for @accName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get accName;
+
+  /// No description provided for @accLicense.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis'**
+  String get accLicense;
+
+  /// No description provided for @accVehicle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicule'**
+  String get accVehicle;
+
+  /// No description provided for @accPlate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Immatriculation'**
+  String get accPlate;
+
+  /// No description provided for @accInsurance.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assurance'**
+  String get accInsurance;
+
+  /// No description provided for @accPolicyNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de police'**
+  String get accPolicyNumber;
+
+  /// No description provided for @accLicenseExpiry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Validité du permis'**
+  String get accLicenseExpiry;
+
+  /// No description provided for @accObservations.
+  ///
+  /// In fr, this message translates to:
+  /// **'Observations'**
+  String get accObservations;
+
+  /// No description provided for @accImpactZones.
+  ///
+  /// In fr, this message translates to:
+  /// **'Zones de choc'**
+  String get accImpactZones;
+
+  /// No description provided for @accPhotos.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photos'**
+  String get accPhotos;
+
+  /// No description provided for @accSketchMissing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Croquis manquant'**
+  String get accSketchMissing;
+
+  /// No description provided for @accPdfFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de générer le PDF. Réessayez.'**
+  String get accPdfFailed;
+
+  /// No description provided for @accPdfTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat PDF'**
+  String get accPdfTitle;
+
+  /// No description provided for @accPdfHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le document reprend les informations officielles, photos, croquis et signatures.'**
+  String get accPdfHint;
+
+  /// No description provided for @accPreview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aperçu'**
+  String get accPreview;
+
+  /// No description provided for @accShare.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager'**
+  String get accShare;
+
+  /// No description provided for @accNotProvided.
+  ///
+  /// In fr, this message translates to:
+  /// **'Non renseigné'**
+  String get accNotProvided;
+
+  /// No description provided for @accNoPhotos.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune photo enregistrée.'**
+  String get accNoPhotos;
+
+  /// No description provided for @accMyDeclarations.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes déclarations'**
+  String get accMyDeclarations;
+
+  /// No description provided for @accMyDeclarationsHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Brouillons et dossiers transmis'**
+  String get accMyDeclarationsHint;
+
+  /// No description provided for @accDraftInProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'BROUILLON EN COURS'**
+  String get accDraftInProgress;
+
+  /// No description provided for @accResume.
+  ///
+  /// In fr, this message translates to:
+  /// **'Reprendre'**
+  String get accResume;
+
+  /// No description provided for @accSentDeclarations.
+  ///
+  /// In fr, this message translates to:
+  /// **'DÉCLARATIONS TRANSMISES'**
+  String get accSentDeclarations;
+
+  /// No description provided for @accNoSentDeclarations.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune déclaration transmise.'**
+  String get accNoSentDeclarations;
+
+  /// No description provided for @accDeleteDraftTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le brouillon ?'**
+  String get accDeleteDraftTitle;
+
+  /// No description provided for @accDeleteDraftText.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les informations non transmises seront perdues.'**
+  String get accDeleteDraftText;
+
+  /// No description provided for @accCancel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get accCancel;
+
+  /// No description provided for @accEmergencyNumbers.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéros d’urgence'**
+  String get accEmergencyNumbers;
+
+  /// No description provided for @accSearchAddress.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher une adresse'**
+  String get accSearchAddress;
+
+  /// No description provided for @accSearch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher'**
+  String get accSearch;
+
+  /// No description provided for @accMyPosition.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ma position'**
+  String get accMyPosition;
+
+  /// No description provided for @accSelectedPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'LIEU SÉLECTIONNÉ'**
+  String get accSelectedPlace;
+
+  /// No description provided for @accConfirmPlace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmer ce lieu'**
+  String get accConfirmPlace;
+
+  /// No description provided for @accMinChars.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisissez au moins 3 caractères.'**
+  String get accMinChars;
+
+  /// No description provided for @accPlaceFetchFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de récupérer ce lieu.'**
+  String get accPlaceFetchFailed;
+
+  /// No description provided for @cstNotProvided.
+  ///
+  /// In fr, this message translates to:
+  /// **'Non renseigné'**
+  String get cstNotProvided;
+
+  /// No description provided for @cstClear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer'**
+  String get cstClear;
+
+  /// No description provided for @cstEdit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier'**
+  String get cstEdit;
+
+  /// No description provided for @cstTapToDrawFullscreen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Touchez pour dessiner en plein écran'**
+  String get cstTapToDrawFullscreen;
+
+  /// No description provided for @cstCloseWithoutSaving.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fermer sans enregistrer'**
+  String get cstCloseWithoutSaving;
+
+  /// No description provided for @cstUndoLastStroke.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler le dernier trait'**
+  String get cstUndoLastStroke;
+
+  /// No description provided for @cstClearAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout effacer'**
+  String get cstClearAll;
+
+  /// No description provided for @cstDone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminé'**
+  String get cstDone;
+
+  /// No description provided for @cstSignHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Signez avec votre doigt ou le curseur'**
+  String get cstSignHint;
+
+  /// No description provided for @cstGuestModeTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mode invité — Conducteur B'**
+  String get cstGuestModeTitle;
+
+  /// No description provided for @cstShareWithDriverB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partage avec le conducteur B'**
+  String get cstShareWithDriverB;
+
+  /// No description provided for @cstGuestQrInstructions.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faites scanner ce QR code au conducteur B avec son smartphone pour qu’il vérifie ses informations et suive la déclaration en direct.'**
+  String get cstGuestQrInstructions;
+
+  /// No description provided for @cstNoInstallRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune installation d’application requise pour le conducteur B.'**
+  String get cstNoInstallRequired;
+
+  /// No description provided for @cstGuestLinkCopied.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien invité copié dans le presse-papier !'**
+  String get cstGuestLinkCopied;
+
+  /// No description provided for @cstCopyGuestLink.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier le lien d’accès invité'**
+  String get cstCopyGuestLink;
+
+  /// No description provided for @cstContinueOnThisDevice.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer la saisie sur cet appareil'**
+  String get cstContinueOnThisDevice;
+
+  /// No description provided for @cstSealedTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat scellé'**
+  String get cstSealedTitle;
+
+  /// No description provided for @cstSealedOnPhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat scellé sur le téléphone'**
+  String get cstSealedOnPhone;
+
+  /// No description provided for @cstSealedAndSent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Constat scellé et transmis'**
+  String get cstSealedAndSent;
+
+  /// No description provided for @cstSealedOfflineHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas de réseau : il sera transmis et signé par le serveur dès le retour de la connexion.'**
+  String get cstSealedOfflineHint;
+
+  /// No description provided for @cstSealedOnlineHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Document officiel inaltérable signé bilatéralement.'**
+  String get cstSealedOnlineHint;
+
+  /// No description provided for @cstOfflineCertification.
+  ///
+  /// In fr, this message translates to:
+  /// **'CERTIFICATION HORS-LIGNE (JWS)'**
+  String get cstOfflineCertification;
+
+  /// No description provided for @cstScanQrToVerify.
+  ///
+  /// In fr, this message translates to:
+  /// **'Scannez ce QR Code pour certifier l’authenticité et l’intégrité du constat sans connexion au serveur.'**
+  String get cstScanQrToVerify;
+
+  /// No description provided for @cstCertifiedQr.
+  ///
+  /// In fr, this message translates to:
+  /// **'QR Code Certifié'**
+  String get cstCertifiedQr;
+
+  /// No description provided for @cstEcdsaCertified.
+  ///
+  /// In fr, this message translates to:
+  /// **'Signature ECDSA P-256 certifiée — Zero-Dependency Verification'**
+  String get cstEcdsaCertified;
+
+  /// No description provided for @cstVehicleA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicule A'**
+  String get cstVehicleA;
+
+  /// No description provided for @cstVehicleB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicule B'**
+  String get cstVehicleB;
+
+  /// No description provided for @cstDriverA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conducteur A'**
+  String get cstDriverA;
+
+  /// No description provided for @cstDriverB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conducteur B'**
+  String get cstDriverB;
+
+  /// No description provided for @cstPlateA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Immatriculation A'**
+  String get cstPlateA;
+
+  /// No description provided for @cstPlateB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Immatriculation B'**
+  String get cstPlateB;
+
+  /// No description provided for @cstInsurerA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assurance A'**
+  String get cstInsurerA;
+
+  /// No description provided for @cstInsurerB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Assurance B'**
+  String get cstInsurerB;
+
+  /// No description provided for @cstPolicyLine.
+  ///
+  /// In fr, this message translates to:
+  /// **'Police : {policy}'**
+  String cstPolicyLine(String policy);
+
+  /// No description provided for @cstViewOfficialPdf.
+  ///
+  /// In fr, this message translates to:
+  /// **'Consulter l’exemplaire officiel (PDF)'**
+  String get cstViewOfficialPdf;
+
+  /// No description provided for @cstShareSealed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager le constat scellé'**
+  String get cstShareSealed;
+
+  /// No description provided for @cstBackToHome.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour à l’accueil'**
+  String get cstBackToHome;
+
+  /// No description provided for @cstPdfPreviewError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur aperçu PDF : {error}'**
+  String cstPdfPreviewError(String error);
+
+  /// No description provided for @cstPdfShareError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur partage PDF : {error}'**
+  String cstPdfShareError(String error);
+
+  /// No description provided for @cstDriverBTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Informations du conducteur B'**
+  String get cstDriverBTitle;
+
+  /// No description provided for @cstDriverBSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Données nécessaires au constat, isolées de votre profil.'**
+  String get cstDriverBSubtitle;
+
+  /// No description provided for @cstScanLicenseAi.
+  ///
+  /// In fr, this message translates to:
+  /// **'Scanner le permis avec l’IA'**
+  String get cstScanLicenseAi;
+
+  /// No description provided for @cstScanLicenseHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'La photo est analysée localement. Vérifiez toujours les données détectées.'**
+  String get cstScanLicenseHint;
+
+  /// No description provided for @cstScanning.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse en cours…'**
+  String get cstScanning;
+
+  /// No description provided for @cstTakeLicensePhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photographier le permis'**
+  String get cstTakeLicensePhoto;
+
+  /// No description provided for @cstFullNameRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom complet *'**
+  String get cstFullNameRequired;
+
+  /// No description provided for @cstLicenseNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro de permis'**
+  String get cstLicenseNumber;
+
+  /// No description provided for @cstLicenseExpiry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de validité du permis'**
+  String get cstLicenseExpiry;
+
+  /// No description provided for @cstPlateRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Immatriculation *'**
+  String get cstPlateRequired;
+
+  /// No description provided for @cstInsuranceSection.
+  ///
+  /// In fr, this message translates to:
+  /// **'ASSURANCE'**
+  String get cstInsuranceSection;
+
+  /// No description provided for @cstPolicyNumber.
+  ///
+  /// In fr, this message translates to:
+  /// **'N° de police / attestation d’assurance'**
+  String get cstPolicyNumber;
+
+  /// No description provided for @cstNoTextDetected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun texte détecté. Reprenez la photo avec plus de lumière.'**
+  String get cstNoTextDetected;
+
+  /// No description provided for @cstLicenseScanned.
+  ///
+  /// In fr, this message translates to:
+  /// **'Permis analysé. Vérifiez les champs avant de continuer.'**
+  String get cstLicenseScanned;
+
+  /// No description provided for @cstScanFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse impossible. Vérifiez la photo et réessayez.'**
+  String get cstScanFailed;
+
+  /// No description provided for @cstReviewDetectedData.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifier les données détectées'**
+  String get cstReviewDetectedData;
+
+  /// No description provided for @cstOcrWarning.
+  ///
+  /// In fr, this message translates to:
+  /// **'L’OCR peut faire des erreurs. Corrigez les champs avant confirmation.'**
+  String get cstOcrWarning;
+
+  /// No description provided for @cstFullName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom complet'**
+  String get cstFullName;
+
+  /// No description provided for @cstLicenseNumberDialog.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro du permis'**
+  String get cstLicenseNumberDialog;
+
+  /// No description provided for @cstExpiryDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de validité'**
+  String get cstExpiryDate;
+
+  /// No description provided for @cstRecognizedText.
+  ///
+  /// In fr, this message translates to:
+  /// **'Texte reconnu par ML Kit'**
+  String get cstRecognizedText;
+
+  /// No description provided for @cstCancel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get cstCancel;
+
+  /// No description provided for @cstUseThisData.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser ces données'**
+  String get cstUseThisData;
+
+  /// No description provided for @cstClearDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer la date'**
+  String get cstClearDate;
+
+  /// No description provided for @cstCircumstancesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Circonstances de l’accident (FTUSA)'**
+  String get cstCircumstancesTitle;
+
+  /// No description provided for @cstCircumstancesHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cochez la ou les cases utiles pour le véhicule A (bleu) et le véhicule B (ambre).'**
+  String get cstCircumstancesHint;
+
+  /// No description provided for @cstBoxesA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicule A : {count} case(s)'**
+  String cstBoxesA(int count);
+
+  /// No description provided for @cstBoxesB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Véhicule B : {count} case(s)'**
+  String cstBoxesB(int count);
+
+  /// No description provided for @cstCircumstancesHeader.
+  ///
+  /// In fr, this message translates to:
+  /// **'12. Circonstances'**
+  String get cstCircumstancesHeader;
+
+  /// No description provided for @cstCircumstance1.
+  ///
+  /// In fr, this message translates to:
+  /// **'En stationnement / À l’arrêt'**
+  String get cstCircumstance1;
+
+  /// No description provided for @cstCircumstance2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quittait un stationnement / ouvrait une portière'**
+  String get cstCircumstance2;
+
+  /// No description provided for @cstCircumstance3.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prenait un stationnement'**
+  String get cstCircumstance3;
+
+  /// No description provided for @cstCircumstance4.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sortait d’un parking, lieu privé ou chemin'**
+  String get cstCircumstance4;
+
+  /// No description provided for @cstCircumstance5.
+  ///
+  /// In fr, this message translates to:
+  /// **'S’engageait dans un parking, lieu privé ou chemin'**
+  String get cstCircumstance5;
+
+  /// No description provided for @cstCircumstance6.
+  ///
+  /// In fr, this message translates to:
+  /// **'S’engageait sur une place à sens giratoire'**
+  String get cstCircumstance6;
+
+  /// No description provided for @cstCircumstance7.
+  ///
+  /// In fr, this message translates to:
+  /// **'Circulait sur une place à sens giratoire'**
+  String get cstCircumstance7;
+
+  /// No description provided for @cstCircumstance8.
+  ///
+  /// In fr, this message translates to:
+  /// **'Heurtait à l’arrière (même sens, même file)'**
+  String get cstCircumstance8;
+
+  /// No description provided for @cstCircumstance9.
+  ///
+  /// In fr, this message translates to:
+  /// **'Roulait dans le même sens sur une file différente'**
+  String get cstCircumstance9;
+
+  /// No description provided for @cstCircumstance10.
+  ///
+  /// In fr, this message translates to:
+  /// **'Changeait de file'**
+  String get cstCircumstance10;
+
+  /// No description provided for @cstCircumstance11.
+  ///
+  /// In fr, this message translates to:
+  /// **'Doublait'**
+  String get cstCircumstance11;
+
+  /// No description provided for @cstCircumstance12.
+  ///
+  /// In fr, this message translates to:
+  /// **'Virait à droite'**
+  String get cstCircumstance12;
+
+  /// No description provided for @cstCircumstance13.
+  ///
+  /// In fr, this message translates to:
+  /// **'Virait à gauche'**
+  String get cstCircumstance13;
+
+  /// No description provided for @cstCircumstance14.
+  ///
+  /// In fr, this message translates to:
+  /// **'Reculait'**
+  String get cstCircumstance14;
+
+  /// No description provided for @cstCircumstance15.
+  ///
+  /// In fr, this message translates to:
+  /// **'Empiétait sur la chaussée en sens inverse'**
+  String get cstCircumstance15;
+
+  /// No description provided for @cstCircumstance16.
+  ///
+  /// In fr, this message translates to:
+  /// **'Venait de droite (dans un carrefour)'**
+  String get cstCircumstance16;
+
+  /// No description provided for @cstCircumstance17.
+  ///
+  /// In fr, this message translates to:
+  /// **'N’avait pas observé un signal de priorité'**
+  String get cstCircumstance17;
+
+  /// No description provided for @cstObservations.
+  ///
+  /// In fr, this message translates to:
+  /// **'Observations complémentaires'**
+  String get cstObservations;
+
+  /// No description provided for @cstSketchTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Croquis et point de choc'**
+  String get cstSketchTitle;
+
+  /// No description provided for @cstSketchFieldTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Croquis de l’accident'**
+  String get cstSketchFieldTitle;
+
+  /// No description provided for @cstSketchHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dessinez les voies, les véhicules et leur direction'**
+  String get cstSketchHint;
+
+  /// No description provided for @cstImpactZoneTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Zone de choc sur votre véhicule'**
+  String get cstImpactZoneTitle;
+
+  /// No description provided for @cstSignInstructions.
+  ///
+  /// In fr, this message translates to:
+  /// **'Relisez les informations puis signez dans les deux zones.'**
+  String get cstSignInstructions;
+
+  /// No description provided for @cstSignatureA.
+  ///
+  /// In fr, this message translates to:
+  /// **'Signature conducteur A'**
+  String get cstSignatureA;
+
+  /// No description provided for @cstSignatureB.
+  ///
+  /// In fr, this message translates to:
+  /// **'Signature conducteur B'**
+  String get cstSignatureB;
+
+  /// No description provided for @cstShaLock.
+  ///
+  /// In fr, this message translates to:
+  /// **'Verrouillage SHA-256'**
+  String get cstShaLock;
+
+  /// No description provided for @cstShaLockHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le constat sera rendu infalsifiable après la double signature.'**
+  String get cstShaLockHint;
 }
 
 class _AppLocalizationsDelegate

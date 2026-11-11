@@ -26,8 +26,8 @@ class DeclarationsScreen extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 28),
           children: [
             PageHead(
-              'Mes déclarations',
-              subtitle: 'Brouillons et dossiers transmis',
+              context.t.accMyDeclarations,
+              subtitle: context.t.accMyDeclarationsHint,
               actions: [
                 // Module 5 : recherche et filtres sur tous les dossiers.
                 IconButton(
@@ -48,14 +48,14 @@ class DeclarationsScreen extends StatelessWidget {
                   open(context, AccidentWizard(initialDraft: value));
                 },
                 icon: const Icon(Icons.add),
-                label: const Text('Nouvelle déclaration'),
+                label: Text(context.t.accNewDeclaration),
               ),
             ),
             if (draft != null) ...[
               Padding(
                 padding: EdgeInsets.fromLTRB(18, 24, 18, 10),
                 child: Text(
-                  'BROUILLON EN COURS',
+                  context.t.accDraftInProgress,
                   style: TextStyle(
                     color: context.palette.textMuted,
                     fontSize: 12,
@@ -86,7 +86,10 @@ class DeclarationsScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Étape ${stores.accidents.currentStep + 1} sur 7',
+                                    context.t.accStepOf(
+                                      stores.accidents.currentStep + 1,
+                                      AccidentWizard.stepCount,
+                                    ),
                                     style: TextStyle(
                                       color: context.palette.warningText,
                                       fontWeight: FontWeight.w800,
@@ -104,7 +107,9 @@ class DeclarationsScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 14),
                         LinearProgressIndicator(
-                          value: (stores.accidents.currentStep + 1) / 7,
+                          value:
+                              (stores.accidents.currentStep + 1) /
+                              AccidentWizard.stepCount,
                           backgroundColor: Colors.white,
                           color: AppColors.accentDark,
                         ),
@@ -114,7 +119,7 @@ class DeclarationsScreen extends StatelessWidget {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () => _confirmDelete(context),
-                                child: const Text('Supprimer'),
+                                child: Text(context.t.accDelete),
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -132,7 +137,7 @@ class DeclarationsScreen extends StatelessWidget {
                                   ),
                                 ),
                                 icon: const Icon(Icons.play_arrow),
-                                label: const Text('Reprendre'),
+                                label: Text(context.t.accResume),
                               ),
                             ),
                           ],
@@ -146,7 +151,7 @@ class DeclarationsScreen extends StatelessWidget {
             Padding(
               padding: EdgeInsets.fromLTRB(18, draft == null ? 24 : 28, 18, 10),
               child: Text(
-                'DÉCLARATIONS TRANSMISES',
+                context.t.accSentDeclarations,
                 style: TextStyle(
                   color: context.palette.textMuted,
                   fontSize: 12,
@@ -156,9 +161,9 @@ class DeclarationsScreen extends StatelessWidget {
               ),
             ),
             if (claims.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: Text('Aucune déclaration transmise.')),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(child: Text(context.t.accNoSentDeclarations)),
               )
             else
               ...claims.map(
@@ -183,19 +188,19 @@ class DeclarationsScreen extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Supprimer le brouillon ?'),
-        content: const Text('Les informations non transmises seront perdues.'),
+        title: Text(dialogContext.t.accDeleteDraftTitle),
+        content: Text(dialogContext.t.accDeleteDraftText),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Annuler'),
+            child: Text(dialogContext.t.accCancel),
           ),
           FilledButton(
             onPressed: () {
               AppScope.of(context).accidents.clearDraft();
               Navigator.pop(dialogContext);
             },
-            child: const Text('Supprimer'),
+            child: Text(dialogContext.t.accDelete),
           ),
         ],
       ),

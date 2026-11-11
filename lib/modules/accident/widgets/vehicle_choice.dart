@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/state/app_scope.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/vehicle_form_screen.dart';
@@ -22,14 +23,18 @@ class VehicleChoice extends StatelessWidget {
   }
 
   /// Raison qui empêche de continuer, ou null.
-  static String? problem(AccidentDraft draft, List<Vehicle> vehicles) {
+  static String? problem(
+    AccidentDraft draft,
+    List<Vehicle> vehicles,
+    AppLocalizations t,
+  ) {
     final vehicle = vehicles.where((v) => v.id == draft.vehicleId).firstOrNull;
-    if (vehicle == null) {
-      return 'Choisissez votre véhicule : son assureur reçoit le constat.';
-    }
+    if (vehicle == null) return t.accChooseVehicle;
     if (vehicle.isInsuranceExpired) {
-      return 'Le contrat d’assurance de ${vehicle.brand} ${vehicle.model} a expiré '
-          'le ${_date(vehicle.insuranceExpiry)}. Renouvelez-le dans Véhicules avant de déclarer.';
+      return t.accInsuranceExpired(
+        '${vehicle.brand} ${vehicle.model}',
+        ltr(_date(vehicle.insuranceExpiry)),
+      );
     }
     return null;
   }
@@ -59,7 +64,7 @@ class VehicleChoice extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'VOTRE VÉHICULE',
+          context.t.accYourVehicle,
           style: TextStyle(
             color: context.palette.textMuted,
             fontSize: 12,
@@ -77,7 +82,7 @@ class VehicleChoice extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Ajoutez votre véhicule et son assureur : c’est à lui que le constat est transmis.',
+                    context.t.accAddVehicleHint,
                     style: TextStyle(
                       color: context.palette.warningText,
                       fontWeight: FontWeight.w700,
@@ -88,7 +93,7 @@ class VehicleChoice extends StatelessWidget {
                     key: const ValueKey('add-vehicle'),
                     onPressed: () => _add(context),
                     icon: const Icon(Icons.add),
-                    label: const Text('Ajouter mon véhicule'),
+                    label: Text(context.t.accAddMyVehicle),
                   ),
                 ],
               ),
@@ -124,6 +129,7 @@ class _VehicleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final expired = vehicle.isInsuranceExpired;
     final insurer = vehicle.companyName ?? vehicle.insurerName;
+    final until = ltr(VehicleChoice._date(vehicle.insuranceExpiry));
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(
@@ -157,9 +163,13 @@ class _VehicleTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       expired
-                          ? 'Contrat expiré le ${VehicleChoice._date(vehicle.insuranceExpiry)}'
-                          : '${insurer.isEmpty ? 'Assureur non renseigné' : insurer} · '
-                                'jusqu’au ${VehicleChoice._date(vehicle.insuranceExpiry)}',
+                          ? context.t.accContractExpiredOn(until)
+                          : context.t.accInsuredUntil(
+                              insurer.isEmpty
+                                  ? context.t.accInsurerMissing
+                                  : insurer,
+                              until,
+                            ),
                       style: TextStyle(
                         color: expired ? context.palette.errorText : context.palette.textMuted,
                         fontWeight: expired ? FontWeight.w800 : FontWeight.w500,

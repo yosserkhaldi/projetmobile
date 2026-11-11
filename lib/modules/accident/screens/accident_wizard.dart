@@ -8,6 +8,7 @@ import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/modules/constat/services/pending_seals.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_steps.dart';
@@ -27,6 +28,10 @@ class AccidentWizard extends StatefulWidget {
   const AccidentWizard({this.initialDraft, this.initialStep = 0, super.key});
   final AccidentDraft? initialDraft;
   final int initialStep;
+
+  /// Nombre d'étapes du parcours (repris par « Mes déclarations »).
+  static const stepCount = 7;
+
   @override
   State<AccidentWizard> createState() => _AccidentWizardState();
 }
@@ -48,21 +53,24 @@ class _AccidentWizardState extends State<AccidentWizard> {
   /// Étape du conducteur B, avant la remise du téléphone.
   bool get _handoverPending => step == 3 && !_guestMode;
 
-  static const steps = [
-    ('Contexte', 'Lieu, heure et conditions'),
-    ('Description', 'Type, gravité et témoins'),
-    ('Preuves', 'Photos, vidéo et note vocale'),
-    ('Conducteur B', 'Identité et assurance'),
-    ('Circonstances', 'Cases et observations'),
-    ('Croquis', 'Choc et schéma'),
-    ('Signatures', 'Validation et transmission'),
+  static const stepCount = AccidentWizard.stepCount;
+
+  /// Titre et sous-titre de chaque étape, dans la langue de l'écran.
+  static List<(String, String)> steps(AppLocalizations t) => [
+    (t.accStepContext, t.accStepContextHint),
+    (t.accStepDescription, t.accStepDescriptionHint),
+    (t.accStepEvidence, t.accStepEvidenceHint),
+    (t.accDriverB, t.accStepDriverBHint),
+    (t.accStepCircumstances, t.accStepCircumstancesHint),
+    (t.accStepSketch, t.accStepSketchHint),
+    (t.accStepSignatures, t.accStepSignaturesHint),
   ];
 
   @override
   void initState() {
     super.initState();
     draft = widget.initialDraft ?? AccidentDraft();
-    step = widget.initialStep.clamp(0, steps.length - 1);
+    step = widget.initialStep.clamp(0, stepCount - 1);
     place = TextEditingController(text: draft.place);
     witnessName.text = draft.witnessName;
     witnessPhone.text = draft.witnessPhone;
@@ -94,7 +102,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
     canPop: !_guestMode,
     onPopInvokedWithResult: (didPop, _) {
       if (!didPop) {
-        _showError('Terminez d’abord la saisie du conducteur B.');
+        _showError(context.t.accFinishDriverBFirst);
       }
     },
     child: _scaffold(context),
@@ -103,12 +111,14 @@ class _AccidentWizardState extends State<AccidentWizard> {
   Widget _scaffold(BuildContext context) => Scaffold(
     appBar: AppBar(
       automaticallyImplyLeading: !_guestMode,
-      title: Text(_guestMode ? 'Conducteur B' : 'Nouvelle déclaration'),
+      title: Text(
+        _guestMode ? context.t.accDriverB : context.t.accNewDeclaration,
+      ),
       actions: [
         TextButton.icon(
           onPressed: _saveDraft,
           icon: const Icon(Icons.bookmark_border),
-          label: const Text('Brouillon'),
+          label: Text(context.t.accDraft),
         ),
       ],
     ),
@@ -116,7 +126,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
       child: Column(
         children: [
           _OfflineBanner(savedAt: draft.lastSavedAt),
-          _ProgressHeader(step: step, steps: steps),
+          _ProgressHeader(step: step, steps: steps(context.t)),
           Expanded(
             child: Form(
               key: step == 0 ? _contextForm : null,
@@ -128,16 +138,16 @@ class _AccidentWizardState extends State<AccidentWizard> {
           ),
           _BottomActions(
             canGoBack: step > 0 && !_guestMode,
-            finalStep: step == steps.length - 1,
+            finalStep: step == stepCount - 1,
             continueLabel: step == 2
-                ? 'Continuer vers le constat'
+                ? context.t.accContinueToReport
                 : _handoverPending
-                ? 'Je suis le conducteur B'
+                ? context.t.accIAmDriverB
                 : _guestMode
-                ? 'Terminer et rendre le téléphone'
-                : step == steps.length - 1
-                ? 'Signer et transmettre'
-                : 'Continuer',
+                ? context.t.accFinishAndReturnPhone
+                : step == stepCount - 1
+                ? context.t.accSignAndSend
+                : context.t.accContinue,
             onBack: _goBack,
             onContinue: _handoverPending
                 ? () => setState(() => _guestMode = true)
@@ -200,7 +210,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
     _persistDraft();
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Brouillon enregistré sur cet appareil')),
+      SnackBar(content: Text(context.t.accDraftSaved)),
     );
   }
 
@@ -215,15 +225,12 @@ class _AccidentWizardState extends State<AccidentWizard> {
         barrierDismissible: false,
         builder: (dialogContext) => AlertDialog(
           icon: const Icon(Icons.swap_horiz_rounded),
-          title: const Text('Merci !'),
-          content: const Text(
-            'Rendez maintenant le téléphone au conducteur A. Les deux '
-            'conducteurs signeront ensemble à la fin du constat.',
-          ),
+          title: Text(dialogContext.t.accThanks),
+          content: Text(dialogContext.t.accReturnPhoneText),
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Je suis le conducteur A'),
+              child: Text(dialogContext.t.accIAmDriverA),
             ),
           ],
         ),
@@ -231,7 +238,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
       if (!mounted) return;
       _guestMode = false;
     }
-    if (step < steps.length - 1) {
+    if (step < stepCount - 1) {
       setState(() => step++);
       _persistDraft();
       return;
@@ -249,7 +256,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
     }
     final vehicle = _vehicle(stores.vehicles.vehicles);
     if (vehicle == null) {
-      _showError('Choisissez votre véhicule à la première étape.');
+      _showError(context.t.accChooseVehicleFirst);
       return;
     }
     _sending = true;
@@ -269,12 +276,12 @@ class _AccidentWizardState extends State<AccidentWizard> {
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
                 Text(
-                  'Scellement cryptographique du constat…',
+                  context.t.accSealingTitle,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Calcul du hash SHA-256 et transmission',
+                  context.t.accSealingHint,
                   style: TextStyle(fontSize: 12, color: context.palette.textMuted),
                 ),
               ],
@@ -341,7 +348,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
       _sending = false;
       if (mounted) {
         navigator.pop(); // ferme le dialog
-        _showError('Le constat n’a pas pu être scellé : $error');
+        _showError(context.t.accSealFailed('$error'));
       }
       return;
     }
@@ -484,20 +491,17 @@ class _AccidentWizardState extends State<AccidentWizard> {
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.verified_user_outlined),
-        title: const Text('Vérifiez votre identité pour signer'),
-        content: const Text(
-          'Le constat engage les deux conducteurs : votre identité doit être '
-          'vérifiée avant la signature. Votre brouillon reste enregistré.',
-        ),
+        title: Text(context.t.accVerifyIdentityTitle),
+        content: Text(context.t.accVerifyIdentityText),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Plus tard'),
+            child: Text(context.t.accLater),
           ),
           FilledButton(
             key: const ValueKey('verify-identity-to-sign'),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Vérifier mon identité'),
+            child: Text(context.t.accVerifyIdentity),
           ),
         ],
       ),
@@ -520,10 +524,12 @@ class _AccidentWizardState extends State<AccidentWizard> {
   }
 
   bool _isCurrentStepValid() {
+    final t = context.t;
     if (step == 0) {
       final problem = VehicleChoice.problem(
         draft,
         AppScope.of(context).vehicles.vehicles,
+        t,
       );
       if (problem != null) {
         _showError(problem);
@@ -531,42 +537,38 @@ class _AccidentWizardState extends State<AccidentWizard> {
       }
     }
     if (step == 0 && !(_contextForm.currentState?.validate() ?? false)) {
-      _showError('Vérifiez le lieu de l’accident.');
+      _showError(t.accCheckPlace);
       return false;
     }
     if (step == 1 &&
         witnessName.text.trim().isNotEmpty &&
         witnessPhone.text.trim().length < 8) {
-      _showError('Ajoutez un numéro valide pour le témoin.');
+      _showError(t.accWitnessPhoneInvalid);
       return false;
     }
     if (step == 2 && draft.evidenceCount < 2) {
-      _showError('Ajoutez au moins 2 photos avant de continuer.');
+      _showError(t.accMinPhotos);
       return false;
     }
     if (step == 3 &&
         (draft.driverBName.trim().length < 2 ||
             draft.driverBPlate.trim().length < 3 ||
             draft.driverBInsurer.trim().length < 2)) {
-      _showError(
-        'Complétez le nom, l’immatriculation et l’assurance du conducteur B.',
-      );
+      _showError(t.accDriverBIncomplete);
       return false;
     }
     if (step == 4 &&
         draft.circumstancesA.isEmpty &&
         draft.circumstancesB.isEmpty) {
-      _showError(
-        'Sélectionnez au moins une circonstance pour le véhicule A ou B.',
-      );
+      _showError(t.accCircumstanceRequired);
       return false;
     }
     if (step == 5 && (!draft.sketchConfirmed || draft.impactZones.isEmpty)) {
-      _showError('Confirmez le croquis et une zone de choc.');
+      _showError(t.accSketchRequired);
       return false;
     }
     if (step == 6 && (!draft.driverASigned || !draft.driverBSigned)) {
-      _showError('Les deux conducteurs doivent signer le constat.');
+      _showError(t.accSignaturesRequired);
       return false;
     }
     return true;
@@ -599,7 +601,9 @@ class _OfflineBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Brouillon local • sauvegardé à ${two(savedAt.hour)}:${two(savedAt.minute)}',
+              context.t.accLocalDraftSaved(
+                ltr('${two(savedAt.hour)}:${two(savedAt.minute)}'),
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -630,7 +634,7 @@ class _ProgressHeader extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Étape ${step + 1} sur ${steps.length}',
+                context.t.accStepOf(step + 1, steps.length),
                 style: TextStyle(
                   color: context.palette.primaryText,
                   fontWeight: FontWeight.w800,
@@ -640,7 +644,7 @@ class _ProgressHeader extends StatelessWidget {
             const Icon(Icons.timer_outlined, size: 17),
             const SizedBox(width: 5),
             Text(
-              '~${9 - step} min',
+              context.t.accMinutesLeft(9 - step),
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
           ],
@@ -685,6 +689,7 @@ class _HandoverIntro extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final t = context.t;
     Widget point(IconData icon, String text) => Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Row(
@@ -718,7 +723,7 @@ class _HandoverIntro extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         Text(
-          'Passez le téléphone au conducteur B',
+          t.accHandoverTitle,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 22,
@@ -728,8 +733,7 @@ class _HandoverIntro extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Il remplit lui-même son identité, son permis, son véhicule et son '
-          'assurance.',
+          t.accHandoverText,
           textAlign: TextAlign.center,
           style: TextStyle(color: p.textMuted, height: 1.4),
         ),
@@ -739,19 +743,9 @@ class _HandoverIntro extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
             child: Column(
               children: [
-                point(
-                  Icons.visibility_off_outlined,
-                  'Vos informations restent masquées : le retour aux étapes '
-                  'précédentes est bloqué pendant sa saisie.',
-                ),
-                point(
-                  Icons.document_scanner_outlined,
-                  'Il peut photographier son permis : l’IA remplit les champs.',
-                ),
-                point(
-                  Icons.swap_horiz_rounded,
-                  'À la fin, il vous rend le téléphone.',
-                ),
+                point(Icons.visibility_off_outlined, t.accHandoverHidden),
+                point(Icons.document_scanner_outlined, t.accHandoverScan),
+                point(Icons.swap_horiz_rounded, t.accHandoverReturn),
               ],
             ),
           ),
@@ -785,7 +779,7 @@ class _BottomActions extends StatelessWidget {
           Expanded(
             child: OutlinedButton(
               onPressed: onBack,
-              child: const Text('Retour'),
+              child: Text(context.t.accBack),
             ),
           ),
           const SizedBox(width: 12),

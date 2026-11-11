@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mon_constat_digital/l10n/l10n.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
@@ -66,6 +67,9 @@ void main() {
     var saved = false;
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('fr'),
         home: Scaffold(
           body: DrawingPad(
             strokes: strokes,
