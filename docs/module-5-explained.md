@@ -335,7 +335,7 @@ The important decisions (priority, risk, fault share, amount) are **never** made
 
 ### 13.1 Rules (`backend/src/modules/claims/ai/rules.js`)
 
-- **Limits:** declaration within 5 days; more than 2 claims a year is notable; a document amount more than 2× the estimate is notable; an expert is recommended from 3,000 TND or for a severe claim; plus the step durations from section 3.
+- **Limits:** declaration within 5 days; 2 or more earlier claims in 12 months is notable; a document amount more than 2× the estimate is notable; an expert is recommended from 3,000 TND or for a severe claim; plus the step durations from section 3.
 - **Signals** (things to check), each with a reason the agent can read:
   - late declaration;
   - repeated claims;
@@ -344,20 +344,23 @@ The important decisions (priority, risk, fault share, amount) are **never** made
   - amount far above the estimate;
   - a document that doesn't match what was asked.
 - **Priority** (`ai/insights.js` → `priority()`): starts at 10 points, then adds:
-  - +35 if the claim is severe;
-  - up to +30 if it's late;
-  - +10 if no one has touched it yet;
-  - up to +15 for signals.
+  - +35 if the claim is severe ("Grave"), or +10 if it's light ("Léger");
+  - if it's late: 10 + 2 per late day, at most +30;
+  - +10 if no agent has taken it yet ("Transmis");
+  - +8 for one signal, +15 for two or more;
+  - +10 if the model's rejection risk is high.
 
-  The score is capped at 100, and every added point comes with a reason that's shown on the card.
+  The score is capped at 100. The main additions (severe, late, untouched, signal) come with a reason shown on the card; the two smaller ones (light severity, high risk) add points silently.
 - **Next step:** one sentence telling the agent what to do now, or the driver what's expected. For example "Demander : Devis" or "Le conducteur propose un autre créneau : répondre."
 
 ### 13.2 The trained model (`ai/ml.js`, `ai/features.js`, `ai/train.js`, `ai/model.json`)
 
 - These are linear models written by hand, small enough to run anywhere, and each prediction can be broken down by variable, which makes it explainable:
-  - **ridge regression** for the indemnity estimate (low, middle, high);
-  - **logistic regression** for the rejection risk (low, medium, high), with the factors that weigh most;
-  - **nearest neighbours** to find similar past claims.
+  - **ridge regression** on the logarithm of the amount for the indemnity estimate. The low and high values are an 80 % range around the middle one;
+  - a second **ridge regression** for the usual duration of a claim, which gives the driver's "about N days left";
+  - **logistic regression** for the rejection risk: low under 15 %, medium from 15 %, high from 40 %, with up to three factors that weigh most;
+  - **nearest neighbours** to find the 3 most similar past claims.
+- **The 8 inputs** (`ai/features.js`): light severity, severe, number of impact zones, number of ticked boxes, driver A's share of fault, days between the accident and the declaration (up to 30), earlier claims (up to 3), and whether it's a collision.
 - **Training:** `npm run ml:train`. There's no real claim history yet, so training uses **synthetic data** (a deterministic generator), plus any finished claims in the database. The statistics screen states this honestly: the metrics show that the model learned the generator, not that it's right on real claims.
 
 ### 13.3 Claude and other language models (`ai/llm.js`, `ai/providers/`, `ai/assistant.js`)
