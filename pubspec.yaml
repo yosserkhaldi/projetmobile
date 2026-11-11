@@ -68,10 +68,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  # Parcours complets sur un vrai téléphone, contre l'API locale.
-  integration_test:
-    sdk: flutter
-  image_picker_platform_interface: any
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
