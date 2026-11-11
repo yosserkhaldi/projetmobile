@@ -161,6 +161,7 @@ class _ContextStepState extends State<ContextStep> {
       ),
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: widget.draft.light,
         items: const [
           'Jour',
@@ -226,7 +227,14 @@ class _ContextStepState extends State<ContextStep> {
     });
     try {
       final detected = await _locationService.determineLocation();
-      if (!mounted) return;
+      if (!mounted) {
+        // Étape déjà quittée : la position trouvée est gardée (sans le
+        // dialogue), sauf si un lieu a été saisi entre-temps.
+        if (widget.draft.latitude == null && widget.draft.place.trim().isEmpty) {
+          _applyLocation(detected);
+        }
+        return;
+      }
       final useDetected = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
@@ -314,6 +322,7 @@ class DescriptionStep extends StatelessWidget {
         text: 'Ces informations permettent de prioriser votre dossier.',
       ),
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: draft.type,
         items: const [
           'Collision',
@@ -331,6 +340,7 @@ class DescriptionStep extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: draft.severity,
         items: const [
           'Matériel',

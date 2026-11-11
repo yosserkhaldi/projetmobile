@@ -737,5 +737,18 @@
   "claimsDecisionHelpGuide": "مساعدة القرار: الأولوية والتقدير والمخاطر والوثائق الناقصة لهذا الملف. اضغط على الأيقونة لفتحها.",
   "claimsTimelineEarlier": "{count, plural, =1{مرحلة سابقة واحدة} =2{مرحلتان سابقتان} few{{count} مراحل سابقة} many{{count} مرحلة سابقة} other{{count} مرحلة سابقة}}",
   "claimsAlertOpen": "عرض",
-  "claimsTimelineCollapse": "عرض أقل"
+  "claimsTimelineCollapse": "عرض أقل",
+  "dashClaimsTotal": "الملفات",
+  "dashClaimsOpen": "قيد المعالجة",
+  "dashClaimsClosed": "مغلقة",
+  "dashAvgClose": "متوسط مدة الإغلاق",
+  "dashDays": "{days} ي",
+  "dashIndemnities": "التعويضات المدفوعة: {amount} د.ت",
+  "dashByStatus": "حسب الحالة",
+  "dashBySeverity": "حسب الخطورة",
+  "dashByCompany": "حسب شركة التأمين",
+  "dashByMonth": "الملفات خلال الأشهر الستة الأخيرة",
+  "dashHotspots": "أماكن الحوادث المصرّح بها ({count})",
+  "dashNoPoints": "لا يوجد تصريح محدد الموقع بعد.",
+  "dashNoCompany": "دون شركة"
 }

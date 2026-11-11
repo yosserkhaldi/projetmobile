@@ -737,5 +737,18 @@
   "claimsDecisionHelpGuide": "Decision help: priority, estimate, risk and missing documents for this claim. Tap the icon to open it.",
   "claimsTimelineEarlier": "{count, plural, =1{1 earlier step} other{{count} earlier steps}}",
   "claimsAlertOpen": "View",
-  "claimsTimelineCollapse": "Show less"
+  "claimsTimelineCollapse": "Show less",
+  "dashClaimsTotal": "Claims",
+  "dashClaimsOpen": "Open",
+  "dashClaimsClosed": "Closed",
+  "dashAvgClose": "Average time to close",
+  "dashDays": "{days} d",
+  "dashIndemnities": "Indemnities paid: {amount} TND",
+  "dashByStatus": "By status",
+  "dashBySeverity": "By severity",
+  "dashByCompany": "By insurer",
+  "dashByMonth": "Claims over the last 6 months",
+  "dashHotspots": "Locations of reported accidents ({count})",
+  "dashNoPoints": "No located declaration yet.",
+  "dashNoCompany": "No insurer"
 }

@@ -666,9 +666,16 @@ class _DropdownField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DropdownButtonFormField<T>(
     value: value,
+    // Demi-largeur : un libellé long (« Électrique ») débordait.
+    isExpanded: true,
     decoration: InputDecoration(labelText: label),
     items: items.entries
-        .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+        .map(
+          (e) => DropdownMenuItem(
+            value: e.key,
+            child: Text(e.value, overflow: TextOverflow.ellipsis),
+          ),
+        )
         .toList(),
     onChanged: onChanged,
   );

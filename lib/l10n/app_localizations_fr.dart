@@ -2519,4 +2519,49 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get claimsTimelineCollapse => 'Afficher moins';
+
+  @override
+  String get dashClaimsTotal => 'Sinistres';
+
+  @override
+  String get dashClaimsOpen => 'En cours';
+
+  @override
+  String get dashClaimsClosed => 'Clôturés';
+
+  @override
+  String get dashAvgClose => 'Délai moyen de clôture';
+
+  @override
+  String dashDays(String days) {
+    return '$days j';
+  }
+
+  @override
+  String dashIndemnities(String amount) {
+    return 'Indemnisations versées : $amount TND';
+  }
+
+  @override
+  String get dashByStatus => 'Par statut';
+
+  @override
+  String get dashBySeverity => 'Par gravité';
+
+  @override
+  String get dashByCompany => 'Par compagnie';
+
+  @override
+  String get dashByMonth => 'Sinistres des 6 derniers mois';
+
+  @override
+  String dashHotspots(int count) {
+    return 'Lieux des accidents déclarés ($count)';
+  }
+
+  @override
+  String get dashNoPoints => 'Aucune déclaration localisée pour l’instant.';
+
+  @override
+  String get dashNoCompany => 'Sans compagnie';
 }

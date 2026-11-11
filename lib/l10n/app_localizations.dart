@@ -4527,6 +4527,84 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Afficher moins'**
   String get claimsTimelineCollapse;
+
+  /// No description provided for @dashClaimsTotal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sinistres'**
+  String get dashClaimsTotal;
+
+  /// No description provided for @dashClaimsOpen.
+  ///
+  /// In fr, this message translates to:
+  /// **'En cours'**
+  String get dashClaimsOpen;
+
+  /// No description provided for @dashClaimsClosed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Clôturés'**
+  String get dashClaimsClosed;
+
+  /// No description provided for @dashAvgClose.
+  ///
+  /// In fr, this message translates to:
+  /// **'Délai moyen de clôture'**
+  String get dashAvgClose;
+
+  /// No description provided for @dashDays.
+  ///
+  /// In fr, this message translates to:
+  /// **'{days} j'**
+  String dashDays(String days);
+
+  /// No description provided for @dashIndemnities.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indemnisations versées : {amount} TND'**
+  String dashIndemnities(String amount);
+
+  /// No description provided for @dashByStatus.
+  ///
+  /// In fr, this message translates to:
+  /// **'Par statut'**
+  String get dashByStatus;
+
+  /// No description provided for @dashBySeverity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Par gravité'**
+  String get dashBySeverity;
+
+  /// No description provided for @dashByCompany.
+  ///
+  /// In fr, this message translates to:
+  /// **'Par compagnie'**
+  String get dashByCompany;
+
+  /// No description provided for @dashByMonth.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sinistres des 6 derniers mois'**
+  String get dashByMonth;
+
+  /// No description provided for @dashHotspots.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lieux des accidents déclarés ({count})'**
+  String dashHotspots(int count);
+
+  /// No description provided for @dashNoPoints.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune déclaration localisée pour l’instant.'**
+  String get dashNoPoints;
+
+  /// No description provided for @dashNoCompany.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sans compagnie'**
+  String get dashNoCompany;
 }
 
 class _AppLocalizationsDelegate

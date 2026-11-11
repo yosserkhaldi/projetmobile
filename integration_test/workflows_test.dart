@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/main.dart' as app;
 
 const email = String.fromEnvironment('E2E_EMAIL');
@@ -55,6 +56,15 @@ const _jpeg = [
   0xFF, 0xD9,
 ];
 
+/// Textes visibles, pour comprendre un échec.
+String onScreen() => find
+    .byType(Text)
+    .evaluate()
+    .map((e) => (e.widget as Text).data)
+    .whereType<String>()
+    .take(40)
+    .join(' | ');
+
 /// Attend qu'un élément apparaisse (appels réseau réels).
 Future<void> waitFor(
   WidgetTester tester,
@@ -66,12 +76,25 @@ Future<void> waitFor(
     await tester.pump(const Duration(milliseconds: 250));
     if (finder.evaluate().isNotEmpty) return;
   }
-  fail('Introuvable après ${timeout.inSeconds} s : $finder');
+  fail('Introuvable après ${timeout.inSeconds} s : $finder — à l’écran : ${onScreen()}');
 }
 
-Finder field(String label) => find.byWidgetPredicate(
-  (w) => w is TextField && w.decoration?.labelText == label,
-);
+/// Champ de saisie : par sa clé (formulaires du module 1) ou par son libellé.
+/// Laisse l'interface avancer un moment. Pas de pumpAndSettle : certains
+/// écrans ont une animation continue (GPS, indicateurs) qui ne s'arrête pas.
+Future<void> settle(WidgetTester tester, [int ms = 800]) async {
+  for (var waited = 0; waited < ms; waited += 100) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
+Finder field(String label) {
+  final byKey = find.byKey(ValueKey(label));
+  if (byKey.evaluate().isNotEmpty) return byKey;
+  return find.byWidgetPredicate(
+    (w) => w is TextField && w.decoration?.labelText == label,
+  );
+}
 
 Finder tab(String label) => find.byWidgetPredicate(
   (w) => w is NavigationDestination && w.label == label,
@@ -79,26 +102,26 @@ Finder tab(String label) => find.byWidgetPredicate(
 
 Future<void> tapVisible(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
-  await tester.pumpAndSettle();
+  await settle(tester);
   await tester.tap(finder);
-  await tester.pumpAndSettle();
+  await settle(tester);
 }
 
 Future<void> type(WidgetTester tester, String label, String value) async {
   final target = field(label).first;
   await tester.ensureVisible(target);
-  await tester.pumpAndSettle();
+  await settle(tester);
   await tester.enterText(target, value);
-  await tester.pumpAndSettle();
+  await settle(tester);
 }
 
 /// Ouvre la zone de dessin [index], trace un trait et valide.
 Future<void> draw(WidgetTester tester, int index) async {
   final zone = find.byKey(const ValueKey('drawing-field')).at(index);
   await tester.ensureVisible(zone);
-  await tester.pumpAndSettle();
+  await settle(tester);
   await tester.tap(zone);
-  await tester.pumpAndSettle(const Duration(seconds: 1));
+  await settle(tester, 1000);
   final surface = find.byKey(const ValueKey('fullscreen-drawing-surface'));
   await waitFor(tester, surface);
   final gesture = await tester.startGesture(tester.getCenter(surface));
@@ -107,25 +130,116 @@ Future<void> draw(WidgetTester tester, int index) async {
     await tester.pump(const Duration(milliseconds: 16));
   }
   await gesture.up();
-  await tester.pumpAndSettle();
+  await settle(tester);
   await tester.tap(find.byKey(const ValueKey('drawing-done')));
-  await tester.pumpAndSettle(const Duration(seconds: 1));
+  await settle(tester, 1000);
+}
+
+/// Passe à l'étape suivante : ferme la proposition d'adresse du GPS si elle
+/// s'affiche (elle peut arriver tard), touche [button] et attend l'étape
+/// [to] (numérotée à partir de 1).
+Future<void> next(WidgetTester tester, int to, {String button = 'Continuer'}) async {
+  final usePosition = find.text('Utiliser cette position');
+  final reached = find.text('Étape $to sur 7');
+  final end = DateTime.now().add(const Duration(seconds: 60));
+  while (DateTime.now().isBefore(end)) {
+    if (usePosition.evaluate().isNotEmpty) {
+      await tester.tap(usePosition);
+      await settle(tester);
+    }
+    if (reached.evaluate().isNotEmpty) return;
+    final target = find.text(button);
+    if (target.evaluate().isNotEmpty) {
+      await tester.ensureVisible(target.last);
+      await settle(tester);
+      await tester.tap(target.last, warnIfMissed: false);
+    }
+    for (var i = 0; i < 8; i++) {
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+  }
+  fail('Étape $to jamais atteinte');
 }
 
 Future<void> chooseCompany(WidgetTester tester, String name) async {
   final picker = find.byType(DropdownButtonFormField<String>).first;
   await tester.ensureVisible(picker);
-  await tester.pumpAndSettle();
+  await settle(tester);
   await tester.tap(picker);
   await waitFor(tester, find.text(name));
   await tester.tap(find.text(name).last);
-  await tester.pumpAndSettle();
+  await settle(tester);
+}
+
+/// Touche [button] jusqu'à ce que [expected] apparaisse (écran encore en
+/// chargement au premier essai).
+Future<void> tapUntil(WidgetTester tester, Finder button, Finder expected) async {
+  final end = DateTime.now().add(const Duration(seconds: 45));
+  while (DateTime.now().isBefore(end)) {
+    if (expected.evaluate().isNotEmpty) return;
+    if (button.evaluate().isNotEmpty) {
+      await tester.tap(button.first, warnIfMissed: false);
+    }
+    await settle(tester, 1500);
+  }
+  fail('Après $button, introuvable : $expected — à l’écran : ${onScreen()}');
+}
+
+/// Connexion : [home] est un onglet du rôle attendu.
+Future<void> login(
+  WidgetTester tester,
+  String id,
+  String secret,
+  String home,
+) async {
+  await waitFor(tester, find.text('Se connecter'));
+  await settle(tester, 1000);
+  await tester.enterText(field('E-mail ou téléphone'), id);
+  await tester.enterText(field('Mot de passe'), secret);
+  await settle(tester);
+  await tapUntil(tester, find.text('Se connecter').last, tab(home));
+}
+
+/// Déconnexion depuis l'onglet Profil.
+Future<void> logout(WidgetTester tester) async {
+  await tester.tap(tab('Profil'));
+  await settle(tester, 1500);
+  await scrollTo(tester, find.text('Se déconnecter'));
+  await tapVisible(tester, find.text('Se déconnecter'));
+  await waitFor(tester, find.text('Se connecter'));
+}
+
+/// Fait défiler la liste visible jusqu'à [target].
+Future<void> scrollTo(WidgetTester tester, Finder target) async {
+  final end = DateTime.now().add(const Duration(seconds: 40));
+  while (target.evaluate().isEmpty && DateTime.now().isBefore(end)) {
+    final lists = find.byType(Scrollable);
+    if (lists.evaluate().isNotEmpty) {
+      await tester.drag(lists.last, const Offset(0, -300), warnIfMissed: false);
+    }
+    await settle(tester, 500);
+  }
+  expect(target, findsWidgets);
+  await tester.ensureVisible(target.first);
+  await settle(tester);
+}
+
+/// Messagerie ouverte : écrit et envoie [text], attend qu'il s'affiche.
+Future<void> sendMessage(WidgetTester tester, String text) async {
+  final input = find.byWidgetPredicate(
+    (w) => w is TextField && w.decoration?.hintText == 'Votre message',
+  );
+  await waitFor(tester, input);
+  await tester.enterText(input, text);
+  await settle(tester);
+  await tester.tap(find.byTooltip('Envoyer'));
+  await waitFor(tester, find.text(text));
 }
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('conducteur : véhicule, déclaration, constat scellé, sinistre', (
+  testWidgets('conducteur, puis agent : déclaration, constat scellé, dossier instruit, messagerie', (
     tester,
   ) async {
     expect(email, isNotEmpty, reason: 'E2E_EMAIL manquant');
@@ -135,18 +249,16 @@ void main() {
 
     app.main();
     // ── Connexion ──────────────────────────────────────────────────────────
-    await waitFor(tester, find.text('Se connecter'));
-    await tester.enterText(field('E-mail ou téléphone'), email);
-    await tester.enterText(field('Mot de passe'), password);
-    await tester.tap(find.text('Se connecter'));
-    await waitFor(tester, tab('Véhicules'));
+    await login(tester, email, password, 'Véhicules');
 
     // ── Module 2 : ajout d'un véhicule ─────────────────────────────────────
-    await tester.tap(tab('Véhicules'));
-    await tester.pumpAndSettle();
+    await tapUntil(tester, tab('Véhicules'), find.byTooltip('Ajouter un véhicule'));
     await waitFor(tester, find.byTooltip('Ajouter un véhicule'));
-    await tester.tap(find.byTooltip('Ajouter un véhicule'));
-    await waitFor(tester, field('Immatriculation *'));
+    await tapUntil(
+      tester,
+      find.byTooltip('Ajouter un véhicule'),
+      find.text('Identification du véhicule'),
+    );
     await type(tester, 'Immatriculation *', plate);
     await type(tester, 'Marque *', 'Kia');
     await type(tester, 'Modèle *', 'Picanto');
@@ -159,25 +271,22 @@ void main() {
     await waitFor(tester, find.text(plate));
 
     // ── Module 3 : déclaration ─────────────────────────────────────────────
-    await tester.tap(tab('Accueil'));
-    await tester.pumpAndSettle();
-    await tapVisible(tester, find.text('Commencer une déclaration'));
-    await waitFor(tester, find.text('Continuer'));
-    // Lieu : la position GPS peut prendre un instant.
-    await tester.pump(const Duration(seconds: 3));
-    final place = find.byWidgetPredicate(
-      (w) => w is TextFormField || w is TextField,
+    await tapUntil(tester, tab('Accueil'), find.text('Commencer une déclaration'));
+    await tapUntil(
+      tester,
+      find.text('Commencer une déclaration'),
+      find.text('Étape 1 sur 7'),
     );
-    expect(place, findsWidgets);
-    await tapVisible(tester, find.text('Continuer')); // contexte
-    await waitFor(tester, find.text('Description'));
-    await tapVisible(tester, find.text('Continuer')); // description
-    await waitFor(tester, find.text('Vue d’ensemble'));
+    await waitFor(tester, find.text('Étape 1 sur 7'));
+    // Laisse au GPS le temps de proposer l'adresse.
+    await tester.pump(const Duration(seconds: 2));
+    await next(tester, 2); // contexte
+    await next(tester, 3); // description
     await tapVisible(tester, find.text('Vue d’ensemble'));
     await waitFor(tester, find.text('Photo enregistrée • touchez pour reprendre'));
     await tapVisible(tester, find.text('Plaques'));
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    await tapVisible(tester, find.text('Continuer vers le constat'));
+    await settle(tester, 1000);
+    await next(tester, 4, button: 'Continuer vers le constat');
 
     // ── Module 4 : conducteur B, circonstances, croquis, signatures ────────
     await waitFor(tester, field('Nom complet *'));
@@ -185,17 +294,17 @@ void main() {
     await type(tester, 'Immatriculation *', '198 TU 4521');
     await waitFor(tester, find.byType(DropdownButtonFormField<String>));
     await chooseCompany(tester, 'COMAR');
-    await tapVisible(tester, find.text('Continuer'));
+    await next(tester, 5);
 
     await waitFor(tester, find.byType(Checkbox));
     await tapVisible(tester, find.byType(Checkbox).at(0)); // A : case 1
     await tapVisible(tester, find.byType(Checkbox).at(3)); // B : case 2
-    await tapVisible(tester, find.text('Continuer'));
+    await next(tester, 6);
 
     await waitFor(tester, find.text('Croquis et point de choc'));
     await draw(tester, 0);
     await tapVisible(tester, find.text('Arrière'));
-    await tapVisible(tester, find.text('Continuer'));
+    await next(tester, 7);
 
     await waitFor(tester, find.text('Signature conducteur A'));
     await draw(tester, 0);
@@ -208,6 +317,51 @@ void main() {
       find.text('Constat scellé et transmis'),
       timeout: const Duration(seconds: 120),
     );
-    await tester.pump(const Duration(seconds: 5));
+    await settle(tester, 3000);
+
+    // Numéro du dossier créé par la déclaration.
+    final stores = AppScope.of(tester.element(find.byType(Scaffold).first));
+    final claimId = stores.claims.claims
+        .map((c) => c.id)
+        .firstWhere((id) => RegExp(r'^SIN-\d{6}-').hasMatch(id));
+    Navigator.of(
+      tester.element(find.byType(Scaffold).first),
+    ).popUntil((route) => route.isFirst);
+    await settle(tester, 1500);
+
+    // ── Module 5 : l'agent de l'assureur reçoit et instruit le dossier ────
+    await logout(tester);
+    await login(tester, 'leila@assurance.tn', 'Password123!', 'Sinistres');
+    await tester.tap(tab('Sinistres'));
+    await settle(tester, 2000);
+    await scrollTo(tester, find.text(claimId));
+    await tapVisible(tester, find.text(claimId).first);
+    await waitFor(tester, find.text('Prendre en charge'));
+    await tapVisible(tester, find.text('Prendre en charge'));
+    await waitFor(tester, find.text('Demander une pièce'));
+
+    const agentMessage = 'Bonjour, je prends votre dossier en charge.';
+    await tapUntil(
+      tester,
+      find.byTooltip('Messagerie'),
+      find.byTooltip('Envoyer'),
+    );
+    await sendMessage(tester, agentMessage);
+
+    // ── Le conducteur lit la réponse et répond ────────────────────────────
+    Navigator.of(
+      tester.element(find.byType(Scaffold).first),
+    ).popUntil((route) => route.isFirst);
+    await settle(tester, 1500);
+    await logout(tester);
+    await login(tester, email, password, 'Messages');
+    await tester.tap(tab('Messages'));
+    await settle(tester, 2000);
+    await waitFor(tester, find.text(claimId));
+    await tapVisible(tester, find.text(claimId).first);
+    await waitFor(tester, find.text(agentMessage));
+    await sendMessage(tester, 'Merci, je reste disponible.');
+    // Le serveur a reçu la réponse avant la fin du test.
+    await settle(tester, 4000);
   });
 }

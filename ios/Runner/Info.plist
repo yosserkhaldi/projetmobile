@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Flutter Workshops 5sae1 2627</string>
+	<string>Mon Constat</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -51,5 +51,9 @@
 	<string>L'appareil photo sert à photographier votre profil et votre permis.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>La galerie sert à choisir la photo de votre profil et de votre permis.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>La position de l'accident est ajoutée au constat.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Une note vocale peut accompagner la déclaration d'accident.</string>
 </dict>
 </plist>

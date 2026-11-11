@@ -2489,4 +2489,49 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get claimsTimelineCollapse => 'عرض أقل';
+
+  @override
+  String get dashClaimsTotal => 'الملفات';
+
+  @override
+  String get dashClaimsOpen => 'قيد المعالجة';
+
+  @override
+  String get dashClaimsClosed => 'مغلقة';
+
+  @override
+  String get dashAvgClose => 'متوسط مدة الإغلاق';
+
+  @override
+  String dashDays(String days) {
+    return '$days ي';
+  }
+
+  @override
+  String dashIndemnities(String amount) {
+    return 'التعويضات المدفوعة: $amount د.ت';
+  }
+
+  @override
+  String get dashByStatus => 'حسب الحالة';
+
+  @override
+  String get dashBySeverity => 'حسب الخطورة';
+
+  @override
+  String get dashByCompany => 'حسب شركة التأمين';
+
+  @override
+  String get dashByMonth => 'الملفات خلال الأشهر الستة الأخيرة';
+
+  @override
+  String dashHotspots(int count) {
+    return 'أماكن الحوادث المصرّح بها ($count)';
+  }
+
+  @override
+  String get dashNoPoints => 'لا يوجد تصريح محدد الموقع بعد.';
+
+  @override
+  String get dashNoCompany => 'دون شركة';
 }

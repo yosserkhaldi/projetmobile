@@ -91,7 +91,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                       urlTemplate:
                           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName:
-                          'com.example.flutter_workshops_5sae1_2627',
+                          'tn.monconstat.app',
                     ),
                     DragMarkers(
                       markers: [

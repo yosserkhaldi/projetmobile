@@ -1309,5 +1309,39 @@
     }
   },
   "claimsAlertOpen": "Voir",
-  "claimsTimelineCollapse": "Afficher moins"
+  "claimsTimelineCollapse": "Afficher moins",
+  "dashClaimsTotal": "Sinistres",
+  "dashClaimsOpen": "En cours",
+  "dashClaimsClosed": "Clôturés",
+  "dashAvgClose": "Délai moyen de clôture",
+  "dashDays": "{days} j",
+  "@dashDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "dashIndemnities": "Indemnisations versées : {amount} TND",
+  "@dashIndemnities": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dashByStatus": "Par statut",
+  "dashBySeverity": "Par gravité",
+  "dashByCompany": "Par compagnie",
+  "dashByMonth": "Sinistres des 6 derniers mois",
+  "dashHotspots": "Lieux des accidents déclarés ({count})",
+  "@dashHotspots": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashNoPoints": "Aucune déclaration localisée pour l’instant.",
+  "dashNoCompany": "Sans compagnie"
 }

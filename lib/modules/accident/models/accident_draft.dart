@@ -26,7 +26,8 @@ class AccidentDraft {
   /// lieu d'en créer une seconde.
   String clientId = 'acc-${DateTime.now().microsecondsSinceEpoch}';
 
-  String place = 'Position GPS détectée — Tunis';
+  /// Vide jusqu'à la position GPS ou la saisie : jamais un lieu inventé.
+  String place = '';
   double? latitude;
   double? longitude;
   double? locationAccuracy;

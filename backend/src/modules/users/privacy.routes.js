@@ -270,7 +270,90 @@ router.get('/stats', requireAuth, requireRole('ADMIN'), async (req, res) => {
     companies,
     agencies,
     signups,
+    activity: await activityStats(),
   });
 });
+
+/**
+ * Tableau de bord, accidents et sinistres (modules 3 et 5) : volumes, statut,
+ * gravité, compagnie, mois, délai de clôture, indemnisations, et points GPS
+ * des déclarations pour la carte des zones à risque.
+ */
+async function activityStats() {
+  const [claims, companies, accidents, closings] = await Promise.all([
+    prisma.claim.findMany({
+      select: {
+        status: true,
+        severity: true,
+        type: true,
+        companyId: true,
+        indemnity: true,
+        createdAt: true,
+      },
+    }),
+    prisma.company.findMany({ select: { id: true, name: true } }),
+    prisma.accident.findMany({
+      where: { status: 'SUBMITTED' },
+      select: { place: true, payload: true, occurredAt: true },
+      orderBy: { occurredAt: 'desc' },
+      take: 300,
+    }),
+    prisma.claimEvent.findMany({
+      where: { label: 'Clôturé' },
+      select: { createdAt: true, claim: { select: { createdAt: true } } },
+    }),
+  ]);
+  const tally = (key) => {
+    const counts = {};
+    for (const claim of claims) counts[claim[key]] = (counts[claim[key]] ?? 0) + 1;
+    return counts;
+  };
+  const names = new Map(companies.map((c) => [c.id, c.name]));
+  const byCompany = {};
+  for (const claim of claims) {
+    const name = names.get(claim.companyId) ?? 'Sans compagnie';
+    byCompany[name] = (byCompany[name] ?? 0) + 1;
+  }
+  // Six derniers mois, même vides.
+  const now = new Date();
+  const months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+    return { month: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, count: 0 };
+  });
+  for (const claim of claims) {
+    const d = claim.createdAt;
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const slot = months.find((m) => m.month === key);
+    if (slot) slot.count += 1;
+  }
+  const delays = closings.map(
+    (e) => (e.createdAt - e.claim.createdAt) / (24 * 3600 * 1000),
+  );
+  const finished = new Set(['Clôturé', 'Rejeté']);
+  const points = [];
+  for (const accident of accidents) {
+    const lat = Number(accident.payload?.latitude);
+    const lng = Number(accident.payload?.longitude);
+    if (Number.isFinite(lat) && Number.isFinite(lng) && (lat || lng)) {
+      points.push({ lat, lng, place: accident.place });
+    }
+  }
+  return {
+    claims: claims.length,
+    open: claims.filter((c) => !finished.has(c.status)).length,
+    closed: claims.filter((c) => c.status === 'Clôturé').length,
+    averageDaysToClose: delays.length
+      ? Math.round((delays.reduce((a, b) => a + b, 0) / delays.length) * 10) / 10
+      : null,
+    indemnityTotal: claims.reduce((sum, c) => sum + (c.indemnity ?? 0), 0),
+    byStatus: tally('status'),
+    bySeverity: tally('severity'),
+    byType: tally('type'),
+    byCompany,
+    byMonth: months,
+    declarations: accidents.length,
+    points,
+  };
+}
 
 export default router;
