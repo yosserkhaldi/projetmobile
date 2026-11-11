@@ -103,24 +103,51 @@ class VehicleStore extends ChangeNotifier {
 
   // ── CRUD ───────────────────────────────────────────────────────────────────
 
+  /// Modifiés ou supprimés hors ligne, à envoyer à la prochaine
+  /// synchronisation.
+  final Set<String> _pendingUpdates = {};
+  final Set<String> _pendingDeletes = {};
+
+  /// Ajoute un véhicule. Un refus du serveur (plaque déjà enregistrée,
+  /// données invalides) annule l'ajout et remonte l'erreur à l'écran ; hors
+  /// ligne, il reste sur le téléphone et partira plus tard.
   Future<void> addVehicle(Vehicle v) async {
     _vehicles.add(v);
     notifyListeners();
     await _db.saveVehicle(v);
-    await _send(v);
+    try {
+      await _send(v);
+    } on ApiException {
+      _vehicles.removeWhere((e) => e.id == v.id);
+      notifyListeners();
+      await _db.deleteVehicle(v.id);
+      rethrow;
+    }
   }
 
+  /// Modifie un véhicule. Refusé par le serveur : l'ancienne version revient
+  /// et l'erreur remonte à l'écran.
   Future<void> updateVehicle(Vehicle v) async {
     final idx = _vehicles.indexWhere((e) => e.id == v.id);
     if (idx == -1) return;
+    final previous = _vehicles[idx];
     _vehicles[idx] = v;
     notifyListeners();
     await _db.saveVehicle(v);
-    await _send(v);
+    try {
+      await _send(v);
+    } on ApiException {
+      final at = _vehicles.indexWhere((e) => e.id == v.id);
+      if (at != -1) _vehicles[at] = previous;
+      notifyListeners();
+      await _db.saveVehicle(previous);
+      rethrow;
+    }
   }
 
   Future<void> removeVehicle(Vehicle v) async {
     _vehicles.removeWhere((e) => e.id == v.id);
+    _pendingUpdates.remove(v.id);
     notifyListeners();
     await _db.deleteVehicle(v.id);
     final api = _api;
@@ -128,9 +155,13 @@ class VehicleStore extends ChangeNotifier {
     try {
       await api.delete('/vehicles/${v.id}');
     } on ApiException catch (error) {
-      // Déjà absent du serveur : rien à faire. Hors ligne : il reviendra à
-      // la prochaine synchronisation, et pourra être supprimé à nouveau.
-      if (!error.isNetwork && error.status != 404) rethrow;
+      // Hors ligne : supprimé à la prochaine synchronisation, sans revenir
+      // entre-temps. Déjà absent du serveur : rien à faire.
+      if (error.isNetwork) {
+        _pendingDeletes.add(v.id);
+      } else if (error.status != 404) {
+        rethrow;
+      }
     }
   }
 
@@ -145,6 +176,7 @@ class VehicleStore extends ChangeNotifier {
       if (v.hasServerId) {
         try {
           await api.patch('/vehicles/${v.id}', body: v.toApi());
+          _pendingUpdates.remove(v.id);
           return;
         } on ApiException catch (error) {
           if (error.status != 404) rethrow;
@@ -156,7 +188,19 @@ class VehicleStore extends ChangeNotifier {
       // Ancien identifiant (pas un UUID) : on adopte celui du serveur.
       if (created['id'] != v.id) await _replace(v, Vehicle.fromApi(created, local: v));
     } on ApiException catch (error) {
-      if (!error.isNetwork) debugPrint('Véhicule non envoyé : ${error.message}');
+      // Hors ligne : il partira à la prochaine synchronisation. Un refus du
+      // serveur remonte à l'appelant.
+      if (!error.isNetwork) rethrow;
+      _pendingUpdates.add(v.id);
+    }
+  }
+
+  /// Envoi pendant une synchronisation : un refus est journalisé, pas levé.
+  Future<void> _sendQuietly(Vehicle v) async {
+    try {
+      await _send(v);
+    } on ApiException catch (error) {
+      debugPrint('Véhicule non envoyé : ${error.message}');
     }
   }
 
@@ -188,16 +232,32 @@ class VehicleStore extends ChangeNotifier {
     } on ApiException {
       return; // Hors ligne : on réessaiera à la prochaine connexion.
     }
+    // Supprimés hors ligne : ils partent, et ne reviennent pas du serveur.
+    for (final id in [..._pendingDeletes]) {
+      try {
+        await api.delete('/vehicles/$id');
+        _pendingDeletes.remove(id);
+      } on ApiException catch (error) {
+        if (!error.isNetwork) _pendingDeletes.remove(id);
+      }
+    }
     final localIds = {for (final v in _vehicles) v.id};
     for (final json in remote) {
-      if (localIds.contains(json['id'])) continue;
+      if (localIds.contains(json['id']) || _pendingDeletes.contains(json['id'])) {
+        continue;
+      }
       final vehicle = Vehicle.fromApi(json);
+      localIds.add(vehicle.id);
       _vehicles.add(vehicle);
       await _db.saveVehicle(vehicle);
     }
+    // Créés ou modifiés hors ligne : le téléphone les envoie.
     final remoteIds = {for (final json in remote) json['id']};
     for (final vehicle in [..._vehicles]) {
-      if (!remoteIds.contains(vehicle.id)) await _send(vehicle);
+      if (!remoteIds.contains(vehicle.id) ||
+          _pendingUpdates.contains(vehicle.id)) {
+        await _sendQuietly(vehicle);
+      }
     }
     notifyListeners();
   }
@@ -206,7 +266,15 @@ class VehicleStore extends ChangeNotifier {
   /// sur ce téléphone. Ils sont sur le serveur et reviennent à la connexion.
   Future<void> clear() async {
     await initialize();
+    // Ce qui n'est pas encore sur le serveur part avant d'être effacé.
+    try {
+      await syncWithServer();
+    } catch (error) {
+      debugPrint('Synchronisation avant déconnexion impossible : $error');
+    }
     _vehicles.clear();
+    _pendingUpdates.clear();
+    _pendingDeletes.clear();
     notifyListeners();
     await _db.deleteAll();
   }

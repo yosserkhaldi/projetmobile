@@ -474,10 +474,21 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         createdAt: widget.existing?.createdAt,
       );
 
-      if (_isEdit) {
-        await store.updateVehicle(vehicle);
-      } else {
-        await store.addVehicle(vehicle);
+      try {
+        if (_isEdit) {
+          await store.updateVehicle(vehicle);
+        } else {
+          await store.addVehicle(vehicle);
+        }
+      } on ApiException catch (error) {
+        // Refus du serveur (plaque déjà enregistrée…) : le formulaire reste
+        // ouvert pour corriger.
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error.message)));
+        }
+        return;
       }
 
       if (mounted) Navigator.pop(context);

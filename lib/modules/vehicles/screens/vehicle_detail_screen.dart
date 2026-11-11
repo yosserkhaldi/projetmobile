@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
@@ -260,7 +261,9 @@ class VehicleDetailScreen extends StatelessWidget {
   Future<void> _showRenewDialog(BuildContext context, Vehicle vehicle) async {
     final store = AppScope.of(context).vehicles;
     final policyController = TextEditingController(text: vehicle.policy);
-    final expiryController = TextEditingController(text: vehicle.insuranceExpiry);
+    final expiryController = TextEditingController(
+      text: _fmtDate(vehicle.insuranceExpiry),
+    );
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -276,7 +279,11 @@ class VehicleDetailScreen extends StatelessWidget {
             const SizedBox(height: 12),
             TextField(
               controller: expiryController,
-              decoration: const InputDecoration(labelText: 'Date d’expiration (AAAA-MM-JJ)'),
+              keyboardType: TextInputType.datetime,
+              decoration: const InputDecoration(
+                labelText: 'Date d’expiration',
+                hintText: 'JJ/MM/AAAA',
+              ),
             ),
           ],
         ),
@@ -294,17 +301,48 @@ class VehicleDetailScreen extends StatelessWidget {
     );
 
     if (confirmed == true) {
+      final messenger = ScaffoldMessenger.of(context);
+      // Une date illisible faisait passer un contrat expiré pour valide.
+      final expiry = _isoDate(expiryController.text);
+      if (expiry == null || policyController.text.trim().isEmpty) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Date invalide (JJ/MM/AAAA) ou n° de police manquant.'),
+          ),
+        );
+        return;
+      }
       final updated = vehicle.copyWith(
         policy: policyController.text.trim(),
-        insuranceExpiry: expiryController.text.trim(),
+        insuranceExpiry: expiry,
       );
-      await store.updateVehicle(updated);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Contrat d’assurance renouvelé avec succès !')),
-        );
+      try {
+        await store.updateVehicle(updated);
+      } on ApiException catch (error) {
+        messenger.showSnackBar(SnackBar(content: Text(error.message)));
+        return;
       }
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Contrat d’assurance renouvelé avec succès !')),
+      );
     }
+  }
+
+  /// JJ/MM/AAAA ou AAAA-MM-JJ → AAAA-MM-JJ ; null si la date n'existe pas.
+  static String? _isoDate(String input) {
+    final text = input.trim();
+    final fr = RegExp(r'^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$').firstMatch(text);
+    final iso = RegExp(r'^(\d{4})-(\d{1,2})-(\d{1,2})$').firstMatch(text);
+    final (int? y, int? m, int? d) = fr != null
+        ? (int.parse(fr[3]!), int.parse(fr[2]!), int.parse(fr[1]!))
+        : iso != null
+        ? (int.parse(iso[1]!), int.parse(iso[2]!), int.parse(iso[3]!))
+        : (null, null, null);
+    if (y == null || m == null || d == null) return null;
+    final date = DateTime(y, m, d);
+    if (date.year != y || date.month != m || date.day != d) return null;
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '$y-${two(m)}-${two(d)}';
   }
 
   String _typeLabel(VehicleType t) => const {

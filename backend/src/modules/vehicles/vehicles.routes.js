@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
 import { HttpError } from '../../lib/errors.js';
-import { singleImage } from '../../lib/uploads.js';
-import { vehicleDocReader } from '../../lib/vehicleDocs.js';
+import { assertImage, singleImage } from '../../lib/uploads.js';
+import { INSURERS, vehicleDocReader } from '../../lib/vehicleDocs.js';
 import { prisma } from '../../lib/prisma.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { aiQuota } from '../../middleware/quota.js';
@@ -52,11 +52,13 @@ router.post('/scan', aiQuota({ max: 30 }), singleImage('photo'), async (req, res
   if (!['REGISTRATION', 'INSURANCE'].includes(kind)) {
     throw new HttpError(400, 'VALIDATION_ERROR', 'Type de document invalide.');
   }
+  assertImage(req.file);
   const extracted = await vehicleDocReader.read(req.file.buffer, kind);
   if (kind === 'INSURANCE' && extracted.insurer) {
-    const key = extracted.insurer.split(' ')[0].toUpperCase();
+    const key = INSURERS.find(([, name]) => name === extracted.insurer)?.[0];
+    const word = key && new RegExp(`(^|[^A-Z])${key.replace(/\s+/g, '\\s*')}($|[^A-Z])`);
     const companies = await prisma.company.findMany({ select: { id: true, name: true } });
-    const company = companies.find((c) => c.name.toUpperCase().includes(key));
+    const company = word ? companies.find((c) => word.test(c.name.toUpperCase())) : null;
     extracted.companyId = company?.id ?? null;
     if (company) extracted.insurer = company.name;
   }
@@ -73,7 +75,7 @@ router.post('/scan', aiQuota({ max: 30 }), singleImage('photo'), async (req, res
 router.get('/alerts', async (req, res) => {
   const days = Math.min(
     365,
-    Math.max(1, parseInt(req.query.days ?? '30', 10)),
+    Math.max(1, parseInt(req.query.days ?? '30', 10) || 30),
   );
   res.json(await vehicles.getExpiringVehicles(req.user.id, days));
 });

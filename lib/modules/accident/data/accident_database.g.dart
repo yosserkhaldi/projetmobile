@@ -346,6 +346,17 @@ class $AccidentDraftsTable extends AccidentDrafts
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _circumstancesJsonMeta = const VerificationMeta(
     'circumstancesJson',
   );
@@ -502,6 +513,7 @@ class $AccidentDraftsTable extends AccidentDrafts
     driverBPolicy,
     driverBCompanyId,
     vehicleId,
+    clientId,
     circumstancesJson,
     observations,
     impactZonesJson,
@@ -783,6 +795,12 @@ class $AccidentDraftsTable extends AccidentDrafts
         vehicleId.isAcceptableOrUnknown(data['vehicle_id']!, _vehicleIdMeta),
       );
     }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    }
     if (data.containsKey('circumstances_json')) {
       context.handle(
         _circumstancesJsonMeta,
@@ -1016,6 +1034,10 @@ class $AccidentDraftsTable extends AccidentDrafts
         DriftSqlType.string,
         data['${effectivePrefix}vehicle_id'],
       ),
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      ),
       circumstancesJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}circumstances_json'],
@@ -1097,6 +1119,7 @@ class AccidentDraftRow extends DataClass
   final String driverBPolicy;
   final String? driverBCompanyId;
   final String? vehicleId;
+  final String? clientId;
   final String circumstancesJson;
   final String observations;
   final String impactZonesJson;
@@ -1138,6 +1161,7 @@ class AccidentDraftRow extends DataClass
     required this.driverBPolicy,
     this.driverBCompanyId,
     this.vehicleId,
+    this.clientId,
     required this.circumstancesJson,
     required this.observations,
     required this.impactZonesJson,
@@ -1191,6 +1215,9 @@ class AccidentDraftRow extends DataClass
     }
     if (!nullToAbsent || vehicleId != null) {
       map['vehicle_id'] = Variable<String>(vehicleId);
+    }
+    if (!nullToAbsent || clientId != null) {
+      map['client_id'] = Variable<String>(clientId);
     }
     map['circumstances_json'] = Variable<String>(circumstancesJson);
     map['observations'] = Variable<String>(observations);
@@ -1247,6 +1274,9 @@ class AccidentDraftRow extends DataClass
       vehicleId: vehicleId == null && nullToAbsent
           ? const Value.absent()
           : Value(vehicleId),
+      clientId: clientId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clientId),
       circumstancesJson: Value(circumstancesJson),
       observations: Value(observations),
       impactZonesJson: Value(impactZonesJson),
@@ -1298,6 +1328,7 @@ class AccidentDraftRow extends DataClass
       driverBPolicy: serializer.fromJson<String>(json['driverBPolicy']),
       driverBCompanyId: serializer.fromJson<String?>(json['driverBCompanyId']),
       vehicleId: serializer.fromJson<String?>(json['vehicleId']),
+      clientId: serializer.fromJson<String?>(json['clientId']),
       circumstancesJson: serializer.fromJson<String>(json['circumstancesJson']),
       observations: serializer.fromJson<String>(json['observations']),
       impactZonesJson: serializer.fromJson<String>(json['impactZonesJson']),
@@ -1348,6 +1379,7 @@ class AccidentDraftRow extends DataClass
       'driverBPolicy': serializer.toJson<String>(driverBPolicy),
       'driverBCompanyId': serializer.toJson<String?>(driverBCompanyId),
       'vehicleId': serializer.toJson<String?>(vehicleId),
+      'clientId': serializer.toJson<String?>(clientId),
       'circumstancesJson': serializer.toJson<String>(circumstancesJson),
       'observations': serializer.toJson<String>(observations),
       'impactZonesJson': serializer.toJson<String>(impactZonesJson),
@@ -1392,6 +1424,7 @@ class AccidentDraftRow extends DataClass
     String? driverBPolicy,
     Value<String?> driverBCompanyId = const Value.absent(),
     Value<String?> vehicleId = const Value.absent(),
+    Value<String?> clientId = const Value.absent(),
     String? circumstancesJson,
     String? observations,
     String? impactZonesJson,
@@ -1437,6 +1470,7 @@ class AccidentDraftRow extends DataClass
         ? driverBCompanyId.value
         : this.driverBCompanyId,
     vehicleId: vehicleId.present ? vehicleId.value : this.vehicleId,
+    clientId: clientId.present ? clientId.value : this.clientId,
     circumstancesJson: circumstancesJson ?? this.circumstancesJson,
     observations: observations ?? this.observations,
     impactZonesJson: impactZonesJson ?? this.impactZonesJson,
@@ -1518,6 +1552,7 @@ class AccidentDraftRow extends DataClass
           ? data.driverBCompanyId.value
           : this.driverBCompanyId,
       vehicleId: data.vehicleId.present ? data.vehicleId.value : this.vehicleId,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
       circumstancesJson: data.circumstancesJson.present
           ? data.circumstancesJson.value
           : this.circumstancesJson,
@@ -1584,6 +1619,7 @@ class AccidentDraftRow extends DataClass
           ..write('driverBPolicy: $driverBPolicy, ')
           ..write('driverBCompanyId: $driverBCompanyId, ')
           ..write('vehicleId: $vehicleId, ')
+          ..write('clientId: $clientId, ')
           ..write('circumstancesJson: $circumstancesJson, ')
           ..write('observations: $observations, ')
           ..write('impactZonesJson: $impactZonesJson, ')
@@ -1630,6 +1666,7 @@ class AccidentDraftRow extends DataClass
     driverBPolicy,
     driverBCompanyId,
     vehicleId,
+    clientId,
     circumstancesJson,
     observations,
     impactZonesJson,
@@ -1675,6 +1712,7 @@ class AccidentDraftRow extends DataClass
           other.driverBPolicy == this.driverBPolicy &&
           other.driverBCompanyId == this.driverBCompanyId &&
           other.vehicleId == this.vehicleId &&
+          other.clientId == this.clientId &&
           other.circumstancesJson == this.circumstancesJson &&
           other.observations == this.observations &&
           other.impactZonesJson == this.impactZonesJson &&
@@ -1718,6 +1756,7 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
   final Value<String> driverBPolicy;
   final Value<String?> driverBCompanyId;
   final Value<String?> vehicleId;
+  final Value<String?> clientId;
   final Value<String> circumstancesJson;
   final Value<String> observations;
   final Value<String> impactZonesJson;
@@ -1759,6 +1798,7 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
     this.driverBPolicy = const Value.absent(),
     this.driverBCompanyId = const Value.absent(),
     this.vehicleId = const Value.absent(),
+    this.clientId = const Value.absent(),
     this.circumstancesJson = const Value.absent(),
     this.observations = const Value.absent(),
     this.impactZonesJson = const Value.absent(),
@@ -1801,6 +1841,7 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
     this.driverBPolicy = const Value.absent(),
     this.driverBCompanyId = const Value.absent(),
     this.vehicleId = const Value.absent(),
+    this.clientId = const Value.absent(),
     required String circumstancesJson,
     required String observations,
     required String impactZonesJson,
@@ -1864,6 +1905,7 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
     Expression<String>? driverBPolicy,
     Expression<String>? driverBCompanyId,
     Expression<String>? vehicleId,
+    Expression<String>? clientId,
     Expression<String>? circumstancesJson,
     Expression<String>? observations,
     Expression<String>? impactZonesJson,
@@ -1907,6 +1949,7 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
       if (driverBPolicy != null) 'driver_b_policy': driverBPolicy,
       if (driverBCompanyId != null) 'driver_b_company_id': driverBCompanyId,
       if (vehicleId != null) 'vehicle_id': vehicleId,
+      if (clientId != null) 'client_id': clientId,
       if (circumstancesJson != null) 'circumstances_json': circumstancesJson,
       if (observations != null) 'observations': observations,
       if (impactZonesJson != null) 'impact_zones_json': impactZonesJson,
@@ -1953,6 +1996,7 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
     Value<String>? driverBPolicy,
     Value<String?>? driverBCompanyId,
     Value<String?>? vehicleId,
+    Value<String?>? clientId,
     Value<String>? circumstancesJson,
     Value<String>? observations,
     Value<String>? impactZonesJson,
@@ -1995,6 +2039,7 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
       driverBPolicy: driverBPolicy ?? this.driverBPolicy,
       driverBCompanyId: driverBCompanyId ?? this.driverBCompanyId,
       vehicleId: vehicleId ?? this.vehicleId,
+      clientId: clientId ?? this.clientId,
       circumstancesJson: circumstancesJson ?? this.circumstancesJson,
       observations: observations ?? this.observations,
       impactZonesJson: impactZonesJson ?? this.impactZonesJson,
@@ -2103,6 +2148,9 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
     if (vehicleId.present) {
       map['vehicle_id'] = Variable<String>(vehicleId.value);
     }
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
     if (circumstancesJson.present) {
       map['circumstances_json'] = Variable<String>(circumstancesJson.value);
     }
@@ -2173,6 +2221,7 @@ class AccidentDraftsCompanion extends UpdateCompanion<AccidentDraftRow> {
           ..write('driverBPolicy: $driverBPolicy, ')
           ..write('driverBCompanyId: $driverBCompanyId, ')
           ..write('vehicleId: $vehicleId, ')
+          ..write('clientId: $clientId, ')
           ..write('circumstancesJson: $circumstancesJson, ')
           ..write('observations: $observations, ')
           ..write('impactZonesJson: $impactZonesJson, ')
@@ -2231,6 +2280,7 @@ typedef $$AccidentDraftsTableCreateCompanionBuilder =
       Value<String> driverBPolicy,
       Value<String?> driverBCompanyId,
       Value<String?> vehicleId,
+      Value<String?> clientId,
       required String circumstancesJson,
       required String observations,
       required String impactZonesJson,
@@ -2274,6 +2324,7 @@ typedef $$AccidentDraftsTableUpdateCompanionBuilder =
       Value<String> driverBPolicy,
       Value<String?> driverBCompanyId,
       Value<String?> vehicleId,
+      Value<String?> clientId,
       Value<String> circumstancesJson,
       Value<String> observations,
       Value<String> impactZonesJson,
@@ -2442,6 +2493,11 @@ class $$AccidentDraftsTableFilterComposer
 
   ColumnFilters<String> get vehicleId => $composableBuilder(
     column: $table.vehicleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2655,6 +2711,11 @@ class $$AccidentDraftsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get circumstancesJson => $composableBuilder(
     column: $table.circumstancesJson,
     builder: (column) => ColumnOrderings(column),
@@ -2843,6 +2904,9 @@ class $$AccidentDraftsTableAnnotationComposer
   GeneratedColumn<String> get vehicleId =>
       $composableBuilder(column: $table.vehicleId, builder: (column) => column);
 
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
   GeneratedColumn<String> get circumstancesJson => $composableBuilder(
     column: $table.circumstancesJson,
     builder: (column) => column,
@@ -2961,6 +3025,7 @@ class $$AccidentDraftsTableTableManager
                 Value<String> driverBPolicy = const Value.absent(),
                 Value<String?> driverBCompanyId = const Value.absent(),
                 Value<String?> vehicleId = const Value.absent(),
+                Value<String?> clientId = const Value.absent(),
                 Value<String> circumstancesJson = const Value.absent(),
                 Value<String> observations = const Value.absent(),
                 Value<String> impactZonesJson = const Value.absent(),
@@ -3002,6 +3067,7 @@ class $$AccidentDraftsTableTableManager
                 driverBPolicy: driverBPolicy,
                 driverBCompanyId: driverBCompanyId,
                 vehicleId: vehicleId,
+                clientId: clientId,
                 circumstancesJson: circumstancesJson,
                 observations: observations,
                 impactZonesJson: impactZonesJson,
@@ -3045,6 +3111,7 @@ class $$AccidentDraftsTableTableManager
                 Value<String> driverBPolicy = const Value.absent(),
                 Value<String?> driverBCompanyId = const Value.absent(),
                 Value<String?> vehicleId = const Value.absent(),
+                Value<String?> clientId = const Value.absent(),
                 required String circumstancesJson,
                 required String observations,
                 required String impactZonesJson,
@@ -3086,6 +3153,7 @@ class $$AccidentDraftsTableTableManager
                 driverBPolicy: driverBPolicy,
                 driverBCompanyId: driverBCompanyId,
                 vehicleId: vehicleId,
+                clientId: clientId,
                 circumstancesJson: circumstancesJson,
                 observations: observations,
                 impactZonesJson: impactZonesJson,

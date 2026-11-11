@@ -12,6 +12,9 @@ export class HttpError extends Error {
 export const isUniqueViolation = (err) => err?.code === 'P2002';
 export const isForeignKeyViolation = (err) => err?.code === 'P2003';
 const isRecordNotFound = (err) => err?.code === 'P2025';
+// Identifiant qui n'a pas la forme d'un uuid : rien ne peut correspondre.
+const isMalformedId = (err) =>
+  err?.code === 'P2023' || (err?.code === 'P2007' && /uuid/i.test(err.message ?? ''));
 
 export function notFoundHandler(_req, _res, next) {
   next(new HttpError(404, 'NOT_FOUND', 'Ressource introuvable.'));
@@ -40,10 +43,13 @@ export function errorHandler(err, _req, res, _next) {
       ? send(413, 'FILE_TOO_LARGE', 'Image trop lourde : 5 Mo maximum.')
       : send(400, 'BAD_UPLOAD', 'Envoi de fichier invalide.');
   }
-  if (isRecordNotFound(err)) {
+  if (isRecordNotFound(err) || isMalformedId(err)) {
     return send(404, 'NOT_FOUND', 'Ressource introuvable.');
   }
   // Erreurs du corps de requête levées par express.json (JSON invalide, trop long).
+  if (err?.status === 413) {
+    return send(413, 'PAYLOAD_TOO_LARGE', 'Envoi trop volumineux.');
+  }
   if (err?.status >= 400 && err?.status < 500) {
     return send(err.status, 'BAD_REQUEST', 'Requête invalide.');
   }

@@ -73,12 +73,12 @@ class AccidentStore extends ChangeNotifier {
                   'occurredAt': value.occurredAt.toUtc().toIso8601String(),
                   'payload': value.toDatabaseMap(currentStep: 6)
                     ..remove('id')
-                    ..remove('current_step'),
+                    ..remove('current_step')
+                    ..remove('client_id'),
                 },
               )
               as Map<String, dynamic>;
       final id = (saved['accident'] as Map<String, dynamic>)['id'] as String;
-      await api.post('/accidents/$id/submit');
       value.serverId = id;
       return id;
     } on ApiException catch (error) {

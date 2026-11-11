@@ -76,6 +76,19 @@ router.patch('/me', async (req, res) => {
   }
   // Un nouveau numéro doit être vérifié à nouveau.
   if (data.phone && data.phone !== req.user.phone) data.phoneVerifiedAt = null;
+  // Nom vérifié sur la pièce d'identité (ou en cours) : il signe les constats,
+  // il ne se modifie plus depuis le profil.
+  const same = (a, b) => (a ?? '').trim().toLowerCase() === (b ?? '').trim().toLowerCase();
+  const renamed =
+    (data.firstName !== undefined && !same(data.firstName, req.user.firstName)) ||
+    (data.lastName !== undefined && !same(data.lastName, req.user.lastName));
+  if (renamed && ['VERIFIED', 'PENDING'].includes(req.user.identityStatus)) {
+    throw new HttpError(
+      409,
+      'IDENTITY_NAME_LOCKED',
+      "Votre nom a été vérifié sur votre pièce d'identité : il ne peut plus être modifié.",
+    );
+  }
   // Numéro de permis tapé à la main, différent de celui lu sur la photo :
   // un administrateur vérifie.
   const read = req.user.licenseReading?.number;
@@ -88,6 +101,20 @@ router.patch('/me', async (req, res) => {
     };
   }
 
+  // Permis déjà validé : toute modification repasse par un administrateur.
+  const day = (value) => (value ? new Date(value).toISOString().slice(0, 10) : null);
+  // Seule une valeur déjà enregistrée qui change compte : la première saisie
+  // après la lecture de la photo n'est pas une modification (le numéro est
+  // alors comparé à la lecture, plus haut).
+  const changed = (next, current, norm = (v) => v ?? '') =>
+    next !== undefined && current != null && current !== '' && norm(next) !== norm(current);
+  const licenseEdited =
+    changed(data.licenseNumber, req.user.licenseNumber, (v) => compact(v) ?? '') ||
+    changed(data.licenseCategory, req.user.licenseCategory) ||
+    changed(data.licenseIssuedAt, req.user.licenseIssuedAt, day);
+  if (licenseEdited && req.user.licenseStatus === 'VERIFIED') {
+    data.licenseStatus = 'TO_REVIEW';
+  }
   const user = await prisma.user
     .update({ where: { id: req.user.id }, data, include: withCompany })
     .catch(rethrowConflict);

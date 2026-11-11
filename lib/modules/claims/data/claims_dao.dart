@@ -341,6 +341,16 @@ class ClaimsDao extends DatabaseAccessor<ClaimsDatabase> with _$ClaimsDaoMixin {
   /// À la déconnexion : l'analyse d'un agent ne reste pas sur l'appareil.
   Future<void> clearInsights() => delete(claimInsights).go();
 
+  /// À la déconnexion : dossiers, messages et notifications du compte ne
+  /// restent pas pour le compte suivant. La file d'envoi reste : chaque
+  /// requête porte son auteur et partira à sa prochaine connexion.
+  Future<void> clearAccountData() => transaction(() async {
+    await delete(claims).go();
+    await delete(claimNotifications).go();
+    await delete(chatMessages).go();
+    await delete(claimInsights).go();
+  });
+
   /// Remplace le local par l'état du serveur. Ne fait rien, et renvoie faux,
   /// si un changement attend encore d'être envoyé.
   Future<bool> replaceFromServer(ServerSnapshot snapshot, {String? actorId}) =>

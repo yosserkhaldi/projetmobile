@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -38,10 +39,6 @@ class _AccidentWizardState extends State<AccidentWizard> {
   final observations = TextEditingController();
   int step = 0;
   bool _sending = false;
-
-  /// Identifiant de la déclaration côté téléphone : un nouvel envoi (après
-  /// une coupure) met à jour la même déclaration sur le serveur.
-  final _clientId = 'acc-${DateTime.now().microsecondsSinceEpoch}';
 
   static const steps = [
     ('Contexte', 'Lieu, heure et conditions'),
@@ -247,7 +244,7 @@ class _AccidentWizardState extends State<AccidentWizard> {
       final accidentId = await stores.accidents.submitToServer(
         stores.api,
         draft,
-        clientId: _clientId,
+        clientId: draft.clientId,
       );
       constat = await stores.constats.sealAndSubmit(
         draft: draft,
@@ -289,20 +286,17 @@ class _AccidentWizardState extends State<AccidentWizard> {
       final hash = stores.constats.crypto.computeSha256(pdfBytes);
       constat = _localConstat(stores, hash);
       sealedOnline = false;
-    } catch (_) {
-      final offlineAt = DateTime.now();
-      pdfBytes = await AccidentPdfService().build(
-        draft,
-        driverA: driverA,
-        generatedAt: offlineAt,
-      );
-      final hash = stores.constats.crypto.computeSha256(pdfBytes);
-      constat = _localConstat(stores, hash);
-      sealedOnline = false;
+    } catch (error) {
+      _sending = false;
+      if (mounted) {
+        navigator.pop(); // ferme le dialog
+        _showError('Le constat n’a pas pu être scellé : $error');
+      }
+      return;
     }
 
     final claim = Claim(
-      id: 'SIN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+      id: _claimId(),
       type: draft.type,
       place: draft.place,
       date: draft.occurredAt.toString().substring(0, 16),
@@ -376,6 +370,21 @@ class _AccidentWizardState extends State<AccidentWizard> {
         ..driverAPolicy = vehicle.policy
         ..driverACompanyId = vehicle.companyId;
     }
+  }
+
+  /// Numéro de dossier : date du jour et 6 caractères aléatoires. L'ancien
+  /// (6 chiffres de l'horloge) revenait toutes les 16 minutes, et le serveur
+  /// refusait alors le dossier.
+  static String _claimId() {
+    final now = DateTime.now();
+    String two(int n) => n.toString().padLeft(2, '0');
+    final random = Random.secure();
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final suffix = List.generate(
+      6,
+      (_) => alphabet[random.nextInt(alphabet.length)],
+    ).join();
+    return 'SIN-${two(now.year % 100)}${two(now.month)}${two(now.day)}-$suffix';
   }
 
   Vehicle? _vehicle(List<Vehicle> vehicles) =>

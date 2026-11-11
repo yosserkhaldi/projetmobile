@@ -29,7 +29,9 @@ export function createApp() {
   if (process.env.NODE_ENV !== 'production') {
     app.use(cors({ origin: /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/ }));
   }
-  app.use(express.json());
+  // Signatures et croquis voyagent en points : la limite par défaut (100 Ko)
+  // refusait un croquis détaillé.
+  app.use(express.json({ limit: '5mb' }));
   app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {

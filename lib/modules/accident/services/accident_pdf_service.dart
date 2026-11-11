@@ -820,12 +820,8 @@ class AccidentPdfService {
             accent: _amberPrimary,
             tint: _amberTint,
             rows: [
-              (
-                'Zones impactées',
-                draft.impactZones.isEmpty
-                    ? 'Voir croquis central'
-                    : draft.impactZones.join(', '),
-              ),
+              // Les zones saisies sont celles du véhicule A.
+              ('Zones impactées', 'Voir croquis central'),
               ('Validation', 'Acceptation bilatérale requise'),
             ],
             isLast: true,

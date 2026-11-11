@@ -64,6 +64,7 @@ class AccidentDrafts extends Table {
   // Compagnie du conducteur B (CompanyPicker) et véhicule du conducteur A.
   TextColumn get driverBCompanyId => text().nullable()();
   TextColumn get vehicleId => text().nullable()();
+  TextColumn get clientId => text().nullable()();
   TextColumn get circumstancesJson => text()();
   TextColumn get observations => text()();
   TextColumn get impactZonesJson => text()();
@@ -90,7 +91,7 @@ class AccidentDatabase extends _$AccidentDatabase {
     : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -122,6 +123,9 @@ class AccidentDatabase extends _$AccidentDatabase {
       if (from < 6) {
         await m.addColumn(accidentDrafts, accidentDrafts.driverBCompanyId);
         await m.addColumn(accidentDrafts, accidentDrafts.vehicleId);
+      }
+      if (from < 7) {
+        await m.addColumn(accidentDrafts, accidentDrafts.clientId);
       }
     },
   );
@@ -187,6 +191,7 @@ class AccidentDatabase extends _$AccidentDatabase {
     'driver_b_policy': r.driverBPolicy,
     'driver_b_company_id': r.driverBCompanyId,
     'vehicle_id': r.vehicleId,
+    'client_id': r.clientId,
     'circumstances_json': r.circumstancesJson,
     'observations': r.observations,
     'impact_zones_json': r.impactZonesJson,
@@ -231,6 +236,7 @@ class AccidentDatabase extends _$AccidentDatabase {
       driverBPolicy: Value(m['driver_b_policy'] as String),
       driverBCompanyId: Value(m['driver_b_company_id'] as String?),
       vehicleId: Value(m['vehicle_id'] as String?),
+      clientId: Value(m['client_id'] as String?),
       circumstancesJson: m['circumstances_json'] as String,
       observations: m['observations'] as String,
       impactZonesJson: m['impact_zones_json'] as String,

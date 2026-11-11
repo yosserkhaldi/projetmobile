@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import 'package:mon_constat_digital/core/network/api_client.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 import 'package:mon_constat_digital/modules/vehicles/models/vehicle.dart';
+import 'package:mon_constat_digital/modules/vehicles/screens/alerts_screen.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/vehicle_detail_screen.dart';
 import 'package:mon_constat_digital/modules/vehicles/screens/vehicle_form_screen.dart';
 import 'package:mon_constat_digital/modules/vehicles/services/vehicle_ai_service.dart';
@@ -56,8 +58,7 @@ class _VehiclesScreenState extends State<VehiclesScreen>
                   label: Text('$alerts'),
                   child: IconButton(
                     icon: const Icon(Icons.notifications_outlined),
-                    onPressed: () =>
-                        open(context, const _AlertsBadgeNavigation()),
+                    onPressed: () => open(context, const AlertsScreen()),
                   ),
                 ),
               IconButton.filled(
@@ -474,17 +475,22 @@ class _VehicleMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert),
       onSelected: (action) async {
-        switch (action) {
-          case 'edit':
-            open(
-              context,
-              VehicleFormScreen(existing: vehicle),
-            );
-          case 'archive':
-            store.archiveVehicle(vehicle);
-          case 'delete':
-            final ok = await _confirmDelete(context);
-            if (ok && context.mounted) store.removeVehicle(vehicle);
+        final messenger = ScaffoldMessenger.of(context);
+        try {
+          switch (action) {
+            case 'edit':
+              open(
+                context,
+                VehicleFormScreen(existing: vehicle),
+              );
+            case 'archive':
+              await store.archiveVehicle(vehicle);
+            case 'delete':
+              final ok = await _confirmDelete(context);
+              if (ok && context.mounted) await store.removeVehicle(vehicle);
+          }
+        } on ApiException catch (error) {
+          messenger.showSnackBar(SnackBar(content: Text(error.message)));
         }
       },
       itemBuilder: (_) => [
@@ -548,15 +554,3 @@ class _VehicleMenu extends StatelessWidget {
   }
 }
 
-// Simple wrapper pour naviguer vers l'écran d'alertes depuis l'icône notif
-class _AlertsBadgeNavigation extends StatelessWidget {
-  const _AlertsBadgeNavigation();
-  @override
-  Widget build(BuildContext context) {
-    // Redirige vers l'écran AlertsScreen existant
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.pop(context);
-    });
-    return const SizedBox.shrink();
-  }
-}

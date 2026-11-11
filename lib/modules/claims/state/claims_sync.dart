@@ -135,10 +135,18 @@ class ClaimsSync extends ChangeNotifier {
     _socket = null;
     if (id == null) {
       claims.clearInsights();
+      unawaited(_forgetAccount());
       return;
     }
     connect();
     unawaited(synchronize());
+  }
+
+  /// Déconnexion : les données du compte quittent le téléphone.
+  Future<void> _forgetAccount() async {
+    await _dao.clearAccountData();
+    await claims.reload();
+    await messages.reload();
   }
 
   /// Ajoute une requête à la file. Elle partira dès que possible.

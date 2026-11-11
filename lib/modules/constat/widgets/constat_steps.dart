@@ -11,7 +11,6 @@ import 'package:mon_constat_digital/modules/accident/services/accident_media_ser
 import 'package:mon_constat_digital/modules/accident/services/accident_pdf_service.dart';
 import 'package:mon_constat_digital/modules/accident/services/driving_license_ocr_service.dart';
 import 'package:mon_constat_digital/modules/accident/widgets/accident_review.dart';
-import 'package:mon_constat_digital/modules/constat/screens/guest_qr_screen.dart';
 import 'package:mon_constat_digital/modules/constat/widgets/signature_box.dart';
 import 'package:mon_constat_digital/modules/users/widgets/company_picker.dart';
 import 'package:mon_constat_digital/shared/widgets/drawing_pad.dart';
@@ -173,20 +172,6 @@ class _GuestDriverStepState extends State<GuestDriverStep> {
           widget.draft.driverBPolicy = value;
           widget.onChanged();
         },
-      ),
-      const SizedBox(height: 16),
-      SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => GuestQrScreen(draft: widget.draft),
-            ),
-          ),
-          icon: const Icon(Icons.qr_code_2),
-          label: const Text('Partager par QR code avec le conducteur B'),
-        ),
       ),
     ],
   );
