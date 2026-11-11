@@ -175,6 +175,12 @@ for (const kind of ['document', 'message']) {
 router.get('/:id', async (req, res) => {
   res.json(await claims.getClaim(req.user, req.params.id));
 });
+// Constat scellé après une déclaration faite hors ligne.
+router.post(
+  '/:id/constat',
+  requireRole('driver'),
+  write((tx, req) => claims.attachConstat(tx, req.user, req.params.id, req.body)),
+);
 router.post(
   '/:id/take-charge',
   agent,

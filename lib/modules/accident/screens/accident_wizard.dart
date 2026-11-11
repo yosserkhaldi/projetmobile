@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mon_constat_digital/core/theme/app_palette.dart';
 
 import 'package:mon_constat_digital/core/network/api_client.dart';
+import 'package:mon_constat_digital/modules/constat/services/pending_seals.dart';
 import 'package:mon_constat_digital/core/state/app_scope.dart';
 import 'package:mon_constat_digital/core/theme/app_colors.dart';
 import 'package:mon_constat_digital/modules/accident/models/accident_draft.dart';
@@ -39,6 +40,13 @@ class _AccidentWizardState extends State<AccidentWizard> {
   final observations = TextEditingController();
   int step = 0;
   bool _sending = false;
+
+  /// Le téléphone est entre les mains du conducteur B (étape 4) : retour
+  /// impossible vers les étapes de A, jusqu'à ce qu'il le rende.
+  bool _guestMode = false;
+
+  /// Étape du conducteur B, avant la remise du téléphone.
+  bool get _handoverPending => step == 3 && !_guestMode;
 
   static const steps = [
     ('Contexte', 'Lieu, heure et conditions'),
@@ -82,9 +90,20 @@ class _AccidentWizardState extends State<AccidentWizard> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) => PopScope(
+    canPop: !_guestMode,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop) {
+        _showError('Terminez d’abord la saisie du conducteur B.');
+      }
+    },
+    child: _scaffold(context),
+  );
+
+  Widget _scaffold(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('Nouvelle déclaration'),
+      automaticallyImplyLeading: !_guestMode,
+      title: Text(_guestMode ? 'Conducteur B' : 'Nouvelle déclaration'),
       actions: [
         TextButton.icon(
           onPressed: _saveDraft,
@@ -108,15 +127,21 @@ class _AccidentWizardState extends State<AccidentWizard> {
             ),
           ),
           _BottomActions(
-            canGoBack: step > 0,
+            canGoBack: step > 0 && !_guestMode,
             finalStep: step == steps.length - 1,
             continueLabel: step == 2
                 ? 'Continuer vers le constat'
+                : _handoverPending
+                ? 'Je suis le conducteur B'
+                : _guestMode
+                ? 'Terminer et rendre le téléphone'
                 : step == steps.length - 1
                 ? 'Signer et transmettre'
                 : 'Continuer',
             onBack: _goBack,
-            onContinue: _next,
+            onContinue: _handoverPending
+                ? () => setState(() => _guestMode = true)
+                : _next,
           ),
         ],
       ),
@@ -146,7 +171,10 @@ class _AccidentWizardState extends State<AccidentWizard> {
       onChanged: _touch,
     ),
     2 => EvidenceStep(draft: draft, onChanged: _touch),
-    3 => GuestDriverStep(draft: draft, onChanged: _touch),
+    3 =>
+      _guestMode
+          ? GuestDriverStep(draft: draft, onChanged: _touch)
+          : const _HandoverIntro(),
     4 => CircumstancesStep(
       draft: draft,
       observations: observations,
@@ -180,6 +208,29 @@ class _AccidentWizardState extends State<AccidentWizard> {
     FocusScope.of(context).unfocus();
     if (!_isCurrentStepValid()) return;
     draft.touch();
+    if (_guestMode) {
+      // Le conducteur B a terminé : il rend le téléphone au conducteur A.
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => AlertDialog(
+          icon: const Icon(Icons.swap_horiz_rounded),
+          title: const Text('Merci !'),
+          content: const Text(
+            'Rendez maintenant le téléphone au conducteur A. Les deux '
+            'conducteurs signeront ensemble à la fin du constat.',
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Je suis le conducteur A'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted) return;
+      _guestMode = false;
+    }
     if (step < steps.length - 1) {
       setState(() => step++);
       _persistDraft();
@@ -327,6 +378,18 @@ class _AccidentWizardState extends State<AccidentWizard> {
       ],
     ]);
     stores.claims.addClaim(claim);
+    // Hors ligne : scellé sur le serveur et rattaché au sinistre au retour
+    // du réseau (PendingSeals).
+    if (!sealedOnline) {
+      await PendingSeals.add(
+        userId: user.id,
+        claimId: claim.id,
+        draft: draft,
+        driverA: driverA,
+        companyAId: vehicle.companyId ?? user.companyId,
+        companyBId: draft.driverBCompanyId,
+      );
+    }
     // Module 5 : photos, vidéo, note vocale et le PDF scellé (le même octet
     // pour octet, pour que son SHA-256 corresponde) rejoignent le dossier.
     // Lus avant d'effacer le brouillon.
@@ -613,6 +676,89 @@ class _ProgressHeader extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// Remise du téléphone au conducteur B : il ne voit que sa propre saisie.
+class _HandoverIntro extends StatelessWidget {
+  const _HandoverIntro();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    Widget point(IconData icon, String text) => Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: p.primaryText),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(text, style: TextStyle(color: p.text, height: 1.35)),
+          ),
+        ],
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 12),
+        Container(
+          width: 96,
+          height: 96,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: p.primaryTint,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.phonelink_ring_rounded,
+            size: 46,
+            color: p.primaryText,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Text(
+          'Passez le téléphone au conducteur B',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: p.text,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Il remplit lui-même son identité, son permis, son véhicule et son '
+          'assurance.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: p.textMuted, height: 1.4),
+        ),
+        const SizedBox(height: 10),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
+            child: Column(
+              children: [
+                point(
+                  Icons.visibility_off_outlined,
+                  'Vos informations restent masquées : le retour aux étapes '
+                  'précédentes est bloqué pendant sa saisie.',
+                ),
+                point(
+                  Icons.document_scanner_outlined,
+                  'Il peut photographier son permis : l’IA remplit les champs.',
+                ),
+                point(
+                  Icons.swap_horiz_rounded,
+                  'À la fin, il vous rend le téléphone.',
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _BottomActions extends StatelessWidget {

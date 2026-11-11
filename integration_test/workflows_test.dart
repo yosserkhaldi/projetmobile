@@ -147,6 +147,12 @@ Future<void> next(WidgetTester tester, int to, {String button = 'Continuer'}) as
       await tester.tap(usePosition);
       await settle(tester);
     }
+    // Fin de la saisie du conducteur B : le téléphone revient à A.
+    final backToA = find.text('Je suis le conducteur A');
+    if (backToA.evaluate().isNotEmpty) {
+      await tester.tap(backToA);
+      await settle(tester);
+    }
     if (reached.evaluate().isNotEmpty) return;
     final target = find.text(button);
     if (target.evaluate().isNotEmpty) {
@@ -289,12 +295,16 @@ void main() {
     await next(tester, 4, button: 'Continuer vers le constat');
 
     // ── Module 4 : conducteur B, circonstances, croquis, signatures ────────
-    await waitFor(tester, field('Nom complet *'));
+    await tapUntil(
+      tester,
+      find.text('Je suis le conducteur B'),
+      field('Nom complet *'),
+    );
     await type(tester, 'Nom complet *', 'Karim Mejri');
     await type(tester, 'Immatriculation *', '198 TU 4521');
     await waitFor(tester, find.byType(DropdownButtonFormField<String>));
     await chooseCompany(tester, 'COMAR');
-    await next(tester, 5);
+    await next(tester, 5, button: 'Terminer et rendre le téléphone');
 
     await waitFor(tester, find.byType(Checkbox));
     await tapVisible(tester, find.byType(Checkbox).at(0)); // A : case 1

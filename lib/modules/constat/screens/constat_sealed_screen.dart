@@ -71,7 +71,9 @@ class ConstatSealedScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'Constat scellé et transmis',
+                      constat.id.startsWith('local-')
+                          ? 'Constat scellé sur le téléphone'
+                          : 'Constat scellé et transmis',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w800,
@@ -80,7 +82,10 @@ class ConstatSealedScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Document officiel inaltérable signé bilatéralement.',
+                      constat.id.startsWith('local-')
+                          ? 'Pas de réseau : il sera transmis et signé par le '
+                                'serveur dès le retour de la connexion.'
+                          : 'Document officiel inaltérable signé bilatéralement.',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: palette.textMuted, fontSize: 13),
                     ),
