@@ -7131,6 +7131,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Le constat sera rendu infalsifiable après la double signature.'**
   String get cstShaLockHint;
+
+  /// No description provided for @nameLockedNotice.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom vérifié sur votre pièce d’identité : il ne peut plus être modifié.'**
+  String get nameLockedNotice;
 }
 
 class _AppLocalizationsDelegate

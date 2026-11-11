@@ -267,12 +267,8 @@ class VehicleStore extends ChangeNotifier {
   /// sur ce téléphone. Ils sont sur le serveur et reviennent à la connexion.
   Future<void> clear() async {
     await initialize();
-    // Ce qui n'est pas encore sur le serveur part avant d'être effacé.
-    try {
-      await syncWithServer();
-    } catch (error) {
-      debugPrint('Synchronisation avant déconnexion impossible : $error');
-    }
+    // L'envoi de ce qui restait se fait avant la déconnexion (profil) : ici
+    // la session est déjà fermée.
     _vehicles.clear();
     _pendingUpdates.clear();
     _pendingDeletes.clear();

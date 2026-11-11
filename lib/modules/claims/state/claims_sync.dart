@@ -174,6 +174,9 @@ class ClaimsSync extends ChangeNotifier {
     unawaited(synchronize());
   }
 
+  /// Appelé après un passage réussi (réseau revenu, file envoyée).
+  VoidCallback? onFlushed;
+
   /// Un seul passage à la fois. Un appel pendant un passage en relance un et
   /// attend sa fin.
   Future<void> synchronize() {
@@ -195,6 +198,8 @@ class ClaimsSync extends ChangeNotifier {
         final sent = await _flush();
         if (sent) await _pull();
         _setOnline(sent);
+        // File vide et serveur joignable : les sinistres sont arrivés.
+        if (sent) onFlushed?.call();
       } while (_again);
     } catch (error) {
       debugPrint('Synchronisation interrompue : $error');

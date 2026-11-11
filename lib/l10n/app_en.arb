@@ -1171,5 +1171,6 @@
   "cstSignatureA": "Driver A signature",
   "cstSignatureB": "Driver B signature",
   "cstShaLock": "SHA-256 lock",
-  "cstShaLockHint": "The report becomes tamper-proof once both parties have signed."
+  "cstShaLockHint": "The report becomes tamper-proof once both parties have signed.",
+  "nameLockedNotice": "Name checked against your ID: it can no longer be changed."
 }

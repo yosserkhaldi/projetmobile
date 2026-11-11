@@ -3912,4 +3912,8 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get cstShaLockHint =>
       'يصبح المحضر غير قابل للتزوير بعد توقيع الطرفين.';
+
+  @override
+  String get nameLockedNotice =>
+      'تم التحقق من الاسم عبر بطاقة الهوية: لم يعد بالإمكان تعديله.';
 }

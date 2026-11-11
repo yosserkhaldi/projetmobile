@@ -822,13 +822,16 @@ class _AddPhotoButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return OutlinedButton.icon(
       onPressed: () async {
+        final messenger = ScaffoldMessenger.of(context);
         final picker = ImagePicker();
         final source = await _pickSource(context);
         if (source == null) return;
         final file = await picker.pickImage(source: source, imageQuality: 80);
-        if (file != null) {
-          final updated = vehicle.copyWith(photoPath: file.path);
-          await store.updateVehicle(updated);
+        if (file == null) return;
+        try {
+          await store.updateVehicle(vehicle.copyWith(photoPath: file.path));
+        } on ApiException catch (error) {
+          messenger.showSnackBar(SnackBar(content: Text(error.message)));
         }
       },
       icon: const Icon(Icons.add_a_photo_outlined),

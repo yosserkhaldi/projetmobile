@@ -3970,4 +3970,8 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get cstShaLockHint =>
       'Le constat sera rendu infalsifiable après la double signature.';
+
+  @override
+  String get nameLockedNotice =>
+      'Nom vérifié sur votre pièce d’identité : il ne peut plus être modifié.';
 }

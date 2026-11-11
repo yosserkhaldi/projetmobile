@@ -2082,5 +2082,6 @@
   "cstSignatureA": "Signature conducteur A",
   "cstSignatureB": "Signature conducteur B",
   "cstShaLock": "Verrouillage SHA-256",
-  "cstShaLockHint": "Le constat sera rendu infalsifiable après la double signature."
+  "cstShaLockHint": "Le constat sera rendu infalsifiable après la double signature.",
+  "nameLockedNotice": "Nom vérifié sur votre pièce d’identité : il ne peut plus être modifié."
 }

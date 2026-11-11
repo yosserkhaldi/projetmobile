@@ -3937,4 +3937,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cstShaLockHint =>
       'The report becomes tamper-proof once both parties have signed.';
+
+  @override
+  String get nameLockedNotice =>
+      'Name checked against your ID: it can no longer be changed.';
 }

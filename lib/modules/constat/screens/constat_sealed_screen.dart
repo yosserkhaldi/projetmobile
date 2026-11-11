@@ -29,6 +29,9 @@ class ConstatSealedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final t = context.t;
+    // Scellé sur le téléphone, pas encore par le serveur : ni QR certifié ni
+    // signature ECDSA à montrer.
+    final offline = constat.id.startsWith('local-');
 
     return Scaffold(
       backgroundColor: palette.canvas,
@@ -73,7 +76,7 @@ class ConstatSealedScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      constat.id.startsWith('local-')
+                      offline
                           ? t.cstSealedOnPhone
                           : t.cstSealedAndSent,
                       textAlign: TextAlign.center,
@@ -84,7 +87,7 @@ class ConstatSealedScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      constat.id.startsWith('local-')
+                      offline
                           ? t.cstSealedOfflineHint
                           : t.cstSealedOnlineHint,
                       textAlign: TextAlign.center,
@@ -97,6 +100,7 @@ class ConstatSealedScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Certification QR Code JWS Hors-Ligne (Zero-Dependency)
+            if (!offline) ...[
             Card(
               color: palette.surface,
               elevation: 0,
@@ -222,6 +226,7 @@ class ConstatSealedScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            ],
 
             // Récapitulatif Véhicules A & B
             Row(
